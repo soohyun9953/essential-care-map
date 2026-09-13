@@ -8,9 +8,11 @@ import {
   필수의료_진단_결과,
   지도_시각화_모드,
   취약도_등급,
+  지역_구분_단위,
 } from '@/lib/필수의료_타입';
 import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { 전국_시군구_위치_데이터, get_region_location } from '@/lib/시군구_경계_데이터';
+import { 중진료권_매퍼 } from '@/lib/중진료권_데이터셋';
 import { format_number_comma } from '@/lib/유틸리티';
 
 interface 시군구_지도_컴포넌트_속성 {
@@ -19,6 +21,8 @@ interface 시군구_지도_컴포넌트_속성 {
   on_select_region: (region: 필수의료_진단_결과) => void;
   view_mode: 지도_시각화_모드;
   on_change_view_mode: (mode: 지도_시각화_모드) => void;
+  region_unit: 지역_구분_단위;
+  on_change_region_unit: (unit: 지역_구분_단위) => void;
 }
 
 const MapCenterController: React.FC<{ target_lat?: number; target_lng?: number }> = ({
@@ -40,6 +44,8 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
   on_select_region,
   view_mode,
   on_change_view_mode,
+  region_unit,
+  on_change_region_unit,
 }) => {
   // 모드별 색상 추출 함수
   const get_fill_color_by_mode = (item: 필수의료_진단_결과): string => {
@@ -61,21 +67,48 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
 
   return (
     <div className="relative w-full h-full min-h-[580px] bg-[#eef0f3] rounded-3xl overflow-hidden border border-black/[0.05] shadow-apple-card flex flex-col">
-      {/* 애플 스타일 플로팅 세그먼트 컨트롤러 (Segmented Control) */}
-      <div className="absolute top-4 left-4 z-[400] bg-white/80 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1">
-        {(['종합취약도', '응급의료', '분만모자', '소아중증'] as 지도_시각화_모드[]).map((mode) => (
+      {/* 애플 스타일 플로팅 컨트롤러 (지역 단위 및 시각화 모드) */}
+      <div className="absolute top-4 left-4 z-[400] flex flex-wrap items-center gap-2">
+        {/* 단위 스위처: 시군구 vs 중진료권 */}
+        <div className="bg-white/85 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1">
           <button
-            key={mode}
-            onClick={() => on_change_view_mode(mode)}
+            onClick={() => on_change_region_unit('시군구')}
             className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
-              view_mode === mode
-                ? 'bg-[#1d1d1f] text-white shadow-apple-sm'
+              region_unit === '시군구'
+                ? 'bg-[#0071e3] text-white shadow-apple-sm'
                 : 'text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            {mode}
+            시·군·구 (250)
           </button>
-        ))}
+          <button
+            onClick={() => on_change_region_unit('중진료권')}
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+              region_unit === '중진료권'
+                ? 'bg-[#0071e3] text-white shadow-apple-sm'
+                : 'text-[#86868b] hover:text-[#1d1d1f]'
+            }`}
+          >
+            중진료권 (70)
+          </button>
+        </div>
+
+        {/* 지표 레이어 스위처 */}
+        <div className="bg-white/85 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1">
+          {(['종합취약도', '응급의료', '분만모자', '소아중증'] as 지도_시각화_모드[]).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => on_change_view_mode(mode)}
+              className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+                view_mode === mode
+                  ? 'bg-[#1d1d1f] text-white shadow-apple-sm'
+                  : 'text-[#86868b] hover:text-[#1d1d1f]'
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* 우측 하단 미니멀 범례 (Apple Glass Badge) */}
@@ -157,7 +190,12 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
                     <Tooltip direction="top" offset={[0, -10]} opacity={0.98} className="leaflet-tooltip-custom">
                       <div className="space-y-1">
                         <div className="font-bold text-[#1d1d1f] text-xs flex items-center justify-between gap-2 border-b border-black/[0.06] pb-1">
-                          <span>{item.시도명} {item.시군구명}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span>{item.시도명} {item.시군구명}</span>
+                            <span className="text-[10px] text-[#0071e3] bg-[#0071e3]/10 px-1.5 py-0.2 rounded-full font-medium">
+                              {중진료권_매퍼.find_zone_by_sgg(item.시군구명)}
+                            </span>
+                          </div>
                           <span
                             className="px-1.5 py-0.2 rounded-full text-[10px] text-white font-semibold"
                             style={{ backgroundColor: 취약도_등급_정보[item.종합_취약도_등급].색상코드 }}

@@ -8,6 +8,7 @@ import {
   필수의료_진단_결과,
   지역_평균_통계,
   지도_시각화_모드,
+  지역_구분_단위,
 } from '@/lib/필수의료_타입';
 import { 필수의료_진단_엔진 } from '@/lib/필수의료_엔진';
 import { 전국_시군구_샘플_데이터 } from '@/lib/시군구_데이터셋';
@@ -17,6 +18,7 @@ import { 헤더_네비게이션 } from '@/components/헤더_네비게이션';
 import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 지도_래퍼 } from '@/components/지도_래퍼';
 import { 종합_진단_패널 } from '@/components/종합_진단_패널';
+import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차트';
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
 import { 사업계획서_서술문_생성기 } from '@/components/사업계획서_서술문_생성기';
 import { 취약지_목록_테이블 } from '@/components/취약지_목록_테이블';
@@ -27,6 +29,7 @@ export default function Home() {
   const [diagnosed_list, set_diagnosed_list] = useState<필수의료_진단_결과[]>([]);
   const [selected_region, set_selected_region] = useState<필수의료_진단_결과 | null>(null);
   const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
+  const [region_unit, set_region_unit] = useState<지역_구분_단위>('시군구');
   const [is_upload_modal_open, set_is_upload_modal_open] = useState(false);
   const [active_mobile_tab, set_active_mobile_tab] = useState<'map' | 'report'>('map');
 
@@ -159,6 +162,8 @@ export default function Home() {
               }}
               view_mode={view_mode}
               on_change_view_mode={set_view_mode}
+              region_unit={region_unit}
+              on_change_region_unit={set_region_unit}
             />
           </div>
 
@@ -175,7 +180,7 @@ export default function Home() {
           />
         </div>
 
-        {/* 우측 컬럼: 종합 진단, 비교 차트, 사업계획서 생성기 (7 cols) */}
+        {/* 우측 컬럼: 종합 진단, 2040 의료수요 추계, 지표 비교 차트, 사업계획서 생성기 (7 cols) */}
         <div
           className={`lg:col-span-7 flex flex-col space-y-6 ${
             active_mobile_tab === 'map' ? 'hidden lg:flex' : 'flex'
@@ -184,14 +189,17 @@ export default function Home() {
           {/* 1. 종합 진단 패널 (Apple Health 카드) */}
           <종합_진단_패널 selected_region={selected_region} />
 
-          {/* 2. 지표 비교 차트 */}
+          {/* 2. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위 반영) */}
+          <의료수요_추계_차트 selected_region={selected_region} />
+
+          {/* 3. 지표 비교 차트 */}
           <의료지표_비교차트
             selected_region={selected_region}
             sido_stat={sido_stat}
             national_stat={national_stat}
           />
 
-          {/* 3. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
+          {/* 4. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
           <사업계획서_서술문_생성기
             selected_region={selected_region}
             sido_stat={sido_stat}

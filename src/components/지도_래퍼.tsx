@@ -4,7 +4,7 @@
 
 import dynamic from 'next/dynamic';
 import React from 'react';
-import { 필수의료_진단_결과, 지도_시각화_모드 } from '@/lib/필수의료_타입';
+import { 필수의료_진단_결과, 지도_시각화_모드, 지역_구분_단위 } from '@/lib/필수의료_타입';
 
 interface 지도_래퍼_속성 {
   diagnosed_list: 필수의료_진단_결과[];
@@ -12,6 +12,8 @@ interface 지도_래퍼_속성 {
   on_select_region: (region: 필수의료_진단_결과) => void;
   view_mode: 지도_시각화_모드;
   on_change_view_mode: (mode: 지도_시각화_모드) => void;
+  region_unit: 지역_구분_단위;
+  on_change_region_unit: (unit: 지역_구분_단위) => void;
 }
 
 // ssr: false 적용을 통한 클라이언트 사이드 전용 로딩

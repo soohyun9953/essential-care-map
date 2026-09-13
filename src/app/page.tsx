@@ -19,6 +19,7 @@ import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 지도_래퍼 } from '@/components/지도_래퍼';
 import { 종합_진단_패널 } from '@/components/종합_진단_패널';
 import { 진료역량_사분면_분포도 } from '@/components/진료역량_사분면_분포도';
+import { 진료실적_서브그룹_대시보드 } from '@/components/진료실적_서브그룹_대시보드';
 import { 일대일_비교_대시보드 } from '@/components/일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차트';
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
@@ -194,16 +195,19 @@ export default function Home() {
           {/* 2. 7대 진료역량 인터랙티브 2차원 사분면 분포도 (NMC 매뉴얼 2순위) */}
           <진료역량_사분면_분포도 selected_region={selected_region} />
 
-          {/* 3. 1:1 기관비교 & 지역비교 벤치마킹 대시보드 (NMC 매뉴얼 IV/V장) */}
+          {/* 3. 7대 서브그룹 진료실적 심층 드릴다운 (NMC 매뉴얼 III장 3절) */}
+          <진료실적_서브그룹_대시보드 selected_region={selected_region} />
+
+          {/* 4. 1:1 기관비교 & 지역비교 벤치마킹 대시보드 (NMC 매뉴얼 IV/V장) */}
           <일대일_비교_대시보드
             selected_region={selected_region}
             diagnosed_list={diagnosed_list}
           />
 
-          {/* 4. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위) */}
+          {/* 5. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위) */}
           <의료수요_추계_차트 selected_region={selected_region} />
 
-          {/* 5. 지표 비교 차트 */}
+          {/* 6. 지표 비교 차트 */}
           <의료지표_비교차트
             selected_region={selected_region}
             sido_stat={sido_stat}

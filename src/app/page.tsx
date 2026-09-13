@@ -19,6 +19,7 @@ import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 지도_래퍼 } from '@/components/지도_래퍼';
 import { 종합_진단_패널 } from '@/components/종합_진단_패널';
 import { 진료역량_사분면_분포도 } from '@/components/진료역량_사분면_분포도';
+import { 일대일_비교_대시보드 } from '@/components/일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차트';
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
 import { 사업계획서_서술문_생성기 } from '@/components/사업계획서_서술문_생성기';
@@ -181,7 +182,7 @@ export default function Home() {
           />
         </div>
 
-        {/* 우측 컬럼: 종합 진단, 7대 진료역량 사분면, 2040 의료수요 추계, 지표 비교 차트, 사업계획서 생성기 (7 cols) */}
+        {/* 우측 컬럼: 종합 진단, 7대 진료역량 사분면, 1:1 비교 벤치마킹, 2040 의료수요 추계, 지표 비교 차트, 사업계획서 생성기 (7 cols) */}
         <div
           className={`lg:col-span-7 flex flex-col space-y-6 ${
             active_mobile_tab === 'map' ? 'hidden lg:flex' : 'flex'
@@ -190,20 +191,26 @@ export default function Home() {
           {/* 1. 종합 진단 패널 (Apple Health 카드) */}
           <종합_진단_패널 selected_region={selected_region} />
 
-          {/* 2. 7대 진료역량 인터랙티브 2차원 사분면 분포도 (NMC 매뉴얼 2순위 반영) */}
+          {/* 2. 7대 진료역량 인터랙티브 2차원 사분면 분포도 (NMC 매뉴얼 2순위) */}
           <진료역량_사분면_분포도 selected_region={selected_region} />
 
-          {/* 3. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위 반영) */}
+          {/* 3. 1:1 기관비교 & 지역비교 벤치마킹 대시보드 (NMC 매뉴얼 IV/V장) */}
+          <일대일_비교_대시보드
+            selected_region={selected_region}
+            diagnosed_list={diagnosed_list}
+          />
+
+          {/* 4. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위) */}
           <의료수요_추계_차트 selected_region={selected_region} />
 
-          {/* 4. 지표 비교 차트 */}
+          {/* 5. 지표 비교 차트 */}
           <의료지표_비교차트
             selected_region={selected_region}
             sido_stat={sido_stat}
             national_stat={national_stat}
           />
 
-          {/* 5. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
+          {/* 6. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
           <사업계획서_서술문_생성기
             selected_region={selected_region}
             sido_stat={sido_stat}

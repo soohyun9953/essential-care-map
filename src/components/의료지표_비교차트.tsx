@@ -1,6 +1,6 @@
 'use client';
 
-// 선택 시군구 vs 시도 평균 vs 전국 평균 비교 레이더 차트 및 바 차트 컴포넌트
+// Apple Health 스타일의 의료 지표 비교 차트 (레이더 & 수평 바 차트)
 
 import React, { useState } from 'react';
 import {
@@ -36,7 +36,6 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
 
   if (!selected_region) return null;
 
-  // 레이더 차트용 데이터 (모든 지표는 충족도/안전도 관점 100점 만점으로 정규화)
   const radar_data = [
     {
       subject: '응급 도달성',
@@ -76,34 +75,33 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
     },
   ];
 
-  // 바 차트용 데이터
   const bar_data = [
     {
-      name: '응급 60분 미도달(%)',
+      name: '응급 미도달(%)',
       선택지역: selected_region.응급_60분_미도달_인구비율,
       시도평균: sido_stat.평균_응급_60분_미도달_인구비율,
       전국평균: national_stat.평균_응급_60분_미도달_인구비율,
     },
     {
-      name: '응급이용률 RI(%)',
+      name: '응급 RI(%)',
       선택지역: selected_region.관내_응급_의료이용률,
       시도평균: sido_stat.평균_관내_응급_의료이용률,
       전국평균: national_stat.평균_관내_응급_의료이용률,
     },
     {
-      name: '분만 60분 미도달(%)',
+      name: '분만 미도달(%)',
       선택지역: selected_region.분만_60분_미도달_인구비율,
       시도평균: sido_stat.평균_분만_60분_미도달_인구비율,
       전국평균: national_stat.평균_분만_60분_미도달_인구비율,
     },
     {
-      name: '관내 분만율(%)',
+      name: '분만율(%)',
       선택지역: selected_region.관내_분만율,
       시도평균: sido_stat.평균_관내_분만율,
       전국평균: national_stat.평균_관내_분만율,
     },
     {
-      name: '소아 병상공급(%)',
+      name: '소아 병상(%)',
       선택지역: selected_region.소아_병상_공급비율,
       시도평균: sido_stat.평균_소아_병상_공급비율,
       전국평균: national_stat.평균_소아_병상_공급비율,
@@ -111,81 +109,80 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
   ];
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3" id="comparison-chart-container">
-      {/* 탭 헤더 */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+    <div className="bg-white p-6 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-4" id="comparison-chart-container">
+      {/* 상단 헤더 및 세그먼트 컨트롤 */}
+      <div className="flex items-center justify-between pb-3 border-b border-black/[0.05]">
         <div>
-          <h3 className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <BarChart2 className="w-4 h-4 text-sky-600" />
-            <span>선택 지역 vs 시·도 vs 전국 평균 지표 비교</span>
+          <h3 className="text-sm font-bold tracking-tight text-[#1d1d1f] flex items-center gap-1.5">
+            <span>지표 비교 분석</span>
           </h3>
-          <p className="text-[11px] text-slate-400">
-            {selected_region.시군구명}과 {sido_stat.구분명} 및 전국 단위의 필수의료 격차
+          <p className="text-xs text-[#86868b] mt-0.5">
+            {selected_region.시군구명} vs {sido_stat.구분명} vs 전국 평균
           </p>
         </div>
 
-        <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-lg">
+        <div className="flex items-center space-x-1 bg-[#f5f5f7] p-1 rounded-full border border-black/[0.04]">
           <button
             onClick={() => set_chart_tab('radar')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition flex items-center space-x-1 ${
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
               chart_tab === 'radar'
-                ? 'bg-white text-slate-800 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white text-[#1d1d1f] shadow-apple-sm'
+                : 'text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <PieChart className="w-3.5 h-3.5" />
-            <span>종합 레이더</span>
+            레이더
           </button>
           <button
             onClick={() => set_chart_tab('bar')}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition flex items-center space-x-1 ${
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all ${
               chart_tab === 'bar'
-                ? 'bg-white text-slate-800 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white text-[#1d1d1f] shadow-apple-sm'
+                : 'text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <BarChart2 className="w-3.5 h-3.5" />
-            <span>지표별 바 차트</span>
+            비교 바
           </button>
         </div>
       </div>
 
-      {/* 차트 본체 */}
-      <div className="h-[280px] w-full pt-1">
+      {/* 차트 영역 */}
+      <div className="h-[270px] w-full pt-1">
         {chart_tab === 'radar' ? (
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radar_data}>
-              <PolarGrid stroke="#e2e8f0" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#475569', fontSize: 11 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#cbd5e1" />
+            <RadarChart cx="50%" cy="50%" outerRadius="72%" data={radar_data}>
+              <PolarGrid stroke="#e5e5ea" />
+              <PolarAngleAxis dataKey="subject" tick={{ fill: '#86868b', fontSize: 11, fontWeight: 500 }} />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} stroke="#e5e5ea" tick={{ fill: '#c7c7cc', fontSize: 9 }} />
               <Radar
                 name={selected_region.시군구명}
                 dataKey="선택지역"
-                stroke="#0284c7"
-                fill="#0284c7"
-                fillOpacity={0.45}
+                stroke="#0071e3"
+                fill="#0071e3"
+                fillOpacity={0.4}
               />
               <Radar
                 name={`${sido_stat.구분명} 평균`}
                 dataKey="시도평균"
-                stroke="#8b5cf6"
-                fill="#8b5cf6"
-                fillOpacity={0.25}
+                stroke="#af52de"
+                fill="#af52de"
+                fillOpacity={0.2}
               />
               <Radar
                 name="전국 평균"
                 dataKey="전국평균"
-                stroke="#64748b"
-                fill="#64748b"
-                fillOpacity={0.15}
+                stroke="#8e8e93"
+                fill="#8e8e93"
+                fillOpacity={0.12}
               />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '4px' }} />
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px', color: '#1d1d1f' }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  border: 'none',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  color: '#1d1d1f',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
                   fontSize: '11px',
                 }}
               />
@@ -193,23 +190,25 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
           </ResponsiveContainer>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={bar_data} margin={{ top: 10, right: 10, left: -15, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-              <XAxis dataKey="name" tick={{ fill: '#475569', fontSize: 10 }} interval={0} angle={-15} textAnchor="end" />
-              <YAxis tick={{ fill: '#64748b', fontSize: 10 }} domain={[0, 100]} />
+            <BarChart data={bar_data} margin={{ top: 10, right: 10, left: -15, bottom: 15 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f2f2f7" vertical={false} />
+              <XAxis dataKey="name" tick={{ fill: '#86868b', fontSize: 10 }} interval={0} textAnchor="end" />
+              <YAxis tick={{ fill: '#86868b', fontSize: 10 }} domain={[0, 100]} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
-                  color: '#fff',
-                  borderRadius: '8px',
-                  border: 'none',
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(20px)',
+                  color: '#1d1d1f',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0,0,0,0.08)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
                   fontSize: '11px',
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-              <Bar dataKey="선택지역" fill="#0284c7" radius={[4, 4, 0, 0]} name={selected_region.시군구명} />
-              <Bar dataKey="시도평균" fill="#a78bfa" radius={[4, 4, 0, 0]} name={`${sido_stat.구분명} 평균`} />
-              <Bar dataKey="전국평균" fill="#94a3b8" radius={[4, 4, 0, 0]} name="전국 평균" />
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+              <Bar dataKey="선택지역" fill="#0071e3" radius={[6, 6, 0, 0]} name={selected_region.시군구명} />
+              <Bar dataKey="시도평균" fill="#af52de" radius={[6, 6, 0, 0]} name={`${sido_stat.구분명} 평균`} />
+              <Bar dataKey="전국평균" fill="#8e8e93" radius={[6, 6, 0, 0]} name="전국 평균" />
             </BarChart>
           </ResponsiveContainer>
         )}

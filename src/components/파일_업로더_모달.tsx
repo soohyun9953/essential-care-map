@@ -1,6 +1,6 @@
 'use client';
 
-// CSV/XLSX 드래그 앤 드롭 파일 업로더 모달 컴포넌트
+// iOS / macOS 스타일의 드래그 앤 드롭 파일 업로더 모달 컴포넌트
 
 import React, { useState, useRef } from 'react';
 import { UploadCloud, X, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -86,21 +86,26 @@ export const 파일_업로더_모달: React.FC<파일_업로더_모달_속성> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-md p-4 transition-all animate-in fade-in duration-200">
+      <div className="bg-white rounded-3xl shadow-apple-glass max-w-lg w-full overflow-hidden border border-black/[0.08] transition-all">
         {/* 모달 헤더 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
-          <div className="flex items-center space-x-2">
-            <UploadCloud className="w-5 h-5 text-sky-600" />
-            <h3 className="text-base font-bold text-slate-800">
-              필수의료 지표 원천 데이터 업로드
-            </h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-black/[0.05] bg-[#f5f5f7]/60">
+          <div className="flex items-center space-x-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center">
+              <UploadCloud className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold tracking-tight text-[#1d1d1f]">
+                원천 데이터 업로드
+              </h3>
+              <p className="text-[11px] text-[#86868b]">지자체 또는 공공의료기관 지표 파일</p>
+            </div>
           </div>
           <button
             onClick={on_close}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition"
+            className="w-7 h-7 rounded-full bg-[#e8e8ed] hover:bg-[#dcdcde] flex items-center justify-center text-[#86868b] hover:text-[#1d1d1f] transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -111,10 +116,10 @@ export const 파일_업로더_모달: React.FC<파일_업로더_모달_속성> =
             onDragLeave={handle_drag_leave}
             onDrop={handle_drop}
             onClick={() => file_input_ref.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center ${
+            className={`border-2 border-dashed rounded-2.5xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center ${
               is_dragging
-                ? 'border-sky-500 bg-sky-50/50 scale-[0.99]'
-                : 'border-slate-300 hover:border-sky-400 hover:bg-slate-50'
+                ? 'border-[#0071e3] bg-[#0071e3]/[0.04] scale-[0.99]'
+                : 'border-black/[0.1] hover:border-[#0071e3] hover:bg-[#f5f5f7]/50'
             }`}
           >
             <input
@@ -124,24 +129,24 @@ export const 파일_업로더_모달: React.FC<파일_업로더_모달_속성> =
               accept=".csv,.xlsx,.xls"
               className="hidden"
             />
-            <div className="w-12 h-12 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center mb-3 shadow-inner">
+            <div className="w-12 h-12 rounded-full bg-[#f5f5f7] text-[#0071e3] flex items-center justify-center mb-3 shadow-apple-sm">
               <FileText className="w-6 h-6" />
             </div>
-            <p className="text-sm font-semibold text-slate-700">
-              CSV 또는 Excel(.xlsx) 파일을 여기에 드래그하거나 클릭하여 선택
+            <p className="text-sm font-semibold text-[#1d1d1f]">
+              CSV 또는 Excel(.xlsx) 파일을 드래그하여 업로드
             </p>
-            <p className="text-xs text-slate-400 mt-1">
-              최대 10MB (100% 브라우저 클라이언트 로컬 파싱)
+            <p className="text-xs text-[#86868b] mt-1">
+              클릭하여 파일 선택 (100% 클라이언트 로컬 보안 파싱)
             </p>
           </div>
 
-          {/* 필수 컬럼 안내 */}
-          <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 text-xs text-slate-600 space-y-1.5">
-            <p className="font-semibold text-slate-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 inline-block" />
-              자동 인식 지원 컬럼명:
+          {/* 필수 컬럼 가이드 */}
+          <div className="bg-[#f5f5f7] p-3.5 rounded-2xl text-xs text-[#86868b] space-y-1">
+            <p className="font-semibold text-[#1d1d1f] flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#0071e3]" />
+              자동 매핑 지원 컬럼:
             </p>
-            <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-500 pl-2">
+            <div className="grid grid-cols-2 gap-1 text-[11px] pl-3 text-[#6e6e73]">
               <div>• 시도명 / 시군구명 / 인구수</div>
               <div>• 응급_60분_미도달_인구비율</div>
               <div>• 관내_응급_의료이용률 (RI)</div>
@@ -151,34 +156,33 @@ export const 파일_업로더_모달: React.FC<파일_업로더_모달_속성> =
             </div>
           </div>
 
-          {/* 로딩 & 에러 & 성공 상태 메시지 */}
           {is_loading && (
-            <div className="p-3 bg-sky-50 text-sky-700 rounded-lg text-xs font-medium flex items-center space-x-2 animate-pulse">
-              <div className="w-4 h-4 border-2 border-sky-600 border-t-transparent rounded-full animate-spin" />
-              <span>데이터 파싱 및 필수의료 취약지 종합 진단 중...</span>
+            <div className="p-3 bg-[#0071e3]/[0.08] text-[#0071e3] rounded-2xl text-xs font-medium flex items-center space-x-2 animate-pulse">
+              <div className="w-3.5 h-3.5 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin" />
+              <span>데이터 파싱 및 필수의료 취약지 진단 중...</span>
             </div>
           )}
 
           {error_message && (
-            <div className="p-3 bg-rose-50 text-rose-700 rounded-lg text-xs font-medium flex items-center space-x-2">
+            <div className="p-3 bg-[#ff3b30]/10 text-[#ff3b30] rounded-2xl text-xs font-medium flex items-center space-x-2">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               <span>{error_message}</span>
             </div>
           )}
 
           {success_count !== null && (
-            <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-medium flex items-center space-x-2">
+            <div className="p-3 bg-[#34c759]/10 text-[#34c759] rounded-2xl text-xs font-medium flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-              <span>총 {success_count}개 시·군·구 데이터가 성공적으로 로드되었습니다!</span>
+              <span>총 {success_count}개 시·군·구 데이터 로드 완료</span>
             </div>
           )}
         </div>
 
         {/* 모달 푸터 */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-end">
+        <div className="px-6 py-3.5 bg-[#f5f5f7]/60 border-t border-black/[0.05] flex justify-end">
           <button
             onClick={on_close}
-            className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-lg transition"
+            className="px-4 py-1.5 text-xs font-medium text-[#1d1d1f] hover:bg-[#e8e8ed] rounded-full transition"
           >
             닫기
           </button>

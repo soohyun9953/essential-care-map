@@ -1,16 +1,16 @@
 'use client';
 
-// 선택된 시·군·구의 3대 필수의료 취약지 진단 결과 및 KPI 지표 패널
+// 애플 헬스(Apple Health) 스타일의 3대 필수의료 취약지 종합 진단 패널
 
 import React from 'react';
 import {
   Siren,
   Baby,
   HeartPulse,
-  AlertTriangle,
-  CheckCircle2,
+  AlertCircle,
   Users,
-  Award,
+  CheckCircle2,
+  ChevronRight,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
@@ -23,10 +23,14 @@ interface 종합_진단_패널_속성 {
 export const 종합_진단_패널: React.FC<종합_진단_패널_속성> = ({ selected_region }) => {
   if (!selected_region) {
     return (
-      <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center flex flex-col items-center justify-center min-h-[300px]">
-        <AlertTriangle className="w-10 h-10 text-slate-300 mb-3" />
-        <p className="text-base font-semibold text-slate-700">진단할 시·군·구를 지도 또는 목록에서 선택해주세요.</p>
-        <p className="text-xs text-slate-400 mt-1">지도의 시군구 영역을 클릭하면 즉시 진단 지표와 사업계획서가 생성됩니다.</p>
+      <div className="bg-white p-10 rounded-3xl border border-black/[0.05] shadow-apple-card text-center flex flex-col items-center justify-center min-h-[280px]">
+        <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center mb-3">
+          <AlertCircle className="w-6 h-6 text-[#86868b]" />
+        </div>
+        <p className="text-base font-semibold text-[#1d1d1f]">진단할 지역을 지도에서 선택하세요</p>
+        <p className="text-xs text-[#86868b] mt-1 max-w-sm">
+          지도 상의 시·군·구를 클릭하면 필수의료 지표 진단 결과와 사업계획서가 실시간 생성됩니다.
+        </p>
       </div>
     );
   }
@@ -34,35 +38,33 @@ export const 종합_진단_패널: React.FC<종합_진단_패널_속성> = ({ se
   const meta_info = 취약도_등급_정보[selected_region.종합_취약도_등급];
 
   return (
-    <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-      {/* 지역명 및 종합 판정 뱃지 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+    <div className="bg-white p-6 sm:p-7 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-6">
+      {/* 상단: 지역 타이틀 및 종합 등급 캡슐 */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-black/[0.05]">
         <div>
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-sky-600 bg-sky-50 px-2.5 py-0.5 rounded-full border border-sky-200">
+            <span className="text-xs font-semibold text-[#0071e3] bg-[#0071e3]/10 px-2.5 py-0.5 rounded-full">
               {selected_region.시도명}
             </span>
-            <span className="text-xs text-slate-400">코드: {selected_region.시군구코드}</span>
+            <span className="text-xs text-[#86868b]">행정코드: {selected_region.시군구코드}</span>
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mt-1">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f] mt-1">
             {selected_region.시군구명}
           </h2>
-          <div className="flex items-center space-x-1.5 text-xs text-slate-500 mt-0.5">
-            <Users className="w-3.5 h-3.5 text-slate-400" />
-            <span>총 인구수: <strong className="text-slate-800">{format_number_comma(selected_region.인구수)}</strong>명</span>
+          <div className="flex items-center space-x-1.5 text-xs text-[#86868b] mt-1">
+            <Users className="w-3.5 h-3.5" />
+            <span>관내 인구: <strong className="text-[#1d1d1f] font-semibold">{format_number_comma(selected_region.인구수)}</strong>명</span>
           </div>
         </div>
 
-        {/* 종합 등급 카드 */}
-        <div className={`px-4 py-2.5 rounded-xl border flex items-center space-x-3 ${meta_info.배경색상_클래스}`}>
-          <div className="p-2 rounded-lg bg-white/80 shadow-sm">
-            <Award className="w-5 h-5" style={{ color: meta_info.색상코드 }} />
-          </div>
+        {/* 종합 등급 캡슐 배지 (애플 스타일 톤온톤) */}
+        <div className={`px-4 py-3 rounded-2xl border flex items-center space-x-3.5 ${meta_info.배경색상_클래스}`}>
+          <div className="w-3.5 h-3.5 rounded-full animate-pulse" style={{ backgroundColor: meta_info.색상코드 }} />
           <div>
-            <div className="text-[11px] font-medium opacity-80">종합 취약도 등급</div>
-            <div className="text-base font-extrabold flex items-center gap-1.5">
+            <div className="text-[11px] font-medium opacity-75">종합 취약도 등급</div>
+            <div className="text-lg font-bold tracking-tight flex items-center gap-2">
               <span>{meta_info.라벨}</span>
-              <span className="text-xs font-semibold px-1.5 py-0.2 bg-white/90 rounded text-slate-800">
+              <span className="text-xs font-semibold px-2 py-0.5 bg-white/80 rounded-full text-[#1d1d1f] shadow-apple-sm">
                 취약 {selected_region.취약분야_수}/3개
               </span>
             </div>
@@ -70,145 +72,157 @@ export const 종합_진단_패널: React.FC<종합_진단_패널_속성> = ({ se
         </div>
       </div>
 
-      {/* 3대 핵심 분야별 법정 진단 카드 그리드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {/* 1. 응급의료 취약지 */}
+      {/* 3대 핵심 지표 카드 (Apple Watch / Apple Health 모듈형 카드 디자인) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        {/* 1. 응급의료 카드 */}
         <div
-          className={`p-3.5 rounded-xl border transition ${
+          className={`p-4 rounded-2.5xl border transition-all ${
             selected_region.응급취약지역_여부
-              ? 'bg-rose-50/50 border-rose-200'
-              : 'bg-emerald-50/40 border-emerald-200'
+              ? 'bg-[#ff3b30]/[0.03] border-[#ff3b30]/20 hover:border-[#ff3b30]/35'
+              : 'bg-[#f5f5f7]/60 border-black/[0.04] hover:border-black/[0.08]'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-1.5">
-              <Siren
-                className={`w-4 h-4 ${
-                  selected_region.응급취약지역_여부 ? 'text-rose-600' : 'text-emerald-600'
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                  selected_region.응급취약지역_여부
+                    ? 'bg-[#ff3b30]/10 text-[#ff3b30]'
+                    : 'bg-[#34c759]/10 text-[#34c759]'
                 }`}
-              />
-              <span className="text-xs font-bold text-slate-800">1. 응급의료 분야</span>
+              >
+                <Siren className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-semibold text-[#1d1d1f]">응급의료</span>
             </div>
             <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                 selected_region.응급취약지역_여부
-                  ? 'bg-rose-100 text-rose-700 border border-rose-300'
-                  : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                  ? 'bg-[#ff3b30]/10 text-[#ff3b30]'
+                  : 'bg-[#34c759]/10 text-[#34c759]'
               }`}
             >
-              {selected_region.응급취약지역_여부 ? '취약 판정' : '기준 충족'}
+              {selected_region.응급취약지역_여부 ? '취약' : '정상'}
             </span>
           </div>
 
-          <div className="space-y-1.5 text-xs text-slate-600">
-            <div className="flex justify-between">
-              <span>60분 미도달 인구:</span>
-              <strong className={selected_region.응급_60분_미도달_인구비율 > 30 ? 'text-rose-600 font-bold' : 'text-slate-800'}>
+          <div className="space-y-1.5 text-xs text-[#86868b]">
+            <div className="flex justify-between items-baseline">
+              <span>60분 미도달율:</span>
+              <span className={`font-semibold text-sm ${selected_region.응급_60분_미도달_인구비율 > 30 ? 'text-[#ff3b30]' : 'text-[#1d1d1f]'}`}>
                 {selected_region.응급_60분_미도달_인구비율}%
-              </strong>
+              </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-baseline">
               <span>관내 이용률(RI):</span>
-              <strong className={selected_region.관내_응급_의료이용률 < 30 ? 'text-rose-600 font-bold' : 'text-slate-800'}>
+              <span className={`font-semibold text-sm ${selected_region.관내_응급_의료이용률 < 30 ? 'text-[#ff3b30]' : 'text-[#1d1d1f]'}`}>
                 {selected_region.관내_응급_의료이용률}%
-              </strong>
+              </span>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-200/60 leading-tight">
+          <p className="text-[11px] text-[#86868b] mt-3 pt-2.5 border-t border-black/[0.04] leading-relaxed">
             {selected_region.응급_판정근거}
           </p>
         </div>
 
-        {/* 2. 분만·모자의료 취약지 */}
+        {/* 2. 분만·모자의료 카드 */}
         <div
-          className={`p-3.5 rounded-xl border transition ${
+          className={`p-4 rounded-2.5xl border transition-all ${
             selected_region.분만취약지역_여부
-              ? 'bg-orange-50/50 border-orange-200'
-              : 'bg-emerald-50/40 border-emerald-200'
+              ? 'bg-[#ff6934]/[0.03] border-[#ff6934]/20 hover:border-[#ff6934]/35'
+              : 'bg-[#f5f5f7]/60 border-black/[0.04] hover:border-black/[0.08]'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-1.5">
-              <Baby
-                className={`w-4 h-4 ${
-                  selected_region.분만취약지역_여부 ? 'text-orange-600' : 'text-emerald-600'
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                  selected_region.분만취약지역_여부
+                    ? 'bg-[#ff6934]/10 text-[#ff6934]'
+                    : 'bg-[#34c759]/10 text-[#34c759]'
                 }`}
-              />
-              <span className="text-xs font-bold text-slate-800">2. 분만·모자 분야</span>
+              >
+                <Baby className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-semibold text-[#1d1d1f]">분만·모자</span>
             </div>
             <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                 selected_region.분만취약지역_여부
-                  ? 'bg-orange-100 text-orange-700 border border-orange-300'
-                  : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                  ? 'bg-[#ff6934]/10 text-[#ff6934]'
+                  : 'bg-[#34c759]/10 text-[#34c759]'
               }`}
             >
-              {selected_region.분만취약지역_여부 ? '취약 판정' : '기준 충족'}
+              {selected_region.분만취약지역_여부 ? '취약' : '정상'}
             </span>
           </div>
 
-          <div className="space-y-1.5 text-xs text-slate-600">
-            <div className="flex justify-between">
-              <span>60분 미도달 인구:</span>
-              <strong className={selected_region.분만_60분_미도달_인구비율 > 30 ? 'text-orange-600 font-bold' : 'text-slate-800'}>
+          <div className="space-y-1.5 text-xs text-[#86868b]">
+            <div className="flex justify-between items-baseline">
+              <span>60분 미도달율:</span>
+              <span className={`font-semibold text-sm ${selected_region.분만_60분_미도달_인구비율 > 30 ? 'text-[#ff6934]' : 'text-[#1d1d1f]'}`}>
                 {selected_region.분만_60분_미도달_인구비율}%
-              </strong>
+              </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-baseline">
               <span>관내 분만율:</span>
-              <strong className={selected_region.관내_분만율 < 40 ? 'text-orange-600 font-bold' : 'text-slate-800'}>
+              <span className={`font-semibold text-sm ${selected_region.관내_분만율 < 40 ? 'text-[#ff6934]' : 'text-[#1d1d1f]'}`}>
                 {selected_region.관내_분만율}%
-              </strong>
+              </span>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-200/60 leading-tight">
+          <p className="text-[11px] text-[#86868b] mt-3 pt-2.5 border-t border-black/[0.04] leading-relaxed">
             {selected_region.분만_판정근거}
           </p>
         </div>
 
-        {/* 3. 소아·중증진료 취약지 */}
+        {/* 3. 소아·중증진료 카드 */}
         <div
-          className={`p-3.5 rounded-xl border transition ${
+          className={`p-4 rounded-2.5xl border transition-all ${
             selected_region.소아취약지역_여부
-              ? 'bg-amber-50/50 border-amber-200'
-              : 'bg-emerald-50/40 border-emerald-200'
+              ? 'bg-[#ff9500]/[0.03] border-[#ff9500]/20 hover:border-[#ff9500]/35'
+              : 'bg-[#f5f5f7]/60 border-black/[0.04] hover:border-black/[0.08]'
           }`}
         >
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-1.5">
-              <HeartPulse
-                className={`w-4 h-4 ${
-                  selected_region.소아취약지역_여부 ? 'text-amber-600' : 'text-emerald-600'
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center space-x-2">
+              <div
+                className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                  selected_region.소아취약지역_여부
+                    ? 'bg-[#ff9500]/10 text-[#ff9500]'
+                    : 'bg-[#34c759]/10 text-[#34c759]'
                 }`}
-              />
-              <span className="text-xs font-bold text-slate-800">3. 소아·중증 분야</span>
+              >
+                <HeartPulse className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-xs font-semibold text-[#1d1d1f]">소아·중증</span>
             </div>
             <span
-              className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+              className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${
                 selected_region.소아취약지역_여부
-                  ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                  : 'bg-emerald-100 text-emerald-700 border border-emerald-300'
+                  ? 'bg-[#ff9500]/10 text-[#ff9500]'
+                  : 'bg-[#34c759]/10 text-[#34c759]'
               }`}
             >
-              {selected_region.소아취약지역_여부 ? '취약 판정' : '기준 충족'}
+              {selected_region.소아취약지역_여부 ? '취약' : '정상'}
             </span>
           </div>
 
-          <div className="space-y-1.5 text-xs text-slate-600">
-            <div className="flex justify-between">
-              <span>병상 공급비율:</span>
-              <strong className={selected_region.소아_병상_공급비율 < 60 ? 'text-amber-600 font-bold' : 'text-slate-800'}>
+          <div className="space-y-1.5 text-xs text-[#86868b]">
+            <div className="flex justify-between items-baseline">
+              <span>병상 공급율:</span>
+              <span className={`font-semibold text-sm ${selected_region.소아_병상_공급비율 < 60 ? 'text-[#ff9500]' : 'text-[#1d1d1f]'}`}>
                 {selected_region.소아_병상_공급비율}%
-              </strong>
+              </span>
             </div>
-            <div className="flex justify-between">
-              <span>야간휴일 접근성:</span>
-              <strong className="text-slate-800">
+            <div className="flex justify-between items-baseline">
+              <span>야간접근 지수:</span>
+              <span className="font-semibold text-sm text-[#1d1d1f]">
                 {selected_region.소아_야간휴일_접근성지수}점
-              </strong>
+              </span>
             </div>
           </div>
-          <p className="text-[11px] text-slate-500 mt-2 pt-2 border-t border-slate-200/60 leading-tight">
+          <p className="text-[11px] text-[#86868b] mt-3 pt-2.5 border-t border-black/[0.04] leading-relaxed">
             {selected_region.소아_판정근거}
           </p>
         </div>

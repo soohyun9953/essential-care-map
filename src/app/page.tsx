@@ -1,6 +1,6 @@
 'use client';
 
-// 필수의료 취약지 진단 및 공문서 사업계획서 자동생성 플랫폼 메인 대시보드 페이지
+// 애플 사이트(Apple.com) 스타일 필수의료 취약지 종합 진단 & 사업계획서 자동생성 플랫폼
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
@@ -20,21 +20,14 @@ import { 종합_진단_패널 } from '@/components/종합_진단_패널';
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
 import { 사업계획서_서술문_생성기 } from '@/components/사업계획서_서술문_생성기';
 import { 취약지_목록_테이블 } from '@/components/취약지_목록_테이블';
-import { LayoutDashboard, MapPin, FileEdit, TableProperties, Sparkles } from 'lucide-react';
+import { MapPin, FileEdit, Sparkles } from 'lucide-react';
 
 export default function Home() {
-  // 1. 원천 데이터 및 진단 결과 상태
   const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_샘플_데이터);
   const [diagnosed_list, set_diagnosed_list] = useState<필수의료_진단_결과[]>([]);
   const [selected_region, set_selected_region] = useState<필수의료_진단_결과 | null>(null);
-
-  // 2. 지도 시각화 모드 상태
   const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
-
-  // 3. 파일 업로드 모달 상태
   const [is_upload_modal_open, set_is_upload_modal_open] = useState(false);
-
-  // 4. 모바일/반응형 뷰 탭 상태
   const [active_mobile_tab, set_active_mobile_tab] = useState<'map' | 'report'>('map');
 
   // 원천 데이터 변경 시 일괄 진단 실행
@@ -42,7 +35,6 @@ export default function Home() {
     const diagnosed = 필수의료_진단_엔진.batch_diagnose(raw_dataset);
     set_diagnosed_list(diagnosed);
 
-    // 기본 선택 지역: 강원도 영월군 또는 첫 번째 취약지역
     const default_target =
       diagnosed.find((item) => item.시군구명 === '영월군') ||
       diagnosed.find((item) => item.종합_취약도_등급 === '심각') ||
@@ -52,7 +44,7 @@ export default function Home() {
     set_selected_region(default_target);
   }, [raw_dataset]);
 
-  // 전국 및 선택 시도 단위 평균 통계 계산
+  // 통계 계산
   const national_stat: 지역_평균_통계 = useMemo(() => {
     return 필수의료_진단_엔진.calculate_region_statistics(diagnosed_list);
   }, [diagnosed_list]);
@@ -62,22 +54,18 @@ export default function Home() {
     return 필수의료_진단_엔진.calculate_region_statistics(diagnosed_list, selected_region.시도명);
   }, [diagnosed_list, selected_region, national_stat]);
 
-  // 취약지역 카운트
   const vulnerable_region_count = useMemo(() => {
     return diagnosed_list.filter((item) => item.종합_취약도_등급 !== '정상').length;
   }, [diagnosed_list]);
 
-  // 핸들러: 샘플 데이터 다시 로드
   const handle_load_sample_data = () => {
     set_raw_dataset(전국_시군구_샘플_데이터);
   };
 
-  // 핸들러: 업로드 데이터 반영
   const handle_data_loaded = (new_data: 시군구_원천_데이터[]) => {
     set_raw_dataset(new_data);
   };
 
-  // 핸들러: 리포트 전체 PNG 캡처 저장
   const handle_export_report_png = async () => {
     const filename = selected_region
       ? `${selected_region.시도명}_${selected_region.시군구명}_필수의료_진단_리포트`
@@ -86,8 +74,8 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 flex flex-col selection:bg-sky-200">
-      {/* 1. 상단 네비게이션 헤더 */}
+    <main className="min-h-screen bg-[#f5f5f7] flex flex-col selection:bg-[#0071e3]/20">
+      {/* 1. 상단 글로벌 네비게이션 */}
       <헤더_네비게이션
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
         on_load_sample_data={handle_load_sample_data}
@@ -96,69 +84,85 @@ export default function Home() {
         vulnerable_region_count={vulnerable_region_count}
       />
 
-      {/* 모바일 탭 네비게이션 */}
-      <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-around text-xs font-semibold">
-        <button
-          onClick={() => set_active_mobile_tab('map')}
-          className={`flex items-center space-x-1.5 py-1 px-3 rounded-lg ${
-            active_mobile_tab === 'map' ? 'bg-sky-600 text-white' : 'text-slate-600'
-          }`}
-        >
-          <MapPin className="w-4 h-4" />
-          <span>GIS 지도 & 목록</span>
-        </button>
-        <button
-          onClick={() => set_active_mobile_tab('report')}
-          className={`flex items-center space-x-1.5 py-1 px-3 rounded-lg ${
-            active_mobile_tab === 'report' ? 'bg-sky-600 text-white' : 'text-slate-600'
-          }`}
-        >
-          <FileEdit className="w-4 h-4" />
-          <span>진단 대시보드 & 사업계획서</span>
-        </button>
+      {/* 애플 스타일 히어로 타이틀 헤더 */}
+      <section className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/80 border border-black/[0.04] text-xs font-semibold text-[#0071e3] shadow-apple-sm mb-2">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>보건복지부 법정 고시 기준 알고리즘 탑재</span>
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#1d1d1f]">
+              필수의료의 공백을 진단하고, 데이터로 증명하다.
+            </h2>
+            <p className="text-sm sm:text-base text-[#86868b] mt-1.5 max-w-2xl">
+              응급 · 분만 · 소아 3대 취약지 판정부터 대한민국 GIS 행정구역 시각화, 공문서 개조식 사업계획서 실시간 자동 생성까지.
+            </p>
+          </div>
+
+          {/* 간이 통계 pill */}
+          <div className="flex items-center space-x-2 bg-white/70 backdrop-blur-md px-4 py-2 rounded-2xl border border-black/[0.04] shadow-apple-sm text-xs">
+            <span className="text-[#86868b]">전국 평균 응급 60분 미도달율:</span>
+            <strong className="text-[#1d1d1f] font-semibold">{national_stat.평균_응급_60분_미도달_인구비율}%</strong>
+            <span className="text-black/20">|</span>
+            <span className="text-[#86868b]">평균 RI:</span>
+            <strong className="text-[#1d1d1f] font-semibold">{national_stat.평균_관내_응급_의료이용률}%</strong>
+          </div>
+        </div>
+      </section>
+
+      {/* 모바일 탭 세그먼트 컨트롤러 */}
+      <div className="lg:hidden px-4 mb-3">
+        <div className="bg-white p-1 rounded-full border border-black/[0.05] shadow-apple-sm flex items-center justify-around text-xs font-semibold">
+          <button
+            onClick={() => set_active_mobile_tab('map')}
+            className={`flex-1 py-1.5 rounded-full transition-all flex items-center justify-center space-x-1.5 ${
+              active_mobile_tab === 'map' ? 'bg-[#1d1d1f] text-white shadow-sm' : 'text-[#86868b]'
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>GIS 지도 & 목록</span>
+          </button>
+          <button
+            onClick={() => set_active_mobile_tab('report')}
+            className={`flex-1 py-1.5 rounded-full transition-all flex items-center justify-center space-x-1.5 ${
+              active_mobile_tab === 'report' ? 'bg-[#1d1d1f] text-white shadow-sm' : 'text-[#86868b]'
+            }`}
+          >
+            <FileEdit className="w-3.5 h-3.5" />
+            <span>진단 & 사업계획서</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. 메인 대시보드 영역 */}
+      {/* 2. 메인 대시보드 2단 레이아웃 */}
       <div
         id="main-dashboard-content"
-        className="flex-1 max-w-[1720px] w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-5"
+        className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-6"
       >
-        {/* 좌측 영역: 전국 시·군·구 GIS 행정구역 지도 및 목록 테이블 (5 cols) */}
+        {/* 좌측 컬럼: GIS 지도 & 취약지 DB (5 cols) */}
         <div
-          className={`lg:col-span-5 flex flex-col space-y-4 ${
+          className={`lg:col-span-5 flex flex-col space-y-6 ${
             active_mobile_tab === 'report' ? 'hidden lg:flex' : 'flex'
           }`}
         >
-          {/* 인터랙티브 GIS 지도 */}
-          <div className="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[520px]">
-            <div className="flex items-center justify-between px-2 py-1 mb-2">
-              <div className="flex items-center space-x-2">
-                <MapPin className="w-4 h-4 text-sky-600" />
-                <h3 className="text-sm font-bold text-slate-800">
-                  전국 시·군·구 GIS 취약지도
-                </h3>
-              </div>
-              <span className="text-[11px] text-slate-400">
-                시군구 영역 클릭 시 진단 연동
-              </span>
-            </div>
-            <div className="flex-1 w-full h-full relative">
-              <지도_래퍼
-                diagnosed_list={diagnosed_list}
-                selected_region={selected_region}
-                on_select_region={(region) => {
-                  set_selected_region(region);
-                  if (window.innerWidth < 1024) {
-                    set_active_mobile_tab('report');
-                  }
-                }}
-                view_mode={view_mode}
-                on_change_view_mode={set_view_mode}
-              />
-            </div>
+          {/* GIS 지도 영역 */}
+          <div className="h-[540px]">
+            <지도_래퍼
+              diagnosed_list={diagnosed_list}
+              selected_region={selected_region}
+              on_select_region={(region) => {
+                set_selected_region(region);
+                if (window.innerWidth < 1024) {
+                  set_active_mobile_tab('report');
+                }
+              }}
+              view_mode={view_mode}
+              on_change_view_mode={set_view_mode}
+            />
           </div>
 
-          {/* 전국 시군구 취약지 목록 및 검색 테이블 */}
+          {/* 시군구 취약지 데이터베이스 목록 테이블 */}
           <취약지_목록_테이블
             diagnosed_list={diagnosed_list}
             selected_region={selected_region}
@@ -171,23 +175,23 @@ export default function Home() {
           />
         </div>
 
-        {/* 우측 영역: 종합 진단 패널, 비교 차트, 공문서 개조식 사업계획서 생성기 (7 cols) */}
+        {/* 우측 컬럼: 종합 진단, 비교 차트, 사업계획서 생성기 (7 cols) */}
         <div
-          className={`lg:col-span-7 flex flex-col space-y-4 ${
+          className={`lg:col-span-7 flex flex-col space-y-6 ${
             active_mobile_tab === 'map' ? 'hidden lg:flex' : 'flex'
           }`}
         >
-          {/* 1. 선택 지역 3대 필수의료 취약지 종합 진단 패널 */}
+          {/* 1. 종합 진단 패널 (Apple Health 카드) */}
           <종합_진단_패널 selected_region={selected_region} />
 
-          {/* 2. 지역 vs 시도 vs 전국 비교 레이더 & 바 차트 */}
+          {/* 2. 지표 비교 차트 */}
           <의료지표_비교차트
             selected_region={selected_region}
             sido_stat={sido_stat}
             national_stat={national_stat}
           />
 
-          {/* 3. 공문서 개조식 사업계획서 실시간 서술문 자동 생성기 */}
+          {/* 3. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
           <사업계획서_서술문_생성기
             selected_region={selected_region}
             sido_stat={sido_stat}

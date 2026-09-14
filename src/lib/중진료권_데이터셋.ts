@@ -562,4 +562,81 @@ export class 중진료권_매퍼 {
       .filter((item) => sido_name === '전체' || item.시도명 === sido_name)
       .map((item) => item.중진료권명);
   }
+
+  /**
+   * 시군구 진단 결과를 70개 중진료권 단위로 집계 연산
+   */
+  public static aggregate_zone_diagnostics(diagnosed_list: any[]) {
+    return Object.entries(전국_70개_중진료권_데이터).map(([zone_name, info]) => {
+      // 해당 중진료권에 속한 시군구들 필터링
+      const matched_regions = diagnosed_list.filter((reg) => {
+        return info.포함_시군구.some(
+          (s) => s === reg.시군구명 || reg.시군구명.includes(s) || s.includes(reg.시군구명)
+        );
+      });
+
+      const total_pop = matched_regions.reduce((acc, cur) => acc + cur.인구수, 0);
+      const count = matched_regions.length;
+
+      // 지표별 평균 산출
+      const avg_emergency_unreachable = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.응급_60분_미도달_인구비율, 0) / count
+        : 0;
+      const avg_emergency_ri = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.관내_응급_의료이용률, 0) / count
+        : 0;
+      const avg_delivery_unreachable = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.분만_60분_미도달_인구비율, 0) / count
+        : 0;
+      const avg_delivery_rate = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.관내_분만율, 0) / count
+        : 0;
+      const avg_pediatric_supply = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.소아_병상_공급비율, 0) / count
+        : 0;
+      const avg_score = count > 0
+        ? matched_regions.reduce((acc, cur) => acc + cur.종합_취약도_점수, 0) / count
+        : 0;
+
+      const emergency_vuln_count = matched_regions.filter((r) => r.응급취약지역_여부).length;
+      const delivery_vuln_count = matched_regions.filter((r) => r.분만취약지역_여부).length;
+      const pediatric_vuln_count = matched_regions.filter((r) => r.소아취약지역_여부).length;
+
+      // 권역 내 과반수 취약 여부
+      const is_emergency_vuln = count > 0 && emergency_vuln_count / count >= 0.5;
+      const is_delivery_vuln = count > 0 && delivery_vuln_count / count >= 0.5;
+      const is_pediatric_vuln = count > 0 && pediatric_vuln_count / count >= 0.5;
+
+      // 종합 등급 판정
+      let grade: '정상' | '관찰' | '취약' | '심각' = '정상';
+      if (avg_score >= 65 || (is_emergency_vuln && is_delivery_vuln && is_pediatric_vuln)) {
+        grade = '심각';
+      } else if (avg_score >= 45 || [is_emergency_vuln, is_delivery_vuln, is_pediatric_vuln].filter(Boolean).length >= 2) {
+        grade = '취약';
+      } else if (avg_score >= 25 || [is_emergency_vuln, is_delivery_vuln, is_pediatric_vuln].filter(Boolean).length >= 1) {
+        grade = '관찰';
+      }
+
+      return {
+        중진료권명: zone_name,
+        시도명: info.시도명,
+        위도: info.위도,
+        경도: info.경도,
+        포함_시군구: info.포함_시군구,
+        총인구수: total_pop,
+        소속_지역목록: matched_regions,
+        종합_취약도_등급: grade,
+        종합_취약도_점수: Math.round(avg_score),
+        응급취약_여부: is_emergency_vuln,
+        분만취약_여부: is_delivery_vuln,
+        소아취약_여부: is_pediatric_vuln,
+        평균_응급_60분_미도달: avg_emergency_unreachable,
+        평균_응급_RI: avg_emergency_ri,
+        평균_분만_60분_미도달: avg_delivery_unreachable,
+        평균_분만율: avg_delivery_rate,
+        평균_소아_공급비율: avg_pediatric_supply,
+      };
+    });
+  }
 }
+

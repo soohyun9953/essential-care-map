@@ -1,0 +1,25 @@
+﻿{
+  "name": "essential-care-public-data-mcp",
+  "version": "1.0.0",
+  "description": "국립중앙의료원 & 심평원 & 공공데이터포털 연동 필수의료 취약지 공공데이터 MCP 서버",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "essential-care-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.4.5"
+  }
+}

@@ -18,6 +18,7 @@ import { 헤더_네비게이션 } from '@/components/헤더_네비게이션';
 import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 지도_래퍼 } from '@/components/지도_래퍼';
 import { 종합_진단_패널 } from '@/components/종합_진단_패널';
+import { 실시간_응급_소아_모니터링 } from '@/components/실시간_응급_소아_모니터링';
 import { 진료역량_사분면_분포도 } from '@/components/진료역량_사분면_분포도';
 import { 진료실적_서브그룹_대시보드 } from '@/components/진료실적_서브그룹_대시보드';
 import { 일대일_비교_대시보드 } from '@/components/일대일_비교_대시보드';
@@ -191,6 +192,9 @@ export default function Home() {
         >
           {/* 1. 종합 진단 패널 (Apple Health 카드) */}
           <종합_진단_패널 selected_region={selected_region} />
+
+          {/* 1-1. 국립중앙의료원 & 심평원 연계 실시간 응급실 & 소아병상 모니터링 */}
+          <실시간_응급_소아_모니터링 selected_region={selected_region} />
 
           {/* 2. 7대 진료역량 인터랙티브 2차원 사분면 분포도 (NMC 매뉴얼 2순위) */}
           <진료역량_사분면_분포도 selected_region={selected_region} />

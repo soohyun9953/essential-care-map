@@ -142,19 +142,15 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 2. 메인 대시보드 2단 레이아웃 */}
-      <div
-        id="main-dashboard-content"
-        className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-6"
+      {/* 2. 상단 메인 영역: GIS 지도 (좌측) & 전국 시·군·구 진단 데이터베이스 (우측) */}
+      <section
+        className={`max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8 ${
+          active_mobile_tab === 'report' ? 'hidden lg:block' : 'block'
+        }`}
       >
-        {/* 좌측 컬럼: GIS 지도 & 취약지 DB (5 cols) */}
-        <div
-          className={`lg:col-span-5 flex flex-col space-y-6 ${
-            active_mobile_tab === 'report' ? 'hidden lg:flex' : 'flex'
-          }`}
-        >
-          {/* GIS 지도 영역 */}
-          <div className="h-[540px]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* 좌측: GIS 지도 (7 cols) */}
+          <div className="lg:col-span-7 h-[580px]">
             <지도_래퍼
               diagnosed_list={diagnosed_list}
               selected_region={selected_region}
@@ -171,61 +167,66 @@ export default function Home() {
             />
           </div>
 
-          {/* 시군구 취약지 데이터베이스 목록 테이블 */}
-          <취약지_목록_테이블
-            diagnosed_list={diagnosed_list}
-            selected_region={selected_region}
-            on_select_region={(region) => {
-              set_selected_region(region);
-              if (window.innerWidth < 1024) {
-                set_active_mobile_tab('report');
-              }
-            }}
-          />
+          {/* 우측: 전국 시군구 취약지 데이터베이스 목록 테이블 (5 cols) */}
+          <div className="lg:col-span-5 h-[580px]">
+            <취약지_목록_테이블
+              diagnosed_list={diagnosed_list}
+              selected_region={selected_region}
+              on_select_region={(region) => {
+                set_selected_region(region);
+                if (window.innerWidth < 1024) {
+                  set_active_mobile_tab('report');
+                }
+              }}
+            />
+          </div>
         </div>
+      </section>
 
-        {/* 우측 컬럼: 종합 진단, 7대 진료역량 사분면, 1:1 비교 벤치마킹, 2040 의료수요 추계, 지표 비교 차트, 사업계획서 생성기 (7 cols) */}
-        <div
-          className={`lg:col-span-7 flex flex-col space-y-6 ${
-            active_mobile_tab === 'map' ? 'hidden lg:flex' : 'flex'
-          }`}
-        >
-          {/* 1. 종합 진단 패널 (Apple Health 카드) */}
+      {/* 3. 하단 상세 분석 영역: 2열 그리드(2개씩 나란히 배치)로 일렬 스크롤 방지 */}
+      <section
+        id="main-dashboard-content"
+        className={`max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16 ${
+          active_mobile_tab === 'map' ? 'hidden lg:block' : 'block'
+        }`}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          {/* [1행 좌] 종합 진단 패널 (Apple Health 카드) */}
           <종합_진단_패널 selected_region={selected_region} />
 
-          {/* 1-1. 국립중앙의료원 & 심평원 연계 실시간 응급실 & 소아병상 모니터링 */}
+          {/* [1행 우] 국립중앙의료원 & 심평원 실시간 응급실 & 소아병상 모니터링 */}
           <실시간_응급_소아_모니터링 selected_region={selected_region} />
 
-          {/* 2. 7대 진료역량 인터랙티브 2차원 사분면 분포도 (NMC 매뉴얼 2순위) */}
+          {/* [2행 좌] 7대 진료역량 사분면 분포도 */}
           <진료역량_사분면_분포도 selected_region={selected_region} />
 
-          {/* 3. 7대 서브그룹 진료실적 심층 드릴다운 (NMC 매뉴얼 III장 3절) */}
+          {/* [2행 우] 7대 서브그룹 진료실적 심층 드릴다운 */}
           <진료실적_서브그룹_대시보드 selected_region={selected_region} />
 
-          {/* 4. 1:1 기관비교 & 지역비교 벤치마킹 대시보드 (NMC 매뉴얼 IV/V장) */}
+          {/* [3행 좌] 1:1 기관비교 & 지역비교 벤치마킹 대시보드 */}
           <일대일_비교_대시보드
             selected_region={selected_region}
             diagnosed_list={diagnosed_list}
           />
 
-          {/* 5. 2040 장래 의료수요 추계 & 이용량 대비 공급량(RI/CI) 시뮬레이터 (NMC 매뉴얼 1순위) */}
+          {/* [3행 우] 2040 장래 의료수요 추계 & 공급지수(RI/CI) 시뮬레이터 */}
           <의료수요_추계_차트 selected_region={selected_region} />
 
-          {/* 6. 지표 비교 차트 */}
+          {/* [4행 좌] 지표 비교 차트 */}
           <의료지표_비교차트
             selected_region={selected_region}
             sido_stat={sido_stat}
             national_stat={national_stat}
           />
 
-          {/* 6. 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
+          {/* [4행 우] 공문서 개조식 사업계획서 실시간 서술문 생성기 */}
           <사업계획서_서술문_생성기
             selected_region={selected_region}
             sido_stat={sido_stat}
             national_stat={national_stat}
           />
         </div>
-      </div>
+      </section>
 
       {/* 파일 업로드 모달 다이얼로그 */}
       <파일_업로더_모달

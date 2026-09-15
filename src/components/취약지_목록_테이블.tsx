@@ -71,9 +71,9 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
   };
 
   return (
-    <div className="bg-white p-6 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-4">
+    <div className="bg-white p-5 sm:p-6 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-3.5 h-full flex flex-col">
       {/* 상단 컨트롤 바 */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-black/[0.05]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pb-3 border-b border-black/[0.05]">
         <div>
           <h3 className="text-sm font-bold tracking-tight text-[#1d1d1f]">
             전국 시·군·구 진단 데이터베이스
@@ -84,7 +84,7 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
         </div>
 
         {/* 필터 툴바 */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           {/* 애플 스타일 서치 인풋 */}
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#86868b]" />
@@ -93,14 +93,14 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
               value={search_query}
               onChange={(e) => set_search_query(e.target.value)}
               placeholder="지역명 검색..."
-              className="pl-8 pr-3 py-1.5 text-xs bg-[#f5f5f7] rounded-full border-0 text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 w-32 sm:w-40 transition"
+              className="pl-8 pr-3 py-1.5 text-xs bg-[#f5f5f7] rounded-full border-0 text-[#1d1d1f] placeholder:text-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 w-28 sm:w-32 transition"
             />
           </div>
 
           <select
             value={selected_sido}
             onChange={(e) => set_selected_sido(e.target.value)}
-            className="text-xs bg-[#f5f5f7] rounded-full px-3 py-1.5 border-0 text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
+            className="text-xs bg-[#f5f5f7] rounded-full px-2.5 py-1.5 border-0 text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
           >
             {sido_list.map((sido) => (
               <option key={sido} value={sido}>
@@ -112,7 +112,7 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
           <select
             value={selected_grade}
             onChange={(e) => set_selected_grade(e.target.value)}
-            className="text-xs bg-[#f5f5f7] rounded-full px-3 py-1.5 border-0 text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
+            className="text-xs bg-[#f5f5f7] rounded-full px-2.5 py-1.5 border-0 text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
           >
             <option value="전체">모든 등급</option>
             <option value="심각">심각 (Critical)</option>
@@ -123,8 +123,8 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
         </div>
       </div>
 
-      {/* 테이블 */}
-      <div className="max-h-[360px] overflow-y-auto overflow-x-auto rounded-2xl border border-black/[0.04]">
+      {/* 테이블 스크롤 영역 */}
+      <div className="flex-1 min-h-[380px] max-h-[460px] overflow-y-auto overflow-x-auto rounded-2xl border border-black/[0.04]">
         <table className="w-full text-left text-xs text-[#1d1d1f]">
           <thead className="bg-[#f5f5f7] text-[#86868b] font-semibold sticky top-0 z-10 border-b border-black/[0.04]">
             <tr>

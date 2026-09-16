@@ -27,6 +27,7 @@ import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
 import { 사업계획서_서술문_생성기 } from '@/components/사업계획서_서술문_생성기';
 import { 취약지_목록_테이블 } from '@/components/취약지_목록_테이블';
+import { 상단_지역_선택기 } from '@/components/상단_지역_선택기';
 
 // 공공의료 AI ISP 스토리텔링 6대 핵심 신규 컴포넌트
 import { 페르소나_관문_네비게이션 } from '@/components/페르소나_관문_네비게이션';
@@ -157,6 +158,17 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* 글로벌 상단 지역 신속 선택기 (시·도 및 시·군·구 연동 드롭다운 & 대표 취약지 퀵 칩) */}
+      <section className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <상단_지역_선택기
+          diagnosed_list={diagnosed_list}
+          selected_region={selected_region}
+          on_select_region={(region) => {
+            set_selected_region(region);
+          }}
+        />
       </section>
 
       {/* ============================================================== */}

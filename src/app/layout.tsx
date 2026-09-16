@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import 'leaflet/dist/leaflet.css';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-slate-50 text-slate-900">
+      <body className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] antialiased">
         {children}
       </body>
     </html>

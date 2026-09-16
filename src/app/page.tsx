@@ -104,7 +104,7 @@ export default function Home() {
         vulnerable_region_count={vulnerable_region_count}
       />
 
-      {/* 2. 과제 3.4 통합포털 관문: 3대 페르소나 전환 바 */}
+      {/* 2. 통합포털 관문: 3대 페르소나 전환 바 */}
       <페르소나_관문_네비게이션
         current_persona={current_persona}
         on_change_persona={set_current_persona}
@@ -118,9 +118,9 @@ export default function Home() {
             <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/80 border border-black/[0.04] text-xs font-semibold text-[#0071e3] shadow-apple-sm mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               <span>
-                {current_persona === '중앙정책가' && '과제 3.5 & 3.2: 70개 중진료권 헬스맵 & 공공의료 AI 조기경보'}
-                {current_persona === '지역코디네이터' && '과제 3.1: 퇴원환자-지역사회 돌봄자원 AI 원클릭 매칭 연계'}
-                {current_persona === '일반국민' && '과제 3.4: 국민 안심 공공의료 안내 & 모바일 퇴원돌봄 알리미'}
+                {current_persona === '중앙정책가' && '70개 중진료권 헬스맵 & 공공병원 경영위기 조기경보'}
+                {current_persona === '지역코디네이터' && '퇴원환자-지역사회 돌봄자원 AI 원클릭 매칭 연계'}
+                {current_persona === '일반국민' && '국민 안심 공공의료 안내 & 모바일 퇴원돌봄 알리미'}
               </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1d1d1f]">
@@ -232,10 +232,10 @@ export default function Home() {
           {/* 경영위기 조기경보 & sLLM 업무비서 하이라이트 섹션 */}
           <section className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 mb-8">
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-              {/* 과제 3.2: 35개 지방의료원 경영위기 조기경보 & 성과 스크리닝 */}
+              {/* 35개 지방의료원 경영위기 조기경보 & 성과 스크리닝 */}
               <경영위기_조기경보_대시보드 on_open_grounding={() => set_is_grounding_open(true)} />
 
-              {/* 과제 3.11/3.12: 공공의료 특화 sLLM 지침 비서 (RAG + DW 연동) */}
+              {/* 공공의료 특화 sLLM 지침 비서 (RAG + DW 연동) */}
               <공공의료_sLLM_업무비서
                 selected_region={selected_region}
                 on_open_grounding={() => set_is_grounding_open(true)}
@@ -293,7 +293,7 @@ export default function Home() {
       {/* [페르소나 2] 지역 코디네이터 (지방의료원 공공의료협력팀) */}
       {current_persona === '지역코디네이터' && (
         <section className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-          {/* 과제 3.1: 원클릭 환자 전원 및 돌봄자원 AI 매칭 시뮬레이터 */}
+          {/* 원클릭 환자 전원 및 돌봄자원 AI 매칭 시뮬레이터 */}
           <퇴원환자_돌봄자원_AI매칭 />
 
           {/* 코디네이터를 위한 보조 협력 패널들 */}
@@ -316,12 +316,12 @@ export default function Home() {
       {/* [페르소나 3] 일반 국민 (지역주민 / 환자·보호자) */}
       {current_persona === '일반국민' && (
         <section className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-          {/* 과제 3.4 대국민 포털: 안심 공공병원 찾기 & 모바일 퇴원돌봄 알리미 */}
+          {/* 대국민 포털: 안심 공공병원 찾기 & 모바일 퇴원돌봄 알리미 */}
           <일반국민_공공병원_맞춤뷰 selected_region={selected_region} />
         </section>
       )}
 
-      {/* 과제 3.14/3.18: 환각 제로 원문 대조 신뢰 뷰 모달 */}
+      {/* 환각 제로 원문 대조 신뢰 뷰 모달 */}
       <원문대조_신뢰뷰_모달
         is_open={is_grounding_open}
         on_close={() => set_is_grounding_open(false)}

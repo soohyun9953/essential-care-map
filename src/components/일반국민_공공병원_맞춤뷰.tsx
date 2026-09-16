@@ -1,6 +1,6 @@
 'use client';
 
-// 과제 3.4 대국민 접점: 일반 국민·환자 맞춤형 공공의료 포털 및 모바일 퇴원돌봄 안심 알리미 뷰
+// 대국민 접점: 일반 국민·환자 맞춤형 공공의료 포털 및 모바일 퇴원돌봄 안심 알리미 뷰
 
 import React, { useState } from 'react';
 import {
@@ -33,7 +33,7 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
       <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white p-6 sm:p-7 rounded-3xl shadow-apple-card space-y-3">
         <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white/20 text-xs font-semibold backdrop-blur-md">
           <Heart className="w-3.5 h-3.5 fill-current" />
-          <span>공공의료 안심동행 서비스 (과제 3.4)</span>
+          <span>공공의료 안심동행 서비스</span>
         </div>
         <h3 className="text-xl sm:text-2xl font-bold tracking-tight">
           내 주변 안심 공공병원과 퇴원 후 맞춤 돌봄을 연결합니다

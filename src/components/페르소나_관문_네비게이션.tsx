@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-// 과제 3.4 공공의료 통합포털 관문: 3대 페르소나(중앙정책가, 지역코디네이터, 일반국민) 맞춤형 전환 스위처
+// 공공의료 지능형 통합포털 관문: 3대 페르소나(중앙정책가, 지역코디네이터, 일반국민) 맞춤형 전환 스위처
 
 import React from 'react';
 import { Building2, Stethoscope, Users, Sparkles, ChevronRight } from 'lucide-react';
@@ -31,7 +31,7 @@ export const 페르소나_관문_네비게이션: React.FC<페르소나_관문_�
       label: '중앙 정책·운영 뷰',
       sublabel: '국립중앙의료원 / 보건복지부',
       icon: Building2,
-      badge: '과제 3.2 / 3.4 / 3.5',
+      badge: '중앙 정책 & 경영 모니터링',
       badgeColor: 'bg-[#0071e3]/10 text-[#0071e3]',
       desc: '70개 중진료권 헬스맵, 35개 지방의료원 경영위기 조기경보, 공공의료계획 작성 AI',
     },
@@ -40,7 +40,7 @@ export const 페르소나_관문_네비게이션: React.FC<페르소나_관문_�
       label: '지역 책임의료기관 뷰',
       sublabel: '지방의료원 공공의료본부',
       icon: Stethoscope,
-      badge: '과제 3.1 / 3.11 / 3.14',
+      badge: '진료협력 & 돌봄연계',
       badgeColor: 'bg-[#af52de]/10 text-[#af52de]',
       desc: '퇴원환자 케어플랜 수립, 지역사회 돌봄자원 AI 매칭, 원문 대조 신뢰 뷰',
     },
@@ -49,7 +49,7 @@ export const 페르소나_관문_네비게이션: React.FC<페르소나_관문_�
       label: '일반 국민·환자 뷰',
       sublabel: '공공의료 안심 알리미',
       icon: Users,
-      badge: '과제 3.4 / 3.1 대국민 접점',
+      badge: '대국민 안심 서비스',
       badgeColor: 'bg-[#34c759]/10 text-[#34c759]',
       desc: '내 주변 안심 공공병원 찾기, 모바일 퇴원돌봄 안내, 응급·소아 진료정보',
     },
@@ -63,7 +63,7 @@ export const 페르소나_관문_네비게이션: React.FC<페르소나_관문_�
           <div className="flex items-center space-x-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] animate-pulse" />
             <span className="text-xs font-semibold tracking-wider text-[#86868b] uppercase">
-              공공의료 AI ISP 라이브 데모 관문 (과제 3.4 통합포털)
+              공공의료 AI 지능형 통합포털 라이브 데모 관문
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0071e3] text-white">
               인터랙티브 시연 모드

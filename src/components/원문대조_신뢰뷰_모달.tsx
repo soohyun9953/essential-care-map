@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-// 과제 3.14 AI 거버넌스 & 신뢰성(Safety): 환각 제로 원문 대조(Split-View Grounding) 신뢰 인터페이스 모달
+// 공공의료 AI 거버넌스 & 신뢰성(Safety): 환각 제로 원문 대조(Split-View Grounding) 신뢰 인터페이스 모달
 
 import React, { useState } from 'react';
 import {
@@ -87,7 +87,7 @@ export const 원문대조_신뢰뷰_모달: React.FC<원문대조_신뢰뷰_모�
                 </span>
               </div>
               <p className="text-[11px] text-white/70 mt-0.5">
-                과제 3.14 공공의료 AI 거버넌스 &amp; 근거 기반 원문 대조 기술(Grounding Alignment)
+                공공의료 AI 거버넌스 &amp; 근거 기반 원문 대조 기술(Grounding Alignment)
               </p>
             </div>
           </div>

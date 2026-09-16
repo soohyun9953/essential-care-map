@@ -1,6 +1,6 @@
 'use client';
 
-// 과제 3.11/3.12 Agentic AI 업무비서: 공공의료 특화 sLLM 지침 검색 및 보고서 초안 자동화 워크플로우
+// 공공의료 특화 sLLM 지침 검색 및 보고서 초안 자동화 워크플로우
 
 import React, { useState } from 'react';
 import {
@@ -27,7 +27,7 @@ interface sLLM_업무비서_속성 {
 
 const PRESET_PROMPTS = [
   '2026년 공공보건의료계획 평가지표 중 필수의료 자체충족률 산정 기준을 알려주고, 영월의료원 실적보고서 초안을 작성해줘.',
-  '보건복지부 의료취약지 파견의사 지원사업(과제 3.8) 신청 자격 요건과 당직비 보조 규정을 요약해줘.',
+  '보건복지부 의료취약지 파견의사 지원사업 신청 자격 요건과 당직비 보조 규정을 요약해줘.',
   '권역-지역 책임의료기관 간 원격협진 인프라 구축을 위한 공공병원 기능보강사업 국비 신청서 개조식 초안 작성.',
 ];
 
@@ -92,7 +92,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-[11px] font-semibold tracking-tight text-[#86868b]">
-                과제 3.11/3.12 sLLM 기반 Agentic AI 업무비서
+                sLLM 기반 Agentic AI 업무비서
               </span>
               <span className="px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3] text-[10px] font-bold">
                 지침 RAG + DW 연동

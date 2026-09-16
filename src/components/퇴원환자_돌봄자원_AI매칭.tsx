@@ -1,6 +1,6 @@
-﻿'use client';
+'use client';
 
-// 과제 3.1 협력·연계 및 케어체계: 퇴원환자 지역사회 돌봄자원 AI 매칭 & 원클릭 연계 시뮬레이터
+// 공공보건의료 협력·연계 및 퇴원환자 케어체계: 퇴원환자 지역사회 돌봄자원 AI 매칭 & 원클릭 연계 시뮬레이터
 
 import React, { useState } from 'react';
 import {
@@ -130,7 +130,7 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
           <div>
             <div className="flex items-center space-x-2">
               <span className="text-[11px] font-semibold tracking-tight text-[#86868b]">
-                과제 3.1 공공보건의료 협력·연계 및 퇴원환자 케어체계
+                공공보건의료 협력·연계 및 퇴원환자 케어체계
               </span>
               <span className="px-2 py-0.5 rounded-full bg-[#af52de]/10 text-[#af52de] text-[10px] font-bold">
                 지방의료원 코디네이터 전용

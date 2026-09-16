@@ -154,14 +154,6 @@ export const 원문대조_신뢰뷰_모달: React.FC<원문대조_신뢰뷰_모�
                 );
               })}
             </div>
-
-            <div className="p-3.5 rounded-2xl bg-white border border-black/[0.04] text-xs text-[#86868b] space-y-1">
-              <span className="font-bold text-[#1d1d1f] block">💡 발주처 평가위원 설득 포인트</span>
-              <p className="leading-relaxed text-[11px]">
-                의료·공공 행정 분야에서는 AI의 허위 답변(Hallucination)이 치명적입니다.
-                본 프로토타입은 모델이 생성한 모든 수치와 주장의 출처 법조항을 1:1로 추적하여 증명합니다.
-              </p>
-            </div>
           </div>
 
           {/* ================= 우측 패널: 보건복지부 고시 실제 원문 (형광펜 하이라이트) ================= */}

@@ -119,7 +119,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       {/* 프롬프트 선택 칩 영역 */}
       <div className="space-y-2">
         <label className="text-xs font-bold text-[#1d1d1f] flex items-center justify-between">
-          <span>시연용 추천 업무 질의 (클릭 시 자동 입력):</span>
+          <span>추천 업무 질의 (클릭 시 자동 입력):</span>
           <span className="text-[11px] text-[#86868b] font-normal">직접 입력창에서 수정 가능</span>
         </label>
         <div className="flex flex-wrap gap-2">

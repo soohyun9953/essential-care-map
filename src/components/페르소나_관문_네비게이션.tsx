@@ -63,10 +63,10 @@ export const 페르소나_관문_네비게이션: React.FC<페르소나_관문_�
           <div className="flex items-center space-x-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] animate-pulse" />
             <span className="text-xs font-semibold tracking-wider text-[#86868b] uppercase">
-              공공의료 AI 지능형 통합포털 라이브 데모 관문
+              공공의료 지능형 통합포털 관문
             </span>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#0071e3] text-white">
-              인터랙티브 시연 모드
+              실시간 연동 가동
             </span>
           </div>
 

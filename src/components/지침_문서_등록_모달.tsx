@@ -296,6 +296,15 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                     </span>
                   </div>
 
+                  {parsed_doc.깨짐_감지 && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-800 flex items-start space-x-2">
+                      <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5 leading-relaxed">
+                        <strong>HWP 바이너리/압축 포맷 감지:</strong> 한글 문서는 <strong>HWPX</strong> 또는 <strong>PDF</strong>로 저장 후 업로드하시면 100% 완전한 원문이 자동 추출됩니다. 현재 추출된 본문은 아래 입력창에서 자유롭게 편집·보완하여 등록하실 수 있습니다.
+                      </div>
+                    </div>
+                  )}
+
                   {/* 메타데이터 입력/확인 폼 */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                     <div>

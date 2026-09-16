@@ -1,8 +1,8 @@
 'use client';
 
-// 공공의료 특화 sLLM 지침 검색 및 보고서 초안 자동화 워크플로우
+// 공공의료 특화 sLLM 지침 검색 및 보고서 초안 자동화 워크플로우 (실제 경량 하이브리드 RAG 엔진 연동)
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Bot,
   Sparkles,
@@ -16,9 +16,14 @@ import {
   ShieldCheck,
   Play,
   RotateCcw,
+  BookOpen,
+  Layers,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { copy_text_to_clipboard } from '@/lib/유틸리티';
+import { 경량_RAG_엔진, RAG_실행_응답 } from '@/lib/경량_rag_엔진';
 
 interface sLLM_업무비서_속성 {
   selected_region?: 필수의료_진단_결과 | null;
@@ -28,7 +33,8 @@ interface sLLM_업무비서_속성 {
 const PRESET_PROMPTS = [
   '2026년 공공보건의료계획 평가지표 중 필수의료 자체충족률 산정 기준을 알려주고, 영월의료원 실적보고서 초안을 작성해줘.',
   '보건복지부 의료취약지 파견의사 지원사업 신청 자격 요건과 당직비 보조 규정을 요약해줘.',
-  '권역-지역 책임의료기관 간 원격협진 인프라 구축을 위한 공공병원 기능보강사업 국비 신청서 개조식 초안 작성.',
+  '분만취약지 A등급과 B등급 지원 기준 차이 및 운영비 국비 지원 규모를 비교 설명해줘.',
+  '달빛어린이병원 지정 요건과 소아청소년과 전문의 야간진료 관리료 가산 규정을 알려줘.',
 ];
 
 export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> = ({
@@ -39,47 +45,42 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [workflow_step, set_workflow_step] = useState<0 | 1 | 2 | 3>(0);
   const [is_running, set_is_running] = useState(false);
   const [is_copied, set_is_copied] = useState(false);
+  const [rag_result, set_rag_result] = useState<RAG_실행_응답 | null>(null);
+  const [show_sources, set_show_sources] = useState(true);
 
-  // Agentic AI 3단계 워크플로우 시뮬레이션
+  // 초기 1회 기본 프롬프트에 대한 사전 RAG 실행
+  useEffect(() => {
+    const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+    set_rag_result(initial_result);
+  }, []);
+
+  // 실제 경량 RAG 검색 & 생성 파이프라인 가동
   const handle_execute_workflow = () => {
     set_is_running(true);
     set_workflow_step(1);
 
+    // 1단계: RAG 검색
     setTimeout(() => {
+      const result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+      set_rag_result(result);
       set_workflow_step(2);
+
+      // 2단계: DW 지표 연동
       setTimeout(() => {
         set_workflow_step(3);
         set_is_running(false);
-      }, 700);
-    }, 700);
+      }, 500);
+    }, 450);
   };
 
   const handle_copy_result = async () => {
-    const success = await copy_text_to_clipboard(GENERATED_REPORT_TEXT);
+    if (!rag_result) return;
+    const success = await copy_text_to_clipboard(rag_result.생성된_답변);
     if (success) {
       set_is_copied(true);
       setTimeout(() => set_is_copied(false), 2000);
     }
   };
-
-  const GENERATED_REPORT_TEXT = `[2026년 공공보건의료계획 시행결과 보고서]
-작성부서: 영월의료원 공공의료본부 기획팀
-지표구분: 필수의료 자체충족률 제고 (핵심성과지표 2-1)
-근거문서: 2026년도 공공보건의료계획 수립 지침(보건복지부) 제12조
-
-1. 추진 배경 및 지표 산정 기준
-  ○ (지침 기준) 관내 중증응급환자가 관내 의료기관을 이용한 비율(Relevance Index, RI)로 산출하며, 취약지 기준선(30%) 미달 시 필수 중점관리병원으로 지정됨.
-  ○ (실적 현황) 2025년도 영월의료원 관내 응급환자 자체충족률(RI)은 19.8%로 시·도 평균(38.2%) 대비 현저히 낮으나, 전년 대비 1.8%p 개선 추세 유지.
-
-2. 원인 분석 및 주요 추진 실적
-  ○ (의료인력 공백) 심야 응급실 전담의사 2인 체계 유지의 한계로 야간 중증환자의 원주 권역센터 이송률이 42.1% 차지.
-  ○ (개선 실적)
-    - 강원도-국립중앙의료원 파견의사 지원사업 연계를 통한 응급의학과 전문의 1인 신규 확충
-    - 원주세브란스기독병원 응급의료센터 간 24시간 원격 화상 응급협진 프로토콜 42건 가동
-
-3. 2026년도 성과 목표 및 정책 건의
-  ○ 2026년도 목표치: 관내 응급 자체충족률 23.0% 달성 (전년비 +3.2%p)
-  ○ 건의사항: 분만·소아 진료 공백 해소를 위한 공공임상교수 파견 쿼터 배정 및 당직 인건비 국비 보조 확대 요청.`;
 
   return (
     <div className="bg-white p-6 sm:p-7 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-5">
@@ -95,7 +96,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 sLLM 기반 Agentic AI 업무비서
               </span>
               <span className="px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3] text-[10px] font-bold">
-                지침 RAG + DW 연동
+                경량 하이브리드 RAG 탑재
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#1d1d1f]">
@@ -117,8 +118,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
       {/* 프롬프트 선택 칩 영역 */}
       <div className="space-y-2">
-        <label className="text-xs font-bold text-[#1d1d1f] block">
-          시연용 추천 업무 질의 (클릭 시 자동 입력):
+        <label className="text-xs font-bold text-[#1d1d1f] flex items-center justify-between">
+          <span>시연용 추천 업무 질의 (클릭 시 자동 입력):</span>
+          <span className="text-[11px] text-[#86868b] font-normal">직접 입력창에서 수정 가능</span>
         </label>
         <div className="flex flex-wrap gap-2">
           {PRESET_PROMPTS.map((p, idx) => (
@@ -140,29 +142,45 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         </div>
       </div>
 
-      {/* 입력 및 실행 바 */}
+      {/* 프롬프트 입력 및 실행 바 */}
       <div className="relative">
-        <textarea
-          rows={2}
+        <input
+          type="text"
           value={selected_prompt}
-          onChange={(e) => set_selected_prompt(e.target.value)}
-          className="w-full text-xs p-3.5 pr-28 rounded-2xl bg-[#fbfbfd] border border-black/[0.06] text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 resize-none font-medium leading-relaxed"
+          onChange={(e) => {
+            set_selected_prompt(e.target.value);
+            set_workflow_step(0);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !is_running) {
+              handle_execute_workflow();
+            }
+          }}
+          placeholder="공공보건의료 지침 또는 정책에 대해 무엇이든 질문하세요..."
+          className="w-full pl-4 pr-28 py-3.5 text-xs sm:text-sm rounded-2xl bg-[#f5f5f7] border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 text-[#1d1d1f]"
         />
         <button
           onClick={handle_execute_workflow}
-          disabled={is_running}
+          disabled={is_running || !selected_prompt.trim()}
           className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
-          <span>{is_running ? '생성 중...' : 'AI 실행'}</span>
+          <span>{is_running ? '검색·생성 중...' : 'RAG 실행'}</span>
         </button>
       </div>
 
-      {/* Agentic AI 워크플로우 3단계 시각화 (Tool Calling Visualizer) */}
+      {/* Agentic AI 워크플로우 3단계 실시간 시각화 (Tool Calling Visualizer) */}
       <div className="bg-[#f5f5f7] p-4 rounded-2xl space-y-3">
-        <span className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider block">
-          Agentic AI Tool-Calling 파이프라인 진행 상태
-        </span>
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider block">
+            Agentic AI Tool-Calling 파이프라인 (실제 경량 RAG 엔진 구동)
+          </span>
+          {rag_result && workflow_step === 3 && (
+            <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+              실행 완료 ({rag_result.소요시간_ms}ms)
+            </span>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Step 1: RAG */}
@@ -175,10 +193,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           >
             <div className="flex items-center space-x-2">
               <Search className={`w-4 h-4 ${workflow_step >= 1 ? 'text-[#0071e3]' : 'text-[#86868b]'}`} />
-              <span className="text-xs font-bold">1. 지침 벡터 RAG 검색</span>
+              <span className="text-xs font-bold">1. 하이브리드 RAG 검색</span>
             </div>
-            <p className="text-[11px] text-[#86868b] mt-1">
-              {workflow_step >= 1 ? '복지부 공공의료계획 지침 p.84 매칭 완료 (98.4%)' : '대기 중...'}
+            <p className="text-[11px] text-[#86868b] mt-1 line-clamp-2">
+              {workflow_step >= 1 && rag_result
+                ? `${rag_result.검색된_청크목록[0]?.청크.문서명.slice(0, 20)}... (매칭률 ${rag_result.최고_유사도}%)`
+                : '지침 전문 코퍼스 대기 중...'}
             </p>
           </div>
 
@@ -194,8 +214,10 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
               <Database className={`w-4 h-4 ${workflow_step >= 2 ? 'text-[#af52de]' : 'text-[#86868b]'}`} />
               <span className="text-xs font-bold">2. 진료실적 DW 실시간 쿼리</span>
             </div>
-            <p className="text-[11px] text-[#86868b] mt-1">
-              {workflow_step >= 2 ? '영월의료원 3개년 응급/외래 실적 DB 추출 완료' : '대기 중...'}
+            <p className="text-[11px] text-[#86868b] mt-1 line-clamp-2">
+              {workflow_step >= 2 && rag_result
+                ? `${rag_result.선택된_지역명} 응급/분만/병상 통계 추출 완료`
+                : '데이터웨어하우스 대기 중...'}
             </p>
           </div>
 
@@ -209,37 +231,98 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           >
             <div className="flex items-center space-x-2">
               <FileEdit className={`w-4 h-4 ${workflow_step >= 3 ? 'text-[#34c759]' : 'text-[#86868b]'}`} />
-              <span className="text-xs font-bold">3. 개조식 서식 초안 렌더링</span>
+              <span className="text-xs font-bold">3. 근거 인용 초안 합성</span>
             </div>
-            <p className="text-[11px] text-[#86868b] mt-1">
-              {workflow_step >= 3 ? '보건복지부 표준 서식 100% 일치 문안 완성' : '대기 중...'}
+            <p className="text-[11px] text-[#86868b] mt-1 line-clamp-2">
+              {workflow_step >= 3
+                ? '보건복지부 법정 고시 조항 인용 문안 완성'
+                : '증강 생성 대기 중...'}
             </p>
           </div>
         </div>
       </div>
 
       {/* 최종 생성 결과 보고서 카드 */}
-      {workflow_step === 3 && (
-        <div className="bg-[#fbfbfd] p-5 rounded-2xl border border-black/[0.06] shadow-apple-sm space-y-3 animate-in fade-in duration-300">
+      {(workflow_step === 3 || (!is_running && rag_result && workflow_step === 0)) && rag_result && (
+        <div className="bg-[#fbfbfd] p-5 rounded-2xl border border-black/[0.06] shadow-apple-sm space-y-4 animate-in fade-in duration-300">
           <div className="flex items-center justify-between pb-2 border-b border-black/[0.05]">
             <div className="flex items-center space-x-2">
               <CheckCircle2 className="w-4 h-4 text-[#34c759]" />
               <span className="text-xs font-bold text-[#1d1d1f]">
-                생성 완료: 2026 공공보건의료계획 실적보고서 개조식 초안 (소요시간: 1.4초)
+                RAG 증강 생성 답변 및 공문서 초안 (소요시간: {rag_result.소요시간_ms}ms)
               </span>
             </div>
-            <button
-              onClick={handle_copy_result}
-              className="inline-flex items-center space-x-1 px-3 py-1 text-xs font-medium rounded-full bg-white hover:bg-slate-100 text-[#1d1d1f] border border-black/[0.06] transition active:scale-95"
-            >
-              {is_copied ? <Check className="w-3.5 h-3.5 text-[#34c759]" /> : <Copy className="w-3.5 h-3.5" />}
-              <span>{is_copied ? '복사됨' : '전체 복사'}</span>
-            </button>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handle_copy_result}
+                className="inline-flex items-center space-x-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-black/[0.08] hover:bg-black/[0.02] text-[#1d1d1f] transition"
+              >
+                {is_copied ? <Check className="w-3.5 h-3.5 text-[#34c759]" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{is_copied ? '복사됨' : '본문 복사'}</span>
+              </button>
+            </div>
           </div>
 
-          <pre className="text-xs text-slate-800 font-sans whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-black/[0.04] max-h-[280px] overflow-y-auto">
-            {GENERATED_REPORT_TEXT}
+          <pre className="text-xs sm:text-xs font-mono text-slate-800 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-black/[0.04] overflow-x-auto">
+            {rag_result.생성된_답변}
           </pre>
+
+          {/* 실제 RAG 검색된 근거 조항 (Top-3) 상세 뷰 */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+            <button
+              onClick={() => set_show_sources(!show_sources)}
+              className="w-full px-4 py-2.5 bg-slate-50 hover:bg-slate-100 flex items-center justify-between text-xs font-bold text-slate-700 transition"
+            >
+              <div className="flex items-center space-x-2">
+                <BookOpen className="w-4 h-4 text-[#0071e3]" />
+                <span>RAG 검색으로 추출된 실제 근거 조항 ({rag_result.검색된_청크목록.length}건)</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-[#0071e3]/10 text-[#0071e3]">
+                  최고 일치도 {rag_result.최고_유사도}%
+                </span>
+              </div>
+              {show_sources ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+
+            {show_sources && (
+              <div className="p-3 space-y-2.5 divide-y divide-slate-100 text-xs">
+                {rag_result.검색된_청크목록.map((item, idx) => (
+                  <div key={item.청크.id} className={`${idx > 0 ? 'pt-2.5' : ''} space-y-1.5`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 font-mono text-[10px] text-slate-600 font-bold">
+                          근거 {idx + 1}
+                        </span>
+                        <strong className="text-slate-800 font-semibold">{item.청크.문서명}</strong>
+                        <span className="text-[#86868b] text-[11px]">({item.청크.조항_페이지})</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-[#0071e3] bg-[#0071e3]/10 px-2 py-0.5 rounded-full">
+                        유사도 {item.유사도_점수}%
+                      </span>
+                    </div>
+
+                    <p className="text-slate-600 bg-slate-50 p-2.5 rounded-lg text-[11px] leading-relaxed border border-slate-100">
+                      &ldquo;{item.발췌_하이라이트}&rdquo;
+                    </p>
+
+                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                      <span className="text-[10px] text-slate-400 font-semibold">매칭 키워드:</span>
+                      {item.매칭_키워드.map((kw, kwIdx) => (
+                        <span
+                          key={kwIdx}
+                          className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-medium"
+                        >
+                          #{kw}
+                        </span>
+                      ))}
+                      <span className="text-[10px] text-slate-400 font-semibold ml-2">기준:</span>
+                      <span className="text-[10px] text-slate-700 font-medium">{item.청크.기준수치}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

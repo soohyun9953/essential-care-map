@@ -14,6 +14,7 @@ import {
 import { 필수의료_진단_엔진 } from '@/lib/필수의료_엔진';
 import { 전국_시군구_샘플_데이터 } from '@/lib/시군구_데이터셋';
 import { export_element_as_png } from '@/lib/유틸리티';
+import { 크로스탭_엑셀_처리기 } from '@/lib/크로스탭_엑셀_처리기';
 
 import { 헤더_네비게이션 } from '@/components/헤더_네비게이션';
 import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
@@ -94,6 +95,11 @@ export default function Home() {
     await export_element_as_png('main-dashboard-content', filename);
   };
 
+  const handle_download_nmc_excel = () => {
+    if (!selected_region) return;
+    크로스탭_엑셀_처리기.download_nmc_standard_excel_package(selected_region);
+  };
+
   return (
     <main className="min-h-screen bg-[#f5f5f7] flex flex-col selection:bg-[#0071e3]/20">
       {/* 1. 상단 글로벌 네비게이션 */}
@@ -101,6 +107,7 @@ export default function Home() {
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
         on_load_sample_data={handle_load_sample_data}
         on_export_report_png={handle_export_report_png}
+        on_download_nmc_excel={handle_download_nmc_excel}
         total_region_count={diagnosed_list.length}
         vulnerable_region_count={vulnerable_region_count}
       />

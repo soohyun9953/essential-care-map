@@ -9,8 +9,6 @@ import {
   RefreshCw,
   Camera,
   Activity,
-  ShieldAlert,
-  ChevronRight,
 } from 'lucide-react';
 import { 파일_처리기 } from '@/lib/파일_처리기';
 
@@ -18,6 +16,7 @@ interface 헤더_네비게이션_속성 {
   on_open_upload_modal: () => void;
   on_load_sample_data: () => void;
   on_export_report_png: () => void;
+  on_download_nmc_excel: () => void;
   total_region_count: number;
   vulnerable_region_count: number;
 }
@@ -26,6 +25,7 @@ export const 헤더_네비게이션: React.FC<헤더_네비게이션_속성> = (
   on_open_upload_modal,
   on_load_sample_data,
   on_export_report_png,
+  on_download_nmc_excel,
   total_region_count,
   vulnerable_region_count,
 }) => {
@@ -74,6 +74,16 @@ export const 헤더_네비게이션: React.FC<헤더_네비게이션_속성> = (
 
           {/* 애플 스타일 액션 버튼 그룹 */}
           <div className="flex items-center space-x-2">
+            {/* NMC 표준 크로스탭 엑셀(3종) 다운로드 */}
+            <button
+              onClick={on_download_nmc_excel}
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-semibold bg-[#34c759]/10 hover:bg-[#34c759]/20 text-[#248a3d] rounded-full transition active:scale-[0.97] border border-[#34c759]/20"
+              title="국립중앙의료원 표준 크로스탭 3종 엑셀(.xlsx) 다운로드"
+            >
+              <Download className="w-3.5 h-3.5 text-[#34c759]" />
+              <span>NMC 엑셀 다운로드</span>
+            </button>
+
             {/* 표준 템플릿 다운로드 */}
             <button
               onClick={handle_download_template}

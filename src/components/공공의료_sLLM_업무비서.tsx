@@ -20,10 +20,13 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
+  FilePlus,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { copy_text_to_clipboard } from '@/lib/유틸리티';
 import { 경량_RAG_엔진, RAG_실행_응답 } from '@/lib/경량_rag_엔진';
+import { get_all_corpus } from '@/lib/공공의료_지침_코퍼스';
+import { 지침_문서_등록_모달 } from './지침_문서_등록_모달';
 
 interface sLLM_업무비서_속성 {
   selected_region?: 필수의료_진단_결과 | null;
@@ -47,12 +50,24 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [is_copied, set_is_copied] = useState(false);
   const [rag_result, set_rag_result] = useState<RAG_실행_응답 | null>(null);
   const [show_sources, set_show_sources] = useState(true);
+  const [is_doc_modal_open, set_is_doc_modal_open] = useState(false);
+  const [total_doc_count, set_total_doc_count] = useState(12);
 
-  // 초기 1회 기본 프롬프트에 대한 사전 RAG 실행
+  // 초기 1회 기본 프롬프트에 대한 사전 RAG 실행 및 문서 수 로드
   useEffect(() => {
+    const all_docs = get_all_corpus();
+    set_total_doc_count(all_docs.length);
     const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
     set_rag_result(initial_result);
   }, []);
+
+  // 새 문서 등록 시 코퍼스 갱신 및 재검색
+  const handle_document_added = () => {
+    const all_docs = get_all_corpus();
+    set_total_doc_count(all_docs.length);
+    const updated_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+    set_rag_result(updated_result);
+  };
 
   // 실제 경량 RAG 검색 & 생성 파이프라인 가동
   const handle_execute_workflow = () => {
@@ -96,7 +111,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 sLLM 기반 Agentic AI 업무비서
               </span>
               <span className="px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3] text-[10px] font-bold">
-                경량 하이브리드 RAG 탑재
+                RAG 코퍼스 {total_doc_count}건 탑재
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#1d1d1f]">
@@ -105,15 +120,25 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           </div>
         </div>
 
-        {on_open_grounding && (
+        <div className="flex flex-wrap items-center gap-2">
           <button
-            onClick={on_open_grounding}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#ff9500]/10 hover:bg-[#ff9500]/20 text-[#b26800] border border-[#ff9500]/25 transition"
+            onClick={() => set_is_doc_modal_open(true)}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#0071e3]/10 hover:bg-[#0071e3]/20 text-[#0071e3] border border-[#0071e3]/20 transition"
           >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#ff9500]" />
-            <span>원문 근거 대조 (환각 제로 뷰)</span>
+            <FilePlus className="w-3.5 h-3.5 text-[#0071e3]" />
+            <span>새 지침 문서 직접 등록</span>
           </button>
-        )}
+
+          {on_open_grounding && (
+            <button
+              onClick={on_open_grounding}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#ff9500]/10 hover:bg-[#ff9500]/20 text-[#b26800] border border-[#ff9500]/25 transition"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-[#ff9500]" />
+              <span>원문 근거 대조 (환각 제로 뷰)</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 프롬프트 선택 칩 영역 */}
@@ -325,6 +350,13 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           </div>
         </div>
       )}
+
+      {/* 지침 문서 직접 등록 모달 */}
+      <지침_문서_등록_모달
+        is_open={is_doc_modal_open}
+        on_close={() => set_is_doc_modal_open(false)}
+        on_document_added={handle_document_added}
+      />
     </div>
   );
 };

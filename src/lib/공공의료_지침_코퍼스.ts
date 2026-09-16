@@ -5,10 +5,12 @@ export interface 지침_문서_청크 {
   id: string;
   문서명: string;
   조항_페이지: string;
-  분류: '응급의료' | '분만취약지' | '소아의료' | '성과평가' | '의사인력' | '시설기능보강' | '퇴원돌봄';
+  분류: '응급의료' | '분만취약지' | '소아의료' | '성과평가' | '의사인력' | '시설기능보강' | '퇴원돌봄' | '사용자등록' | string;
   본문: string;
   핵심키워드: string[];
   기준수치: string;
+  생성일시?: string;
+  사용자추가여부?: boolean;
 }
 
 export const 공공의료_지침_코퍼스: 지침_문서_청크[] = [
@@ -121,3 +123,61 @@ export const 공공의료_지침_코퍼스: 지침_문서_청크[] = [
     기준수치: '입원 48시간 이내 스크리닝 및 원클릭 전자연계',
   },
 ];
+
+const STORAGE_KEY = 'health_map_user_rag_chunks_v1';
+
+/**
+ * 브라우저 로컬 스토리지에서 사용자가 직접 추가한 청크 목록을 조회
+ */
+export function get_user_chunks(): 지침_문서_청크[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('사용자 RAG 코퍼스 로드 실패:', err);
+    return [];
+  }
+}
+
+/**
+ * 사용자가 새로운 공공의료 지침/규정 청크를 직접 추가
+ */
+export function add_user_chunk(
+  chunk_input: Omit<지침_문서_청크, 'id' | '사용자추가여부' | '생성일시'>
+): 지침_문서_청크 {
+  const current_list = get_user_chunks();
+  const new_chunk: 지침_문서_청크 = {
+    ...chunk_input,
+    id: `USER-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+    사용자추가여부: true,
+    생성일시: new Date().toISOString().slice(0, 10),
+  };
+
+  const updated = [new_chunk, ...current_list];
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  }
+  return new_chunk;
+}
+
+/**
+ * 사용자가 추가한 특정 청크 삭제
+ */
+export function delete_user_chunk(id: string): void {
+  const current_list = get_user_chunks();
+  const filtered = current_list.filter((item) => item.id !== id);
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  }
+}
+
+/**
+ * 기본 탑재 법령 코퍼스 + 사용자가 추가한 문서를 모두 합산한 전체 검색 대상 코퍼스 반환
+ */
+export function get_all_corpus(): 지침_문서_청크[] {
+  const user_chunks = get_user_chunks();
+  return [...user_chunks, ...공공의료_지침_코퍼스];
+}
+

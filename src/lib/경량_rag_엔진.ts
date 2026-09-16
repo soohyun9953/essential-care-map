@@ -1,7 +1,7 @@
 // 브라우저 및 서버리스 자립형 경량 하이브리드 RAG (Retrieval-Augmented Generation) 엔진
 // 한글 N-gram 코사인 유사도(Dense Vector) + BM25 키워드 매칭(Sparse) + 컨텍스트 합성 생성기
 
-import { 지침_문서_청크, 공공의료_지침_코퍼스 } from './공공의료_지침_코퍼스';
+import { 지침_문서_청크, get_all_corpus } from './공공의료_지침_코퍼스';
 import { 필수의료_진단_결과 } from './필수의료_타입';
 
 export interface RAG_검색_결과 {
@@ -90,7 +90,7 @@ export class 경량_RAG_엔진 {
     const query_vec = this.tokenize_and_vectorize(query);
     const query_words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
 
-    const scored_chunks: RAG_검색_결과[] = 공공의료_지침_코퍼스.map((chunk) => {
+    const scored_chunks: RAG_검색_결과[] = get_all_corpus().map((chunk) => {
       // 본문 + 키워드 + 문서명 전체를 타겟으로 벡터화
       const combined_text = `${chunk.문서명} ${chunk.조항_페이지} ${chunk.본문} ${chunk.핵심키워드.join(' ')}`;
       const doc_vec = this.tokenize_and_vectorize(combined_text);

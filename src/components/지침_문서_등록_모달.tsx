@@ -1,18 +1,26 @@
 'use client';
 
-// 사용자가 새로운 공공의료 지침/고시/규정을 직접 입력하여 RAG 코퍼스에 등록하는 모달 다이얼로그
+// 지침 문서를 파일 업로드(PDF, HWPX, DOCX, TXT 등) 또는 직접 입력으로 RAG 코퍼스에 등록하는 모달
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
-  PlusCircle,
-  BookOpen,
+  UploadCloud,
+  FileText,
   CheckCircle2,
   Trash2,
   FilePlus,
   Sparkles,
   Info,
   ListFilter,
+  FileUp,
+  Loader2,
+  Tag,
+  ArrowRight,
+  Layers,
+  Edit3,
+  PlusCircle,
+  BookOpen,
 } from 'lucide-react';
 import {
   지침_문서_청크,
@@ -20,6 +28,7 @@ import {
   add_user_chunk,
   delete_user_chunk,
 } from '@/lib/공공의료_지침_코퍼스';
+import { 문서_텍스트_추출기, 문서_분석_결과 } from '@/lib/문서_텍스트_추출기';
 
 interface 지침_문서_등록_모달_속성 {
   is_open: boolean;
@@ -32,10 +41,16 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
   on_close,
   on_document_added,
 }) => {
-  const [active_tab, set_active_tab] = useState<'register' | 'list'>('register');
+  const [active_tab, set_active_tab] = useState<'upload' | 'manual' | 'list'>('upload');
   const [user_chunks, set_user_chunks] = useState<지침_문서_청크[]>([]);
 
-  // 폼 입력 상태
+  // 파일 업로드 상태
+  const [is_dragging, set_is_dragging] = useState(false);
+  const [is_parsing, set_is_parsing] = useState(false);
+  const [parsed_doc, set_parsed_doc] = useState<문서_분석_결과 | null>(null);
+  const file_input_ref = useRef<HTMLInputElement>(null);
+
+  // 수동 폼 및 파일 파싱 수정 상태
   const [문서명, set_문서명] = useState('');
   const [조항_페이지, set_조항_페이지] = useState('');
   const [분류, set_분류] = useState('응급의료');
@@ -53,23 +68,50 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
 
   if (!is_open) return null;
 
-  // 예시 데이터 자동 입력 버튼
-  const handle_fill_sample = () => {
-    set_문서명('강원특별자치도 응급의료 원격협진 및 닥터헬기 운용 지침');
-    set_조항_페이지('제5조(중증응급환자 이송 골든타임 관리)');
-    set_분류('응급의료');
-    set_본문(
-      '영월군 등 의료취약지에서 발생한 중증 외상 및 심뇌혈관 환자는 발생 30분 이내에 원주세브란스기독병원 권역센터 간 원격 화상협진을 실시하고, 지체 없이 닥터헬기 또는 전용 구급차로 이송하여야 한다. 야간 이송 시 전담 코디네이터 출동 수당을 1건당 15만원 지급한다.'
-    );
-    set_핵심키워드('닥터헬기, 골든타임, 원격협진, 영월군, 이송수당, 30분');
-    set_기준수치('30분 이내 협진 및 출동수당 건당 15만원');
+  // 파일 선택/드롭 처리
+  const handle_process_file = async (file: File) => {
+    set_is_parsing(true);
+    set_success_message('');
+
+    try {
+      const result = await 문서_텍스트_추출기.parse_file(file);
+      set_parsed_doc(result);
+
+      // 수정 폼에도 자동 동기화
+      set_문서명(result.문서명);
+      set_조항_페이지('제1장 총칙 / 본문 발췌');
+      set_분류(result.추론_카테고리);
+      set_본문(result.본문);
+      set_핵심키워드(result.추출_키워드.join(', '));
+      set_기준수치(result.기준_수치_요약);
+    } catch (err) {
+      console.error(err);
+      alert('파일 텍스트 추출 중 오류가 발생했습니다.');
+    } finally {
+      set_is_parsing(false);
+    }
   };
 
-  // 등록 핸들러
-  const handle_submit = (e: React.FormEvent) => {
+  const handle_drop = (e: React.DragEvent) => {
     e.preventDefault();
+    set_is_dragging(false);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handle_process_file(files[0]);
+    }
+  };
+
+  const handle_file_change = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handle_process_file(files[0]);
+    }
+  };
+
+  // 파싱된 문서 RAG 코퍼스에 즉시 등록
+  const handle_register_parsed_doc = () => {
     if (!문서명.trim() || !본문.trim()) {
-      alert('문서명과 지침 본문 내용은 필수 입력 항목입니다.');
+      alert('문서명과 본문 내용은 필수입니다.');
       return;
     }
 
@@ -87,21 +129,28 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
       기준수치: 기준수치.trim() || '지침 규정 준용',
     });
 
-    set_success_message(`"${문서명}" 지침이 RAG 코퍼스에 성공적으로 등록되었습니다!`);
+    set_success_message(`"${문서명}" 파일이 RAG 코퍼스에 성공적으로 등록되었습니다!`);
     set_user_chunks(get_user_chunks());
     on_document_added();
 
-    // 폼 초기화
-    set_문서명('');
-    set_조항_페이지('');
-    set_본문('');
-    set_핵심키워드('');
-    set_기준수치('');
-
+    // 초기화 및 목록 탭으로 이동
+    set_parsed_doc(null);
     setTimeout(() => {
       set_success_message('');
       set_active_tab('list');
     }, 1200);
+  };
+
+  // 예시 데이터 자동 입력 버튼
+  const handle_fill_sample = () => {
+    set_문서명('강원특별자치도 응급의료 원격협진 및 닥터헬기 운용 지침');
+    set_조항_페이지('제5조(중증응급환자 이송 골든타임 관리)');
+    set_분류('응급의료');
+    set_본문(
+      '영월군 등 의료취약지에서 발생한 중증 외상 및 심뇌혈관 환자는 발생 30분 이내에 원주세브란스기독병원 권역센터 간 원격 화상협진을 실시하고, 지체 없이 닥터헬기 또는 전용 구급차로 이송하여야 한다. 야간 이송 시 전담 코디네이터 출동 수당을 1건당 15만원 지급한다.'
+    );
+    set_핵심키워드('닥터헬기, 골든타임, 원격협진, 영월군, 이송수당, 30분');
+    set_기준수치('30분 이내 협진 및 출동수당 건당 15만원');
   };
 
   // 삭제 핸들러
@@ -120,12 +169,12 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
         <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-full bg-[#0071e3] flex items-center justify-center">
-              <FilePlus className="w-4 h-4 text-white" />
+              <UploadCloud className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-bold">RAG 지침 문서 직접 등록</h3>
+              <h3 className="text-base font-bold">RAG 지침 문서 업로드 &amp; 등록</h3>
               <p className="text-xs text-white/70">
-                새로운 공공의료 지침·고시를 추가하면 AI 비서가 즉시 검색하여 답변에 인용합니다.
+                문서 파일(PDF, HWPX, TXT 등)을 올리면 AI가 지침을 자동 분석하여 RAG 코퍼스에 등록합니다.
               </p>
             </div>
           </div>
@@ -141,15 +190,26 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
         {/* 탭 네비게이션 */}
         <div className="flex border-b border-black/[0.06] bg-[#fbfbfd] px-5 pt-3">
           <button
-            onClick={() => set_active_tab('register')}
+            onClick={() => set_active_tab('upload')}
             className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center space-x-1.5 ${
-              active_tab === 'register'
+              active_tab === 'upload'
                 ? 'border-[#0071e3] text-[#0071e3]'
                 : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
             }`}
           >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>새 문서 입력 등록</span>
+            <UploadCloud className="w-3.5 h-3.5" />
+            <span>파일 업로드로 등록</span>
+          </button>
+          <button
+            onClick={() => set_active_tab('manual')}
+            className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center space-x-1.5 ${
+              active_tab === 'manual'
+                ? 'border-[#0071e3] text-[#0071e3]'
+                : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>직접 텍스트 작성</span>
           </button>
           <button
             onClick={() => set_active_tab('list')}
@@ -160,7 +220,7 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
             }`}
           >
             <ListFilter className="w-3.5 h-3.5" />
-            <span>내가 등록한 문서 ({user_chunks.length}건)</span>
+            <span>등록된 문서 ({user_chunks.length}건)</span>
           </button>
         </div>
 
@@ -173,11 +233,157 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
             </div>
           )}
 
-          {active_tab === 'register' ? (
-            <form onSubmit={handle_submit} className="space-y-4">
+          {/* ============================================================== */}
+          {/* 탭 1: 파일 업로드로 등록 */}
+          {/* ============================================================== */}
+          {active_tab === 'upload' && (
+            <div className="space-y-4">
+              {/* 드래그앤드롭 업로드 박스 */}
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  set_is_dragging(true);
+                }}
+                onDragLeave={() => set_is_dragging(false)}
+                onDrop={handle_drop}
+                onClick={() => file_input_ref.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
+                  is_dragging
+                    ? 'border-[#0071e3] bg-[#0071e3]/5 scale-[0.99]'
+                    : 'border-black/[0.1] hover:border-[#0071e3]/60 bg-[#fbfbfd]'
+                }`}
+              >
+                <input
+                  ref={file_input_ref}
+                  type="file"
+                  accept=".pdf,.hwpx,.docx,.txt,.md,.csv,.json"
+                  onChange={handle_file_change}
+                  className="hidden"
+                />
+
+                {is_parsing ? (
+                  <div className="py-4 space-y-2">
+                    <Loader2 className="w-8 h-8 mx-auto text-[#0071e3] animate-spin" />
+                    <p className="text-xs font-semibold text-slate-700">문서 텍스트 분석 및 키워드 추출 중...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="w-12 h-12 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center mx-auto shadow-apple-sm">
+                      <FileUp className="w-6 h-6" />
+                    </div>
+                    <p className="text-sm font-bold text-[#1d1d1f]">
+                      지침 문서 파일을 여기에 끌어다 놓거나 클릭하여 선택
+                    </p>
+                    <p className="text-xs text-[#86868b]">
+                      지원 포맷: PDF, HWPX, DOCX, TXT, Markdown, CSV, JSON
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* 파싱된 문서 확인 및 수정 카드 */}
+              {parsed_doc && (
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3 animate-in fade-in">
+                  <div className="flex items-center justify-between pb-2 border-b border-black/[0.05]">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <span className="text-xs font-bold text-slate-800">
+                        문서 분석 완료 ({parsed_doc.글자수.toLocaleString()}자 추출)
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#0071e3] bg-[#0071e3]/10 px-2.5 py-0.5 rounded-full">
+                      추론 분류: {분류}
+                    </span>
+                  </div>
+
+                  {/* 메타데이터 입력/확인 폼 */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-600 block mb-1">문서명</label>
+                      <input
+                        type="text"
+                        value={문서명}
+                        onChange={(e) => set_문서명(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-600 block mb-1">분야 분류</label>
+                      <select
+                        value={분류}
+                        onChange={(e) => set_분류(e.target.value)}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs"
+                      >
+                        <option value="응급의료">응급의료</option>
+                        <option value="분만취약지">분만취약지</option>
+                        <option value="소아의료">소아의료</option>
+                        <option value="성과평가">성과평가</option>
+                        <option value="의사인력">의사인력</option>
+                        <option value="시설기능보강">시설기능보강</option>
+                        <option value="퇴원돌봄">퇴원돌봄</option>
+                        <option value="사용자등록">기타 지침</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      자동 추출된 검색 키워드 (수정 가능)
+                    </label>
+                    <input
+                      type="text"
+                      value={핵심키워드}
+                      onChange={(e) => set_핵심키워드(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-600 block mb-1">
+                      추출된 본문 미리보기 (RAG 검색 대상)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={본문}
+                      onChange={(e) => set_본문(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-mono resize-none leading-relaxed"
+                    />
+                  </div>
+
+                  <div className="pt-2 flex justify-end space-x-2">
+                    <button
+                      onClick={() => set_parsed_doc(null)}
+                      className="px-3.5 py-1.5 text-xs rounded-xl bg-slate-200 text-slate-700 hover:bg-slate-300 transition"
+                    >
+                      다시 올리기
+                    </button>
+                    <button
+                      onClick={handle_register_parsed_doc}
+                      className="px-4 py-1.5 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition flex items-center space-x-1.5"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      <span>RAG 코퍼스에 즉시 등록</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* 탭 2: 직접 텍스트 작성 등록 */}
+          {/* ============================================================== */}
+          {active_tab === 'manual' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handle_register_parsed_doc();
+              }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between pb-1">
                 <span className="text-xs text-[#86868b]">
-                  지침/고시 전문의 세부 조항 또는 핵심 요강을 입력하세요.
+                  지침/고시 전문의 세부 조항 또는 핵심 요강을 직접 입력하세요.
                 </span>
                 <button
                   type="button"
@@ -231,12 +437,12 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                     <option value="의사인력">의사인력</option>
                     <option value="시설기능보강">시설기능보강</option>
                     <option value="퇴원돌봄">퇴원돌봄</option>
-                    <option value="사용자등록">기타 / 현장지침</option>
+                    <option value="사용자등록">기타 지침</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#1d1d1f]">핵심 기준 수치 / 지원 규모</label>
+                  <label className="text-xs font-bold text-[#1d1d1f]">핵심 기준 수치</label>
                   <input
                     type="text"
                     value={기준수치}
@@ -266,15 +472,14 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                 <label className="text-xs font-bold text-[#1d1d1f]">지침 본문 내용 *</label>
                 <textarea
                   required
-                  rows={5}
+                  rows={4}
                   value={본문}
                   onChange={(e) => set_본문(e.target.value)}
-                  placeholder="공공보건의료 지침 또는 고시 조항의 실제 문장을 복사하여 붙여넣으세요. AI가 이 내용을 바탕으로 임베딩 및 유사도 검색을 수행합니다."
+                  placeholder="공공보건의료 지침 또는 고시 조항의 실제 문장을 복사하여 붙여넣으세요."
                   className="w-full px-3 py-2 text-xs rounded-xl bg-[#f5f5f7] border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 resize-none font-mono"
                 />
               </div>
 
-              {/* 제출 버튼 */}
               <div className="pt-2 flex justify-end space-x-2">
                 <button
                   type="button"
@@ -285,25 +490,29 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 flex items-center space-x-1.5"
+                  className="px-5 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition flex items-center space-x-1.5"
                 >
                   <PlusCircle className="w-4 h-4" />
                   <span>RAG 코퍼스에 등록</span>
                 </button>
               </div>
             </form>
-          ) : (
-            /* 내가 등록한 문서 목록 탭 */
+          )}
+
+          {/* ============================================================== */}
+          {/* 탭 3: 내가 등록한 문서 목록 */}
+          {/* ============================================================== */}
+          {active_tab === 'list' && (
             <div className="space-y-3">
               {user_chunks.length === 0 ? (
                 <div className="py-12 text-center text-xs text-[#86868b] space-y-2">
                   <BookOpen className="w-8 h-8 mx-auto text-slate-300" />
                   <p>직접 추가한 지침 문서가 아직 없습니다.</p>
                   <button
-                    onClick={() => set_active_tab('register')}
+                    onClick={() => set_active_tab('upload')}
                     className="text-[#0071e3] font-semibold underline"
                   >
-                    새 문서 등록하러 가기
+                    파일 업로드하여 등록하기
                   </button>
                 </div>
               ) : (

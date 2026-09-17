@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """
 노트북 로컬 sLLM 초경량 서빙 서버 (Qwen/Qwen2.5-0.5B-Instruct)
 별도의 무거운 패키지 없이 Python 내장 http.server와 transformers, torch만으로 동작합니다.
@@ -9,10 +9,20 @@
 """
 
 import sys
+import os
 import json
 import time
 import argparse
 from http.server import HTTPServer, BaseHTTPRequestHandler
+
+# 윈도우 콘솔 cp949 인코딩 에러 방지
+if hasattr(sys.stdout, 'reconfigure'):
+    try:
+        sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+        sys.stderr.reconfigure(encoding='utf-8', errors='replace')
+    except Exception:
+        pass
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -156,7 +166,7 @@ def main():
 
     server_address = ("127.0.0.1", args.port)
     httpd = HTTPServer(server_address, sLLMRequestHandler)
-    print(f"\n🚀 [sLLM Server] Running at http://127.0.0.1:{args.port}")
+    print(f"\n[sLLM Server] Running at http://127.0.0.1:{args.port}")
     print("   - Health check: GET  http://127.0.0.1:8000/health")
     print("   - Inference:    POST http://127.0.0.1:8000/generate")
     print("   - Press Ctrl+C to stop.\n")

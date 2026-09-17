@@ -21,6 +21,7 @@ import { 메인_사이드바_네비게이션, 메뉴_아이디 } from '@/compone
 import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰뷰_모달';
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
+import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 
 // 상단 전역 지역 신속 선택기
 import { 상단_지역_선택기 } from '@/components/상단_지역_선택기';
@@ -45,6 +46,7 @@ import {
   Sparkles,
   Camera,
   Key,
+  Database,
   ShieldCheck,
   ChevronRight,
   Download,
@@ -65,7 +67,9 @@ export default function Home() {
   const [is_grounding_open, set_is_grounding_open] = useState(false);
   const [is_upload_modal_open, set_is_upload_modal_open] = useState(false);
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
+  const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
+  const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
 
   // 데이터셋 & 진단 상태
   const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_샘플_데이터);
@@ -81,6 +85,9 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       const saved_key = localStorage.getItem('google_gemini_api_key') || '';
       set_google_api_key(saved_key);
+
+      const saved_data_key = localStorage.getItem('data_go_kr_api_key') || '';
+      set_data_go_kr_api_key(saved_data_key);
 
       const saved_theme = localStorage.getItem('healthmap_theme');
       if (saved_theme === 'dark') {
@@ -221,6 +228,8 @@ export default function Home() {
         on_open_grounding_modal={() => set_is_grounding_open(true)}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         google_api_key_registered={!!google_api_key}
+        data_go_kr_key_registered={!!data_go_kr_api_key}
+        on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}
         selected_region_grade={selected_region?.종합_취약도_등급 ?? '심각'}
         is_hidden={is_sidebar_hidden}
@@ -292,13 +301,27 @@ export default function Home() {
                 onClick={() => set_is_key_modal_open(true)}
                 className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
                   google_api_key
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
-                    : 'bg-amber-400/20 text-amber-900 border-amber-400 hover:bg-amber-400/30'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700'
+                    : 'bg-amber-400/20 text-amber-900 dark:text-amber-300 border-amber-400 hover:bg-amber-400/30'
                 }`}
                 title="Google Gemini API 키 관리"
               >
                 <Key className="w-4 h-4 text-amber-600" />
-                <span>{google_api_key ? 'Google 키 등록됨' : 'Google 키 입력'}</span>
+                <span>{google_api_key ? 'Google 등록됨' : 'Google 키'}</span>
+              </button>
+
+              {/* data.go.kr 공공데이터포털 API 키 설정 버튼 */}
+              <button
+                onClick={() => set_is_data_go_kr_modal_open(true)}
+                className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
+                  data_go_kr_api_key
+                    ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700'
+                    : 'bg-amber-400/20 text-amber-900 dark:text-amber-300 border-amber-400 hover:bg-amber-400/30'
+                }`}
+                title="공공데이터포털(data.go.kr) API 인증키 관리"
+              >
+                <Database className="w-4 h-4 text-[#0071e3]" />
+                <span>{data_go_kr_api_key ? 'data.go.kr 등록됨' : 'data.go.kr 키 등록'}</span>
               </button>
 
               {/* 환각 제로 원문 대조 버튼 */}
@@ -492,6 +515,13 @@ export default function Home() {
         is_open={is_key_modal_open}
         on_close={() => set_is_key_modal_open(false)}
         on_key_saved={(new_key) => set_google_api_key(new_key)}
+      />
+
+      {/* data.go.kr 공공데이터포털 API 인증키 설정 모달 */}
+      <공공데이터_api키_설정_모달
+        is_open={is_data_go_kr_modal_open}
+        on_close={() => set_is_data_go_kr_modal_open(false)}
+        on_key_saved={(new_key) => set_data_go_kr_api_key(new_key)}
       />
     </main>
   );

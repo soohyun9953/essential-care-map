@@ -22,6 +22,7 @@ import {
   Sparkles,
   Layers,
   Key,
+  Database,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
@@ -140,6 +141,8 @@ interface 메인_사이드바_네비게이션_속성 {
   on_open_grounding_modal: () => void;
   on_open_key_modal: () => void;
   google_api_key_registered: boolean;
+  data_go_kr_key_registered?: boolean;
+  on_open_data_go_kr_modal?: () => void;
   selected_region_name?: string;
   selected_region_grade?: string;
   is_hidden?: boolean;
@@ -155,6 +158,8 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
   on_open_grounding_modal,
   on_open_key_modal,
   google_api_key_registered,
+  data_go_kr_key_registered = false,
+  on_open_data_go_kr_modal,
   selected_region_name = '강원도 영월군',
   selected_region_grade = '심각',
   is_hidden = false,
@@ -187,7 +192,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         </div>
 
         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
-          2026.09.17 v0.23
+          20260917 v0.23
         </span>
       </div>
 
@@ -222,7 +227,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                     국립중앙의료원 지원센터
                   </span>
                   <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
-                    v0.23
+                    20260917 v0.23
                   </span>
                 </div>
                 <h1 className="text-lg font-extrabold tracking-tight text-[#1d1d1f]">
@@ -358,7 +363,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           <div className="flex items-center justify-between gap-1.5 pt-1">
             <button
               onClick={on_open_grounding_modal}
-              className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-sm font-bold flex items-center justify-center gap-1.5 border border-emerald-200/60 transition"
+              className="flex-1 py-2 px-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-sm font-bold flex items-center justify-center gap-1 border border-emerald-200/60 transition"
               title="법령·고시 원문 대조 신뢰 뷰"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
@@ -367,7 +372,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
             <button
               onClick={on_open_key_modal}
-              className={`py-2 px-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 border transition ${
+              className={`py-2 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1 border transition ${
                 google_api_key_registered
                   ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-black/[0.06]'
                   : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
@@ -375,8 +380,23 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               title="Google Gemini API 키 관리"
             >
               <Key className="w-4 h-4 text-amber-600" />
-              <span>{google_api_key_registered ? 'Google키' : '키입력'}</span>
+              <span>{google_api_key_registered ? 'Google키' : 'Gemini'}</span>
             </button>
+
+            {on_open_data_go_kr_modal && (
+              <button
+                onClick={on_open_data_go_kr_modal}
+                className={`py-2 px-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1 border transition ${
+                  data_go_kr_key_registered
+                    ? 'bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200'
+                    : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+                }`}
+                title="공공데이터포털(data.go.kr) API 인증키 관리"
+              >
+                <Database className="w-4 h-4 text-[#0071e3]" />
+                <span>{data_go_kr_key_registered ? 'data.go' : '공공키'}</span>
+              </button>
+            )}
 
             <button
               onClick={on_load_sample_data}

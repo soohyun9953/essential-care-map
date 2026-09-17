@@ -32,6 +32,9 @@ import {
   Clock,
   Coins,
   AlertCircle,
+  Power,
+  Loader2,
+  RefreshCw,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { copy_text_to_clipboard } from '@/lib/유틸리티';
@@ -96,6 +99,49 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [is_comparing, set_is_comparing] = useState(false);
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
 
+  // 로컬 sLLM 서버 구동 상태
+  const [local_server_status, set_local_server_status] = useState<{
+    is_running: boolean;
+    model?: string;
+    device?: string;
+    message?: string;
+  } | null>(null);
+  const [is_starting_server, set_is_starting_server] = useState(false);
+
+  // 로컬 sLLM 서버 상태 헬스체크
+  const check_local_server_status = async () => {
+    try {
+      const res = await fetch('/api/llm/local-server');
+      if (res.ok) {
+        const data = await res.json();
+        set_local_server_status(data);
+      }
+    } catch {
+      set_local_server_status({ is_running: false });
+    }
+  };
+
+  // 로컬 sLLM 서버 브라우저 원클릭 가동
+  const handle_start_local_server = async () => {
+    set_is_starting_server(true);
+    try {
+      const res = await fetch('/api/llm/local-server', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'start' }),
+      });
+      const data = await res.json();
+      set_local_server_status(data);
+      // 백그라운드 구동 안정화를 위해 2초 후 갱신
+      setTimeout(check_local_server_status, 2000);
+      setTimeout(check_local_server_status, 5000);
+    } catch (err) {
+      console.error('로컬 sLLM 서버 시작 오류:', err);
+    } finally {
+      set_is_starting_server(false);
+    }
+  };
+
   // 로컬스토리지 API 키 및 초기 RAG 세팅
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -106,6 +152,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     set_total_doc_count(all_docs.length);
     const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
     set_rag_result(initial_result);
+
+    // 마운트 시 로컬 서버 상태 감지
+    check_local_server_status();
   }, []);
 
   // 새 문서 등록 시 코퍼스 갱신
@@ -249,6 +298,39 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           >
             <Key className="w-3.5 h-3.5 text-amber-600" />
             <span>{google_api_key ? '🔑 Google 키 등록됨' : '🔑 Google API 키 입력'}</span>
+          </button>
+
+          {/* 로컬 sLLM 서버 상태 및 원클릭 가동 버튼 */}
+          <button
+            onClick={local_server_status?.is_running ? check_local_server_status : handle_start_local_server}
+            disabled={is_starting_server}
+            className={`inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold border transition shadow-apple-sm ${
+              local_server_status?.is_running
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+            }`}
+            title={
+              local_server_status?.is_running
+                ? '로컬 sLLM 가동 중 (클릭 시 상태 새로고침)'
+                : '클릭 시 백그라운드에서 로컬 sLLM 서버(Qwen2.5-0.5B)를 즉시 가동합니다'
+            }
+          >
+            {is_starting_server ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin text-[#34c759]" />
+                <span>로컬 엔진 기동 중...</span>
+              </>
+            ) : local_server_status?.is_running ? (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>💻 로컬 sLLM 가동 중</span>
+              </>
+            ) : (
+              <>
+                <Power className="w-3.5 h-3.5 text-[#34c759]" />
+                <span>💻 로컬 sLLM 실행</span>
+              </>
+            )}
           </button>
 
           {/* 새 지침 직접 등록 버튼 */}
@@ -485,15 +567,43 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </div>
                   </div>
 
-                  {compare_result && (
-                    <button
-                      onClick={() => handle_copy_text(compare_result.local_sllm.response, 'local')}
-                      className="p-1.5 rounded-lg hover:bg-slate-200/60 text-slate-600 transition"
-                      title="답변 복사"
-                    >
-                      {copied_side === 'local' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1.5">
+                    {local_server_status?.is_running ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        8000포트 가동 중
+                      </span>
+                    ) : (
+                      <button
+                        onClick={handle_start_local_server}
+                        disabled={is_starting_server}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#34c759] hover:bg-[#28a745] text-white shadow-apple-sm transition disabled:opacity-50"
+                        title="프로그램 내에서 로컬 sLLM 서버를 즉시 실행합니다"
+                      >
+                        {is_starting_server ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>실행 중...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Power className="w-3 h-3" />
+                            <span>서버 원클릭 실행</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {compare_result && (
+                      <button
+                        onClick={() => handle_copy_text(compare_result.local_sllm.response, 'local')}
+                        className="p-1.5 rounded-lg hover:bg-slate-200/60 text-slate-600 transition"
+                        title="답변 복사"
+                      >
+                        {copied_side === 'local' ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* 본문 */}
@@ -508,8 +618,32 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       {compare_result.local_sllm.response}
                     </pre>
                   ) : (
-                    <div className="py-12 text-center text-slate-400 text-xs">
-                      [1:1 비교 실행] 버튼을 누르면 노트북 온디바이스 모델의 실시간 생성 결과가 여기에 표시됩니다.
+                    <div className="py-10 flex flex-col items-center justify-center text-slate-500 text-xs space-y-3">
+                      <Laptop className="w-8 h-8 text-slate-300" />
+                      <p className="text-center text-slate-500 max-w-xs">
+                        {local_server_status?.is_running
+                          ? '로컬 온디바이스 엔진(8000번 포트)이 정상 가동 중입니다. 상단의 [1:1 비교 실행] 버튼을 눌러보세요.'
+                          : '노트북 로컬 sLLM 서버가 대기 중입니다. 아래 버튼을 눌러 터미널 없이 바로 실행할 수 있습니다.'}
+                      </p>
+                      {!local_server_status?.is_running && (
+                        <button
+                          onClick={handle_start_local_server}
+                          disabled={is_starting_server}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#34c759] hover:bg-[#28a745] text-white shadow-apple-sm transition disabled:opacity-50"
+                        >
+                          {is_starting_server ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                              <span>로컬 sLLM 엔진 구동 중...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Power className="w-4 h-4" />
+                              <span>로컬 sLLM 서버 즉시 실행하기</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

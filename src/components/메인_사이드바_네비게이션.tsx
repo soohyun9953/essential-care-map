@@ -197,7 +197,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
       {/* 좌측 사이드바 본체 */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-80 bg-white border-r border-black/[0.06] flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-84 min-w-[336px] bg-white border-r border-black/[0.06] flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none ${
           is_mobile_open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
@@ -205,7 +205,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         <div className="p-4 sm:p-5 border-b border-black/[0.05]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-b from-[#1d1d1f] to-[#2d2d30] text-white flex items-center justify-center shadow-apple-sm">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-b from-[#1d1d1f] to-[#2d2d30] text-white flex items-center justify-center shadow-apple-sm shrink-0">
                 <Activity className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -213,11 +213,11 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                   <span className="text-xs font-semibold text-[#86868b] tracking-tight">
                     국립중앙의료원 지원센터
                   </span>
-                  <span className="text-[11px] font-bold px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
                     v0.23
                   </span>
                 </div>
-                <h1 className="text-base font-bold tracking-tight text-[#1d1d1f]">
+                <h1 className="text-lg font-extrabold tracking-tight text-[#1d1d1f]">
                   필수의료 취약지 헬스맵
                 </h1>
               </div>
@@ -232,13 +232,13 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           </div>
 
           {/* 현재 선택된 진단 지역 간이 카드 */}
-          <div className="mt-3.5 p-3 rounded-xl bg-[#f5f5f7] border border-black/[0.04] flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-1.5">
-              <MapPin className="w-4 h-4 text-[#0071e3]" />
+          <div className="mt-3.5 p-3 rounded-xl bg-[#f5f5f7] border border-black/[0.04] flex items-center justify-between text-base">
+            <div className="flex items-center space-x-2">
+              <MapPin className="w-4 h-4 text-[#0071e3] shrink-0" />
               <span className="font-bold text-slate-800">{selected_region_name}</span>
             </div>
             <span
-              className={`px-2 py-0.5 rounded-md text-xs font-bold ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${
                 selected_region_grade === '심각'
                   ? 'bg-rose-500 text-white'
                   : selected_region_grade === '경고'
@@ -255,7 +255,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5">
           {MENU_CATEGORIES.map((cat, c_idx) => (
             <div key={c_idx} className="space-y-1.5">
-              <div className="px-3 py-1 text-xs font-bold tracking-wider text-slate-500">
+              <div className="px-3 py-1 text-xs font-extrabold tracking-wider text-slate-500 uppercase">
                 {cat.category}
               </div>
 
@@ -276,15 +276,15 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                     >
                       <div className="flex items-center space-x-3 min-w-0">
                         <Icon
-                          className={`w-4 h-4 shrink-0 transition-colors ${
+                          className={`w-5 h-5 shrink-0 transition-colors ${
                             is_active ? 'text-white' : 'text-[#86868b] group-hover:text-[#0071e3]'
                           }`}
                         />
                         <div className="truncate">
-                          <div className="text-[13.5px] truncate font-semibold">{item.label}</div>
+                          <div className="text-[15px] truncate font-bold">{item.label}</div>
                           <div
-                            className={`text-xs truncate mt-0.5 ${
-                              is_active ? 'text-white/80' : 'text-[#86868b]'
+                            className={`text-[13px] truncate mt-0.5 ${
+                              is_active ? 'text-white/85 font-medium' : 'text-[#86868b]'
                             }`}
                           >
                             {item.desc}
@@ -294,7 +294,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
                       {item.badge && (
                         <span
-                          className={`px-2 py-0.5 rounded-md text-[11px] font-bold shrink-0 ml-2 ${
+                          className={`px-2 py-0.5 rounded-md text-xs font-bold shrink-0 ml-2 ${
                             is_active
                               ? 'bg-white/20 text-white'
                               : 'bg-black/[0.05] text-[#86868b]'
@@ -316,7 +316,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           <div className="grid grid-cols-2 gap-2">
             <button
               onClick={on_open_upload_modal}
-              className="px-2.5 py-2 rounded-xl bg-white border border-black/[0.06] hover:bg-slate-100 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition shadow-xs"
+              className="px-2.5 py-2 rounded-xl bg-white border border-black/[0.06] hover:bg-slate-100 text-sm font-bold text-slate-700 flex items-center justify-center gap-1.5 transition shadow-xs"
               title="지자체 데이터 엑셀/CSV 업로드"
             >
               <Upload className="w-4 h-4 text-[#0071e3]" />
@@ -325,7 +325,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
             <button
               onClick={on_download_nmc_excel}
-              className="px-2.5 py-2 rounded-xl bg-white border border-black/[0.06] hover:bg-slate-100 text-xs font-semibold text-slate-700 flex items-center justify-center gap-1.5 transition shadow-xs"
+              className="px-2.5 py-2 rounded-xl bg-white border border-black/[0.06] hover:bg-slate-100 text-sm font-bold text-slate-700 flex items-center justify-center gap-1.5 transition shadow-xs"
               title="국립중앙의료원 3종 크로스탭 엑셀 다운로드"
             >
               <Download className="w-4 h-4 text-emerald-600" />
@@ -336,16 +336,16 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           <div className="flex items-center justify-between gap-1.5 pt-1">
             <button
               onClick={on_open_grounding_modal}
-              className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5 border border-emerald-200/60 transition"
+              className="flex-1 py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-sm font-bold flex items-center justify-center gap-1.5 border border-emerald-200/60 transition"
               title="법령·고시 원문 대조 신뢰 뷰"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>원문 대조 뷰</span>
+              <span>원문 대조</span>
             </button>
 
             <button
               onClick={on_open_key_modal}
-              className={`py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition ${
+              className={`py-2 px-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 border transition ${
                 google_api_key_registered
                   ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-black/[0.06]'
                   : 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'

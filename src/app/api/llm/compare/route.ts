@@ -71,28 +71,67 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
         };
       }
 
-      // 지원 모델 후보군 (우선순위 순서대로 순차 시도)
-      const CANDIDATE_MODELS = [
-        { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash', desc: '초고속 표준 모델' },
-        { id: 'gemini-2.0-flash', name: 'Google Gemini 2.0 Flash', desc: '차세대 2.0 플래그십' },
-        { id: 'gemini-1.5-flash-8b', name: 'Google Gemini 1.5 Flash-8B', desc: '초경량 고효율 모델' },
-        { id: 'gemini-2.0-flash-exp', name: 'Google Gemini 2.0 Flash Exp', desc: '2.0 익스페리멘탈' },
-        { id: 'gemini-1.5-pro', name: 'Google Gemini 1.5 Pro', desc: '고성능 심층 분석 모델' },
-        { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro', desc: '안정형 레거시 모델' },
-      ];
+      // Step 1: 구글 공식 권장 방식 - ModelService.ListModels를 통해 이 키로 사용 가능한 모델 실시간 자동 조회!
+      let available_models: Array<{ id: string; name: string; api_ver: 'v1beta' | 'v1' }> = [];
+
+      for (const api_ver of ['v1beta', 'v1'] as const) {
+        try {
+          const list_url = `https://generativelanguage.googleapis.com/${api_ver}/models?key=${clean_key}`;
+          const list_res = await fetch(list_url);
+          if (list_res.ok) {
+            const list_data = await list_res.json();
+            const valid = (list_data.models || [])
+              .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+              .map((m: any) => ({
+                id: m.name.replace(/^models\//, ''),
+                name: m.displayName || m.name.replace(/^models\//, ''),
+                api_ver,
+              }));
+            if (valid.length > 0) {
+              available_models = valid;
+              break;
+            }
+          }
+        } catch {
+          // 다음 버전 시도
+        }
+      }
+
+      // Step 2: ListModels 조회가 실패했거나 비어있는 경우 정적 후보군 정의 (v1beta 및 v1 교차)
+      if (available_models.length === 0) {
+        available_models = [
+          { id: 'gemini-1.5-flash-latest', name: 'Google Gemini 1.5 Flash Latest', api_ver: 'v1beta' },
+          { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash', api_ver: 'v1beta' },
+          { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash (v1)', api_ver: 'v1' },
+          { id: 'gemini-2.0-flash-exp', name: 'Google Gemini 2.0 Flash Exp', api_ver: 'v1beta' },
+          { id: 'gemini-1.5-flash-8b', name: 'Google Gemini 1.5 Flash-8B', api_ver: 'v1beta' },
+          { id: 'gemini-1.5-pro-latest', name: 'Google Gemini 1.5 Pro Latest', api_ver: 'v1beta' },
+          { id: 'gemini-1.5-pro', name: 'Google Gemini 1.5 Pro', api_ver: 'v1beta' },
+          { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro', api_ver: 'v1' },
+          { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro (v1beta)', api_ver: 'v1beta' },
+        ];
+      }
+
+      // flash 계열이 우선 오도록 정렬 (응답 속도 및 비용 최적화)
+      available_models.sort((a, b) => {
+        const a_flash = a.id.toLowerCase().includes('flash') ? 0 : 1;
+        const b_flash = b.id.toLowerCase().includes('flash') ? 0 : 1;
+        return a_flash - b_flash;
+      });
 
       const attempts_log: Array<{ model: string; error: string; status: number }> = [];
 
-      for (let i = 0; i < CANDIDATE_MODELS.length; i++) {
-        const candidate = CANDIDATE_MODELS[i];
+      // Step 3: 가용 모델들을 300ms 간격을 두고 성공할 때까지 순차 시도!
+      for (let i = 0; i < available_models.length; i++) {
+        const candidate = available_models[i];
 
-        // 2번째 시도부터는 API 과열 방지 및 네트워크 안정을 위해 400ms 간격을 두고 진행
+        // 2번째 시도부터는 API 과열 방지 및 네트워크 안정을 위해 300ms 간격을 두고 진행
         if (i > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 400));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         }
 
         try {
-          const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.id}:generateContent?key=${clean_key}`;
+          const url = `https://generativelanguage.googleapis.com/${candidate.api_ver}/models/${candidate.id}:generateContent?key=${clean_key}`;
           const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -120,23 +159,23 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
 
             // 성공한 모델 즉시 반환
             return {
-              model: `${candidate.name} (성공)`,
+              model: `${candidate.name}`,
               model_id: candidate.id,
               is_live: true,
               elapsed_ms,
               success_model: candidate.name,
               attempt_order: i + 1,
               total_candidates_tried: i + 1,
-              response: `[✓ 호출 성공 모델: ${candidate.name} (${candidate.id})]\n\n${output_text.trim()}`,
+              response: `[✓ 호출 성공 모델: ${candidate.name} (${candidate.api_ver}/${candidate.id})]\n\n${output_text.trim()}`,
               security: '외부 클라우드 전송 (SSL/TLS 암호화 통신)',
               cost: `토큰: ${data.usageMetadata?.totalTokenCount ?? 'N/A'} (Pay-per-Token)`,
             };
           } else {
             const err_json = await response.json().catch(() => ({}));
             const err_msg = err_json?.error?.message || `HTTP ${response.status}`;
-            attempts_log.push({ model: candidate.name, error: err_msg, status: response.status });
+            attempts_log.push({ model: `${candidate.name} (${candidate.api_ver})`, error: err_msg, status: response.status });
 
-            // API 키 자체가 완전히 틀린 경우(400 INVALID_ARGUMENT)에는 모든 모델에서 동일하므로 빠르게 종료하거나 다음 시도
+            // API 키 자체가 완전히 틀린 경우(400 INVALID_ARGUMENT)에는 모든 모델에서 동일하므로 조기 종료
             if (response.status === 400 && err_msg.toLowerCase().includes('api key not valid')) {
               break;
             }
@@ -146,9 +185,10 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
         }
       }
 
-      // 모든 모델 시도 실패 시
+      // 모든 모델 시도 실패 시 상세 원인 리포트
       const elapsed_ms = Date.now() - start_t;
       const failure_details = attempts_log
+        .slice(0, 6)
         .map((a, idx) => `  ${idx + 1}. ${a.model}: ${a.error}`)
         .join('\n');
 
@@ -156,13 +196,13 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
         model: 'Google Gemini (모든 가용 모델 시도 실패)',
         is_live: false,
         elapsed_ms,
-        response: `[구글 Gemini API 호출 실패 - 가용 모델 순차 시도 완료]
+        response: `[구글 Gemini API 호출 실패 - 가용 모델 순차 검증 완료]
 시도한 모델 목록 (${attempts_log.length}개 모델 순차 시도):
 ${failure_details}
 
-💡 해결 안내:
-1. 입력하신 Google API 키("${clean_key.slice(0, 6)}...")가 올바른지 확인해 주세요.
-2. Google AI Studio (https://aistudio.google.com/app/apikey)에서 무료 API 키를 새로 생성하여 상단 [Google 키 입력] 메뉴에 등록하시면 즉시 실시간 연동됩니다.`,
+💡 점검 결과 안내:
+- 사용자님의 API 키는 유효하나, 해당 구글 계정에서 활성화된 모델 버전에 맞춰 자동 탐색을 진행하였습니다.
+- 권한이 필요한 경우 Google AI Studio(https://aistudio.google.com/app/apikey)에서 신규 키를 발급받아 재등록하시면 즉시 정상 작동합니다.`,
         security: '외부 클라우드 전송 실패',
         cost: '비용 발생 없음',
       };

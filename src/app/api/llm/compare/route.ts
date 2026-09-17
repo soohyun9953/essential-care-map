@@ -32,11 +32,11 @@ export async function POST(req: NextRequest) {
       process.env.GOOGLE_API_KEY ||
       '';
 
-    // 시스템 프롬프트 구성
-    const system_instruction = `당신은 대한민국 보건복지부 및 국립중앙의료원 공공보건의료 정책을 보좌하는 최고 수준의 AI 전문관입니다.
+// 시스템 프롬프트 구성 (충실하고 완성도 높은 보고서 작성 요구)
+    const system_instruction = `당신은 대한민국 보건복지부 및 국립중앙의료원 공공보건의료 정책을 총괄 보좌하는 수석 행정 전문관입니다.
 선택된 지자체: ${region_name}
 취약도 등급: ${region_stats.vulnerability_grade}
-주요 지표:
+핵심 지표 현황:
 - 응급 60분 미도달 인구 비율: ${region_stats.emergency_rate}%
 - 관내 응급환자 자체충족률(RI): ${region_stats.ri_rate}%
 - 관내 분만율: ${region_stats.maternity_rate}%
@@ -44,7 +44,14 @@ export async function POST(req: NextRequest) {
 [법령 및 지침 근거 (RAG 검색결과)]:
 ${rag_context}
 
-지침과 통계를 근거로 전문적이고 논리정연한 공문서 개조식 보고서 형태로 답변하세요.`;
+[작성 원칙 및 지침]:
+1. 지침과 근거 법령, 통계를 기반으로 결론이 중간에 잘리지 않도록 논리정연하고 구체적인 완결형 보고서를 작성하세요.
+2. 내용은 다음 항목을 포함하여 풍부하고 전문적으로 서술하세요:
+   ■ [1] 법적 근거 및 핵심 지침 기준 해설
+   ■ [2] ${region_name} 현황 진단 및 핵심 문제점
+   ■ [3] 실적보고서 / 사업계획서 표준 초안 (목표, 3대 세부 추진과제, 추진일정)
+   ■ [4] 기대효과 및 향후 행정 조치사항
+3. 문체는 격조 있는 공문서 개조식(개요, 현황, 대책, 결론)으로 작성하세요.`;
 
     // 1. Google Gemini 호출 함수
     // 1. Google Gemini 다중 모델 순차 호출 함수 (가용 모델을 성공할 때까지 간격을 두고 시도)
@@ -146,15 +153,27 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
               ],
               generationConfig: {
                 temperature: 0.4,
-                maxOutputTokens: 800,
+                maxOutputTokens: 2500,
               },
             }),
           });
 
           if (response.ok) {
             const data = await response.json();
-            const output_text =
-              data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 생성하지 못했습니다.';
+            const parts = data.candidates?.[0]?.content?.parts || [];
+            
+            // Gemini 2.0 / 2.5 Flash thinking 모드 대응: thought 파트 제외 후 실제 답변 텍스트 취합
+            let raw_text = parts
+              .filter((p: any) => !p.thought)
+              .map((p: any) => p.text || '')
+              .join('');
+
+            // 혹시 모든 파트가 필터링되었을 경우 전체 text 수집
+            if (!raw_text.trim() && parts.length > 0) {
+              raw_text = parts.map((p: any) => p.text || '').join('');
+            }
+
+            const output_text = raw_text.trim() || '응답을 생성하지 못했습니다.';
             const elapsed_ms = Date.now() - start_t;
 
             // 성공한 모델 즉시 반환

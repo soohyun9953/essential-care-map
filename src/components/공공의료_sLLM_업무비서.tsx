@@ -238,15 +238,15 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           {/* 구글 API 키 설정 버튼 */}
           <button
             onClick={() => set_is_key_modal_open(true)}
-            className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold border transition ${
+            className={`inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold border transition shadow-apple-sm ${
               google_api_key
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
+                : 'bg-amber-400/20 text-amber-900 border-amber-400 hover:bg-amber-400/30 ring-2 ring-amber-400/40 animate-pulse'
             }`}
             title="Google Gemini API 키 입력 및 관리"
           >
-            <Key className="w-3.5 h-3.5" />
-            <span>{google_api_key ? 'Google 키 등록됨' : 'Google 키 입력'}</span>
+            <Key className="w-3.5 h-3.5 text-amber-600" />
+            <span>{google_api_key ? '🔑 Google 키 등록됨' : '🔑 Google API 키 입력'}</span>
           </button>
 
           {/* 새 지침 직접 등록 버튼 */}
@@ -391,6 +391,22 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </button>
                   )}
                 </div>
+
+                {/* API 키 미등록 시 직관적인 입력 유도 배너 */}
+                {!google_api_key && (
+                  <div className="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-[11px] text-amber-900">
+                    <div className="flex items-center gap-1.5">
+                      <Key className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Gemini API 키를 등록하면 실제 실시간 구글 AI가 답변합니다.</span>
+                    </div>
+                    <button
+                      onClick={() => set_is_key_modal_open(true)}
+                      className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition shrink-0 shadow-apple-sm"
+                    >
+                      키 입력하기
+                    </button>
+                  </div>
+                )}
 
                 {/* 본문 */}
                 <div className="mt-3">

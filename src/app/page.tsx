@@ -190,9 +190,9 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             {/* 좌측: 브레드크럼 타이틀 */}
             <div>
-              <div className="flex items-center space-x-1.5 text-[11px] text-[#86868b] font-medium">
+              <div className="flex items-center space-x-1.5 text-xs text-[#86868b] font-medium">
                 <span>공공보건의료 플랫폼</span>
-                <ChevronRight className="w-3 h-3 text-slate-400" />
+                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                 <span className="text-[#0071e3] font-bold">
                   {active_menu === 'gis_map' && 'GIS 헬스맵'}
                   {active_menu === 'diagnosis_metrics' && '종합 지표 진단'}
@@ -205,7 +205,7 @@ export default function Home() {
                   {active_menu === 'citizen_view' && '일반국민 안심뷰'}
                 </span>
               </div>
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#1d1d1f] mt-0.5">
+              <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#1d1d1f] mt-1">
                 {current_title_info.title}
               </h2>
             </div>
@@ -215,33 +215,33 @@ export default function Home() {
               {/* Google API 키 설정 버튼 */}
               <button
                 onClick={() => set_is_key_modal_open(true)}
-                className={`inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-bold border transition shadow-apple-sm ${
+                className={`inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-bold border transition shadow-apple-sm ${
                   google_api_key
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-amber-400/20 text-amber-900 border-amber-400 hover:bg-amber-400/30'
                 }`}
                 title="Google Gemini API 키 관리"
               >
-                <Key className="w-3.5 h-3.5 text-amber-600" />
+                <Key className="w-4 h-4 text-amber-600" />
                 <span>{google_api_key ? 'Google 키 등록됨' : 'Google 키 입력'}</span>
               </button>
 
               {/* 환각 제로 원문 대조 버튼 */}
               <button
                 onClick={() => set_is_grounding_open(true)}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs font-semibold shadow-apple-sm transition"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-xs sm:text-sm font-semibold shadow-apple-sm transition"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
                 <span className="hidden sm:inline">원문 대조</span>
               </button>
 
               {/* 리포트 이미지 저장 버튼 */}
               <button
                 onClick={handle_export_report_png}
-                className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-white border border-black/[0.08] hover:bg-slate-100 text-[#1d1d1f] rounded-full text-xs font-semibold shadow-apple-sm transition"
+                className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 bg-white border border-black/[0.08] hover:bg-slate-100 text-[#1d1d1f] rounded-full text-xs sm:text-sm font-semibold shadow-apple-sm transition"
                 title="현재 화면을 PNG 이미지로 캡처 저장"
               >
-                <Camera className="w-3.5 h-3.5 text-[#86868b]" />
+                <Camera className="w-4 h-4 text-[#86868b]" />
                 <span className="hidden sm:inline">화면 캡처</span>
               </button>
             </div>

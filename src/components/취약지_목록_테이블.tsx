@@ -125,43 +125,43 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
 
       {/* 테이블 스크롤 영역 */}
       <div className="flex-1 min-h-[380px] max-h-[460px] overflow-y-auto overflow-x-auto rounded-2xl border border-black/[0.04]">
-        <table className="w-full text-left text-xs text-[#1d1d1f]">
-          <thead className="bg-[#f5f5f7] text-[#86868b] font-semibold sticky top-0 z-10 border-b border-black/[0.04]">
+        <table className="w-full text-left text-sm text-[#1d1d1f]">
+          <thead className="bg-[#f5f5f7] text-[#86868b] font-semibold sticky top-0 z-10 border-b border-black/[0.04] text-xs">
             <tr>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('시도명')}>
                 <div className="flex items-center gap-1">
                   <span>지역명</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('종합_취약도_등급')}>
                 <div className="flex items-center gap-1">
                   <span>취약도</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('응급_60분_미도달_인구비율')}>
                 <div className="flex items-center gap-1">
                   <span>응급 미도달</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('관내_응급_의료이용률')}>
                 <div className="flex items-center gap-1">
                   <span>응급 RI</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('분만_60분_미도달_인구비율')}>
                 <div className="flex items-center gap-1">
                   <span>분만 미도달</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 cursor-pointer hover:text-[#1d1d1f] transition" onClick={() => handle_sort('소아_병상_공급비율')}>
                 <div className="flex items-center gap-1">
                   <span>소아 병상</span>
-                  <ArrowUpDown className="w-3 h-3 text-[#86868b]" />
+                  <ArrowUpDown className="w-3.5 h-3.5 text-[#86868b]" />
                 </div>
               </th>
               <th className="py-2.5 px-3 text-center"></th>
@@ -186,15 +186,15 @@ export const 취약지_목록_테이블: React.FC<취약지_목록_테이블_속
                 >
                   <td className="py-2.5 px-3">
                     <div className="flex flex-col">
-                      <span className="font-semibold text-[#1d1d1f]">
+                      <span className="font-bold text-[#1d1d1f] text-sm">
                         {item.시군구명}
                       </span>
-                      <span className="text-[10px] text-[#86868b]">{item.시도명}</span>
+                      <span className="text-xs text-[#86868b]">{item.시도명}</span>
                     </div>
                   </td>
                   <td className="py-2.5 px-3">
                     <span
-                      className="px-2 py-0.5 rounded-full text-[10px] font-semibold text-white shadow-2xs"
+                      className="px-2 py-0.5 rounded-full text-xs font-bold text-white shadow-2xs"
                       style={{ backgroundColor: meta_info.색상코드 }}
                     >
                       {item.종합_취약도_등급}

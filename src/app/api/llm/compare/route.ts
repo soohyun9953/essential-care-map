@@ -283,8 +283,13 @@ ${failure_details}
         elapsed_ms,
         response: `[노트북 로컬 sLLM 가동 안내]
 현재 노트북의 로컬 sLLM 서버가 대기 중입니다.
-터미널에서 다음 명령어를 실행하시면 실제 온디바이스 모델로 실시간 추론이 활성화됩니다:
-$ python scripts/local_sllm_server.py
+
+▶ 가장 간편한 방법:
+바탕화면의 [로컬_sLLM_실행.bat] 파일을 더블클릭하세요!
+
+▶ 명령 프롬프트(CMD)에서 직접 실행 시:
+cd Desktop\\헬스맵2
+python scripts/local_sllm_server.py
 
 ■ ${region_name} 온디바이스 폐쇄망 분석 요약:
 1. 보안 보증: 환자 주민번호 및 비식별 진료기록이 외부 인터넷망으로 단 1바이트도 유출되지 않음.

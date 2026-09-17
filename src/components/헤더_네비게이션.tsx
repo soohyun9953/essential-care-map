@@ -48,7 +48,7 @@ export const 헤더_네비게이션: React.FC<헤더_네비게이션_속성> = (
                   국립중앙의료원 공공보건의료지원센터
                 </span>
                 <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
-                  20260916 v0.22
+                  2026.09.17 v0.23
                 </span>
               </div>
               <h1 className="text-sm sm:text-base font-semibold tracking-tight text-[#1d1d1f] flex items-center gap-1.5">

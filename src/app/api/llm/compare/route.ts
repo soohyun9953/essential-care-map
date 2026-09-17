@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,16 +47,19 @@ ${rag_context}
 지침과 통계를 근거로 전문적이고 논리정연한 공문서 개조식 보고서 형태로 답변하세요.`;
 
     // 1. Google Gemini 호출 함수
+    // 1. Google Gemini 다중 모델 순차 호출 함수 (가용 모델을 성공할 때까지 간격을 두고 시도)
     const fetch_gemini = async () => {
       const start_t = Date.now();
-      if (!final_google_key) {
+      const clean_key = final_google_key.trim().replace(/^["']|["']$/g, '').replace(/[\r\n\t]/g, '');
+
+      if (!clean_key) {
         return {
-          model: 'Google Gemini 1.5 Flash',
+          model: 'Google Gemini 1.5 Flash (시뮬레이션)',
           is_live: false,
           elapsed_ms: 120,
           response: `[안내: 구글 API 키 미입력 상태]
 Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 시뮬레이션 모드로 동작 중입니다.
-우측 상단 [구글 API 키 설정] 버튼을 눌러 본인의 Gemini API 키를 입력하시면 실시간 실제 Gemini 1.5 Flash 추론 결과를 확인하실 수 있습니다.
+우측 상단 [Google 키 입력] 버튼을 눌러 본인의 Gemini API 키를 입력하시면 실시간 실제 Gemini 추론 결과를 확인하실 수 있습니다.
 
 ■ ${region_name} 지침 부합성 진단 (사전 캐시)
 1. 법적 근거 검토
@@ -68,56 +71,101 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
         };
       }
 
-      try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${final_google_key}`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  { text: `${system_instruction}\n\n사용자 질의: ${query}` }
-                ],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.4,
-              maxOutputTokens: 800,
-            },
-          }),
-        });
+      // 지원 모델 후보군 (우선순위 순서대로 순차 시도)
+      const CANDIDATE_MODELS = [
+        { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash', desc: '초고속 표준 모델' },
+        { id: 'gemini-2.0-flash', name: 'Google Gemini 2.0 Flash', desc: '차세대 2.0 플래그십' },
+        { id: 'gemini-1.5-flash-8b', name: 'Google Gemini 1.5 Flash-8B', desc: '초경량 고효율 모델' },
+        { id: 'gemini-2.0-flash-exp', name: 'Google Gemini 2.0 Flash Exp', desc: '2.0 익스페리멘탈' },
+        { id: 'gemini-1.5-pro', name: 'Google Gemini 1.5 Pro', desc: '고성능 심층 분석 모델' },
+        { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro', desc: '안정형 레거시 모델' },
+      ];
 
-        const elapsed_ms = Date.now() - start_t;
+      const attempts_log: Array<{ model: string; error: string; status: number }> = [];
 
-        if (!response.ok) {
-          const err_json = await response.json().catch(() => ({}));
-          throw new Error(err_json?.error?.message || `HTTP ${response.status}`);
+      for (let i = 0; i < CANDIDATE_MODELS.length; i++) {
+        const candidate = CANDIDATE_MODELS[i];
+
+        // 2번째 시도부터는 API 과열 방지 및 네트워크 안정을 위해 400ms 간격을 두고 진행
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 400));
         }
 
-        const data = await response.json();
-        const output_text =
-          data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 생성하지 못했습니다.';
+        try {
+          const url = `https://generativelanguage.googleapis.com/v1beta/models/${candidate.id}:generateContent?key=${clean_key}`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    { text: `${system_instruction}\n\n사용자 질의: ${query}` }
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.4,
+                maxOutputTokens: 800,
+              },
+            }),
+          });
 
-        return {
-          model: 'Google Gemini 1.5 Flash (Cloud API)',
-          is_live: true,
-          elapsed_ms,
-          response: output_text.trim(),
-          security: '외부 클라우드 전송 (SSL/TLS 암호화 통신)',
-          cost: `토큰: ${data.usageMetadata?.totalTokenCount ?? 'N/A'} (Pay-per-Token)`,
-        };
-      } catch (err: any) {
-        return {
-          model: 'Google Gemini 1.5 Flash (Error)',
-          is_live: false,
-          elapsed_ms: Date.now() - start_t,
-          response: `[구글 Gemini API 호출 실패]\n원인: ${err.message}\nAPI 키 유효성 또는 인터넷 연결 상태를 확인해 주세요.`,
-          security: '외부 클라우드 전송 실패',
-          cost: '비용 발생 없음',
-        };
+          if (response.ok) {
+            const data = await response.json();
+            const output_text =
+              data.candidates?.[0]?.content?.parts?.[0]?.text || '응답을 생성하지 못했습니다.';
+            const elapsed_ms = Date.now() - start_t;
+
+            // 성공한 모델 즉시 반환
+            return {
+              model: `${candidate.name} (성공)`,
+              model_id: candidate.id,
+              is_live: true,
+              elapsed_ms,
+              success_model: candidate.name,
+              attempt_order: i + 1,
+              total_candidates_tried: i + 1,
+              response: `[✓ 호출 성공 모델: ${candidate.name} (${candidate.id})]\n\n${output_text.trim()}`,
+              security: '외부 클라우드 전송 (SSL/TLS 암호화 통신)',
+              cost: `토큰: ${data.usageMetadata?.totalTokenCount ?? 'N/A'} (Pay-per-Token)`,
+            };
+          } else {
+            const err_json = await response.json().catch(() => ({}));
+            const err_msg = err_json?.error?.message || `HTTP ${response.status}`;
+            attempts_log.push({ model: candidate.name, error: err_msg, status: response.status });
+
+            // API 키 자체가 완전히 틀린 경우(400 INVALID_ARGUMENT)에는 모든 모델에서 동일하므로 빠르게 종료하거나 다음 시도
+            if (response.status === 400 && err_msg.toLowerCase().includes('api key not valid')) {
+              break;
+            }
+          }
+        } catch (err: any) {
+          attempts_log.push({ model: candidate.name, error: err.message || '네트워크 오류', status: 0 });
+        }
       }
+
+      // 모든 모델 시도 실패 시
+      const elapsed_ms = Date.now() - start_t;
+      const failure_details = attempts_log
+        .map((a, idx) => `  ${idx + 1}. ${a.model}: ${a.error}`)
+        .join('\n');
+
+      return {
+        model: 'Google Gemini (모든 가용 모델 시도 실패)',
+        is_live: false,
+        elapsed_ms,
+        response: `[구글 Gemini API 호출 실패 - 가용 모델 순차 시도 완료]
+시도한 모델 목록 (${attempts_log.length}개 모델 순차 시도):
+${failure_details}
+
+💡 해결 안내:
+1. 입력하신 Google API 키("${clean_key.slice(0, 6)}...")가 올바른지 확인해 주세요.
+2. Google AI Studio (https://aistudio.google.com/app/apikey)에서 무료 API 키를 새로 생성하여 상단 [Google 키 입력] 메뉴에 등록하시면 즉시 실시간 연동됩니다.`,
+        security: '외부 클라우드 전송 실패',
+        cost: '비용 발생 없음',
+      };
     };
 
     // 2. 노트북 로컬 sLLM 호출 함수 (1차: Python sLLM 서버 8000, 2차: Ollama 11434)

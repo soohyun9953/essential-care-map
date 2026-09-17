@@ -48,6 +48,8 @@ interface sLLM_업무비서_속성 {
 interface LLM_비교_결과 {
   google_gemini: {
     model: string;
+    model_id?: string;
+    success_model?: string;
     response: string;
     elapsed_ms: number;
     is_live: boolean;
@@ -369,14 +371,27 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <Globe className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-[#1d1d1f]">Google Gemini 1.5 Flash</span>
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#0071e3]/10 text-[#0071e3]">
-                          외부 클라우드 API
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-bold text-[#1d1d1f]">
+                          {compare_result?.google_gemini.success_model
+                            ? compare_result.google_gemini.success_model
+                            : compare_result?.google_gemini.model || 'Google Gemini (클라우드)'}
                         </span>
+                        {compare_result?.google_gemini.is_live ? (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white flex items-center gap-1 shadow-xs">
+                            <Check className="w-3 h-3" />
+                            <span>호출 성공</span>
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#0071e3]/10 text-[#0071e3]">
+                            외부 클라우드 API
+                          </span>
+                        )}
                       </div>
                       <span className="text-[10px] text-[#86868b]">
-                        초거대 파라미터 / 종합 정책 추론 및 고도화 문안 생성
+                        {compare_result?.google_gemini.is_live
+                          ? `✓ 가용 모델 자동 검증 완료 (성공: ${compare_result.google_gemini.success_model || 'Gemini'})`
+                          : '가용 모델 순차 자동 시도 (1.5 Flash ➔ 2.0 Flash ➔ 1.5 Pro)'}
                       </span>
                     </div>
                   </div>
@@ -413,7 +428,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                   {is_comparing ? (
                     <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
                       <div className="w-6 h-6 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs">Google Gemini 클라우드 추론 중...</span>
+                      <span className="text-xs font-semibold text-slate-600">
+                        가용 모델 순차 검증 및 추론 중...
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        (Gemini 1.5 Flash ➔ 2.0 Flash ➔ 1.5 Pro 순차 시도)
+                      </span>
                     </div>
                   ) : compare_result ? (
                     <pre className="text-xs font-mono text-slate-800 whitespace-pre-wrap leading-relaxed bg-white p-4 rounded-xl border border-black/[0.04] max-h-[360px] overflow-y-auto">
@@ -421,7 +441,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </pre>
                   ) : (
                     <div className="py-12 text-center text-slate-400 text-xs">
-                      [1:1 비교 실행] 버튼을 누르면 구글 Gemini의 실시간 분석 결과가 여기에 표시됩니다.
+                      [1:1 비교 실행] 버튼을 누르면 구글 Gemini의 가용 모델을 순차 시도하여 최적 모델로 분석합니다.
                     </div>
                   )}
                 </div>

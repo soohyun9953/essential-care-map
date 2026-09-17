@@ -48,11 +48,18 @@ import {
   ShieldCheck,
   ChevronRight,
   Download,
+  Moon,
+  Sun,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 export default function Home() {
   // 현재 활성화된 좌측 기능 메뉴
   const [active_menu, set_active_menu] = useState<메뉴_아이디>('gis_map');
+
+  // 사이드바 숨김 및 다크/블랙 테마 상태
+  const [is_sidebar_hidden, set_is_sidebar_hidden] = useState(false);
+  const [is_dark_mode, set_is_dark_mode] = useState(false);
 
   // 모달 상태
   const [is_grounding_open, set_is_grounding_open] = useState(false);
@@ -69,13 +76,48 @@ export default function Home() {
   const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
   const [region_unit, set_region_unit] = useState<지역_구분_단위>('시군구');
 
-  // 초기 데이터 로드 및 API 키 확인
+  // 초기 데이터 로드 및 API 키, 테마, 사이드바 숨김 설정 복원
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved_key = localStorage.getItem('google_gemini_api_key') || '';
       set_google_api_key(saved_key);
+
+      const saved_theme = localStorage.getItem('healthmap_theme');
+      if (saved_theme === 'dark') {
+        set_is_dark_mode(true);
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+
+      const saved_sidebar_hidden = localStorage.getItem('healthmap_sidebar_hidden') === 'true';
+      set_is_sidebar_hidden(saved_sidebar_hidden);
     }
   }, []);
+
+  // 다크/블랙 테마 전환 핸들러
+  const toggle_dark_mode = () => {
+    const next = !is_dark_mode;
+    set_is_dark_mode(next);
+    if (typeof window !== 'undefined') {
+      if (next) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('healthmap_theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('healthmap_theme', 'light');
+      }
+    }
+  };
+
+  // 사이드바 숨기기 / 펼치기 토글 핸들러
+  const toggle_sidebar_hidden = () => {
+    const next = !is_sidebar_hidden;
+    set_is_sidebar_hidden(next);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('healthmap_sidebar_hidden', String(next));
+    }
+  };
 
   // 원천 데이터 변경 시 일괄 진단 실행
   useEffect(() => {
@@ -168,7 +210,7 @@ export default function Home() {
   const current_title_info = MENU_TITLES[active_menu];
 
   return (
-    <main className="min-h-screen bg-[#f5f5f7] flex flex-col lg:flex-row selection:bg-[#0071e3]/20">
+    <main className="min-h-screen bg-[#f5f5f7] dark:bg-[#0c0d10] flex flex-col lg:flex-row selection:bg-[#0071e3]/20 transition-colors duration-200">
       {/* 1. 좌측 기능 사이드바 네비게이션 */}
       <메인_사이드바_네비게이션
         active_menu={active_menu}
@@ -181,6 +223,8 @@ export default function Home() {
         google_api_key_registered={!!google_api_key}
         selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}
         selected_region_grade={selected_region?.종합_취약도_등급 ?? '심각'}
+        is_hidden={is_sidebar_hidden}
+        on_toggle_hide={toggle_sidebar_hidden}
       />
 
       {/* 2. 우측 메인 워크스페이스 */}
@@ -188,30 +232,61 @@ export default function Home() {
         {/* 우측 상단 고정 헤더 바 (브레드크럼 & 지역 선택기 & 퀵 액션) */}
         <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-black/[0.06] px-4 sm:px-6 lg:px-8 py-3.5 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            {/* 좌측: 브레드크럼 타이틀 */}
-            <div>
-              <div className="flex items-center space-x-1.5 text-sm text-[#86868b] font-semibold">
-                <span>공공보건의료 플랫폼</span>
-                <ChevronRight className="w-4 h-4 text-slate-400" />
-                <span className="text-[#0071e3] font-bold">
-                  {active_menu === 'gis_map' && 'GIS 헬스맵'}
-                  {active_menu === 'diagnosis_metrics' && '종합 지표 진단'}
-                  {active_menu === 'dual_ai_studio' && '듀얼 AI 스튜디오'}
-                  {active_menu === 'report_generator' && '사업계획서 생성기'}
-                  {active_menu === 'hospital_crisis' && '경영위기 조기경보'}
-                  {active_menu === 'discharge_care' && '퇴원환자 돌봄연계'}
-                  {active_menu === 'compare_1to1' && '지자체 1:1 비교'}
-                  {active_menu === 'demand_forecast' && '2030 수요추계'}
-                  {active_menu === 'citizen_view' && '일반국민 안심뷰'}
-                </span>
+            {/* 좌측: 사이드바 복원 버튼 및 브레드크럼 타이틀 */}
+            <div className="flex items-center space-x-3">
+              {is_sidebar_hidden && (
+                <button
+                  onClick={toggle_sidebar_hidden}
+                  className="hidden lg:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white border border-black/[0.08] hover:bg-slate-100 text-[#1d1d1f] text-sm font-bold shadow-apple-sm transition shrink-0"
+                  title="좌측 기능 메뉴 펼치기"
+                >
+                  <PanelLeftOpen className="w-4 h-4 text-[#0071e3]" />
+                  <span>메뉴 열기</span>
+                </button>
+              )}
+
+              <div>
+                <div className="flex items-center space-x-1.5 text-sm text-[#86868b] font-semibold">
+                  <span>공공보건의료 플랫폼</span>
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                  <span className="text-[#0071e3] font-bold">
+                    {active_menu === 'gis_map' && 'GIS 헬스맵'}
+                    {active_menu === 'diagnosis_metrics' && '종합 지표 진단'}
+                    {active_menu === 'dual_ai_studio' && '듀얼 AI 스튜디오'}
+                    {active_menu === 'report_generator' && '사업계획서 생성기'}
+                    {active_menu === 'hospital_crisis' && '경영위기 조기경보'}
+                    {active_menu === 'discharge_care' && '퇴원환자 돌봄연계'}
+                    {active_menu === 'compare_1to1' && '지자체 1:1 비교'}
+                    {active_menu === 'demand_forecast' && '2030 수요추계'}
+                    {active_menu === 'citizen_view' && '일반국민 안심뷰'}
+                  </span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] mt-1">
+                  {current_title_info.title}
+                </h2>
               </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] mt-1">
-                {current_title_info.title}
-              </h2>
             </div>
 
             {/* 우측 상단 액션 버튼 그룹 */}
-            <div className="flex items-center space-x-2 shrink-0">
+            <div className="flex items-center space-x-2 shrink-0 flex-wrap gap-y-1">
+              {/* 블랙 테마 / 화이트 테마 전환 토글 버튼 */}
+              <button
+                onClick={toggle_dark_mode}
+                className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
+                  is_dark_mode
+                    ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 hover:bg-amber-400/30'
+                    : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800'
+                }`}
+                title={is_dark_mode ? '화이트 테마로 전환' : '블랙 테마로 전환'}
+              >
+                {is_dark_mode ? (
+                  <Sun className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-200" />
+                )}
+                <span>{is_dark_mode ? '화이트 테마' : '블랙 테마'}</span>
+              </button>
+
               {/* Google API 키 설정 버튼 */}
               <button
                 onClick={() => set_is_key_modal_open(true)}

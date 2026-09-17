@@ -88,3 +88,123 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.28);
 }
+
+/* ==========================================================================
+   프리미엄 블랙/다크 테마 (OLED Black & Midnight Slate)
+   ========================================================================== */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body {
+  background-color: #0c0d10 !important;
+  color: #f1f5f9 !important;
+}
+
+/* 다크 모드 카드 & 서피스 자동 전환 */
+html.dark .bg-white {
+  background-color: #15161b !important;
+  color: #f1f5f9;
+}
+
+html.dark .bg-white\/85,
+html.dark .bg-white\/90,
+html.dark .bg-white\/95 {
+  background-color: rgba(21, 22, 27, 0.88) !important;
+  color: #f1f5f9;
+}
+
+html.dark .bg-\[\#f5f5f7\],
+html.dark .bg-slate-50,
+html.dark .bg-slate-100 {
+  background-color: #1e2027 !important;
+  color: #e2e8f0;
+}
+
+html.dark .bg-\[\#e8e8ed\],
+html.dark .bg-slate-200 {
+  background-color: #2a2d37 !important;
+}
+
+/* 텍스트 색상 다크 모드 적응 */
+html.dark .text-\[\#1d1d1f\],
+html.dark .text-slate-900,
+html.dark .text-slate-800 {
+  color: #f8fafc !important;
+}
+
+html.dark .text-slate-700,
+html.dark .text-slate-600 {
+  color: #cbd5e1 !important;
+}
+
+html.dark .text-\[\#86868b\],
+html.dark .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* 보더 다크 모드 적응 */
+html.dark .border-black\/\[0\.04\],
+html.dark .border-black\/\[0\.05\],
+html.dark .border-black\/\[0\.06\],
+html.dark .border-black\/\[0\.08\],
+html.dark .border-slate-100,
+html.dark .border-slate-200 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .divide-black\/\[0\.03\],
+html.dark .divide-black\/\[0\.04\],
+html.dark .divide-slate-100 {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* 입력창 & 셀렉트 박스 다크 모드 */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #1e2027 !important;
+  color: #f8fafc !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* 다크 모드 스크롤바 */
+html.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Leaflet 지도 컨테이너 다크 모드 톤 */
+html.dark .leaflet-container {
+  background-color: #121316 !important;
+}
+
+html.dark .leaflet-tooltip-custom {
+  background: rgba(21, 22, 27, 0.94) !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .leaflet-tooltip-custom:before {
+  border-top-color: rgba(21, 22, 27, 0.94) !important;
+}
+
+html.dark .leaflet-control-zoom a {
+  background-color: rgba(26, 28, 35, 0.92) !important;
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+html.dark .leaflet-control-zoom a:hover {
+  background-color: #272a34 !important;
+  color: #38bdf8 !important;
+}

@@ -142,6 +142,8 @@ interface 메인_사이드바_네비게이션_속성 {
   google_api_key_registered: boolean;
   selected_region_name?: string;
   selected_region_grade?: string;
+  is_hidden?: boolean;
+  on_toggle_hide?: () => void;
 }
 
 export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_네비게이션_속성> = ({
@@ -155,6 +157,8 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
   google_api_key_registered,
   selected_region_name = '강원도 영월군',
   selected_region_grade = '심각',
+  is_hidden = false,
+  on_toggle_hide,
 }) => {
   const [is_mobile_open, set_is_mobile_open] = useState(false);
 
@@ -197,8 +201,12 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
       {/* 좌측 사이드바 본체 */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 w-84 min-w-[336px] bg-white border-r border-black/[0.06] flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-lg lg:shadow-none ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 bg-white border-r border-black/[0.06] flex flex-col justify-between transition-all duration-300 ease-in-out shadow-lg lg:shadow-none ${
           is_mobile_open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } ${
+          is_hidden
+            ? 'lg:w-0 lg:min-w-0 lg:-ml-84 lg:overflow-hidden lg:opacity-0 lg:pointer-events-none'
+            : 'lg:w-84 lg:min-w-[336px]'
         }`}
       >
         {/* 상단: 플랫폼 로고 및 헤더 */}
@@ -223,12 +231,26 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               </div>
             </div>
 
-            <button
-              onClick={() => set_is_mobile_open(false)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center space-x-1">
+              {/* 데스크톱 사이드바 접기/숨기기 버튼 */}
+              {on_toggle_hide && (
+                <button
+                  onClick={on_toggle_hide}
+                  className="hidden lg:flex p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+                  title="사이드바 메뉴 숨기기 (화면 넓게 보기)"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+              )}
+
+              {/* 모바일 닫기 버튼 */}
+              <button
+                onClick={() => set_is_mobile_open(false)}
+                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           {/* 현재 선택된 진단 지역 간이 카드 */}

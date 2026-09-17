@@ -139,7 +139,18 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
 
         try {
           const url = `https://generativelanguage.googleapis.com/${candidate.api_ver}/models/${candidate.id}:generateContent?key=${clean_key}`;
-          const response = await fetch(url, {
+          
+          const genConfig: Record<string, any> = {
+            temperature: 0.4,
+            maxOutputTokens: 8192,
+          };
+
+          // Gemini 2.5 / 2.0 모델: 생각(Thinking) 토큰 과다 소진으로 본문이 잘리는 현상 방지 (thinkingBudget: 0으로 즉시 응답 생성)
+          if (candidate.id.includes('2.5') || candidate.id.includes('2.0')) {
+            genConfig.thinkingConfig = { thinkingBudget: 0 };
+          }
+
+          let response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -151,12 +162,29 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
                   ],
                 },
               ],
-              generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 2500,
-              },
+              generationConfig: genConfig,
             }),
           });
+
+          // 만약 thinkingConfig를 지원하지 않아 400 에러 발생 시 thinkingConfig 제외하고 재시도
+          if (response.status === 400 && genConfig.thinkingConfig) {
+            delete genConfig.thinkingConfig;
+            response = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [
+                      { text: `${system_instruction}\n\n사용자 질의: ${query}` }
+                    ],
+                  },
+                ],
+                generationConfig: genConfig,
+              }),
+            });
+          }
 
           if (response.ok) {
             const data = await response.json();

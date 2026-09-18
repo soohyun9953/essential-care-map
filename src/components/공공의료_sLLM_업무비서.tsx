@@ -475,7 +475,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     🔗 RAG + 듀얼 AI 실시간 결합 가동 중:
                   </span>{' '}
                   <span className="text-slate-600">
-                    보건복지부 지침 DB에서 <strong>{rag_result.검색된_청크목록.length}건의 핵심 근거 조항</strong>을 실시간 검색하여, 두 모델(Gemini & 로컬 sLLM)의 프롬프트에 동시 주입하여 답변을 생성합니다.
+                    보건복지부 지침 DB 및 <strong>직접 등록하신 규정 문서</strong>에서 <strong>{rag_result.검색된_청크목록.length}건의 핵심 근거 조항</strong>을 실시간 검색하여, 두 모델(Gemini & 로컬 sLLM)의 프롬프트에 동시 주입하여 답변을 생성합니다.
                   </span>
                 </div>
               </div>
@@ -504,7 +504,14 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 {rag_result.검색된_청크목록.slice(0, 3).map((item, idx) => (
                   <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1 shadow-xs">
                     <div className="flex items-center justify-between text-[#0071e3] font-bold">
-                      <span className="truncate max-w-[170px]">{item.청크.문서명}</span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        {item.청크.사용자추가여부 && (
+                          <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                            직접등록 지침
+                          </span>
+                        )}
+                        <span className="truncate max-w-[150px]">{item.청크.문서명}</span>
+                      </div>
                       <span className="shrink-0 text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-700">일치도 {item.유사도_점수}%</span>
                     </div>
                     <div className="text-slate-400 text-[10px] font-medium">{item.청크.조항_페이지}</div>

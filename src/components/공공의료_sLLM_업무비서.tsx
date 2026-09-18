@@ -35,6 +35,7 @@ import {
   Power,
   Loader2,
   RefreshCw,
+  HelpCircle,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { copy_text_to_clipboard } from '@/lib/유틸리티';
@@ -42,6 +43,7 @@ import { 경량_RAG_엔진, RAG_실행_응답 } from '@/lib/경량_rag_엔진';
 import { get_all_corpus } from '@/lib/공공의료_지침_코퍼스';
 import { 지침_문서_등록_모달 } from './지침_문서_등록_모달';
 import { 구글_api키_설정_모달 } from './구글_api키_설정_모달';
+import { 듀얼_AI_안내_모달 } from './듀얼_AI_안내_모달';
 
 interface sLLM_업무비서_속성 {
   selected_region?: 필수의료_진단_결과 | null;
@@ -91,6 +93,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [show_sources, set_show_sources] = useState(true);
   const [is_doc_modal_open, set_is_doc_modal_open] = useState(false);
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
+  const [is_guide_modal_open, set_is_guide_modal_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
   const [total_doc_count, set_total_doc_count] = useState(12);
 
@@ -286,6 +289,16 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             </button>
           </div>
 
+          {/* 듀얼 AI 쉬운 설명 팝업 열기 버튼 */}
+          <button
+            onClick={() => set_is_guide_modal_open(true)}
+            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold bg-gradient-to-r from-blue-500/10 via-emerald-500/10 to-blue-500/10 hover:from-blue-500/20 hover:to-emerald-500/20 text-[#0071e3] border border-[#0071e3]/30 transition shadow-apple-sm active:scale-95"
+            title="듀얼 AI(클라우드 Gemini vs 온디바이스 sLLM) 기능을 아주 쉽게 설명해 드립니다"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <span>💡 듀얼 AI란? (쉬운 가이드)</span>
+          </button>
+
           {/* 구글 API 키 설정 버튼 */}
           <button
             onClick={() => set_is_key_modal_open(true)}
@@ -435,7 +448,14 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 1회 질의로 구글 클라우드 AI와 노트북 로컬 sLLM의 답변 품질 및 보안성을 동시 측정합니다.
               </span>
             </div>
-            <div className="flex items-center space-x-3 text-[11px] text-slate-500">
+            <div className="flex items-center space-x-2.5 text-[11px] text-slate-500 flex-wrap">
+              <button
+                onClick={() => set_is_guide_modal_open(true)}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:text-[#005bb5] bg-white hover:bg-blue-50/60 px-2.5 py-1 rounded-xl border border-blue-200/80 shadow-xs transition"
+              >
+                <HelpCircle className="w-3 h-3 text-[#0071e3]" />
+                <span>듀얼 AI란? 쉽게 보기</span>
+              </button>
               <span>🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>
               <span>•</span>
               <span>💻 온디바이스: Qwen2.5-0.5B (폐쇄망 지원)</span>
@@ -874,6 +894,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         is_open={is_key_modal_open}
         on_close={() => set_is_key_modal_open(false)}
         on_key_saved={(new_key) => set_google_api_key(new_key)}
+      />
+
+      {/* 듀얼 AI 초간단 쉬운 설명 모달 */}
+      <듀얼_AI_안내_모달
+        is_open={is_guide_modal_open}
+        on_close={() => set_is_guide_modal_open(false)}
       />
     </div>
   );

@@ -4,7 +4,7 @@
 // 1. 실제 경량 하이브리드 RAG 엔진 연동
 // 2. 외부 클라우드 LLM(Google Gemini) vs 노트북 로컬 sLLM(Qwen2.5-0.5B-Instruct) 1:1 비교 스튜디오 탑재
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Bot,
   Sparkles,
@@ -36,6 +36,7 @@ import {
   Loader2,
   RefreshCw,
   HelpCircle,
+  X,
 } from 'lucide-react';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { copy_text_to_clipboard } from '@/lib/유틸리티';
@@ -103,6 +104,39 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
   const [show_compare_rag, set_show_compare_rag] = useState(false);
 
+  // 추천 정책질의 드롭다운 목록 관리 (직접 입력 자동 등록 & 로컬스토리지 보존)
+  const [prompt_list, set_prompt_list] = useState<string[]>(PRESET_PROMPTS);
+  const [is_dropdown_open, set_is_dropdown_open] = useState(false);
+  const dropdown_ref = useRef<HTMLDivElement>(null);
+
+  // 새로운 정책 질의 자동 등록 및 로컬스토리지 저장
+  const save_prompt_if_new = (new_prompt: string) => {
+    const trimmed = new_prompt.trim();
+    if (!trimmed) return;
+    set_prompt_list((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      const updated = [trimmed, ...prev];
+      if (typeof window !== 'undefined') {
+        const user_saved = updated.filter((p) => !PRESET_PROMPTS.includes(p));
+        localStorage.setItem('user_saved_policy_prompts', JSON.stringify(user_saved));
+      }
+      return updated;
+    });
+  };
+
+  // 등록된 질의 삭제 핸들러
+  const handle_delete_prompt = (e: React.MouseEvent, prompt_to_delete: string) => {
+    e.stopPropagation();
+    set_prompt_list((prev) => {
+      const updated = prev.filter((p) => p !== prompt_to_delete);
+      if (typeof window !== 'undefined') {
+        const user_saved = updated.filter((p) => !PRESET_PROMPTS.includes(p));
+        localStorage.setItem('user_saved_policy_prompts', JSON.stringify(user_saved));
+      }
+      return updated;
+    });
+  };
+
   // 로컬 sLLM 서버 구동 상태
   const [local_server_status, set_local_server_status] = useState<{
     is_running: boolean;
@@ -151,6 +185,18 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     if (typeof window !== 'undefined') {
       const saved_key = localStorage.getItem('google_gemini_api_key') || '';
       set_google_api_key(saved_key);
+
+      // 사용자가 이전에 직접 등록했던 정책 질의들 복원
+      const saved_prompts = localStorage.getItem('user_saved_policy_prompts');
+      if (saved_prompts) {
+        try {
+          const parsed = JSON.parse(saved_prompts);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const merged = Array.from(new Set([...PRESET_PROMPTS, ...parsed]));
+            set_prompt_list(merged);
+          }
+        } catch {}
+      }
     }
     const all_docs = get_all_corpus();
     set_total_doc_count(all_docs.length);
@@ -159,6 +205,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
     // 마운트 시 로컬 서버 상태 감지
     check_local_server_status();
+
+    // 바깥 클릭 시 드롭다운 닫기
+    const handle_click_outside = (e: MouseEvent) => {
+      if (dropdown_ref.current && !dropdown_ref.current.contains(e.target as Node)) {
+        set_is_dropdown_open(false);
+      }
+    };
+    document.addEventListener('mousedown', handle_click_outside);
+    return () => {
+      document.removeEventListener('mousedown', handle_click_outside);
+    };
   }, []);
 
   // 새 문서 등록 시 코퍼스 갱신
@@ -171,6 +228,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
   // 단일 뷰 실행 핸들러
   const handle_execute_workflow = () => {
+    save_prompt_if_new(selected_prompt);
     set_is_running(true);
     set_workflow_step(1);
 
@@ -188,6 +246,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
   // 1:1 비교 실행 핸들러 (외부 Gemini vs 로컬 sLLM)
   const handle_execute_compare = async () => {
+    save_prompt_if_new(selected_prompt);
     set_is_comparing(true);
     try {
       // 1. 먼저 RAG를 통해 지자체 DW 및 법령 청크 추출
@@ -368,31 +427,85 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         </div>
       </div>
 
-      {/* 2. 프롬프트 추천 칩 영역 */}
-      <div className="space-y-2">
-        <label className="text-xs font-bold text-[#1d1d1f] flex items-center justify-between">
-          <span>추천 정책 질의 (클릭 시 자동 입력):</span>
-          <span className="text-[11px] text-[#86868b] font-normal">
-            선택 지역: <strong>{selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}</strong>
-          </span>
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {PRESET_PROMPTS.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => {
-                set_selected_prompt(p);
-                set_workflow_step(0);
-              }}
-              className={`text-left text-xs px-3 py-2 rounded-xl border transition ${
-                selected_prompt === p
-                  ? 'bg-[#0071e3]/10 text-[#0071e3] border-[#0071e3]/30 font-semibold'
-                  : 'bg-[#f5f5f7] hover:bg-[#e8e8ed] text-slate-700 border-black/[0.04]'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+      {/* 2. 추천 정책 질의 드롭다운 선택기 (직접 입력 자동 등록 기능 포함) */}
+      <div className="space-y-2 relative" ref={dropdown_ref}>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-bold text-[#1d1d1f] flex items-center gap-1.5">
+            <span>추천 정책 질의:</span>
+            <span className="text-[11px] text-[#86868b] font-normal">
+              (드롭다운에서 선택하거나 직접 입력 시 자동 등록되어 다음에 사용 가능)
+            </span>
+          </label>
+          <button
+            type="button"
+            onClick={() => set_is_dropdown_open(!is_dropdown_open)}
+            className="text-xs text-[#0071e3] font-semibold hover:underline flex items-center gap-1"
+          >
+            <span>질의 목록 ({prompt_list.length}건)</span>
+            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${is_dropdown_open ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
+
+        {/* 드롭다운 셀렉트 박스 */}
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => set_is_dropdown_open(!is_dropdown_open)}
+            className="w-full flex items-center justify-between px-4 py-2.5 bg-[#f5f5f7] hover:bg-[#ebebeb] border border-black/[0.06] rounded-xl text-left text-xs transition"
+          >
+            <span className="truncate text-slate-800 font-medium">
+              📋 {selected_prompt ? selected_prompt : '추천 정책 질의를 선택하세요...'}
+            </span>
+            <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+          </button>
+
+          {/* 드롭다운 메뉴 팝오버 */}
+          {is_dropdown_open && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-black/[0.08] shadow-2xl rounded-2xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-150">
+              <div className="p-2.5 bg-slate-50 text-[11px] font-bold text-slate-500 flex items-center justify-between">
+                <span>클릭하여 질의를 선택하세요 (새로운 질의 입력 시 자동 추가)</span>
+                <span className="text-[10px] text-slate-400">총 {prompt_list.length}개</span>
+              </div>
+              <div className="p-1.5 space-y-1">
+                {prompt_list.map((p, idx) => {
+                  const is_custom = !PRESET_PROMPTS.includes(p);
+                  const is_active = selected_prompt === p;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        set_selected_prompt(p);
+                        set_workflow_step(0);
+                        set_is_dropdown_open(false);
+                      }}
+                      className={`group flex items-start justify-between gap-2 p-2.5 rounded-xl cursor-pointer text-xs transition ${
+                        is_active
+                          ? 'bg-blue-50 text-[#0071e3] font-semibold'
+                          : 'hover:bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      <div className="flex items-start gap-2 min-w-0">
+                        <span className="shrink-0 mt-0.5 text-[10px] px-1.5 py-0.2 rounded font-bold bg-slate-100 text-slate-600">
+                          {is_custom ? '직접등록' : `추천 ${idx + 1}`}
+                        </span>
+                        <span className="leading-snug">{p}</span>
+                      </div>
+                      {is_custom && (
+                        <button
+                          type="button"
+                          onClick={(e) => handle_delete_prompt(e, p)}
+                          className="shrink-0 text-slate-400 hover:text-red-500 p-1 rounded-md transition"
+                          title="질의 목록에서 삭제"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

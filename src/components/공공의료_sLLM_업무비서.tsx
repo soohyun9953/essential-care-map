@@ -104,6 +104,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
   const [show_compare_rag, set_show_compare_rag] = useState(false);
 
+  // 모델별 독립 RAG 주입 근거 수 및 상세 보기 상태
+  const [gemini_rag_count, set_gemini_rag_count] = useState<number>(4);
+  const [local_rag_count, set_local_rag_count] = useState<number>(2);
+  const [show_gemini_rag_details, set_show_gemini_rag_details] = useState<boolean>(false);
+  const [show_local_rag_details, set_show_local_rag_details] = useState<boolean>(false);
+
   // 추천 정책질의 드롭다운 목록 관리 (직접 입력 자동 등록 & 로컬스토리지 보존)
   const [prompt_list, set_prompt_list] = useState<string[]>(PRESET_PROMPTS);
   const [is_dropdown_open, set_is_dropdown_open] = useState(false);
@@ -253,7 +259,15 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       const local_rag = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
       set_rag_result(local_rag);
 
-      const rag_context_text = local_rag.검색된_청크목록
+      // 모델별 독립된 RAG 청크 슬라이스 (선택한 개수만큼 전달)
+      const gemini_chunks = local_rag.검색된_청크목록.slice(0, gemini_rag_count);
+      const local_chunks = local_rag.검색된_청크목록.slice(0, local_rag_count);
+
+      const gemini_rag_text = gemini_chunks
+        .map((c, i) => `[근거 ${i + 1}] ${c.청크.문서명} (${c.청크.조항_페이지}):\n${c.청크.본문}`)
+        .join('\n\n');
+
+      const local_rag_text = local_chunks
         .map((c, i) => `[근거 ${i + 1}] ${c.청크.문서명} (${c.청크.조항_페이지}):\n${c.청크.본문}`)
         .join('\n\n');
 
@@ -261,7 +275,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         ? `${selected_region.시도명} ${selected_region.시군구명}`
         : '강원특별자치도 영월군';
 
-      // 2. /api/llm/compare 엔드포인트로 병렬 요청
+      // 2. /api/llm/compare 엔드포인트로 병렬 요청 (모델별 선택된 수와 내용 각각 전달)
       const res = await fetch('/api/llm/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -275,7 +289,11 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             maternity_rate: selected_region?.관내_분만율 ?? 15.2,
             vulnerability_grade: selected_region?.종합_취약도_등급 ?? '심각',
           },
-          rag_context: rag_context_text,
+          rag_context: gemini_rag_text,
+          gemini_rag_context: gemini_rag_text,
+          local_rag_context: local_rag_text,
+          gemini_chunks_count: gemini_rag_count,
+          local_chunks_count: local_rag_count,
         }),
       });
 
@@ -684,6 +702,69 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                   )}
                 </div>
 
+                {/* Gemini 전용 RAG 주입 건수 선택기 & 전달 내용 보기 */}
+                <div className="mt-3 p-3 bg-blue-50/80 rounded-2xl border border-blue-200/80 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-bold text-blue-950">
+                      <Database className="w-3.5 h-3.5 text-blue-600" />
+                      <span>RAG 근거 주입:</span>
+                      <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-blue-200 shadow-xs">
+                        {[1, 2, 3, 4, 5, 6].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => set_gemini_rag_count(num)}
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition ${
+                              gemini_rag_count === num
+                                ? 'bg-[#0071e3] text-white shadow-xs'
+                                : 'text-slate-600 hover:bg-slate-100'
+                            }`}
+                          >
+                            {num}건
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => set_show_gemini_rag_details(!show_gemini_rag_details)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:underline bg-white px-2.5 py-1 rounded-lg border border-blue-200 shadow-xs transition"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>{show_gemini_rag_details ? '주입 내용 접기 ▲' : `전달된 내용 (${gemini_rag_count}건) 보기 ▼`}</span>
+                    </button>
+                  </div>
+
+                  {/* 실제 Gemini에 전달된 RAG 조항 내용 각각 표시 */}
+                  {show_gemini_rag_details && rag_result && (
+                    <div className="pt-2 border-t border-blue-200/60 space-y-1.5 max-h-52 overflow-y-auto animate-in fade-in duration-150">
+                      <div className="text-[10px] text-blue-800 font-semibold flex items-center justify-between">
+                        <span>📌 Gemini 프롬프트에 실제로 주입된 RAG 조항 ({gemini_rag_count}건):</span>
+                      </div>
+                      {rag_result.검색된_청크목록.slice(0, gemini_rag_count).map((item, idx) => (
+                        <div key={idx} className="p-2.5 bg-white rounded-xl border border-blue-100 text-[10px] space-y-1 shadow-xs">
+                          <div className="flex items-center justify-between font-bold text-blue-900">
+                            <div className="flex items-center gap-1 truncate max-w-[220px]">
+                              {item.청크.사용자추가여부 && (
+                                <span className="shrink-0 px-1 py-0.2 rounded text-[9px] font-extrabold bg-purple-100 text-purple-700">
+                                  직접등록
+                                </span>
+                              )}
+                              <span className="truncate">{idx + 1}. {item.청크.문서명}</span>
+                            </div>
+                            <span className="shrink-0 text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold">
+                              일치도 {item.유사도_점수}%
+                            </span>
+                          </div>
+                          <div className="text-slate-400 font-medium">{item.청크.조항_페이지}</div>
+                          <div className="text-slate-600 line-clamp-2 leading-relaxed">{item.청크.본문}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* API 키 미등록 시 직관적인 입력 유도 배너 */}
                 {!google_api_key && (
                   <div className="mt-2.5 p-2.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between text-[11px] text-amber-900">
@@ -799,6 +880,69 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       </button>
                     )}
                   </div>
+                </div>
+
+                {/* 로컬 sLLM 전용 RAG 주입 건수 선택기 & 전달 내용 보기 */}
+                <div className="mt-3 p-3 bg-emerald-50/80 rounded-2xl border border-emerald-200/80 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-950">
+                      <Database className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>RAG 근거 주입:</span>
+                      <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-emerald-200 shadow-xs">
+                        {[1, 2, 3, 4].map((num) => (
+                          <button
+                            key={num}
+                            type="button"
+                            onClick={() => set_local_rag_count(num)}
+                            className={`px-2 py-0.5 rounded-md text-[11px] font-bold transition ${
+                              local_rag_count === num
+                                ? 'bg-[#34c759] text-white shadow-xs'
+                                : 'text-slate-600 hover:bg-slate-100'
+                            }`}
+                          >
+                            {num}건
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => set_show_local_rag_details(!show_local_rag_details)}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 hover:underline bg-white px-2.5 py-1 rounded-lg border border-emerald-200 shadow-xs transition"
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>{show_local_rag_details ? '주입 내용 접기 ▲' : `전달된 내용 (${local_rag_count}건) 보기 ▼`}</span>
+                    </button>
+                  </div>
+
+                  {/* 실제 로컬 sLLM에 전달된 RAG 조항 내용 각각 표시 */}
+                  {show_local_rag_details && rag_result && (
+                    <div className="pt-2 border-t border-emerald-200/60 space-y-1.5 max-h-52 overflow-y-auto animate-in fade-in duration-150">
+                      <div className="text-[10px] text-emerald-800 font-semibold flex items-center justify-between">
+                        <span>📌 로컬 sLLM 엔진에 실제로 주입된 RAG 조항 ({local_rag_count}건):</span>
+                      </div>
+                      {rag_result.검색된_청크목록.slice(0, local_rag_count).map((item, idx) => (
+                        <div key={idx} className="p-2.5 bg-white rounded-xl border border-emerald-100 text-[10px] space-y-1 shadow-xs">
+                          <div className="flex items-center justify-between font-bold text-emerald-900">
+                            <div className="flex items-center gap-1 truncate max-w-[220px]">
+                              {item.청크.사용자추가여부 && (
+                                <span className="shrink-0 px-1 py-0.2 rounded text-[9px] font-extrabold bg-purple-100 text-purple-700">
+                                  직접등록
+                                </span>
+                              )}
+                              <span className="truncate">{idx + 1}. {item.청크.문서명}</span>
+                            </div>
+                            <span className="shrink-0 text-[9px] bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded font-bold">
+                              일치도 {item.유사도_점수}%
+                            </span>
+                          </div>
+                          <div className="text-slate-400 font-medium">{item.청크.조항_페이지}</div>
+                          <div className="text-slate-600 line-clamp-2 leading-relaxed">{item.청크.본문}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* 본문 */}

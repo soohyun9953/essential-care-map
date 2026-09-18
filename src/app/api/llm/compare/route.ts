@@ -13,6 +13,10 @@ interface CompareRequestBody {
     vulnerability_grade?: string;
   };
   rag_context?: string;
+  gemini_rag_context?: string;
+  local_rag_context?: string;
+  gemini_chunks_count?: number;
+  local_chunks_count?: number;
 }
 
 export async function POST(req: NextRequest) {
@@ -24,6 +28,10 @@ export async function POST(req: NextRequest) {
       region_name = '강원특별자치도 영월군',
       region_stats = { emergency_rate: 68.2, ri_rate: 19.8, maternity_rate: 15.2, vulnerability_grade: '심각' },
       rag_context = '',
+      gemini_rag_context,
+      local_rag_context,
+      gemini_chunks_count,
+      local_chunks_count,
     } = body;
 
     const final_google_key =
@@ -32,7 +40,11 @@ export async function POST(req: NextRequest) {
       process.env.GOOGLE_API_KEY ||
       '';
 
-// 시스템 프롬프트 구성 (충실하고 완성도 높은 보고서 작성 요구)
+    // 모델별 독립된 RAG 컨텍스트 적용 (지정되지 않은 경우 기본 rag_context 사용)
+    const effective_gemini_rag = gemini_rag_context !== undefined ? gemini_rag_context : rag_context;
+    const effective_local_rag = local_rag_context !== undefined ? local_rag_context : rag_context;
+
+    // 시스템 프롬프트 구성 (Gemini 전용 주입 RAG 근거 반영)
     const system_instruction = `당신은 대한민국 보건복지부 및 국립중앙의료원 공공보건의료 정책을 총괄 보좌하는 수석 행정 전문관입니다.
 선택된 지자체: ${region_name}
 취약도 등급: ${region_stats.vulnerability_grade}
@@ -41,8 +53,8 @@ export async function POST(req: NextRequest) {
 - 관내 응급환자 자체충족률(RI): ${region_stats.ri_rate}%
 - 관내 분만율: ${region_stats.maternity_rate}%
 
-[법령 및 지침 근거 (RAG 검색결과)]:
-${rag_context}
+[법령 및 지침 근거 (선택된 RAG 검색결과)]:
+${effective_gemini_rag}
 
 [작성 원칙 및 지침]:
 1. 지침과 근거 법령, 통계를 기반으로 결론이 중간에 잘리지 않도록 논리정연하고 구체적인 완결형 보고서를 작성하세요.
@@ -268,7 +280,7 @@ ${failure_details}
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            prompt: `질문: ${query}\n지역: ${region_name} (응급미도달: ${region_stats.emergency_rate}%, 자체충족률: ${region_stats.ri_rate}%)\n근거 지침:\n${rag_context.slice(0, 250)}`,
+            prompt: `질문: ${query}\n지역: ${region_name} (응급미도달: ${region_stats.emergency_rate}%, 자체충족률: ${region_stats.ri_rate}%)\n근거 지침:\n${effective_local_rag.slice(0, 350)}`,
             max_new_tokens: 180,
           }),
           signal: controller.signal,
@@ -302,7 +314,7 @@ ${failure_details}
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: 'qwen2.5:0.5b',
-            prompt: `질문: ${query}\n지역: ${region_name}\n근거: ${rag_context.slice(0, 200)}`,
+            prompt: `질문: ${query}\n지역: ${region_name}\n근거: ${effective_local_rag.slice(0, 250)}`,
             stream: false,
           }),
           signal: controller.signal,
@@ -394,9 +406,9 @@ ${failure_details}
 3. 지역 맞춤형 제언
   - ${region_name} 의료원 내 소아청소년과 야간 클리닉 개설 시 달빛어린이병원 모델 적용 적극 권고`;
       } else {
-        // 일반 질의 시 RAG 컨텍스트를 기반으로 핵심 3단계 요약
-        const key_sentences = rag_context
-          ? rag_context.split('\n').filter(s => s.trim().length > 10).slice(0, 4).join('\n  - ')
+        // 일반 질의 시 로컬 RAG 컨텍스트를 기반으로 핵심 3단계 요약
+        const key_sentences = effective_local_rag
+          ? effective_local_rag.split('\n').filter(s => s.trim().length > 10).slice(0, 4).join('\n  - ')
           : `관내 응급 60분 미도달율 ${region_stats.emergency_rate}%, RI ${region_stats.ri_rate}%`;
 
         detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 분석]

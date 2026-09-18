@@ -23,6 +23,8 @@ import {
   ChevronDown,
   ChevronUp,
   FilePlus,
+  FileText,
+  MessageSquare,
   SplitSquareVertical,
   Key,
   Globe,
@@ -72,21 +74,50 @@ interface LLM_비교_결과 {
   };
 }
 
-const PRESET_PROMPTS = [
+const PRESET_BUSINESS_PROMPTS = [
   '2026년 공공보건의료계획 평가지표 중 필수의료 자체충족률 산정 기준을 알려주고, 영월의료원 실적보고서 초안을 작성해줘.',
-  '보건복지부 의료취약지 파견의사 지원사업 신청 자격 요건과 당직비 보조 규정을 요약해줘.',
-  '분만취약지 A등급과 B등급 지원 기준 차이 및 운영비 국비 지원 규모를 비교 설명해줘.',
-  '달빛어린이병원 지정 요건과 소아청소년과 전문의 야간진료 관리료 가산 규정을 알려줘.',
+  '보건복지부 의료취약지 파견의사 지원사업 신청 자격 요건과 당직비 보조 규정을 요약하고 지자체 사업계획서를 작성해줘.',
+  '분만취약지 A등급과 B등급 지원 기준 차이 및 운영비 국비 지원 규모를 비교하여 지원 신청서 표준안을 작성해줘.',
+  '달빛어린이병원 지정 요건과 소아청소년과 전문의 야간진료 관리료 가산 규정을 포함한 운영계획서를 작성해줘.',
+];
+
+const PRESET_QA_PROMPTS = [
+  '의료취약지 파견의사 지원사업의 신청 자격 요건과 국비 보조 비율 및 지원 한도는 얼마인가요?',
+  '권역책임의료기관과 지역책임의료기관의 주요 역할 차이점과 필수 연계 체계를 설명해줘.',
+  '공공보건의료계획 평가에서 필수의료 자체충족률(RI) 계산 공식과 가점 기준은 어떻게 되나요?',
+  '분만취약지 A등급과 B등급의 판정 기준 및 지원 내용(개설비/운영비) 차이는 무엇인가요?',
+  '심야 응급실 당직 수당 국비 지원 한도 및 신청 절차에 대해 상세히 알려줘.',
 ];
 
 export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> = ({
   selected_region,
   on_open_grounding,
 }) => {
-  // 모드 전환: 'single' (기본 RAG 비서) vs 'compare' (Gemini vs 로컬 sLLM 비교 스튜디오)
+  // 뷰 모드 전환: 'single' (표준 RAG 단일뷰) vs 'compare' (Gemini vs 로컬 sLLM 비교 스튜디오)
   const [active_view_tab, set_active_view_tab] = useState<'single' | 'compare'>('compare');
 
-  const [selected_prompt, set_selected_prompt] = useState(PRESET_PROMPTS[0]);
+  // 우측 기능 분리 탭: 'business_plan' (1. 사업계획서 작성 비교) vs 'general_qa' (2. 일반 질의응답 비교)
+  const [active_feature_tab, set_active_feature_tab] = useState<'business_plan' | 'general_qa'>('business_plan');
+
+  // 모드별 정책질의 프리셋 및 목록 관리
+  const [business_prompt_list, set_business_prompt_list] = useState<string[]>(PRESET_BUSINESS_PROMPTS);
+  const [qa_prompt_list, set_qa_prompt_list] = useState<string[]>(PRESET_QA_PROMPTS);
+
+  const [selected_business_prompt, set_selected_business_prompt] = useState(PRESET_BUSINESS_PROMPTS[0]);
+  const [selected_qa_prompt, set_selected_qa_prompt] = useState(PRESET_QA_PROMPTS[0]);
+
+  // 현재 활성화된 탭의 질의 및 질의목록
+  const current_prompt = active_feature_tab === 'business_plan' ? selected_business_prompt : selected_qa_prompt;
+  const current_prompt_list = active_feature_tab === 'business_plan' ? business_prompt_list : qa_prompt_list;
+
+  const set_current_prompt = (text: string) => {
+    if (active_feature_tab === 'business_plan') {
+      set_selected_business_prompt(text);
+    } else {
+      set_selected_qa_prompt(text);
+    }
+  };
+
   const [workflow_step, set_workflow_step] = useState<0 | 1 | 2 | 3>(0);
   const [is_running, set_is_running] = useState(false);
   const [is_copied, set_is_copied] = useState(false);
@@ -98,8 +129,11 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [google_api_key, set_google_api_key] = useState('');
   const [total_doc_count, set_total_doc_count] = useState(12);
 
-  // 1:1 비교 상태
-  const [compare_result, set_compare_result] = useState<LLM_비교_결과 | null>(null);
+  // 1:1 비교 상태 (모드별 독립 보존)
+  const [business_compare_result, set_business_compare_result] = useState<LLM_비교_결과 | null>(null);
+  const [qa_compare_result, set_qa_compare_result] = useState<LLM_비교_결과 | null>(null);
+  const compare_result = active_feature_tab === 'business_plan' ? business_compare_result : qa_compare_result;
+
   const [is_comparing, set_is_comparing] = useState(false);
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
   const [show_compare_rag, set_show_compare_rag] = useState(false);
@@ -110,37 +144,59 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [show_gemini_rag_details, set_show_gemini_rag_details] = useState<boolean>(false);
   const [show_local_rag_details, set_show_local_rag_details] = useState<boolean>(false);
 
-  // 추천 정책질의 드롭다운 목록 관리 (직접 입력 자동 등록 & 로컬스토리지 보존)
-  const [prompt_list, set_prompt_list] = useState<string[]>(PRESET_PROMPTS);
+  // 추천 정책질의 드롭다운 열림 상태
   const [is_dropdown_open, set_is_dropdown_open] = useState(false);
   const dropdown_ref = useRef<HTMLDivElement>(null);
 
   // 새로운 정책 질의 자동 등록 및 로컬스토리지 저장
-  const save_prompt_if_new = (new_prompt: string) => {
+  const save_prompt_if_new = (new_prompt: string, tab: 'business_plan' | 'general_qa') => {
     const trimmed = new_prompt.trim();
     if (!trimmed) return;
-    set_prompt_list((prev) => {
-      if (prev.includes(trimmed)) return prev;
-      const updated = [trimmed, ...prev];
-      if (typeof window !== 'undefined') {
-        const user_saved = updated.filter((p) => !PRESET_PROMPTS.includes(p));
-        localStorage.setItem('user_saved_policy_prompts', JSON.stringify(user_saved));
-      }
-      return updated;
-    });
+    if (tab === 'business_plan') {
+      set_business_prompt_list((prev) => {
+        if (prev.includes(trimmed)) return prev;
+        const updated = [trimmed, ...prev];
+        if (typeof window !== 'undefined') {
+          const user_saved = updated.filter((p) => !PRESET_BUSINESS_PROMPTS.includes(p));
+          localStorage.setItem('user_saved_business_prompts', JSON.stringify(user_saved));
+        }
+        return updated;
+      });
+    } else {
+      set_qa_prompt_list((prev) => {
+        if (prev.includes(trimmed)) return prev;
+        const updated = [trimmed, ...prev];
+        if (typeof window !== 'undefined') {
+          const user_saved = updated.filter((p) => !PRESET_QA_PROMPTS.includes(p));
+          localStorage.setItem('user_saved_qa_prompts', JSON.stringify(user_saved));
+        }
+        return updated;
+      });
+    }
   };
 
   // 등록된 질의 삭제 핸들러
-  const handle_delete_prompt = (e: React.MouseEvent, prompt_to_delete: string) => {
+  const handle_delete_prompt = (e: React.MouseEvent, prompt_to_delete: string, tab: 'business_plan' | 'general_qa') => {
     e.stopPropagation();
-    set_prompt_list((prev) => {
-      const updated = prev.filter((p) => p !== prompt_to_delete);
-      if (typeof window !== 'undefined') {
-        const user_saved = updated.filter((p) => !PRESET_PROMPTS.includes(p));
-        localStorage.setItem('user_saved_policy_prompts', JSON.stringify(user_saved));
-      }
-      return updated;
-    });
+    if (tab === 'business_plan') {
+      set_business_prompt_list((prev) => {
+        const updated = prev.filter((p) => p !== prompt_to_delete);
+        if (typeof window !== 'undefined') {
+          const user_saved = updated.filter((p) => !PRESET_BUSINESS_PROMPTS.includes(p));
+          localStorage.setItem('user_saved_business_prompts', JSON.stringify(user_saved));
+        }
+        return updated;
+      });
+    } else {
+      set_qa_prompt_list((prev) => {
+        const updated = prev.filter((p) => p !== prompt_to_delete);
+        if (typeof window !== 'undefined') {
+          const user_saved = updated.filter((p) => !PRESET_QA_PROMPTS.includes(p));
+          localStorage.setItem('user_saved_qa_prompts', JSON.stringify(user_saved));
+        }
+        return updated;
+      });
+    }
   };
 
   // 로컬 sLLM 서버 구동 상태
@@ -192,21 +248,31 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       const saved_key = localStorage.getItem('google_gemini_api_key') || '';
       set_google_api_key(saved_key);
 
-      // 사용자가 이전에 직접 등록했던 정책 질의들 복원
-      const saved_prompts = localStorage.getItem('user_saved_policy_prompts');
-      if (saved_prompts) {
+      // 사용자가 이전에 직접 등록했던 사업계획서 질의들 복원
+      const saved_b_prompts = localStorage.getItem('user_saved_business_prompts');
+      if (saved_b_prompts) {
         try {
-          const parsed = JSON.parse(saved_prompts);
+          const parsed = JSON.parse(saved_b_prompts);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            const merged = Array.from(new Set([...PRESET_PROMPTS, ...parsed]));
-            set_prompt_list(merged);
+            set_business_prompt_list(Array.from(new Set([...PRESET_BUSINESS_PROMPTS, ...parsed])));
+          }
+        } catch {}
+      }
+
+      // 사용자가 이전에 직접 등록했던 일반 질의들 복원
+      const saved_qa_prompts = localStorage.getItem('user_saved_qa_prompts');
+      if (saved_qa_prompts) {
+        try {
+          const parsed = JSON.parse(saved_qa_prompts);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            set_qa_prompt_list(Array.from(new Set([...PRESET_QA_PROMPTS, ...parsed])));
           }
         } catch {}
       }
     }
     const all_docs = get_all_corpus();
     set_total_doc_count(all_docs.length);
-    const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
+    const initial_result = 경량_RAG_엔진.execute_rag(selected_business_prompt, selected_region || null, 8);
     set_rag_result(initial_result);
 
     // 마운트 시 로컬 서버 상태 감지
@@ -228,18 +294,18 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const handle_document_added = () => {
     const all_docs = get_all_corpus();
     set_total_doc_count(all_docs.length);
-    const updated_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
+    const updated_result = 경량_RAG_엔진.execute_rag(current_prompt, selected_region || null, 8);
     set_rag_result(updated_result);
   };
 
   // 단일 뷰 실행 핸들러
   const handle_execute_workflow = () => {
-    save_prompt_if_new(selected_prompt);
+    save_prompt_if_new(current_prompt, active_feature_tab);
     set_is_running(true);
     set_workflow_step(1);
 
     setTimeout(() => {
-      const result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
+      const result = 경량_RAG_엔진.execute_rag(current_prompt, selected_region || null, 8);
       set_rag_result(result);
       set_workflow_step(2);
 
@@ -252,12 +318,13 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
   // 1:1 비교 실행 핸들러 (외부 Gemini vs 로컬 sLLM)
   const handle_execute_compare = async () => {
-    save_prompt_if_new(selected_prompt);
+    const prompt_to_run = current_prompt;
+    save_prompt_if_new(prompt_to_run, active_feature_tab);
     set_is_comparing(true);
     try {
       // 1. 먼저 RAG를 통해 지자체 DW 및 법령 청크 추출 (선택된 RAG 건수 중 최대값 이상 검색)
       const max_top_k = Math.max(gemini_rag_count, local_rag_count, 8);
-      const local_rag = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, max_top_k);
+      const local_rag = 경량_RAG_엔진.execute_rag(prompt_to_run, selected_region || null, max_top_k);
       set_rag_result(local_rag);
 
       // 모델별 독립된 RAG 청크 슬라이스 (선택한 개수만큼 전달)
@@ -276,12 +343,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         ? `${selected_region.시도명} ${selected_region.시군구명}`
         : '강원특별자치도 영월군';
 
-      // 2. /api/llm/compare 엔드포인트로 병렬 요청 (모델별 선택된 수와 내용 각각 전달)
+      // 2. /api/llm/compare 엔드포인트로 병렬 요청 (모델별 선택된 수와 내용 각각 전달 + mode 파라미터 전달)
       const res = await fetch('/api/llm/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          query: selected_prompt,
+          query: prompt_to_run,
           google_api_key: google_api_key,
           region_name: region_name,
           region_stats: {
@@ -295,12 +362,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           local_rag_context: local_rag_text,
           gemini_chunks_count: gemini_rag_count,
           local_chunks_count: local_rag_count,
+          mode: active_feature_tab,
         }),
       });
 
       if (res.ok) {
         const json = await res.json();
-        set_compare_result(json);
+        if (active_feature_tab === 'business_plan') {
+          set_business_compare_result(json);
+        } else {
+          set_qa_compare_result(json);
+        }
       }
     } catch (err) {
       console.error('LLM Compare error:', err);
@@ -319,7 +391,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
   return (
     <div className="bg-white p-6 sm:p-7 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-5">
-      {/* 1. 상단 타이틀 및 뷰 전환 탭바 */}
+      {/* ========================================================= */}
+      {/* 1. 상단 공통 헤더: 타이틀 & 글로벌 제어 도구 (공통 기능) */}
+      {/* ========================================================= */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-black/[0.05]">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0071e3] to-[#34c759] text-white flex items-center justify-center shadow-apple-sm">
@@ -340,34 +414,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           </div>
         </div>
 
-        {/* 뷰 모드 세그먼트 컨트롤러 & 설정 버튼들 */}
+        {/* 상단 우측 글로벌 공통 액션 버튼들 */}
         <div className="flex flex-wrap items-center gap-2">
-          {/* 탭 토글 */}
-          <div className="bg-[#f5f5f7] p-1 rounded-2xl border border-black/[0.04] flex items-center text-xs font-bold">
-            <button
-              onClick={() => set_active_view_tab('compare')}
-              className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                active_view_tab === 'compare'
-                  ? 'bg-white text-[#0071e3] shadow-apple-sm'
-                  : 'text-[#86868b] hover:text-[#1d1d1f]'
-              }`}
-            >
-              <SplitSquareVertical className="w-3.5 h-3.5" />
-              <span>1:1 비교 스튜디오</span>
-            </button>
-            <button
-              onClick={() => set_active_view_tab('single')}
-              className={`px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 ${
-                active_view_tab === 'single'
-                  ? 'bg-white text-[#1d1d1f] shadow-apple-sm'
-                  : 'text-[#86868b] hover:text-[#1d1d1f]'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>표준 RAG 단일뷰</span>
-            </button>
-          </div>
-
           {/* 듀얼 AI 쉬운 설명 팝업 열기 버튼 */}
           <button
             onClick={() => set_is_guide_modal_open(true)}
@@ -428,7 +476,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           {/* 새 지침 직접 등록 버튼 */}
           <button
             onClick={() => set_is_doc_modal_open(true)}
-            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-[#f5f5f7] hover:bg-[#e8e8ed] text-slate-700 border border-black/[0.04] transition"
+            className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-semibold bg-[#f5f5f7] hover:bg-[#e8e8ed] text-slate-700 border border-black/[0.04] transition shadow-apple-sm active:scale-95"
+            title="법령 고시, 지자체 공문, 지침 문서를 등록하여 RAG 검색 대상에 즉시 포함합니다"
           >
             <FilePlus className="w-3.5 h-3.5 text-[#0071e3]" />
             <span>지침 문서 등록 ({total_doc_count}건)</span>
@@ -437,7 +486,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           {on_open_grounding && (
             <button
               onClick={on_open_grounding}
-              className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-[#ff9500]/10 hover:bg-[#ff9500]/20 text-[#b26800] border border-[#ff9500]/25 transition"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-semibold bg-[#ff9500]/10 hover:bg-[#ff9500]/20 text-[#b26800] border border-[#ff9500]/25 transition shadow-apple-sm"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-[#ff9500]" />
               <span>원문 대조 뷰</span>
@@ -446,11 +495,185 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         </div>
       </div>
 
-      {/* 2. 추천 정책 질의 드롭다운 선택기 (직접 입력 자동 등록 기능 포함) */}
+      {/* ========================================================= */}
+      {/* 2. 상단 공통 정보 배너: 지자체 DW 현황 & RAG 지식베이스 결합 */}
+      {/* ========================================================= */}
+      <div className="space-y-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-slate-50 via-blue-50/30 to-emerald-50/30 border border-black/[0.05] rounded-2xl text-xs">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-bold text-slate-800">
+              📍 분석 대상 지자체: <strong>{selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원특별자치도 영월군'}</strong>
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">
+              취약도 {selected_region?.종합_취약도_등급 || '심각'}
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 text-[11px] text-slate-600 flex-wrap">
+            <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+              응급 60분 미도달: <strong className="text-red-600">{selected_region?.응급_60분_미도달_인구비율 ?? 68.2}%</strong>
+            </span>
+            <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+              관내 RI(자체충족): <strong className="text-amber-600">{selected_region?.관내_응급_의료이용률 ?? 19.8}%</strong>
+            </span>
+            <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200/80 shadow-2xs">
+              관내 분만율: <strong className="text-indigo-600">{selected_region?.관내_분만율 ?? 15.2}%</strong>
+            </span>
+            <span className="text-slate-400">|</span>
+            <span>🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>
+            <span>•</span>
+            <span>💻 온디바이스: Qwen2.5-0.5B (폐쇄망 지원)</span>
+          </div>
+        </div>
+
+        {/* RAG 실시간 지침 주입 알림 바 및 출처 보기 */}
+        {rag_result && (
+          <div className="bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-emerald-50/70 p-3.5 rounded-2xl border border-blue-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#0071e3] to-[#34c759] text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
+                RAG
+              </div>
+              <div>
+                <span className="font-bold text-slate-900">
+                  🔗 RAG + 듀얼 AI 실시간 결합 가동 중:
+                </span>{' '}
+                <span className="text-slate-600">
+                  보건복지부 지침 DB 및 <strong>직접 등록 규정 문서</strong>에서 <strong>{rag_result.검색된_청크목록.length}건의 핵심 근거 조항</strong>을 실시간 검색하여, 두 모델(Gemini & 로컬 sLLM)에 동시 주입합니다.
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => set_show_compare_rag(!show_compare_rag)}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:underline bg-white px-3 py-1 rounded-xl border border-blue-200/80 shadow-xs self-start sm:self-auto shrink-0 transition"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>주입된 RAG 지침 {show_compare_rag ? '접기 ▲' : '열람하기 ▼'}</span>
+            </button>
+          </div>
+        )}
+
+        {/* 펼쳐졌을 때의 RAG 근거 청크 목록 */}
+        {show_compare_rag && rag_result && (
+          <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2.5 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span className="flex items-center gap-1.5">
+                <Database className="w-4 h-4 text-[#0071e3]" />
+                <span>두 AI에게 동시에 전달된 공공보건 지침/법령 근거 데이터:</span>
+              </span>
+              <span className="text-[11px] text-slate-500 font-normal">총 {rag_result.검색된_청크목록.length}건 검색됨</span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
+              {rag_result.검색된_청크목록.map((item, idx) => (
+                <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1 shadow-xs">
+                  <div className="flex items-center justify-between text-[#0071e3] font-bold">
+                    <div className="flex items-center gap-1 min-w-0">
+                      {item.청크.사용자추가여부 && (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
+                          직접등록 지침
+                        </span>
+                      )}
+                      <span className="truncate max-w-[150px]">{item.청크.문서명}</span>
+                    </div>
+                    <span className="shrink-0 text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-700">일치도 {item.유사도_점수}%</span>
+                  </div>
+                  <div className="text-slate-400 text-[10px] font-medium">{item.청크.조항_페이지}</div>
+                  <div className="text-slate-600 line-clamp-3 text-[10px] leading-relaxed">
+                    {item.청크.본문}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================= */}
+      {/* 3. 우측 기능 분리 탭 (1. 사업계획서 작성 비교 vs 2. 일반 질의응답 비교) */}
+      {/* ========================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 bg-[#f5f5f7] rounded-2xl border border-black/[0.05]">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <button
+            onClick={() => {
+              set_active_view_tab('compare');
+              set_active_feature_tab('business_plan');
+              set_is_dropdown_open(false);
+            }}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
+              active_view_tab === 'compare' && active_feature_tab === 'business_plan'
+                ? 'bg-white text-[#0071e3] shadow-apple-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>📋 1. 사업계획서 작성 비교</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              active_view_tab === 'compare' && active_feature_tab === 'business_plan'
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-slate-200/80 text-slate-600'
+            }`}>
+              실적보고서·기획
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              set_active_view_tab('compare');
+              set_active_feature_tab('general_qa');
+              set_is_dropdown_open(false);
+            }}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
+              active_view_tab === 'compare' && active_feature_tab === 'general_qa'
+                ? 'bg-white text-[#0071e3] shadow-apple-sm'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>💬 2. 일반 질의응답 비교</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              active_view_tab === 'compare' && active_feature_tab === 'general_qa'
+                ? 'bg-emerald-100 text-emerald-700'
+                : 'bg-slate-200/80 text-slate-600'
+            }`}>
+              행정·법령 Q&A
+            </span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 px-2">
+          <span className="hidden md:inline text-[11px] text-slate-500 font-medium">
+            {active_view_tab === 'compare'
+              ? active_feature_tab === 'business_plan'
+                ? '💡 지자체 DW + 법령 RAG 결합 완결형 사업계획서·실적보고서 작성 1:1 비교'
+                : '💡 공공보건의료 지침/규정 질의, 법령 해석 및 행정 업무 Q&A 1:1 비교'
+              : '💡 3단계 RAG 파이프라인 단일뷰 실행 모드'}
+          </span>
+          <button
+            onClick={() => set_active_view_tab(active_view_tab === 'single' ? 'compare' : 'single')}
+            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-semibold border transition flex items-center gap-1 shrink-0 ${
+              active_view_tab === 'single'
+                ? 'bg-[#0071e3] text-white border-[#0071e3] shadow-apple-sm'
+                : 'bg-white text-slate-600 hover:text-slate-900 border-slate-200'
+            }`}
+            title="기존 RAG 3단계(검색-DW주입-답변생성) 단일뷰로 전환"
+          >
+            <Layers className="w-3 h-3" />
+            <span>{active_view_tab === 'single' ? '← 듀얼 비교 복귀' : '표준 RAG 단일뷰'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================= */}
+      {/* 4. 추천 정책 질의 드롭다운 선택기 (각 탭 전용 질의 목록 & 직접 입력 자동 등록) */}
+      {/* ========================================================= */}
       <div className="space-y-2 relative" ref={dropdown_ref}>
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-[#1d1d1f] flex items-center gap-1.5">
-            <span>추천 정책 질의:</span>
+            <span>
+              {active_feature_tab === 'business_plan'
+                ? '📋 사업계획서 추천 질의:'
+                : '💬 일반 정책·업무 추천 질의:'}
+            </span>
             <span className="text-[11px] text-[#86868b] font-normal">
               (드롭다운에서 선택하거나 직접 입력 시 자동 등록되어 다음에 사용 가능)
             </span>
@@ -460,7 +683,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             onClick={() => set_is_dropdown_open(!is_dropdown_open)}
             className="text-xs text-[#0071e3] font-semibold hover:underline flex items-center gap-1"
           >
-            <span>질의 목록 ({prompt_list.length}건)</span>
+            <span>질의 목록 ({current_prompt_list.length}건)</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${is_dropdown_open ? 'rotate-180' : ''}`} />
           </button>
         </div>
@@ -473,7 +696,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             className="w-full flex items-center justify-between px-4 py-2.5 bg-[#f5f5f7] hover:bg-[#ebebeb] border border-black/[0.06] rounded-xl text-left text-xs transition"
           >
             <span className="truncate text-slate-800 font-medium">
-              📋 {selected_prompt ? selected_prompt : '추천 정책 질의를 선택하세요...'}
+              {active_feature_tab === 'business_plan' ? '📋 ' : '💬 '}
+              {current_prompt ? current_prompt : '추천 질의를 선택하세요...'}
             </span>
             <ChevronDown className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
           </button>
@@ -482,19 +706,23 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           {is_dropdown_open && (
             <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-black/[0.08] shadow-2xl rounded-2xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100 animate-in fade-in zoom-in-95 duration-150">
               <div className="p-2.5 bg-slate-50 text-[11px] font-bold text-slate-500 flex items-center justify-between">
-                <span>클릭하여 질의를 선택하세요 (새로운 질의 입력 시 자동 추가)</span>
-                <span className="text-[10px] text-slate-400">총 {prompt_list.length}개</span>
+                <span>
+                  {active_feature_tab === 'business_plan'
+                    ? '사업계획서 작성 추천 질의 (입력창에 직접 입력 시 자동 추가)'
+                    : '일반 정책 질의응답 추천 질의 (입력창에 직접 입력 시 자동 추가)'}
+                </span>
+                <span className="text-[10px] text-slate-400">총 {current_prompt_list.length}개</span>
               </div>
               <div className="p-1.5 space-y-1">
-                {prompt_list.map((p, idx) => {
-                  const is_custom = !PRESET_PROMPTS.includes(p);
-                  const is_active = selected_prompt === p;
+                {current_prompt_list.map((p, idx) => {
+                  const presets = active_feature_tab === 'business_plan' ? PRESET_BUSINESS_PROMPTS : PRESET_QA_PROMPTS;
+                  const is_custom = !presets.includes(p);
+                  const is_active = current_prompt === p;
                   return (
                     <div
                       key={idx}
                       onClick={() => {
-                        set_selected_prompt(p);
-                        set_workflow_step(0);
+                        set_current_prompt(p);
                         set_is_dropdown_open(false);
                       }}
                       className={`group flex items-start justify-between gap-2 p-2.5 rounded-xl cursor-pointer text-xs transition ${
@@ -512,7 +740,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       {is_custom && (
                         <button
                           type="button"
-                          onClick={(e) => handle_delete_prompt(e, p)}
+                          onClick={(e) => handle_delete_prompt(e, p, active_feature_tab)}
                           className="shrink-0 text-slate-400 hover:text-red-500 p-1 rounded-md transition"
                           title="질의 목록에서 삭제"
                         >
@@ -528,13 +756,15 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         </div>
       </div>
 
-      {/* 3. 질의 입력 및 실행창 */}
+      {/* ========================================================= */}
+      {/* 5. 질의 입력 및 실행창 */}
+      {/* ========================================================= */}
       <div className="relative">
         <input
           type="text"
-          value={selected_prompt}
+          value={current_prompt}
           onChange={(e) => {
-            set_selected_prompt(e.target.value);
+            set_current_prompt(e.target.value);
             set_workflow_step(0);
           }}
           onKeyDown={(e) => {
@@ -546,12 +776,16 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
               }
             }
           }}
-          placeholder="공공보건의료 지침, 법령 또는 예산 지원에 대해 질문하세요..."
-          className="w-full pl-4 pr-32 py-3.5 text-xs sm:text-sm rounded-2xl bg-[#f5f5f7] border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 text-[#1d1d1f]"
+          placeholder={
+            active_feature_tab === 'business_plan'
+              ? '사업계획서 작성 주제 또는 분석하고자 하는 공공보건 지침을 입력하세요...'
+              : '공공보건의료 지침, 법령 요건, 보조금 규정 등 궁금한 점을 자유롭게 질문하세요...'
+          }
+          className="w-full pl-4 pr-44 py-3.5 text-xs sm:text-sm rounded-2xl bg-[#f5f5f7] border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 text-[#1d1d1f]"
         />
         <button
           onClick={active_view_tab === 'compare' ? handle_execute_compare : handle_execute_workflow}
-          disabled={is_running || is_comparing || !selected_prompt.trim()}
+          disabled={is_running || is_comparing || !current_prompt.trim()}
           className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60"
         >
           <Play className="w-3.5 h-3.5 fill-current" />
@@ -559,7 +793,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             {active_view_tab === 'compare'
               ? is_comparing
                 ? '듀얼 추론 중...'
-                : '1:1 비교 실행'
+                : active_feature_tab === 'business_plan'
+                ? '📋 1:1 사업계획서 비교'
+                : '💬 1:1 질의응답 비교'
               : is_running
               ? '생성 중...'
               : 'RAG 실행'}
@@ -568,93 +804,10 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       </div>
 
       {/* ========================================================= */}
-      {/* 4-A. [1:1 비교 스튜디오 뷰] */}
+      {/* 6. [1:1 비교 스튜디오 뷰] */}
       {/* ========================================================= */}
       {active_view_tab === 'compare' && (
         <div className="space-y-4 animate-in fade-in duration-300">
-          {/* 상단 안내 바 */}
-          <div className="flex flex-wrap items-center justify-between gap-2 p-3 bg-slate-50 border border-black/[0.05] rounded-2xl text-xs">
-            <div className="flex items-center space-x-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="font-semibold text-slate-700">비교 모드 활성화:</span>
-              <span className="text-slate-500">
-                1회 질의로 구글 클라우드 AI와 노트북 로컬 sLLM의 답변 품질 및 보안성을 동시 측정합니다.
-              </span>
-            </div>
-            <div className="flex items-center space-x-2.5 text-[11px] text-slate-500 flex-wrap">
-              <button
-                onClick={() => set_is_guide_modal_open(true)}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:text-[#005bb5] bg-white hover:bg-blue-50/60 px-2.5 py-1 rounded-xl border border-blue-200/80 shadow-xs transition"
-              >
-                <HelpCircle className="w-3 h-3 text-[#0071e3]" />
-                <span>듀얼 AI란? 쉽게 보기</span>
-              </button>
-              <span>🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>
-              <span>•</span>
-              <span>💻 온디바이스: Qwen2.5-0.5B (폐쇄망 지원)</span>
-            </div>
-          </div>
-
-          {/* RAG 실시간 지침 주입 알림 바 및 출처 보기 */}
-          {rag_result && (
-            <div className="bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-emerald-50/70 p-3.5 rounded-2xl border border-blue-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#0071e3] to-[#34c759] text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
-                  RAG
-                </div>
-                <div>
-                  <span className="font-bold text-slate-900">
-                    🔗 RAG + 듀얼 AI 실시간 결합 가동 중:
-                  </span>{' '}
-                  <span className="text-slate-600">
-                    보건복지부 지침 DB 및 <strong>직접 등록하신 규정 문서</strong>에서 <strong>{rag_result.검색된_청크목록.length}건의 핵심 근거 조항</strong>을 실시간 검색하여, 두 모델(Gemini & 로컬 sLLM)의 프롬프트에 동시 주입하여 답변을 생성합니다.
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => set_show_compare_rag(!show_compare_rag)}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:underline bg-white px-3 py-1 rounded-xl border border-blue-200/80 shadow-xs self-start sm:self-auto shrink-0 transition"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>주입된 RAG 지침 {show_compare_rag ? '접기 ▲' : '열람하기 ▼'}</span>
-              </button>
-            </div>
-          )}
-
-          {/* 펼쳐졌을 때의 RAG 근거 청크 목록 */}
-          {show_compare_rag && rag_result && (
-            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2.5 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-800">
-                <span className="flex items-center gap-1.5">
-                  <Database className="w-4 h-4 text-[#0071e3]" />
-                  <span>두 AI에게 동시에 전달된 공공보건 지침/법령 근거 데이터:</span>
-                </span>
-                <span className="text-[11px] text-slate-500 font-normal">총 {rag_result.검색된_청크목록.length}건 검색됨</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
-                {rag_result.검색된_청크목록.map((item, idx) => (
-                  <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1 shadow-xs">
-                    <div className="flex items-center justify-between text-[#0071e3] font-bold">
-                      <div className="flex items-center gap-1 min-w-0">
-                        {item.청크.사용자추가여부 && (
-                          <span className="shrink-0 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 border border-purple-200">
-                            직접등록 지침
-                          </span>
-                        )}
-                        <span className="truncate max-w-[150px]">{item.청크.문서명}</span>
-                      </div>
-                      <span className="shrink-0 text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-700">일치도 {item.유사도_점수}%</span>
-                    </div>
-                    <div className="text-slate-400 text-[10px] font-medium">{item.청크.조항_페이지}</div>
-                    <div className="text-slate-600 line-clamp-3 text-[10px] leading-relaxed">
-                      {item.청크.본문}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* 2열 Split-View 그리드 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
@@ -800,7 +953,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </pre>
                   ) : (
                     <div className="py-12 text-center text-slate-400 text-xs">
-                      [1:1 비교 실행] 버튼을 누르면 구글 Gemini의 가용 모델을 순차 시도하여 최적 모델로 분석합니다.
+                      [{active_feature_tab === 'business_plan' ? '1:1 사업계획서 비교' : '1:1 질의응답 비교'}] 버튼을 누르면 구글 Gemini의 가용 모델을 순차 시도하여 최적 모델로 분석합니다.
                     </div>
                   )}
                 </div>
@@ -962,7 +1115,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <Laptop className="w-8 h-8 text-slate-300" />
                       <p className="text-center text-slate-500 max-w-xs">
                         {local_server_status?.is_running
-                          ? '로컬 온디바이스 엔진(8000번 포트)이 정상 가동 중입니다. 상단의 [1:1 비교 실행] 버튼을 눌러보세요.'
+                          ? `로컬 온디바이스 엔진(8000번 포트)이 정상 가동 중입니다. 상단의 [${active_feature_tab === 'business_plan' ? '1:1 사업계획서 비교' : '1:1 질의응답 비교'}] 버튼을 눌러보세요.`
                           : '노트북 로컬 sLLM 서버가 대기 중입니다. 아래 버튼을 눌러 터미널 없이 바로 실행할 수 있습니다.'}
                       </p>
                       {!local_server_status?.is_running && (

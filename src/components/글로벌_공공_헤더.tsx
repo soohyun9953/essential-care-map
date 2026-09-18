@@ -211,10 +211,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 type="text"
                 value={search_text}
                 onChange={(e) => set_search_text(e.target.value)}
-                placeholder="지역·의료원 검색..."
-                className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#003366]/30 dark:focus:ring-sky-500/30 transition"
+                placeholder="✏️ 지역·의료원 검색..."
+                className="zone-input-box w-full pl-8 pr-3 py-1.5 text-xs rounded-xl transition"
               />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-indigo-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
             </form>
 
             {/* 실시간 알림 팝오버 버튼 */}

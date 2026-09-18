@@ -496,16 +496,16 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       </div>
 
       {/* ========================================================= */}
-      {/* 2. 상단 공통 정보 배너: 지자체 DW 현황 & RAG 지식베이스 결합 */}
+      {/* 2. [설명하는 곳 💡] 지자체 DW 현황 및 RAG 연동 배너 */}
       {/* ========================================================= */}
       <div className="space-y-2.5">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-slate-50 via-blue-50/30 to-emerald-50/30 dark:from-[#1c1c1e] dark:via-[#1c1c22] dark:to-[#1c221e] border border-black/[0.05] dark:border-white/[0.08] rounded-2xl text-xs">
+        <div className="zone-info-box flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="zone-badge-info">💡 DW 현황</span>
             <span className="font-bold text-slate-800 dark:text-slate-100">
-              📍 분석 대상 지자체: <strong>{selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원특별자치도 영월군'}</strong>
+              분석 대상: <strong>{selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원특별자치도 영월군'}</strong>
             </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400">
               취약도 {selected_region?.종합_취약도_등급 || '심각'}
             </span>
           </div>
@@ -522,7 +522,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             <span className="text-slate-400 dark:text-slate-600">|</span>
             <span className="text-slate-600 dark:text-slate-300">🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>
             <span className="text-slate-400 dark:text-slate-600">•</span>
-            <span className="text-slate-600 dark:text-slate-300">💻 온디바이스: Qwen2.5-0.5B (폐쇄망 지원)</span>
+            <span className="text-slate-600 dark:text-slate-300">💻 온디바이스: Qwen2.5-0.5B (폐쇄망)</span>
           </div>
         </div>
 
@@ -591,8 +591,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       {/* ========================================================= */}
       {/* 3. 우측 기능 분리 탭 (1. 사업계획서 작성 비교 vs 2. 일반 질의응답 비교) */}
       {/* ========================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-1.5 bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-2xl border border-black/[0.05] dark:border-white/[0.08]">
-        <div className="flex flex-wrap items-center gap-1.5">
+      {/* ========================================================= */}
+      {/* 3. 우측 기능 분리 탭 (1. 사업계획서 작성 비교 vs 2. 일반 질의응답 비교) */}
+      {/* ========================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-[#f5f5f7] dark:bg-[#1c1c1e] rounded-2xl border border-teal-500/20 dark:border-teal-400/20 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="zone-badge-select">🎯 모드 선택</span>
           <button
             onClick={() => {
               set_active_view_tab('compare');
@@ -601,8 +605,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             }}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
               active_view_tab === 'compare' && active_feature_tab === 'business_plan'
-                ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] dark:text-[#2997ff] shadow-apple-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] dark:text-[#2997ff] shadow-apple-sm border border-blue-500/30 ring-2 ring-blue-500/10'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
             <FileText className="w-4 h-4" />
@@ -624,8 +628,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             }}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-2 ${
               active_view_tab === 'compare' && active_feature_tab === 'general_qa'
-                ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] dark:text-[#2997ff] shadow-apple-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5'
+                ? 'bg-white dark:bg-[#2c2c2e] text-[#0071e3] dark:text-[#2997ff] shadow-apple-sm border border-emerald-500/30 ring-2 ring-emerald-500/10'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/5 border border-transparent'
             }`}
           >
             <MessageSquare className="w-4 h-4" />
@@ -644,9 +648,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           <span className="hidden md:inline text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             {active_view_tab === 'compare'
               ? active_feature_tab === 'business_plan'
-                ? '💡 지자체 DW + 법령 RAG 결합 완결형 사업계획서·실적보고서 작성 1:1 비교'
-                : '💡 공공보건의료 지침/규정 질의, 법령 해석 및 행정 업무 Q&A 1:1 비교'
-              : '💡 3단계 RAG 파이프라인 단일뷰 실행 모드'}
+                ? '💡 DW + 법령 RAG 결합 사업계획서 1:1 비교'
+                : '💡 공공보건 지침/규정 및 행정 업무 1:1 비교'
+              : '💡 3단계 RAG 단일뷰 실행 모드'}
           </span>
           <button
             onClick={() => set_active_view_tab(active_view_tab === 'single' ? 'compare' : 'single')}
@@ -668,20 +672,21 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       {/* ========================================================= */}
       <div className="space-y-2 relative" ref={dropdown_ref}>
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-[#1d1d1f] dark:text-white flex items-center gap-1.5">
-            <span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="zone-badge-select">🎯 추천 질의 선택</span>
+            <label className="text-xs font-bold text-[#1d1d1f] dark:text-white">
               {active_feature_tab === 'business_plan'
-                ? '📋 사업계획서 추천 질의:'
-                : '💬 일반 정책·업무 추천 질의:'}
-            </span>
+                ? '사업계획서 추천 질의 드롭다운:'
+                : '일반 정책·행정 추천 질의 드롭다운:'}
+            </label>
             <span className="text-[11px] text-[#86868b] dark:text-slate-400 font-normal">
-              (드롭다운에서 선택하거나 직접 입력 시 자동 등록되어 다음에 사용 가능)
+              (선택 시 즉시 적용되며, 아래 입력창에서 직접 수정/작성도 가능)
             </span>
-          </label>
+          </div>
           <button
             type="button"
             onClick={() => set_is_dropdown_open(!is_dropdown_open)}
-            className="text-xs text-[#0071e3] dark:text-[#2997ff] font-semibold hover:underline flex items-center gap-1"
+            className="text-xs text-[#0071e3] dark:text-[#2997ff] font-semibold hover:underline flex items-center gap-1 shrink-0"
           >
             <span>질의 목록 ({current_prompt_list.length}건)</span>
             <ChevronDown className={`w-3.5 h-3.5 transition-transform ${is_dropdown_open ? 'rotate-180' : ''}`} />
@@ -693,25 +698,26 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           <button
             type="button"
             onClick={() => set_is_dropdown_open(!is_dropdown_open)}
-            className="w-full flex items-center justify-between px-4 py-2.5 bg-[#f5f5f7] dark:bg-[#1c1c1e] hover:bg-[#ebebeb] dark:hover:bg-[#252528] border border-black/[0.06] dark:border-white/[0.1] rounded-xl text-left text-xs transition"
+            className="zone-select-box w-full flex items-center justify-between px-4 py-3 rounded-xl text-left text-xs font-medium transition cursor-pointer"
           >
-            <span className="truncate text-slate-800 dark:text-slate-200 font-medium">
+            <span className="truncate text-slate-800 dark:text-slate-200">
               {active_feature_tab === 'business_plan' ? '📋 ' : '💬 '}
               {current_prompt ? current_prompt : '추천 질의를 선택하세요...'}
             </span>
-            <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 ml-2" />
+            <ChevronDown className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0 ml-2" />
           </button>
 
           {/* 드롭다운 메뉴 팝오버 */}
           {is_dropdown_open && (
-            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#1c1c1e] border border-black/[0.08] dark:border-white/[0.12] shadow-2xl rounded-2xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.06] animate-in fade-in zoom-in-95 duration-150">
-              <div className="p-2.5 bg-slate-50 dark:bg-[#252528] text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-                <span>
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#1c1c1e] border border-teal-500/30 dark:border-teal-400/30 shadow-2xl rounded-2xl z-30 max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-white/[0.06] animate-in fade-in zoom-in-95 duration-150">
+              <div className="p-2.5 bg-teal-50/50 dark:bg-teal-950/30 text-[11px] font-bold text-teal-800 dark:text-teal-300 flex items-center justify-between border-b border-teal-100 dark:border-teal-900/40">
+                <span className="flex items-center gap-1.5">
+                  <span className="zone-badge-select">🎯 목록</span>
                   {active_feature_tab === 'business_plan'
                     ? '사업계획서 작성 추천 질의 (입력창에 직접 입력 시 자동 추가)'
                     : '일반 정책 질의응답 추천 질의 (입력창에 직접 입력 시 자동 추가)'}
                 </span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">총 {current_prompt_list.length}개</span>
+                <span className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold">총 {current_prompt_list.length}개</span>
               </div>
               <div className="p-1.5 space-y-1">
                 {current_prompt_list.map((p, idx) => {
@@ -727,8 +733,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       }}
                       className={`group flex items-start justify-between gap-2 p-2.5 rounded-xl cursor-pointer text-xs transition ${
                         is_active
-                          ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-semibold'
-                          : 'hover:bg-slate-50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200'
+                          ? 'bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-semibold ring-1 ring-[#0071e3]/30'
+                          : 'hover:bg-teal-50/50 dark:hover:bg-white/[0.06] text-slate-700 dark:text-slate-200'
                       }`}
                     >
                       <div className="flex items-start gap-2 min-w-0">
@@ -759,48 +765,62 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       {/* ========================================================= */}
       {/* 5. 질의 입력 및 실행창 */}
       {/* ========================================================= */}
-      <div className="relative">
-        <input
-          type="text"
-          value={current_prompt}
-          onChange={(e) => {
-            set_current_prompt(e.target.value);
-            set_workflow_step(0);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              if (active_view_tab === 'compare' && !is_comparing) {
-                handle_execute_compare();
-              } else if (active_view_tab === 'single' && !is_running) {
-                handle_execute_workflow();
-              }
-            }
-          }}
-          placeholder={
-            active_feature_tab === 'business_plan'
-              ? '사업계획서 작성 주제 또는 분석하고자 하는 공공보건 지침을 입력하세요...'
-              : '공공보건의료 지침, 법령 요건, 보조금 규정 등 궁금한 점을 자유롭게 질문하세요...'
-          }
-          className="w-full pl-4 pr-44 py-3.5 text-xs sm:text-sm rounded-2xl bg-[#f5f5f7] dark:bg-[#1c1c1e] border border-black/[0.06] dark:border-white/[0.1] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 text-[#1d1d1f] dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
-        />
-        <button
-          onClick={active_view_tab === 'compare' ? handle_execute_compare : handle_execute_workflow}
-          disabled={is_running || is_comparing || !current_prompt.trim()}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60"
-        >
-          <Play className="w-3.5 h-3.5 fill-current" />
-          <span>
-            {active_view_tab === 'compare'
-              ? is_comparing
-                ? '듀얼 추론 중...'
-                : active_feature_tab === 'business_plan'
-                ? '📋 1:1 사업계획서 비교'
-                : '💬 1:1 질의응답 비교'
-              : is_running
-              ? '생성 중...'
-              : 'RAG 실행'}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <span className="zone-badge-input">✏️ 직접 질의 입력</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              원하는 정책·사업 주제를 직접 타이핑하거나 위 추천 목록을 수정할 수 있습니다.
+            </span>
+          </div>
+          <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold hidden sm:inline">
+            Enter 키로 즉시 실행
           </span>
-        </button>
+        </div>
+
+        <div className="relative">
+          <input
+            type="text"
+            value={current_prompt}
+            onChange={(e) => {
+              set_current_prompt(e.target.value);
+              set_workflow_step(0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                if (active_view_tab === 'compare' && !is_comparing) {
+                  handle_execute_compare();
+                } else if (active_view_tab === 'single' && !is_running) {
+                  handle_execute_workflow();
+                }
+              }
+            }}
+            placeholder={
+              active_feature_tab === 'business_plan'
+                ? '사업계획서 작성 주제 또는 분석하고자 하는 공공보건 지침을 입력하세요...'
+                : '공공보건의료 지침, 법령 요건, 보조금 규정 등 궁금한 점을 자유롭게 질문하세요...'
+            }
+            className="zone-input-box w-full pl-4 pr-44 py-3.5 text-xs sm:text-sm rounded-2xl transition"
+          />
+          <button
+            onClick={active_view_tab === 'compare' ? handle_execute_compare : handle_execute_workflow}
+            disabled={is_running || is_comparing || !current_prompt.trim()}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60"
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>
+              {active_view_tab === 'compare'
+                ? is_comparing
+                  ? '듀얼 추론 중...'
+                  : active_feature_tab === 'business_plan'
+                  ? '📋 1:1 사업계획서 비교'
+                  : '💬 1:1 질의응답 비교'
+                : is_running
+                ? '생성 중...'
+                : 'RAG 실행'}
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* ========================================================= */}
@@ -812,15 +832,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           {/* 2열 Split-View 그리드 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
             {/* 좌측: Google Gemini (외부 클라우드 LLM) */}
-            <div className="bg-[#fbfbfd] dark:bg-[#1c1c1e] p-5 rounded-2xl border border-[#0071e3]/20 dark:border-[#0071e3]/40 shadow-apple-sm flex flex-col justify-between space-y-3">
+            <div className="bg-[#fbfbfd] dark:bg-[#1c1c1e] p-5 rounded-2xl border-2 border-[#0071e3]/30 dark:border-[#0071e3]/50 shadow-apple-sm flex flex-col justify-between space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#0071e3] to-[#2997ff]" />
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-black/[0.05] dark:border-white/[0.08]">
                   <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#0071e3]/10 dark:bg-[#0071e3]/20 text-[#0071e3] dark:text-[#2997ff] flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-[#0071e3]/10 dark:bg-[#0071e3]/20 text-[#0071e3] dark:text-[#2997ff] flex items-center justify-center shrink-0">
                       <Globe className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="zone-badge-result">📊 AI 생성 결과</span>
                         <span className="text-xs font-bold text-[#1d1d1f] dark:text-white">
                           {compare_result?.google_gemini.success_model
                             ? compare_result.google_gemini.success_model
@@ -859,9 +881,10 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 {/* Gemini 전용 RAG 주입 건수 선택기 & 전달 내용 보기 */}
                 <div className="mt-3 p-3 bg-blue-50/80 dark:bg-blue-950/30 rounded-2xl border border-blue-200/80 dark:border-blue-800/50 space-y-2 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 font-bold text-blue-950 dark:text-blue-200">
+                    <div className="flex items-center gap-1.5 font-bold text-blue-950 dark:text-blue-200 flex-wrap">
+                      <span className="zone-badge-select">🎯 옵션 선택</span>
                       <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span>RAG 근거 주입:</span>
+                      <span>RAG 근거 주입 건수:</span>
                       <div className="flex items-center gap-1 bg-white dark:bg-[#252528] p-0.5 rounded-lg border border-blue-200 dark:border-blue-900/60 shadow-xs">
                         {[1, 2, 3, 4, 5, 6].map((num) => (
                           <button
@@ -948,11 +971,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       </span>
                     </div>
                   ) : compare_result ? (
-                    <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-white dark:bg-[#121214] p-4 rounded-xl border border-black/[0.04] dark:border-white/[0.08] max-h-[360px] overflow-y-auto">
-                      {compare_result.google_gemini.response}
-                    </pre>
+                    <div className="zone-info-box border-l-4 border-l-[#0071e3] rounded-xl p-3 bg-white dark:bg-[#121214]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="zone-badge-info">💡 Gemini 클라우드 답변</span>
+                        <span className="text-[10px] text-slate-400">읽기 전용 보고서</span>
+                      </div>
+                      <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed max-h-[360px] overflow-y-auto">
+                        {compare_result.google_gemini.response}
+                      </pre>
+                    </div>
                   ) : (
-                    <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-xs">
+                    <div className="zone-info-box border-l-4 border-l-[#0071e3]/40 p-8 text-center text-slate-400 dark:text-slate-500 text-xs">
                       [{active_feature_tab === 'business_plan' ? '1:1 사업계획서 비교' : '1:1 질의응답 비교'}] 버튼을 누르면 구글 Gemini의 가용 모델을 순차 시도하여 최적 모델로 분석합니다.
                     </div>
                   )}
@@ -977,15 +1006,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             </div>
 
             {/* 우측: 노트북 로컬 sLLM (On-Device) */}
-            <div className="bg-[#fbfbfd] dark:bg-[#1c1c1e] p-5 rounded-2xl border border-[#34c759]/30 dark:border-[#34c759]/40 shadow-apple-sm flex flex-col justify-between space-y-3">
+            <div className="bg-[#fbfbfd] dark:bg-[#1c1c1e] p-5 rounded-2xl border-2 border-[#34c759]/40 dark:border-[#34c759]/50 shadow-apple-sm flex flex-col justify-between space-y-3 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#34c759] to-[#30d158]" />
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-black/[0.05] dark:border-white/[0.08]">
                   <div className="flex items-center space-x-2">
-                    <div className="w-7 h-7 rounded-lg bg-[#34c759]/10 dark:bg-[#34c759]/20 text-[#34c759] dark:text-[#30d158] flex items-center justify-center">
+                    <div className="w-7 h-7 rounded-lg bg-[#34c759]/10 dark:bg-[#34c759]/20 text-[#34c759] dark:text-[#30d158] flex items-center justify-center shrink-0">
                       <Laptop className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="zone-badge-result">📊 AI 생성 결과</span>
                         <span className="text-xs font-bold text-[#1d1d1f] dark:text-white">Qwen2.5-0.5B-Instruct</span>
                         <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#34c759]/15 text-[#248a3d] dark:bg-[#34c759]/25 dark:text-[#30d158]">
                           노트북 On-Device sLLM
@@ -1039,9 +1070,10 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 {/* 로컬 sLLM 전용 RAG 주입 건수 선택기 & 전달 내용 보기 */}
                 <div className="mt-3 p-3 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/50 space-y-2 text-xs">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 font-bold text-emerald-950 dark:text-emerald-200">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-950 dark:text-emerald-200 flex-wrap">
+                      <span className="zone-badge-select">🎯 옵션 선택</span>
                       <Database className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                      <span>RAG 근거 주입:</span>
+                      <span>RAG 근거 주입 건수:</span>
                       <div className="flex items-center gap-1 bg-white dark:bg-[#252528] p-0.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 shadow-xs">
                         {[1, 2, 3, 4].map((num) => (
                           <button
@@ -1107,11 +1139,17 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <span className="text-xs text-slate-600 dark:text-slate-300">노트북 로컬 sLLM 엔진 추론 중...</span>
                     </div>
                   ) : compare_result ? (
-                    <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed bg-white dark:bg-[#121214] p-4 rounded-xl border border-black/[0.04] dark:border-white/[0.08] max-h-[360px] overflow-y-auto">
-                      {compare_result.local_sllm.response}
-                    </pre>
+                    <div className="zone-info-box border-l-4 border-l-[#34c759] rounded-xl p-3 bg-white dark:bg-[#121214]">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="zone-badge-info">💡 온디바이스 로컬 sLLM 답변</span>
+                        <span className="text-[10px] text-slate-400">원내 폐쇄망 보안 출력</span>
+                      </div>
+                      <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed max-h-[360px] overflow-y-auto">
+                        {compare_result.local_sllm.response}
+                      </pre>
+                    </div>
                   ) : (
-                    <div className="py-10 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 text-xs space-y-3">
+                    <div className="zone-info-box border-l-4 border-l-[#34c759]/40 py-10 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 text-xs space-y-3">
                       <Laptop className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                       <p className="text-center text-slate-500 dark:text-slate-400 max-w-xs">
                         {local_server_status?.is_running

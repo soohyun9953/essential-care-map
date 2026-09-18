@@ -75,20 +75,21 @@ export const 상단_지역_선택기: React.FC<상단_지역_선택기_속성> =
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-black/[0.06] p-3.5 sm:p-4 shadow-apple-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5 transition-all">
-      {/* 좌측: 시·도 및 시·군·구 선택 셀렉터 */}
-      <div className="flex flex-wrap items-center gap-2.5">
-        <div className="flex items-center space-x-1.5 text-base font-extrabold text-[#1d1d1f] mr-1">
-          <MapPin className="w-4 h-4 text-[#0071e3]" />
-          <span>진단 지역:</span>
+    <div className="bg-white/95 dark:bg-[#15161b] rounded-xl border border-slate-200 dark:border-slate-800 p-3 sm:p-3.5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all">
+      {/* 좌측: [선택하는 곳 🎯] 시·도 및 시·군·구 선택 셀렉터 */}
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center gap-1.5 mr-1">
+          <span className="zone-badge-select">🎯 선택</span>
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">진단 지역:</span>
         </div>
 
         {/* 시·도 드롭다운 */}
         <div className="relative">
           <select
+            aria-label="시·도 선택"
             value={current_sido}
             onChange={handle_sido_change}
-            className="appearance-none pl-3.5 pr-8 py-2 bg-[#f5f5f7] hover:bg-[#e8e8ed] border border-black/[0.06] rounded-xl text-base font-bold text-[#1d1d1f] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
+            className="appearance-none pl-3 pr-8 py-1.5 bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-300 dark:border-slate-600 rounded-lg text-xs font-semibold text-slate-800 dark:text-slate-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/30 transition shadow-2xs"
           >
             {sido_list.map((sido) => (
               <option key={sido} value={sido}>
@@ -96,15 +97,16 @@ export const 상단_지역_선택기: React.FC<상단_지역_선택기_속성> =
               </option>
             ))}
           </select>
-          <ChevronDown className="w-4 h-4 text-[#86868b] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
         {/* 시·군·구 드롭다운 */}
         <div className="relative">
           <select
+            aria-label="시·군·구 선택"
             value={selected_region?.시군구코드 || ''}
             onChange={handle_sgg_change}
-            className="appearance-none pl-3.5 pr-8 py-2 bg-[#f5f5f7] hover:bg-[#e8e8ed] border border-black/[0.06] rounded-xl text-base font-extrabold text-[#0071e3] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition"
+            className="appearance-none pl-3 pr-8 py-1.5 bg-teal-50/50 hover:bg-teal-100/50 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 border border-teal-300 dark:border-teal-700 rounded-lg text-xs font-bold text-teal-800 dark:text-teal-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500/40 transition shadow-2xs"
           >
             {sgg_list_for_sido.map((item) => (
               <option key={item.시군구코드} value={item.시군구코드}>
@@ -112,32 +114,30 @@ export const 상단_지역_선택기: React.FC<상단_지역_선택기_속성> =
               </option>
             ))}
           </select>
-          <ChevronDown className="w-4 h-4 text-[#0071e3] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <ChevronDown className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
 
-        {/* 현재 선택된 지역 요약 배지 */}
+        {/* [설명하는 곳 💡] 현재 선택된 지역 요약 배지 */}
         {selected_region && (
-          <div className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-slate-100 border border-black/[0.04] text-base">
-            <span className="font-bold text-slate-800">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 text-xs ml-1">
+            <span className="zone-badge-info">💡 진단현황</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">
               {selected_region.시도명} {selected_region.시군구명}
             </span>
             <span
-              className={`px-2.5 py-0.5 rounded-lg text-xs font-extrabold ${get_grade_badge(
+              className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${get_grade_badge(
                 selected_region.종합_취약도_등급
               )}`}
             >
-              {selected_region.종합_취약도_등급} 취약지
+              {selected_region.종합_취약도_등급}
             </span>
           </div>
         )}
       </div>
 
-      {/* 우측: 공공의료 취약지 퀵 바로가기 칩 */}
-      <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0 text-sm">
-        <span className="text-sm text-[#86868b] font-bold shrink-0 flex items-center gap-1 mr-0.5">
-          <Sparkles className="w-4 h-4 text-[#0071e3]" />
-          <span>주요 취약지:</span>
-        </span>
+      {/* 우측: [선택하는 곳 🎯] 공공의료 취약지 퀵 바로가기 칩 */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 md:pb-0 text-xs shrink-0">
+        <span className="zone-badge-select">🎯 퀵 선택:</span>
         <div className="flex items-center space-x-1.5">
           {QUICK_REGIONS.map((qr) => {
             const is_active =
@@ -151,10 +151,10 @@ export const 상단_지역_선택기: React.FC<상단_지역_선택기_속성> =
                   );
                   if (target) on_select_region(target);
                 }}
-                className={`px-3 py-1.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                   is_active
-                    ? 'bg-[#1d1d1f] text-white shadow-apple-sm scale-[0.98]'
-                    : 'bg-[#f5f5f7] hover:bg-[#e8e8ed] text-slate-700'
+                    ? 'bg-teal-600 text-white shadow-xs font-bold'
+                    : 'bg-slate-100 hover:bg-teal-50 dark:bg-slate-800 dark:hover:bg-teal-950/40 text-slate-700 dark:text-slate-300 hover:text-teal-700 border border-slate-200 dark:border-slate-700'
                 }`}
                 title={qr.desc}
               >

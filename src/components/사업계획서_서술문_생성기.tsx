@@ -80,21 +80,24 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
       {/* 상단 툴바 */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-black/[0.05]">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-base font-bold tracking-tight text-[#1d1d1f]">
-              공문서 개조식 사업계획서 서술문
-            </h3>
+            <div className="flex items-center gap-2">
+              <span className="zone-badge-result">📊 자동 생성 문안</span>
+              <h3 className="text-base font-bold tracking-tight text-[#1d1d1f]">
+                공문서 개조식 사업계획서 서술문
+              </h3>
+            </div>
             <p className="text-xs text-[#86868b] mt-0.5">
-              보건복지부 / 국립중앙의료원 공모 신청 표준 서식
+              보건복지부 취약지 지원사업 / 국립중앙의료원 공모 신청 표준 서식에 맞춘 읽기 전용 문안
             </p>
           </div>
         </div>
 
         {/* 액션 버튼 */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 shrink-0">
           <button
             onClick={handle_download_txt}
             className="inline-flex items-center space-x-1 px-3 py-1.5 text-xs font-medium bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] rounded-full transition active:scale-[0.97]"
@@ -130,11 +133,14 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
       {/* 개조식 서술문 카드 리스트 */}
       <div className="space-y-3.5">
         {/* 섹션 1: 추진 배경 및 필요성 */}
-        <div className="bg-[#f5f5f7]/80 hover:bg-[#f5f5f7] p-4 rounded-2.5xl border border-black/[0.03] transition group">
+        <div className="zone-info-box border-l-4 border-l-blue-500 p-4 rounded-2.5xl transition group">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
-              □ 추진 배경 및 필요성 (필수의료 인프라 분석)
-            </h4>
+            <div className="flex items-center gap-2">
+              <span className="zone-badge-info">💡 섹션 1</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
+                □ 추진 배경 및 필요성 (필수의료 인프라 분석)
+              </h4>
+            </div>
             <button
               onClick={() => handle_copy_single('sec1', `□ 추진 배경 및 필요성 (필수의료 인프라 분석)\n${narrative_package.추진배경_필요성}`)}
               className="text-[11px] text-[#86868b] hover:text-[#0071e3] flex items-center gap-1 opacity-70 group-hover:opacity-100 transition"
@@ -149,11 +155,14 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
         </div>
 
         {/* 섹션 2: 법정 기준 충족 여부 */}
-        <div className="bg-[#f5f5f7]/80 hover:bg-[#f5f5f7] p-4 rounded-2.5xl border border-black/[0.03] transition group">
+        <div className="zone-info-box border-l-4 border-l-teal-500 p-4 rounded-2.5xl transition group">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
-              □ 법정 기준 충족 여부 및 취약 분야 진단
-            </h4>
+            <div className="flex items-center gap-2">
+              <span className="zone-badge-info">💡 섹션 2</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
+                □ 법정 기준 충족 여부 및 취약 분야 진단
+              </h4>
+            </div>
             <button
               onClick={() => handle_copy_single('sec2', `□ 법정 기준 충족 여부 및 취약 분야 진단\n${narrative_package.법정기준_충족현황}`)}
               className="text-[11px] text-[#86868b] hover:text-[#0071e3] flex items-center gap-1 opacity-70 group-hover:opacity-100 transition"
@@ -168,11 +177,14 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
         </div>
 
         {/* 섹션 3: 모자·소아 인프라 결핍 */}
-        <div className="bg-[#f5f5f7]/80 hover:bg-[#f5f5f7] p-4 rounded-2.5xl border border-black/[0.03] transition group">
+        <div className="zone-info-box border-l-4 border-l-purple-500 p-4 rounded-2.5xl transition group">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
-              □ 모자·소아 필수의료 인프라 결핍 현황
-            </h4>
+            <div className="flex items-center gap-2">
+              <span className="zone-badge-info">💡 섹션 3</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
+                □ 모자·소아 필수의료 인프라 결핍 현황
+              </h4>
+            </div>
             <button
               onClick={() => handle_copy_single('sec3', `□ 모자·소아 필수의료 인프라 결핍 현황\n${narrative_package.모자_소아_인프라결핍}`)}
               className="text-[11px] text-[#86868b] hover:text-[#0071e3] flex items-center gap-1 opacity-70 group-hover:opacity-100 transition"
@@ -187,11 +199,14 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
         </div>
 
         {/* 섹션 4: 종합 의견 및 사업 당위성 */}
-        <div className="bg-[#f5f5f7]/80 hover:bg-[#f5f5f7] p-4 rounded-2.5xl border border-black/[0.03] transition group">
+        <div className="zone-info-box border-l-4 border-l-indigo-500 p-4 rounded-2.5xl transition group">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
-              □ 종합 의견 및 사업 추진 당위성
-            </h4>
+            <div className="flex items-center gap-2">
+              <span className="zone-badge-info">💡 섹션 4</span>
+              <h4 className="font-bold text-xs sm:text-sm text-[#1d1d1f]">
+                □ 종합 의견 및 사업 추진 당위성
+              </h4>
+            </div>
             <button
               onClick={() => handle_copy_single('sec4', `□ 종합 의견 및 사업 추진 당위성\n${narrative_package.종합_건의_문안}`)}
               className="text-[11px] text-[#86868b] hover:text-[#0071e3] flex items-center gap-1 opacity-70 group-hover:opacity-100 transition"

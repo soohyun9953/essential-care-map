@@ -160,14 +160,17 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
           </div>
         </div>
 
-        {/* 기관 전환 드롭다운 및 검색 */}
+        {/* [선택하는 곳 🎯] 기관 전환 드롭다운 및 검색 */}
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 mr-1">
+            <span className="zone-badge-select">🎯 기관 선택</span>
+          </div>
           <div className="relative min-w-[260px]">
             <select
               aria-label="의료기관 선택"
               value={selectedHospitalId}
               onChange={(e) => setSelectedHospitalId(e.target.value)}
-              className="w-full appearance-none pl-3 pr-8 py-2 text-sm font-medium bg-slate-50 border border-slate-300 rounded-lg hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              className="w-full appearance-none pl-3 pr-8 py-2 text-xs font-bold bg-teal-50/50 hover:bg-teal-100/50 dark:bg-slate-800 border border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-200 rounded-lg hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer transition shadow-2xs"
             >
               {localMedicalCenters.map((h) => (
                 <option key={h.id} value={h.id}>
@@ -175,12 +178,12 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronRight className="w-4 h-4 text-slate-400 absolute right-2.5 top-3 pointer-events-none rotate-90" />
+            <ChevronRight className="w-4 h-4 text-teal-600 dark:text-teal-400 absolute right-2.5 top-3 pointer-events-none rotate-90" />
           </div>
 
           <button
             onClick={() => onNavigateToGis && onNavigateToGis(currentHospital.region)}
-            className="px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            className="px-3 py-2 text-xs font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 border border-blue-200 dark:border-blue-800 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-2xs"
             title="해당 지역의 GIS 취약도 분석 지도로 이동"
           >
             <Activity className="w-3.5 h-3.5" />
@@ -189,79 +192,86 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
         </div>
       </div>
 
-      {/* 2. 병원 운영 핵심 현황 카드 (4대 지표) */}
+      {/* 2. [설명하는 곳 💡] 병원 운영 핵심 현황 카드 (4대 지표) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 허가 병상 및 가동률 */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">병상 규모 및 가동률</span>
+        <div className="zone-info-box">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 mb-2">
+            <span className="zone-badge-info">💡 병상 지표</span>
             <Bed className="w-4 h-4 text-blue-600" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{currentHospital.beds}</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currentHospital.beds}</span>
             <span className="text-xs text-slate-500">병상</span>
-            <span className="text-sm font-semibold text-blue-600 ml-auto">{currentEval.bedOccupancyRate}%</span>
+            <span className="text-sm font-bold text-blue-600 dark:text-blue-400 ml-auto">{currentEval.bedOccupancyRate}%</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="mt-2 pt-2 border-t border-blue-100 dark:border-blue-900/50 flex items-center justify-between text-xs">
             <span className="text-slate-500">전국 의료원 평균</span>
-            <span className="font-medium text-slate-700">74.2%</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">74.2%</span>
           </div>
         </div>
 
         {/* 의사수 및 1인당 환자수 */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">전담 전문의 인력</span>
+        <div className="zone-info-box border-l-teal-600 dark:border-l-teal-500 bg-teal-50/30 dark:bg-teal-950/20 border-teal-100 dark:border-teal-900/40">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-teal-100/70 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300 border border-teal-200">
+              💡 인력 지표
+            </span>
             <Stethoscope className="w-4 h-4 text-teal-600" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{currentHospital.doctors}</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currentHospital.doctors}</span>
             <span className="text-xs text-slate-500">명</span>
             <span className="text-xs text-slate-500 ml-auto">일평균 환자</span>
-            <span className="text-sm font-semibold text-teal-700">{currentEval.patientsPerDoctor}명</span>
+            <span className="text-sm font-bold text-teal-700 dark:text-teal-400">{currentEval.patientsPerDoctor}명</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="mt-2 pt-2 border-t border-teal-100 dark:border-teal-900/50 flex items-center justify-between text-xs">
             <span className="text-slate-500">간호관리료 등급</span>
-            <span className="font-medium text-slate-700">{currentEval.nurseGrade}등급</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{currentEval.nurseGrade}등급</span>
           </div>
         </div>
 
         {/* 종합 공공의료 평가등급 */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">공공보건 종합평가</span>
+        <div className="zone-info-box border-l-amber-500 dark:border-l-amber-400 bg-amber-50/30 dark:bg-amber-950/20 border-amber-100 dark:border-amber-900/40">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100/70 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300 border border-amber-200">
+              💡 공공성 평가
+            </span>
             <Award className="w-4 h-4 text-amber-600" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{currentEval.grade}</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currentEval.grade}</span>
             <span className="text-xs text-slate-500">등급</span>
-            <span className="text-sm font-semibold text-amber-700 ml-auto">{currentEval.score}점</span>
+            <span className="text-sm font-bold text-amber-700 dark:text-amber-400 ml-auto">{currentEval.score}점</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="mt-2 pt-2 border-t border-amber-100 dark:border-amber-900/50 flex items-center justify-between text-xs">
             <span className="text-slate-500">양질의 의료 점수</span>
-            <span className="font-medium text-slate-700">{currentEval.categoryScores.quality}점</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">{currentEval.categoryScores.quality}점</span>
           </div>
         </div>
 
         {/* 연간 수지 및 공공적자 규모 */}
-        <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
-          <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">재정 건전성 (수지)</span>
+        <div className="zone-info-box border-l-indigo-600 dark:border-l-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/40">
+          <div className="flex items-center justify-between text-slate-600 dark:text-slate-400 mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-100/70 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300 border border-indigo-200">
+              💡 재정 수지
+            </span>
             <TrendingUp className="w-4 h-4 text-indigo-600" />
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-slate-900">{currentEval.operatingProfitRatio}%</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-100">{currentEval.operatingProfitRatio}%</span>
             <span className="text-xs text-slate-500">(영업이익률)</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div className="mt-2 pt-2 border-t border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between text-xs">
             <span className="text-slate-500">필수공공의료 손실보전</span>
-            <span className="font-medium text-emerald-600">지원 심의중</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">지원 심의중</span>
           </div>
         </div>
       </div>
 
-      {/* 3. 4대 탭 메뉴 네비게이션 */}
-      <div className="flex border-b border-slate-200 gap-6 text-sm font-semibold text-slate-600">
+      {/* 3. [선택하는 곳 🎯] 4대 탭 메뉴 네비게이션 */}
+      <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto text-xs font-semibold">
+        <span className="zone-badge-select shrink-0">🎯 영역 선택:</span>
         <button
           onClick={() => setActiveTab("overview")}
           className={`pb-3 px-1 flex items-center gap-2 border-b-2 transition-colors ${
@@ -589,9 +599,12 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
-            {/* 추천 질의 태그 */}
+            {/* [선택하는 곳 🎯] 추천 질의 태그 */}
             <div>
-              <span className="text-xs text-slate-500 block mb-2 font-medium">💡 추천 질의 클릭:</span>
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="zone-badge-select">🎯 추천 질의 선택</span>
+                <span className="text-[11px] text-slate-500">클릭 시 자동 질의</span>
+              </div>
               <div className="flex flex-wrap gap-2">
                 {[
                   "현재 병상가동률 개선을 위한 가장 효과적인 단기 대책은?",
@@ -602,7 +615,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                   <button
                     key={i}
                     onClick={() => handleSendAiQuestion(tag)}
-                    className="text-xs px-3 py-1.5 bg-slate-100 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 rounded-lg text-slate-700 transition-colors text-left"
+                    className="zone-select-chip text-left"
                   >
                     {tag}
                   </button>
@@ -610,44 +623,55 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
               </div>
             </div>
 
-            {/* 채팅 히스토리 창 */}
-            <div className="h-72 overflow-y-auto border border-slate-200 rounded-lg p-4 space-y-3 bg-slate-50/50">
+            {/* [설명하는 곳 💡] 채팅 히스토리 창 */}
+            <div className="h-72 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 bg-slate-50/70 dark:bg-slate-900/40">
               {chatHistory.map((msg, idx) => (
                 <div
                   key={idx}
                   className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-lg p-3 text-xs leading-relaxed ${
+                    className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
                       msg.role === "user"
-                        ? "bg-blue-600 text-white rounded-br-none"
-                        : "bg-white text-slate-800 border border-slate-200 shadow-sm rounded-bl-none"
+                        ? "bg-blue-600 text-white rounded-br-none shadow-xs"
+                        : "zone-info-box shadow-xs rounded-bl-none"
                     }`}
                   >
+                    {msg.role === "ai" && (
+                      <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-blue-700 dark:text-blue-300">
+                        <span className="zone-badge-info">💡 AI 진단</span>
+                      </div>
+                    )}
                     {msg.content}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* 입력 폼 */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                aria-label="질의 입력"
-                value={aiQuestion}
-                onChange={(e) => setAiQuestion(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendAiQuestion()}
-                placeholder="궁금한 병원 운영 지표나 정책 과제에 대해 자유롭게 질문하세요..."
-                className="flex-1 px-4 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
-              />
-              <button
-                onClick={() => handleSendAiQuestion()}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 shadow-sm"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                질문하기
-              </button>
+            {/* [입력하는 곳 ✏️] 질문 입력 폼 */}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <span className="zone-badge-input">✏️ 직접 입력</span>
+                <span className="text-[11px] text-slate-500">자유 질문이나 경영 현안을 입력하세요</span>
+              </div>
+              <div className="zone-input-box p-1.5 flex gap-2">
+                <input
+                  type="text"
+                  aria-label="질의 입력"
+                  value={aiQuestion}
+                  onChange={(e) => setAiQuestion(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSendAiQuestion()}
+                  placeholder="궁금한 병원 운영 지표나 정책 과제에 대해 자유롭게 질문하세요..."
+                  className="flex-1 px-3 py-1.5 text-xs bg-transparent focus:outline-none text-slate-900 dark:text-slate-100"
+                />
+                <button
+                  onClick={() => handleSendAiQuestion()}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shrink-0"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  질문하기
+                </button>
+              </div>
             </div>
           </CardContent>
         </Card>

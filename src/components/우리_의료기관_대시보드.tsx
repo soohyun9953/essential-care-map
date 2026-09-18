@@ -6,8 +6,9 @@ import {
   HelpCircle, ChevronRight, Stethoscope, Users, Bed, Award, 
   Search, ArrowUpRight, ArrowDownRight, MessageSquare, Sparkles,
   FileSpreadsheet, ShieldAlert, BarChart3, PieChart, Info,
-  Compass, MapPin
+  Compass, MapPin, Bot, Globe, Laptop, Database, Loader2, Check, Copy, BookOpen, Layers
 } from "lucide-react";
+import { 경량_RAG_엔진 } from "@/lib/경량_rag_엔진";
 
 // 프로젝트 내장 Card UI 유틸리티 컴포넌트
 const Card = ({ className = '', children }: { className?: string; children: React.ReactNode }) => (
@@ -49,6 +50,18 @@ export interface MedicalCenterEvalItem {
   };
 }
 
+export interface HospitalChatMessage {
+  role: "user" | "ai";
+  content: string;
+  modelType?: 'dual' | 'gemini' | 'local' | 'dw';
+  geminiResponse?: string;
+  localResponse?: string;
+  geminiModel?: string;
+  localModel?: string;
+  ragSources?: Array<{ docName: string; article: string; score: number; text: string }>;
+  elapsedMs?: number;
+}
+
 export const localMedicalCenters: MedicalCenterItem[] = [
   { id: 'MC01', name: '강원특별자치도 영월의료원', region: '강원 영월군', type: '지역책임의료기관', beds: 198, doctors: 24, specialty: ['중증응급', '인공신장실', '소아외래', '퇴원돌봄'] },
   { id: 'MC02', name: '경상남도 거창적십자병원', region: '경남 거창군', type: '지역책임의료기관', beds: 120, doctors: 14, specialty: ['응급의료', '혈액투석', '분만의료', '방문간호'] },
@@ -76,12 +89,14 @@ export const medicalCenterEvaluations: MedicalCenterEvalItem[] = [
 ];
 
 interface MyHospitalDashboardProps {
+  google_api_key?: string;
   onNavigateToGis?: (regionCode?: string) => void;
   onNavigateToDualAi?: (prompt?: string) => void;
   onNavigateToPolicy?: (topic?: string) => void;
 }
 
 export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
+  google_api_key,
   onNavigateToGis,
   onNavigateToDualAi,
   onNavigateToPolicy,
@@ -92,12 +107,21 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
   );
   const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "action" | "qa">("overview");
 
-  // AI 질의 챗봇 상태
+  // AI 질의 챗봇 상태 및 3대 엔진 모드
+  const [aiModelMode, setAiModelMode] = useState<'dual' | 'gemini' | 'local' | 'dw'>('dual');
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [aiQuestion, setAiQuestion] = useState<string>("");
-  const [chatHistory, setChatHistory] = useState<Array<{ role: "user" | "ai"; content: string }>>([
+  const [expandedRagIdx, setExpandedRagIdx] = useState<number | null>(null);
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+  const [dualViewTabs, setDualViewTabs] = useState<Record<number, 'gemini' | 'local'>>({});
+
+  const [chatHistory, setChatHistory] = useState<HospitalChatMessage[]>([
     {
       role: "ai",
-      content: "안녕하세요! 공공의료 데이터와 DW 지표를 기반으로 원인 분석, 경영 개선 및 공공성 강화 방안을 자문해 드립니다. 궁금한 점을 입력해주세요."
+      content: "안녕하세요! 국립중앙의료원 공공보건의료 정책 지침 RAG 및 Google Gemini / 로컬 sLLM 듀얼 엔진과 원내 DW 지표를 기반으로, 경영 개선 및 공공성 강화 방안을 실시간 자문해 드립니다. 아래 추천 질의를 클릭하시거나 현안을 입력해 주세요.",
+      modelType: 'dual',
+      geminiModel: 'Google Gemini 1.5 Flash',
+      localModel: 'Qwen2.5-0.5B-Instruct (On-Device)',
     }
   ]);
 
@@ -114,28 +138,130 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
     );
   }, [selectedHospitalId]);
 
-  // AI 질의 핸들러
-  const handleSendAiQuestion = (customQ?: string) => {
-    const q = customQ || aiQuestion;
-    if (!q.trim()) return;
+  // AI 질의 핸들러 (Gemini + On-Device sLLM + RAG 법령 실시간 연동)
+  const handleSendAiQuestion = async (customQ?: string) => {
+    const q = (customQ || aiQuestion).trim();
+    if (!q || isGenerating) return;
 
-    const newChat = [...chatHistory, { role: "user" as const, content: q }];
+    const userMsg: HospitalChatMessage = { role: "user", content: q };
+    const newChat = [...chatHistory, userMsg];
     setChatHistory(newChat);
     if (!customQ) setAiQuestion("");
+    setIsGenerating(true);
 
-    setTimeout(() => {
-      let aiResp = "";
-      if (q.includes("가동률") || q.includes("병상")) {
-        aiResp = `[AI 분석] ${currentHospital.name}의 병상가동률은 ${currentEval.bedOccupancyRate}%로 전국 의료원 평균(74.2%) 대비 편차가 확인됩니다. 간호간병통합서비스 확대와 회복기 병상 전환을 통해 약 8.5%p 개선이 가능할 것으로 분석됩니다.`;
-      } else if (q.includes("인력") || q.includes("의사") || q.includes("간호")) {
-        aiResp = `[AI 인력진단] 전문의 1인당 일평균 환자수(${currentEval.patientsPerDoctor}명)와 간호등급(${currentEval.nurseGrade}등급) 감안 시, 야간 응급실 및 중환자실 인력 보강이 시급합니다. 국립대병원 파견 공공임상교수제(2명) 배정을 추천합니다.`;
-      } else if (q.includes("적자") || q.includes("재정") || q.includes("수지")) {
-        aiResp = `[AI 재정분석] 응급·분만 등 필수 공공진료 제공에 따른 착한 적자 비중이 연간 약 38%로 추산됩니다. '공공의료 성과기반 건강보험 시범수가' 및 지자체 매칭 지원 조례 제정을 연계 기획하시길 권장합니다.`;
-      } else {
-        aiResp = `[AI 종합 진단] ${currentHospital.name}(${currentHospital.region})의 핵심과제는 권역 책임의료기관과의 진료 연계 고도화 및 취약지 필수의료 핫라인 상시 가동입니다. 필요 시 상단 '정책 기획 탭'에서 맞춤형 사업계획서를 즉시 작성하실 수 있습니다.`;
+    // 1. RAG 법령 및 지침 3건 검색
+    const ragResults = 경량_RAG_엔진.retrieve(q, 3);
+    const ragSources = ragResults.map(r => ({
+      docName: r.청크.문서명,
+      article: r.청크.조항_페이지,
+      score: Math.round(r.유사도_점수),
+      text: r.청크.본문
+    }));
+
+    // 2. 원내 DW 팩트 지표 요약문 구성
+    const dwSummary = `[${currentHospital.name} DW 현황]:
+- 병원구분: ${currentHospital.type} (${currentHospital.region})
+- 허가병상수: ${currentHospital.beds}병상 (병상가동률: ${currentEval.bedOccupancyRate}%, 전국평균 74.2%)
+- 전문의 인력: ${currentHospital.doctors}명 (의사 1인당 일평균 환자수: ${currentEval.patientsPerDoctor}명)
+- 간호관리료 등급: ${currentEval.nurseGrade}등급
+- 공공보건의료 종합평가: ${currentEval.grade}등급 (종합점수 ${currentEval.score}점)
+  * 진료역량/질: ${currentEval.categoryScores.quality}점, 공공성: ${currentEval.categoryScores.publicInterest}점, 안전성: ${currentEval.categoryScores.safety}점, 거버넌스: ${currentEval.categoryScores.governance}점
+- 경영수지(영업이익률): ${currentEval.operatingProfitRatio}%
+- 중점 진료 및 특성화 분야: ${currentHospital.specialty.join(', ')}`;
+
+    // 'dw' 순수 팩트 모드인 경우 즉시 DW 기반 정적 분석
+    if (aiModelMode === 'dw') {
+      setTimeout(() => {
+        let aiResp = "";
+        if (q.includes("가동률") || q.includes("병상")) {
+          aiResp = `[원내 DW 팩트 진단] ${currentHospital.name}의 병상가동률은 ${currentEval.bedOccupancyRate}%로 전국 지방의료원 평균(74.2%) 대비 편차가 확인됩니다. 간호등급(${currentEval.nurseGrade}등급) 감안 시 간호간병통합서비스 확대와 회복기 병상 전환을 통해 약 8.5%p 개선이 가능할 것으로 분석됩니다.`;
+        } else if (q.includes("인력") || q.includes("의사") || q.includes("간호")) {
+          aiResp = `[원내 DW 인력진단] 전문의 ${currentHospital.doctors}명 기준 1인당 일평균 환자수(${currentEval.patientsPerDoctor}명)와 간호등급(${currentEval.nurseGrade}등급) 감안 시 야간 응급실 및 중환자실 인력 보강이 시급합니다. 국립대병원 파견 공공임상교수제(2명) 배정을 추천합니다.`;
+        } else if (q.includes("적자") || q.includes("재정") || q.includes("수지")) {
+          aiResp = `[원내 DW 재정분석] 영업이익률 ${currentEval.operatingProfitRatio}% 현황 상, 응급·분만 등 필수 공공진료 제공에 따른 착한 적자 비중이 연간 약 38%로 추산됩니다. '공공의료 성과기반 건강보험 시범수가' 및 지자체 매칭 지원 조례 제정을 연계 기획하시길 권장합니다.`;
+        } else {
+          aiResp = `[원내 DW 종합진단] ${currentHospital.name}(${currentHospital.region})의 핵심과제는 공공의료평가(${currentEval.grade}등급, ${currentEval.score}점) 취약항목 개선 및 권역 책임의료기관과의 진료 연계 고도화입니다.`;
+        }
+
+        setChatHistory([...newChat, {
+          role: "ai",
+          content: aiResp,
+          modelType: 'dw',
+          ragSources,
+        }]);
+        setIsGenerating(false);
+      }, 350);
+      return;
+    }
+
+    // 3. `/api/llm/compare` 호출 (Gemini + On-Device sLLM + RAG 컨텍스트)
+    const ragContextText = ragResults.map(r => `[${r.청크.문서명} - ${r.청크.조항_페이지}]\n${r.청크.본문}`).join('\n\n');
+
+    try {
+      const response = await fetch('/api/llm/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `${q}\n\n[참고: 병원 DW 운영현황]\n${dwSummary}`,
+          google_api_key: google_api_key || '',
+          region_name: `${currentHospital.region} (${currentHospital.name})`,
+          region_stats: {
+            emergency_rate: currentEval.bedOccupancyRate,
+            ri_rate: currentHospital.beds,
+            maternity_rate: currentEval.patientsPerDoctor,
+            vulnerability_grade: currentEval.grade
+          },
+          rag_context: ragContextText,
+          gemini_rag_context: ragContextText,
+          local_rag_context: ragContextText,
+          mode: 'general_qa'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API 응답 오류: ${response.statusText}`);
       }
-      setChatHistory([...newChat, { role: "ai", content: aiResp }]);
-    }, 500);
+
+      const data = await response.json();
+      const geminiResp = data.google_gemini?.response || 'Gemini 응답 생성 실패';
+      const localResp = data.local_sllm?.response || '로컬 sLLM 응답 생성 실패';
+      const elapsedMs = data.google_gemini?.elapsed_ms || data.local_sllm?.elapsed_ms || 320;
+
+      let primaryContent = '';
+      if (aiModelMode === 'gemini') {
+        primaryContent = geminiResp;
+      } else if (aiModelMode === 'local') {
+        primaryContent = localResp;
+      } else {
+        // dual 모드: 두 모델의 통찰이 모두 포함된 뷰 제공
+        primaryContent = geminiResp;
+      }
+
+      setChatHistory([...newChat, {
+        role: "ai",
+        content: primaryContent,
+        modelType: aiModelMode,
+        geminiResponse: geminiResp,
+        localResponse: localResp,
+        geminiModel: data.google_gemini?.model || 'Google Gemini 1.5 Flash',
+        localModel: data.local_sllm?.model || 'Qwen2.5-0.5B-Instruct (On-Device)',
+        ragSources,
+        elapsedMs
+      }]);
+    } catch (err: any) {
+      console.error('AI Q&A 연동 오류:', err);
+      // 에러 시 DW 팩트 + RAG 근거를 바탕으로 안전한 대체 답변 제공
+      const fallbackResp = `[실시간 분석 안내]\n${currentHospital.name}의 DW 지표(가동률 ${currentEval.bedOccupancyRate}%, 의사수 ${currentHospital.doctors}명, 평가등급 ${currentEval.grade}등급)와 검색된 공공보건의료 지침(${ragSources[0]?.docName || '공공보건의료법'})을 기반으로 진단한 결과, 지자체 매칭 지원 및 공공임상교수제 파견 요청이 우선 권고됩니다. (네트워크 지연 시 로컬 안전모드 동작)`;
+
+      setChatHistory([...newChat, {
+        role: "ai",
+        content: fallbackResp,
+        modelType: 'dw',
+        ragSources,
+      }]);
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -590,20 +716,88 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
       {activeTab === "qa" && (
         <Card className="border-slate-200">
           <CardHeader className="pb-3 border-b border-slate-200">
-            <CardTitle className="text-base font-bold text-slate-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="w-5 h-5 text-purple-600" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <CardTitle className="text-base font-bold text-slate-800 flex items-center gap-2">
+                <div className="p-1.5 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded-lg">
+                  <MessageSquare className="w-4 h-4" />
+                </div>
                 <span>{currentHospital.name} 전담 AI 의사결정 Q&A</span>
+              </CardTitle>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 rounded-full border border-emerald-200 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Gemini + sLLM + RAG 연동 가동중
+                </span>
               </div>
-              <span className="text-xs font-normal text-slate-500">의료원 DW 지표 기반 답변</span>
-            </CardTitle>
+            </div>
+
+            {/* [선택하는 곳 🎯] 추론 엔진 모드 선택 바 */}
+            <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-2">
+              <span className="zone-badge-select">🎯 추론 엔진 선택</span>
+              <div className="inline-flex p-1 bg-slate-100 dark:bg-slate-800/70 rounded-lg border border-slate-200 dark:border-slate-700 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setAiModelMode('dual')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md font-semibold transition ${
+                    aiModelMode === 'dual'
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  듀얼 AI 비교 (추천)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiModelMode('gemini')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md font-semibold transition ${
+                    aiModelMode === 'gemini'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  Google Gemini
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiModelMode('local')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md font-semibold transition ${
+                    aiModelMode === 'local'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Laptop className="w-3.5 h-3.5" />
+                  On-Device sLLM
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAiModelMode('dw')}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md font-semibold transition ${
+                    aiModelMode === 'dw'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <Database className="w-3.5 h-3.5" />
+                  원내 DW 지표
+                </button>
+              </div>
+              <span className="text-[11px] text-slate-500 ml-auto hidden sm:inline">
+                {aiModelMode === 'dual' && '클라우드 Gemini 1.5 Flash와 로컬 Qwen2.5를 동시 분석합니다.'}
+                {aiModelMode === 'gemini' && '최신 보건의료 가이드라인 및 고도화된 정책 행정안을 제안합니다.'}
+                {aiModelMode === 'local' && '병원 내부 폐쇄망 On-Device 보안 추론으로 환자·경영정보를 보호합니다.'}
+                {aiModelMode === 'dw' && '병원 내 DW 원장 통계 수치만을 엄격히 적용하여 신속 진단합니다.'}
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
             {/* [선택하는 곳 🎯] 추천 질의 태그 */}
             <div>
               <div className="flex items-center gap-1.5 mb-2">
                 <span className="zone-badge-select">🎯 추천 질의 선택</span>
-                <span className="text-[11px] text-slate-500">클릭 시 자동 질의</span>
+                <span className="text-[11px] text-slate-500">클릭 시 원내 DW + RAG 법령 기반 실시간 추론</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {[
@@ -614,8 +808,9 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                 ].map((tag, i) => (
                   <button
                     key={i}
+                    disabled={isGenerating}
                     onClick={() => handleSendAiQuestion(tag)}
-                    className="zone-select-chip text-left"
+                    className="zone-select-chip text-left disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-300"
                   >
                     {tag}
                   </button>
@@ -624,52 +819,224 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
             </div>
 
             {/* [설명하는 곳 💡] 채팅 히스토리 창 */}
-            <div className="h-72 overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 bg-slate-50/70 dark:bg-slate-900/40">
-              {chatHistory.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
+            <div className="min-h-[320px] max-h-[500px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4 bg-slate-50/70 dark:bg-slate-900/40">
+              {chatHistory.map((msg, idx) => {
+                const isDual = msg.role === 'ai' && (msg.geminiResponse && msg.localResponse);
+                const currentDualTab = dualViewTabs[idx] || 'gemini';
+
+                return (
                   <div
-                    className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
-                      msg.role === "user"
-                        ? "bg-blue-600 text-white rounded-br-none shadow-xs"
-                        : "zone-info-box shadow-xs rounded-bl-none"
-                    }`}
+                    key={idx}
+                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    {msg.role === "ai" && (
-                      <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-blue-700 dark:text-blue-300">
-                        <span className="zone-badge-info">💡 AI 진단</span>
+                    <div
+                      className={`max-w-[92%] rounded-xl p-4 text-xs leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-blue-600 text-white rounded-br-none shadow-xs"
+                          : "bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-800 shadow-xs rounded-bl-none text-slate-800 dark:text-slate-200"
+                      }`}
+                    >
+                      {msg.role === "ai" && (
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center gap-2">
+                            <span className="zone-badge-info">💡 AI 진단</span>
+                            {msg.modelType === 'dual' && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded border border-purple-200">
+                                듀얼 AI (Gemini + On-Device)
+                              </span>
+                            )}
+                            {msg.modelType === 'gemini' && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 rounded border border-blue-200">
+                                Google Gemini 1.5 Flash
+                              </span>
+                            )}
+                            {msg.modelType === 'local' && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 rounded border border-emerald-200">
+                                On-Device sLLM (원내보안)
+                              </span>
+                            )}
+                            {msg.modelType === 'dw' && (
+                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded border border-amber-200">
+                                DW 지표 규칙 분석
+                              </span>
+                            )}
+                            {msg.elapsedMs && (
+                              <span className="text-[10px] text-slate-400">
+                                ({msg.elapsedMs}ms)
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {/* 답변 복사 버튼 */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const textToCopy = isDual
+                                  ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse) || msg.content
+                                  : msg.content;
+                                navigator.clipboard.writeText(textToCopy);
+                                setCopiedIndex(idx);
+                                setTimeout(() => setCopiedIndex(null), 1500);
+                              }}
+                              className="px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded transition flex items-center gap-1"
+                              title="답변 복사"
+                            >
+                              {copiedIndex === idx ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                  <span className="text-emerald-600 font-bold">복사됨</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Copy className="w-3 h-3" />
+                                  <span>복사</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 듀얼 모드일 때 모델별 탭 전환 스위치 */}
+                      {isDual && (
+                        <div className="mb-3 flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg">
+                          <button
+                            type="button"
+                            onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'gemini' })}
+                            className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
+                              currentDualTab === 'gemini'
+                                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            <Globe className="w-3.5 h-3.5 text-blue-500" />
+                            <span>Google Gemini 응답</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'local' })}
+                            className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
+                              currentDualTab === 'local'
+                                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                                : 'text-slate-500 hover:text-slate-800'
+                            }`}
+                          >
+                            <Laptop className="w-3.5 h-3.5 text-emerald-500" />
+                            <span>On-Device sLLM 응답 (원내보안)</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* RAG 근거 법령 및 지침 아코디언 */}
+                      {msg.ragSources && msg.ragSources.length > 0 && (
+                        <div className="mb-3">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedRagIdx(expandedRagIdx === idx ? null : idx)}
+                            className="w-full text-left p-2 rounded-lg bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-800/50 hover:bg-purple-100/50 transition flex items-center justify-between"
+                          >
+                            <span className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800 dark:text-purple-300">
+                              <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+                              RAG 검색 법령·지침 근거 ({msg.ragSources.length}건 참조)
+                            </span>
+                            <span className="text-[10px] text-purple-600 font-semibold underline">
+                              {expandedRagIdx === idx ? '접기 ▲' : '자세히 보기 ▼'}
+                            </span>
+                          </button>
+
+                          {expandedRagIdx === idx && (
+                            <div className="mt-2 p-3 bg-purple-50/40 dark:bg-purple-950/20 rounded-lg border border-purple-200/50 space-y-2 text-[11px]">
+                              {msg.ragSources.map((source, sIdx) => (
+                                <div key={sIdx} className="p-2 bg-white dark:bg-slate-900/80 rounded border border-purple-100 dark:border-purple-900/40">
+                                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                    <span className="text-purple-700 dark:text-purple-400">
+                                      [{source.docName}] {source.article}
+                                    </span>
+                                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">
+                                      유사도 {source.score}%
+                                    </span>
+                                  </div>
+                                  <p className="text-slate-600 dark:text-slate-300 leading-snug line-clamp-3">
+                                    {source.text}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* 메시지 본문 렌더링 */}
+                      <div className="whitespace-pre-wrap leading-relaxed">
+                        {isDual
+                          ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse)
+                          : msg.content}
                       </div>
-                    )}
-                    {msg.content}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* 생성 중 로딩 인디케이터 */}
+              {isGenerating && (
+                <div className="flex justify-start">
+                  <div className="bg-white dark:bg-[#1a1c23] border border-purple-200 dark:border-purple-900/50 rounded-xl rounded-bl-none p-4 shadow-sm space-y-2">
+                    <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold text-xs">
+                      <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                      <span>
+                        {aiModelMode === 'dual' && 'Google Gemini & On-Device sLLM 동시 추론 중...'}
+                        {aiModelMode === 'gemini' && 'Google Gemini 1.5 Flash 실시간 추론 중...'}
+                        {aiModelMode === 'local' && 'On-Device sLLM 로컬 추론 중...'}
+                        {aiModelMode === 'dw' && '원내 DW 지표 분석 중...'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 pl-6">
+                      공공보건의료 지침 RAG 3건 검색 및 {currentHospital.name} DW 팩트 지표를 결합하고 있습니다.
+                    </p>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
 
             {/* [입력하는 곳 ✏️] 질문 입력 폼 */}
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <span className="zone-badge-input">✏️ 직접 입력</span>
-                <span className="text-[11px] text-slate-500">자유 질문이나 경영 현안을 입력하세요</span>
+                <span className="text-[11px] text-slate-500">자유 질문이나 경영 현안을 입력하세요 (엔터 키 지원)</span>
               </div>
               <div className="zone-input-box p-1.5 flex gap-2">
                 <input
                   type="text"
                   aria-label="질의 입력"
+                  disabled={isGenerating}
                   value={aiQuestion}
                   onChange={(e) => setAiQuestion(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendAiQuestion()}
-                  placeholder="궁금한 병원 운영 지표나 정책 과제에 대해 자유롭게 질문하세요..."
-                  className="flex-1 px-3 py-1.5 text-xs bg-transparent focus:outline-none text-slate-900 dark:text-slate-100"
+                  placeholder={
+                    isGenerating
+                      ? "AI가 답변을 생성하고 있습니다..."
+                      : `${currentHospital.name}의 가동률, 의사인력, 착한적자 보전, 평가점수 등에 대해 질문하세요...`
+                  }
+                  className="flex-1 px-3 py-1.5 text-xs bg-transparent focus:outline-none text-slate-900 dark:text-slate-100 disabled:opacity-50"
                 />
                 <button
+                  type="button"
+                  disabled={isGenerating || !aiQuestion.trim()}
                   onClick={() => handleSendAiQuestion()}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shrink-0"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer disabled:cursor-not-allowed"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  질문하기
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      생성중
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      질문하기
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -679,4 +1046,5 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
     </div>
   );
 };
+
 

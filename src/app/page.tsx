@@ -541,6 +541,7 @@ export default function Home() {
             {active_menu === 'my_hospital' && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <OurHospitalDashboard
+                  google_api_key={google_api_key}
                   onNavigateToGis={(regionName) => {
                     handle_select_menu('gis_map');
                   }}

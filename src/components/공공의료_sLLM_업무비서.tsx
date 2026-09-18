@@ -206,7 +206,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     }
     const all_docs = get_all_corpus();
     set_total_doc_count(all_docs.length);
-    const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+    const initial_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
     set_rag_result(initial_result);
 
     // 마운트 시 로컬 서버 상태 감지
@@ -228,7 +228,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const handle_document_added = () => {
     const all_docs = get_all_corpus();
     set_total_doc_count(all_docs.length);
-    const updated_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+    const updated_result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
     set_rag_result(updated_result);
   };
 
@@ -239,7 +239,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     set_workflow_step(1);
 
     setTimeout(() => {
-      const result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+      const result = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, 8);
       set_rag_result(result);
       set_workflow_step(2);
 
@@ -255,8 +255,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     save_prompt_if_new(selected_prompt);
     set_is_comparing(true);
     try {
-      // 1. 먼저 RAG를 통해 지자체 DW 및 법령 청크 추출
-      const local_rag = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null);
+      // 1. 먼저 RAG를 통해 지자체 DW 및 법령 청크 추출 (선택된 RAG 건수 중 최대값 이상 검색)
+      const max_top_k = Math.max(gemini_rag_count, local_rag_count, 8);
+      const local_rag = 경량_RAG_엔진.execute_rag(selected_prompt, selected_region || null, max_top_k);
       set_rag_result(local_rag);
 
       // 모델별 독립된 RAG 청크 슬라이스 (선택한 개수만큼 전달)
@@ -631,8 +632,8 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 </span>
                 <span className="text-[11px] text-slate-500 font-normal">총 {rag_result.검색된_청크목록.length}건 검색됨</span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
-                {rag_result.검색된_청크목록.slice(0, 3).map((item, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-80 overflow-y-auto pr-1">
+                {rag_result.검색된_청크목록.map((item, idx) => (
                   <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1 shadow-xs">
                     <div className="flex items-center justify-between text-[#0071e3] font-bold">
                       <div className="flex items-center gap-1 min-w-0">

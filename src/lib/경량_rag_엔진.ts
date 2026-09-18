@@ -86,7 +86,7 @@ export class 경량_RAG_엔진 {
   /**
    * 코퍼스 내에서 질문(Query)과 가장 관련성이 높은 Top-K 청크 검색 (Hybrid Retrieval)
    */
-  public static retrieve(query: string, top_k: number = 3): RAG_검색_결과[] {
+  public static retrieve(query: string, top_k: number = 8): RAG_검색_결과[] {
     const query_vec = this.tokenize_and_vectorize(query);
     const query_words = query.toLowerCase().split(/\s+/).filter((w) => w.length > 1);
 
@@ -132,7 +132,7 @@ export class 경량_RAG_엔진 {
   public static execute_rag(
     query: string,
     region: 필수의료_진단_결과 | null,
-    top_k: number = 3
+    top_k: number = 8
   ): RAG_실행_응답 {
     const start_time = performance.now();
     const retrieved_chunks = this.retrieve(query, top_k);

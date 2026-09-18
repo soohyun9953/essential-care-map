@@ -41,6 +41,8 @@ import { 일대일_비교_대시보드 } from '@/components/일대일_비교_대
 import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차트';
 import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
 import { 일반국민_공공병원_맞춤뷰 } from '@/components/일반국민_공공병원_맞춤뷰';
+import { 글로벌_공공_헤더, 업무_도메인_타입 } from '@/components/글로벌_공공_헤더';
+import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보드';
 
 import {
   Sparkles,
@@ -57,11 +59,53 @@ import {
 
 export default function Home() {
   // 현재 활성화된 좌측 기능 메뉴
-  const [active_menu, set_active_menu] = useState<메뉴_아이디>('gis_map');
+  const [active_menu, set_active_menu] = useState<메뉴_아이디 | 'my_hospital'>('gis_map');
+  // 6대 글로벌 업무 도메인 상태
+  const [current_domain, set_current_domain] = useState<업무_도메인_타입>('status_diag');
 
   // 사이드바 숨김 및 다크/블랙 테마 상태
   const [is_sidebar_hidden, set_is_sidebar_hidden] = useState(false);
   const [is_dark_mode, set_is_dark_mode] = useState(false);
+
+  // 도메인 변경 시 대표 기능 메뉴 자동 활성화
+  const handle_select_domain = (domain: 업무_도메인_타입) => {
+    set_current_domain(domain);
+    if (domain === 'status_diag') {
+      if (!['gis_map', 'diagnosis_metrics', 'compare_1to1', 'demand_forecast'].includes(active_menu)) {
+        set_active_menu('gis_map');
+      }
+    } else if (domain === 'ai_analysis') {
+      set_active_menu('dual_ai_studio');
+    } else if (domain === 'policy_plan') {
+      set_active_menu('report_generator');
+    } else if (domain === 'field_manage') {
+      if (!['hospital_crisis', 'discharge_care'].includes(active_menu)) {
+        set_active_menu('hospital_crisis');
+      }
+    } else if (domain === 'public_service') {
+      set_active_menu('citizen_view');
+    } else if (domain === 'my_hospital') {
+      set_active_menu('my_hospital');
+    }
+  };
+
+  // 메뉴 변경 시 도메인 자동 동기화
+  const handle_select_menu = (menu: 메뉴_아이디 | 'my_hospital') => {
+    set_active_menu(menu);
+    if (['gis_map', 'diagnosis_metrics', 'compare_1to1', 'demand_forecast'].includes(menu)) {
+      set_current_domain('status_diag');
+    } else if (menu === 'dual_ai_studio') {
+      set_current_domain('ai_analysis');
+    } else if (menu === 'report_generator') {
+      set_current_domain('policy_plan');
+    } else if (['hospital_crisis', 'discharge_care'].includes(menu)) {
+      set_current_domain('field_manage');
+    } else if (menu === 'citizen_view') {
+      set_current_domain('public_service');
+    } else if (menu === 'my_hospital') {
+      set_current_domain('my_hospital');
+    }
+  };
 
   // 모달 상태
   const [is_grounding_open, set_is_grounding_open] = useState(false);
@@ -175,7 +219,7 @@ export default function Home() {
   };
 
   // 메뉴별 타이틀 및 설명 맵
-  const MENU_TITLES: Record<메뉴_아이디, { title: string; subtitle: string }> = {
+  const MENU_TITLES: Record<메뉴_아이디 | 'my_hospital', { title: string; subtitle: string }> = {
     gis_map: {
       title: '전국 70개 중진료권 GIS 헬스맵 & 226개 시군구 취약지 DB',
       subtitle: '보건복지부 법정 고시 기준 알고리즘에 따른 응급·분만·소아 취약지 공간 시각화',
@@ -212,286 +256,403 @@ export default function Home() {
       title: '일반국민 안심 공공병원 안내 & 모바일 퇴원돌봄 알리미',
       subtitle: '가장 가까운 응급실·소아과 보유 공공병원 확인 및 카카오 퇴원 알림톡 연계',
     },
+    my_hospital: {
+      title: '의료기관 담당자 전용 대시보드 (My Hospital)',
+      subtitle: '소속 기관의 필수의료 4대 운영 지표, AI 병목 진단, 경영개선 과제 및 AI 질의응답',
+    },
   };
 
   const current_title_info = MENU_TITLES[active_menu];
 
   return (
-    <main className="min-h-screen bg-[#f5f5f7] dark:bg-[#0c0d10] flex flex-col lg:flex-row selection:bg-[#0071e3]/20 transition-colors duration-200">
-      {/* 1. 좌측 기능 사이드바 네비게이션 */}
-      <메인_사이드바_네비게이션
-        active_menu={active_menu}
-        on_select_menu={set_active_menu}
-        on_open_upload_modal={() => set_is_upload_modal_open(true)}
-        on_load_sample_data={handle_load_sample_data}
-        on_download_nmc_excel={handle_download_nmc_excel}
-        on_open_grounding_modal={() => set_is_grounding_open(true)}
+    <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
+      {/* 1. 최상단 글로벌 공공 헤더 (6대 도메인 네비게이션 & 퀵 유틸리티) */}
+      <글로벌_공공_헤더
+        active_domain={current_domain}
+        on_select_domain={handle_select_domain}
         on_open_key_modal={() => set_is_key_modal_open(true)}
+        on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
+        on_open_upload_modal={() => set_is_upload_modal_open(true)}
+        on_open_grounding_modal={() => set_is_grounding_open(true)}
+        on_export_capture={handle_export_report_png}
+        is_dark_mode={is_dark_mode}
+        on_toggle_dark_mode={toggle_dark_mode}
         google_api_key_registered={!!google_api_key}
         data_go_kr_key_registered={!!data_go_kr_api_key}
-        on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
-        selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}
-        selected_region_grade={selected_region?.종합_취약도_등급 ?? '심각'}
-        is_hidden={is_sidebar_hidden}
-        on_toggle_hide={toggle_sidebar_hidden}
       />
 
-      {/* 2. 우측 메인 워크스페이스 */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
-        {/* 우측 상단 고정 헤더 바 (브레드크럼 & 지역 선택기 & 퀵 액션) */}
-        <header className="sticky top-0 z-30 bg-white/85 backdrop-blur-xl border-b border-black/[0.06] px-4 sm:px-6 lg:px-8 py-3.5 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            {/* 좌측: 사이드바 복원 버튼 및 브레드크럼 타이틀 */}
-            <div className="flex items-center space-x-3">
-              {is_sidebar_hidden && (
-                <button
-                  onClick={toggle_sidebar_hidden}
-                  className="hidden lg:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-white border border-black/[0.08] hover:bg-slate-100 text-[#1d1d1f] text-sm font-bold shadow-apple-sm transition shrink-0"
-                  title="좌측 기능 메뉴 펼치기"
-                >
-                  <PanelLeftOpen className="w-4 h-4 text-[#0071e3]" />
-                  <span>메뉴 열기</span>
-                </button>
-              )}
-
-              <div>
-                <div className="flex items-center space-x-1.5 text-sm text-[#86868b] font-semibold">
-                  <span>공공보건의료 플랫폼</span>
-                  <ChevronRight className="w-4 h-4 text-slate-400" />
-                  <span className="text-[#0071e3] font-bold">
-                    {active_menu === 'gis_map' && 'GIS 헬스맵'}
-                    {active_menu === 'diagnosis_metrics' && '종합 지표 진단'}
-                    {active_menu === 'dual_ai_studio' && '듀얼 AI 스튜디오'}
-                    {active_menu === 'report_generator' && '사업계획서 생성기'}
-                    {active_menu === 'hospital_crisis' && '경영위기 조기경보'}
-                    {active_menu === 'discharge_care' && '퇴원환자 돌봄연계'}
-                    {active_menu === 'compare_1to1' && '지자체 1:1 비교'}
-                    {active_menu === 'demand_forecast' && '2030 수요추계'}
-                    {active_menu === 'citizen_view' && '일반국민 안심뷰'}
-                  </span>
-                </div>
-                <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[#1d1d1f] mt-1">
-                  {current_title_info.title}
-                </h2>
-              </div>
+      {/* 2. 상단 4대 플랫폼 운영 KPI 바 */}
+      <div className="bg-white dark:bg-[#15161b] border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 lg:px-8 py-2.5 shadow-sm">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+              226
             </div>
-
-            {/* 우측 상단 액션 버튼 그룹 */}
-            <div className="flex items-center space-x-2 shrink-0 flex-wrap gap-y-1">
-              {/* 블랙 테마 / 화이트 테마 전환 토글 버튼 */}
-              <button
-                onClick={toggle_dark_mode}
-                className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
-                  is_dark_mode
-                    ? 'bg-amber-400/20 text-amber-300 border-amber-400/50 hover:bg-amber-400/30'
-                    : 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800'
-                }`}
-                title={is_dark_mode ? '화이트 테마로 전환' : '블랙 테마로 전환'}
-              >
-                {is_dark_mode ? (
-                  <Sun className="w-4 h-4 text-amber-400" />
-                ) : (
-                  <Moon className="w-4 h-4 text-slate-200" />
-                )}
-                <span>{is_dark_mode ? '화이트 테마' : '블랙 테마'}</span>
-              </button>
-
-              {/* Google API 키 설정 버튼 */}
-              <button
-                onClick={() => set_is_key_modal_open(true)}
-                className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
-                  google_api_key
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700'
-                    : 'bg-amber-400/20 text-amber-900 dark:text-amber-300 border-amber-400 hover:bg-amber-400/30'
-                }`}
-                title="Google Gemini API 키 관리"
-              >
-                <Key className="w-4 h-4 text-amber-600" />
-                <span>{google_api_key ? 'Google 등록됨' : 'Google 키'}</span>
-              </button>
-
-              {/* data.go.kr 공공데이터포털 API 키 설정 버튼 */}
-              <button
-                onClick={() => set_is_data_go_kr_modal_open(true)}
-                className={`inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-full text-sm font-bold border transition shadow-apple-sm ${
-                  data_go_kr_api_key
-                    ? 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700'
-                    : 'bg-amber-400/20 text-amber-900 dark:text-amber-300 border-amber-400 hover:bg-amber-400/30'
-                }`}
-                title="공공데이터포털(data.go.kr) API 인증키 관리"
-              >
-                <Database className="w-4 h-4 text-[#0071e3]" />
-                <span>{data_go_kr_api_key ? 'data.go.kr 등록됨' : 'data.go.kr 키 등록'}</span>
-              </button>
-
-              {/* 환각 제로 원문 대조 버튼 */}
-              <button
-                onClick={() => set_is_grounding_open(true)}
-                className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-full text-sm font-bold shadow-apple-sm transition"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="hidden sm:inline">원문 대조</span>
-              </button>
-
-              {/* 리포트 이미지 저장 버튼 */}
-              <button
-                onClick={handle_export_report_png}
-                className="inline-flex items-center space-x-1.5 px-3.5 py-2 bg-white border border-black/[0.08] hover:bg-slate-100 text-[#1d1d1f] rounded-full text-sm font-bold shadow-apple-sm transition"
-                title="현재 화면을 PNG 이미지로 캡처 저장"
-              >
-                <Camera className="w-4 h-4 text-[#86868b]" />
-                <span className="hidden sm:inline">화면 캡처</span>
-              </button>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">전국 시군구 진단</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                취약지 <span className="text-red-600 dark:text-red-400 font-extrabold">{vulnerable_region_count}</span>개소 감시
+              </p>
             </div>
           </div>
 
-          {/* 상단 글로벌 지역 신속 선택기 (시도/시군구 드롭다운 & 대표 취약지 퀵 칩) */}
-          <상단_지역_선택기
-            diagnosed_list={diagnosed_list}
-            selected_region={selected_region}
-            on_select_region={(region) => set_selected_region(region)}
-          />
-        </header>
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-teal-50/60 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/40">
+            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+              70
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">중진료권 네트워크</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">권역·지역 책임의료</p>
+            </div>
+          </div>
 
-        {/* 본문 작업 영역 (선택된 기능 메뉴만 단독 렌더링) */}
-        <div id="main-workspace-content" className="p-4 sm:p-6 lg:p-8 space-y-6">
-          {/* ============================================================== */}
-          {/* 1. GIS 헬스맵 & 시군구 취약지 데이터베이스 */}
-          {/* ============================================================== */}
-          {active_menu === 'gis_map' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
-                <div className="xl:col-span-7 h-[620px]">
-                  <지도_래퍼
-                    diagnosed_list={diagnosed_list}
-                    selected_region={selected_region}
-                    on_select_region={(region) => set_selected_region(region)}
-                    view_mode={view_mode}
-                    on_change_view_mode={set_view_mode}
-                    region_unit={region_unit}
-                    on_change_region_unit={set_region_unit}
-                  />
-                </div>
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40">
+            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+              35
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">지방의료원 조기경보</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">경영위기 감지 엔진</p>
+            </div>
+          </div>
 
-                <div className="xl:col-span-5 h-[620px]">
-                  <취약지_목록_테이블
-                    diagnosed_list={diagnosed_list}
-                    selected_region={selected_region}
-                    on_select_region={(region) => set_selected_region(region)}
-                  />
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40">
+            <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+              3대
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">핵심 필수의료</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">응급 · 분만 · 소아</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. 본체 영역 (사이드바 + 메인 워크스페이스) */}
+      <div className="flex-1 flex flex-col lg:flex-row min-w-0 min-h-0 overflow-hidden">
+        {/* 좌측 기능 사이드바 네비게이션 */}
+        <메인_사이드바_네비게이션
+          active_menu={active_menu as 메뉴_아이디}
+          on_select_menu={handle_select_menu}
+          on_open_upload_modal={() => set_is_upload_modal_open(true)}
+          on_load_sample_data={handle_load_sample_data}
+          on_download_nmc_excel={handle_download_nmc_excel}
+          on_open_grounding_modal={() => set_is_grounding_open(true)}
+          on_open_key_modal={() => set_is_key_modal_open(true)}
+          google_api_key_registered={!!google_api_key}
+          data_go_kr_key_registered={!!data_go_kr_api_key}
+          on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
+          selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}
+          selected_region_grade={selected_region?.종합_취약도_등급 ?? '심각'}
+          is_hidden={is_sidebar_hidden}
+          on_toggle_hide={toggle_sidebar_hidden}
+        />
+
+        {/* 우측 메인 워크스페이스 */}
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
+          {/* 서브 헤더 바 (브레드크럼 & 지역 선택기 & 서브 탭) */}
+          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 lg:px-8 py-3 space-y-3 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                {is_sidebar_hidden && (
+                  <button
+                    onClick={toggle_sidebar_hidden}
+                    className="hidden lg:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold shadow-xs transition shrink-0"
+                    title="좌측 기능 메뉴 펼치기"
+                  >
+                    <PanelLeftOpen className="w-3.5 h-3.5 text-blue-600" />
+                    <span>메뉴 열기</span>
+                  </button>
+                )}
+
+                <div>
+                  <div className="flex items-center space-x-1.5 text-xs text-slate-500 font-semibold">
+                    <span>공공의료 의사결정 플랫폼</span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-blue-700 dark:text-blue-400 font-bold">
+                      {current_domain === 'status_diag' && '현황 진단 & GIS'}
+                      {current_domain === 'ai_analysis' && 'AI 심층 분석'}
+                      {current_domain === 'policy_plan' && '정책 및 사업기획'}
+                      {current_domain === 'field_manage' && '현장 운영 관리'}
+                      {current_domain === 'public_service' && '대국민 서비스'}
+                      {current_domain === 'my_hospital' && 'MY 의료기관'}
+                    </span>
+                  </div>
+                  <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
+                    {current_title_info.title}
+                  </h1>
                 </div>
               </div>
 
-              {/* 실시간 응급 소아 모니터링 바 */}
-              {selected_region && (
-                <실시간_응급_소아_모니터링 selected_region={selected_region} />
-              )}
+              {/* 빠른 바로가기 CTA */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handle_select_domain('ai_analysis')}
+                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition flex items-center gap-1"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>듀얼 AI 분석</span>
+                </button>
+                <button
+                  onClick={() => handle_select_domain('policy_plan')}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-1"
+                >
+                  <span>사업계획서 작성</span>
+                </button>
+              </div>
             </div>
-          )}
 
-          {/* ============================================================== */}
-          {/* 2. 취약지 종합 지표 진단 & 사분면 분석 */}
-          {/* ============================================================== */}
-          {active_menu === 'diagnosis_metrics' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <종합_진단_패널
-                selected_region={selected_region}
-              />
+            {/* 현황 진단 도메인일 때 서브탭 네비게이션 */}
+            {current_domain === 'status_diag' && (
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs overflow-x-auto pb-1">
+                {[
+                  { id: 'gis_map', label: '🗺️ GIS 헬스맵 & 취약지 DB' },
+                  { id: 'diagnosis_metrics', label: '📊 종합 지표 진단 & 사분면' },
+                  { id: 'compare_1to1', label: '⚖️ 지자체 1:1 비교' },
+                  { id: 'demand_forecast', label: '📈 2030 의료수요 추계' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handle_select_menu(tab.id as 메뉴_아이디)}
+                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                      active_menu === tab.id
+                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                <진료역량_사분면_분포도
+            {/* 현장 관리 도메인일 때 서브탭 네비게이션 */}
+            {current_domain === 'field_manage' && (
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs overflow-x-auto pb-1">
+                {[
+                  { id: 'hospital_crisis', label: '🚨 35개 지방의료원 조기경보' },
+                  { id: 'discharge_care', label: '🤝 퇴원환자 지역사회 돌봄연계' },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => handle_select_menu(tab.id as 메뉴_아이디)}
+                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
+                      active_menu === tab.id
+                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* 상단 글로벌 지역 신속 선택기 */}
+            <상단_지역_선택기
+              diagnosed_list={diagnosed_list}
+              selected_region={selected_region}
+              on_select_region={(region) => set_selected_region(region)}
+            />
+          </header>
+
+          {/* 본문 작업 영역 (선택된 기능 메뉴만 단독 렌더링) */}
+          <div id="main-workspace-content" className="p-4 sm:p-6 lg:p-8 space-y-6">
+            {/* ============================================================== */}
+            {/* 1. GIS 헬스맵 & 시군구 취약지 데이터베이스 */}
+            {/* ============================================================== */}
+            {active_menu === 'gis_map' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
+                  <div className="xl:col-span-7 h-[640px]">
+                    <지도_래퍼
+                      diagnosed_list={diagnosed_list}
+                      selected_region={selected_region}
+                      on_select_region={(region) => set_selected_region(region)}
+                      view_mode={view_mode}
+                      on_change_view_mode={set_view_mode}
+                      region_unit={region_unit}
+                      on_change_region_unit={set_region_unit}
+                    />
+                  </div>
+
+                  <div className="xl:col-span-5 flex flex-col gap-4">
+                    <div className="h-[480px]">
+                      <취약지_목록_테이블
+                        diagnosed_list={diagnosed_list}
+                        selected_region={selected_region}
+                        on_select_region={(region) => set_selected_region(region)}
+                      />
+                    </div>
+
+                    {/* 선택 지역 대상 의사결정 체인 퀵 액션 카드 */}
+                    {selected_region && (
+                      <div className="p-4 bg-white dark:bg-[#15161b] rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-slate-800 dark:text-slate-200">
+                            선택 지역: {selected_region.시도명} {selected_region.시군구명}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded font-bold ${
+                            selected_region.종합_취약도_등급 === '심각'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
+                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                          }`}>
+                            취약도: {selected_region.종합_취약도_등급}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500">
+                          응급 미도달율 {selected_region.응급_60분_미도달_인구비율 ?? 35}%, 관내이용률 {selected_region.관내_응급_의료이용률 ?? 42}%
+                        </p>
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          <button
+                            onClick={() => handle_select_domain('ai_analysis')}
+                            className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold text-center transition"
+                          >
+                            AI 원인 심층분석 →
+                          </button>
+                          <button
+                            onClick={() => handle_select_domain('policy_plan')}
+                            className="p-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-semibold text-center transition"
+                          >
+                            사업계획서 작성 →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 실시간 응급 소아 모니터링 바 */}
+                {selected_region && (
+                  <실시간_응급_소아_모니터링 selected_region={selected_region} />
+                )}
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 2. 취약지 종합 지표 진단 & 사분면 분석 */}
+            {/* ============================================================== */}
+            {active_menu === 'diagnosis_metrics' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <종합_진단_패널
                   selected_region={selected_region}
                 />
-                <진료실적_서브그룹_대시보드 selected_region={selected_region} />
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+                  <진료역량_사분면_분포도
+                    selected_region={selected_region}
+                  />
+                  <진료실적_서브그룹_대시보드 selected_region={selected_region} />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ============================================================== */}
-          {/* 3. 듀얼 AI 스튜디오 (Google Gemini vs 로컬 sLLM) */}
-          {/* ============================================================== */}
-          {active_menu === 'dual_ai_studio' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <공공의료_sLLM_업무비서
-                selected_region={selected_region}
-                on_open_grounding={() => set_is_grounding_open(true)}
-              />
-            </div>
-          )}
+            {/* ============================================================== */}
+            {/* 3. 듀얼 AI 스튜디오 (Google Gemini vs 로컬 sLLM) */}
+            {/* ============================================================== */}
+            {active_menu === 'dual_ai_studio' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <공공의료_sLLM_업무비서
+                  selected_region={selected_region}
+                  on_open_grounding={() => set_is_grounding_open(true)}
+                />
+              </div>
+            )}
 
-          {/* ============================================================== */}
-          {/* 4. 사업계획서 자동생성기 */}
-          {/* ============================================================== */}
-          {active_menu === 'report_generator' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <사업계획서_서술문_생성기
-                selected_region={selected_region}
-                sido_stat={sido_stat}
-                national_stat={national_stat}
-              />
-            </div>
-          )}
-
-          {/* ============================================================== */}
-          {/* 5. 35개 지방의료원 경영위기 조기경보 */}
-          {/* ============================================================== */}
-          {active_menu === 'hospital_crisis' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <경영위기_조기경보_대시보드
-                on_open_grounding={() => set_is_grounding_open(true)}
-              />
-            </div>
-          )}
-
-          {/* ============================================================== */}
-          {/* 6. 퇴원환자 돌봄자원 AI 매칭 */}
-          {/* ============================================================== */}
-          {active_menu === 'discharge_care' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <퇴원환자_돌봄자원_AI매칭 />
-            </div>
-          )}
-
-          {/* ============================================================== */}
-          {/* 7. 지자체 1:1 비교 대시보드 */}
-          {/* ============================================================== */}
-          {active_menu === 'compare_1to1' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <일대일_비교_대시보드
-                selected_region={selected_region}
-                diagnosed_list={diagnosed_list}
-              />
-            </div>
-          )}
-
-          {/* ============================================================== */}
-          {/* 8. 2030 의료수요 추계 & 지표 비교 */}
-          {/* ============================================================== */}
-          {active_menu === 'demand_forecast' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                <의료수요_추계_차트 selected_region={selected_region} />
-                <의료지표_비교차트
+            {/* ============================================================== */}
+            {/* 4. 사업계획서 자동생성기 */}
+            {/* ============================================================== */}
+            {active_menu === 'report_generator' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <사업계획서_서술문_생성기
                   selected_region={selected_region}
                   sido_stat={sido_stat}
                   national_stat={national_stat}
                 />
               </div>
-            </div>
-          )}
+            )}
 
-          {/* ============================================================== */}
-          {/* 9. 일반국민 공공병원 안심뷰 */}
-          {/* ============================================================== */}
-          {active_menu === 'citizen_view' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              <일반국민_공공병원_맞춤뷰
-                selected_region={selected_region}
-              />
-            </div>
-          )}
+            {/* ============================================================== */}
+            {/* 5. 35개 지방의료원 경영위기 조기경보 */}
+            {/* ============================================================== */}
+            {active_menu === 'hospital_crisis' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <경영위기_조기경보_대시보드
+                  on_open_grounding={() => set_is_grounding_open(true)}
+                />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 6. 퇴원환자 돌봄자원 AI 매칭 */}
+            {/* ============================================================== */}
+            {active_menu === 'discharge_care' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <퇴원환자_돌봄자원_AI매칭 />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 7. 지자체 1:1 비교 대시보드 */}
+            {/* ============================================================== */}
+            {active_menu === 'compare_1to1' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <일대일_비교_대시보드
+                  selected_region={selected_region}
+                  diagnosed_list={diagnosed_list}
+                />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 8. 2030 의료수요 추계 & 지표 비교 */}
+            {/* ============================================================== */}
+            {active_menu === 'demand_forecast' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+                  <의료수요_추계_차트 selected_region={selected_region} />
+                  <의료지표_비교차트
+                    selected_region={selected_region}
+                    sido_stat={sido_stat}
+                    national_stat={national_stat}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 9. 일반국민 공공병원 안심뷰 */}
+            {/* ============================================================== */}
+            {active_menu === 'citizen_view' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <일반국민_공공병원_맞춤뷰
+                  selected_region={selected_region}
+                />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* 10. [신규] 의료기관 담당자 My Hospital 대시보드 */}
+            {/* ============================================================== */}
+            {active_menu === 'my_hospital' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <OurHospitalDashboard
+                  onNavigateToGis={(regionName) => {
+                    handle_select_menu('gis_map');
+                  }}
+                  onNavigateToDualAi={(prompt) => {
+                    handle_select_menu('dual_ai_studio');
+                  }}
+                  onNavigateToPolicy={(topic) => {
+                    handle_select_menu('report_generator');
+                  }}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
 
       {/* ============================================================== */}
       {/* 공통 팝업 모달 레이어 */}

@@ -531,6 +531,7 @@ export default function Home() {
               <div className="space-y-6 animate-in fade-in duration-200">
                 <일반국민_공공병원_맞춤뷰
                   selected_region={selected_region}
+                  google_api_key={google_api_key}
                 />
               </div>
             )}

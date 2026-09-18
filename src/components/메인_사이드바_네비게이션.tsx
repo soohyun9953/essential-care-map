@@ -192,7 +192,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         </div>
 
         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
-          20260917 v0.23
+          20260918 v0.24
         </span>
       </div>
 
@@ -227,7 +227,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                     국립중앙의료원 지원센터
                   </span>
                   <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
-                    20260917 v0.23
+                    20260918 v0.24
                   </span>
                 </div>
                 <h1 className="text-lg font-extrabold tracking-tight text-[#1d1d1f]">

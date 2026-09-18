@@ -164,7 +164,7 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl border border-black/[0.08] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="bg-white dark:bg-[#161618] rounded-3xl shadow-2xl border border-black/[0.08] dark:border-white/[0.1] w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* 상단 헤더 */}
         <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
@@ -188,13 +188,13 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
         </div>
 
         {/* 탭 네비게이션 */}
-        <div className="flex border-b border-black/[0.06] bg-[#fbfbfd] px-5 pt-3">
+        <div className="flex border-b border-black/[0.06] dark:border-white/[0.08] bg-[#fbfbfd] dark:bg-[#1c1c1e] px-5 pt-3">
           <button
             onClick={() => set_active_tab('upload')}
             className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center space-x-1.5 ${
               active_tab === 'upload'
-                ? 'border-[#0071e3] text-[#0071e3]'
-                : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'border-[#0071e3] text-[#0071e3] dark:text-[#2997ff]'
+                : 'border-transparent text-[#86868b] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white'
             }`}
           >
             <UploadCloud className="w-3.5 h-3.5" />
@@ -204,8 +204,8 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
             onClick={() => set_active_tab('manual')}
             className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center space-x-1.5 ${
               active_tab === 'manual'
-                ? 'border-[#0071e3] text-[#0071e3]'
-                : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'border-[#0071e3] text-[#0071e3] dark:text-[#2997ff]'
+                : 'border-transparent text-[#86868b] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white'
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
@@ -215,8 +215,8 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
             onClick={() => set_active_tab('list')}
             className={`pb-2.5 px-3 text-xs font-bold border-b-2 transition flex items-center space-x-1.5 ${
               active_tab === 'list'
-                ? 'border-[#0071e3] text-[#0071e3]'
-                : 'border-transparent text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'border-[#0071e3] text-[#0071e3] dark:text-[#2997ff]'
+                : 'border-transparent text-[#86868b] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white'
             }`}
           >
             <ListFilter className="w-3.5 h-3.5" />
@@ -227,8 +227,8 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
         {/* 탭 컨텐츠 */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4">
           {success_message && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center space-x-2 text-xs text-emerald-800 font-semibold animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center space-x-2 text-xs text-emerald-800 dark:text-emerald-300 font-semibold animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>{success_message}</span>
             </div>
           )}
@@ -249,8 +249,8 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                 onClick={() => file_input_ref.current?.click()}
                 className={`border-2 border-dashed rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all ${
                   is_dragging
-                    ? 'border-[#0071e3] bg-[#0071e3]/5 scale-[0.99]'
-                    : 'border-black/[0.1] hover:border-[#0071e3]/60 bg-[#fbfbfd]'
+                    ? 'border-[#0071e3] bg-[#0071e3]/5 dark:bg-[#0071e3]/10 scale-[0.99]'
+                    : 'border-black/[0.1] dark:border-white/[0.1] hover:border-[#0071e3]/60 bg-[#fbfbfd] dark:bg-[#1c1c1e]'
                 }`}
               >
                 <input
@@ -264,17 +264,17 @@ export const 지침_문서_등록_모달: React.FC<지침_문서_등록_모달_�
                 {is_parsing ? (
                   <div className="py-4 space-y-2">
                     <Loader2 className="w-8 h-8 mx-auto text-[#0071e3] animate-spin" />
-                    <p className="text-xs font-semibold text-slate-700">문서 텍스트 분석 및 키워드 추출 중...</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">문서 텍스트 분석 및 키워드 추출 중...</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <div className="w-12 h-12 rounded-full bg-[#0071e3]/10 text-[#0071e3] flex items-center justify-center mx-auto shadow-apple-sm">
+                    <div className="w-12 h-12 rounded-full bg-[#0071e3]/10 dark:bg-[#0071e3]/20 text-[#0071e3] dark:text-[#2997ff] flex items-center justify-center mx-auto shadow-apple-sm">
                       <FileUp className="w-6 h-6" />
                     </div>
-                    <p className="text-sm font-bold text-[#1d1d1f]">
+                    <p className="text-sm font-bold text-[#1d1d1f] dark:text-white">
                       지침 문서 파일을 여기에 끌어다 놓거나 클릭하여 선택
                     </p>
-                    <p className="text-xs text-[#86868b]">
+                    <p className="text-xs text-[#86868b] dark:text-slate-400">
                       지원 포맷: PDF, HWPX, DOCX, TXT, Markdown, CSV, JSON
                     </p>
                   </div>

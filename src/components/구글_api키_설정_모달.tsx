@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Key, X, Check, ExternalLink, ShieldCheck, Trash2, Sparkles } from 'lucide-react';
@@ -48,7 +48,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
 
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl border border-black/[0.08] w-full max-w-lg overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-[#161618] rounded-3xl shadow-2xl border border-black/[0.08] dark:border-white/[0.1] w-full max-w-lg overflow-hidden flex flex-col">
         {/* 헤더 */}
         <div className="p-5 bg-gradient-to-r from-slate-900 to-slate-800 text-white flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -77,13 +77,13 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
         {/* 본문 */}
         <div className="p-6 space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#1d1d1f] flex items-center justify-between">
+            <label className="text-xs font-bold text-[#1d1d1f] dark:text-white flex items-center justify-between">
               <span>Google AI Studio API Key</span>
               <a
                 href="https://aistudio.google.com/app/apikey"
                 target="_blank"
                 rel="noreferrer"
-                className="text-[11px] text-[#0071e3] hover:underline flex items-center gap-1 font-semibold"
+                className="text-[11px] text-[#0071e3] dark:text-[#2997ff] hover:underline flex items-center gap-1 font-semibold"
               >
                 <span>무료 키 발급받기</span>
                 <ExternalLink className="w-3 h-3" />
@@ -95,15 +95,15 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
                 value={api_key}
                 onChange={(e) => set_api_key(e.target.value)}
                 placeholder="AIzaSy..."
-                className="w-full px-3.5 py-2.5 bg-[#f5f5f7] border border-black/[0.08] rounded-xl text-xs font-mono text-[#1d1d1f] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition"
+                className="w-full px-3.5 py-2.5 bg-[#f5f5f7] dark:bg-[#1c1c1e] border border-black/[0.08] dark:border-white/[0.1] rounded-xl text-xs font-mono text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition"
               />
             </div>
-            <p className="text-[11px] text-[#86868b] leading-relaxed">
+            <p className="text-[11px] text-[#86868b] dark:text-slate-400 leading-relaxed">
               Google AI Studio에서 발급받은 무료 API 키를 입력하시면, 질문 시 구글의 최신 <strong>Gemini 1.5 Flash</strong> 모델이 실제 실시간으로 답변을 생성합니다.
             </p>
           </div>
 
-          <div className="p-3 bg-emerald-50 border border-emerald-200/60 rounded-xl flex items-start gap-2 text-emerald-800 text-[11px]">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 rounded-xl flex items-start gap-2 text-emerald-800 dark:text-emerald-300 text-[11px]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <p>
               <strong>보안 안심:</strong> 입력하신 API 키는 외부 서버로 절대 수집되거나 저장되지 않으며, 오직 본인 컴퓨터 브라우저의 <strong>LocalStorage</strong>에만 안전하게 보관됩니다.
@@ -112,10 +112,10 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
         </div>
 
         {/* 푸터 */}
-        <div className="p-4 bg-slate-50 border-t border-black/[0.05] flex items-center justify-between">
+        <div className="p-4 bg-slate-50 dark:bg-[#161618] border-t border-black/[0.05] dark:border-white/[0.08] flex items-center justify-between">
           <button
             onClick={handle_clear}
-            className="text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-rose-50 transition"
+            className="text-xs text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold flex items-center gap-1 px-3 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 transition"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>키 삭제</span>
@@ -124,7 +124,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
           <div className="flex items-center space-x-2">
             <button
               onClick={on_close}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-200/60 transition"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-white/10 transition"
             >
               취소
             </button>

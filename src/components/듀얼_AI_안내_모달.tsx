@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
 import {
@@ -30,7 +30,7 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
 
   return (
     <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl border border-black/[0.08] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white dark:bg-[#161618] rounded-3xl shadow-2xl border border-black/[0.08] dark:border-white/[0.1] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
         {/* 헤더 */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white flex items-center justify-between border-b border-white/10 shrink-0">
           <div className="flex items-center space-x-3">
@@ -62,8 +62,8 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
         {/* 본문 스크롤 영역 */}
         <div className="p-5 sm:p-6 space-y-6 overflow-y-auto">
           {/* 핵심 한 줄 요약 박스 */}
-          <div className="bg-blue-50/80 border border-blue-200/80 rounded-2xl p-4 text-[#1d1d1f]">
-            <p className="text-xs sm:text-sm font-semibold leading-relaxed text-blue-950">
+          <div className="bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-800/60 rounded-2xl p-4">
+            <p className="text-xs sm:text-sm font-semibold leading-relaxed text-blue-950 dark:text-blue-200">
               📌 <strong>한마디로:</strong> 업무 성격에 따라 <strong>‘똑똑한 외부 AI’</strong>와{' '}
               <strong>‘안전한 내 컴퓨터 AI’</strong> 중 나에게 맞는 것을 쏙 골라 쓸 수 있는 맞춤형 듀얼 기능입니다!
             </p>
@@ -72,17 +72,17 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
           {/* ========================================================= */}
           {/* 🌟 신규 추가: 비교 실행부터 결과 도출까지 4단계 진행 순서 */}
           {/* ========================================================= */}
-          <div className="bg-gradient-to-br from-slate-50 via-indigo-50/30 to-blue-50/40 p-4 sm:p-5 rounded-2xl border border-indigo-100 space-y-3.5">
+          <div className="bg-gradient-to-br from-slate-50 via-indigo-50/30 to-blue-50/40 dark:from-[#1c1c1e] dark:via-[#1c1c22] dark:to-[#1c221e] p-4 sm:p-5 rounded-2xl border border-indigo-100 dark:border-white/[0.08] space-y-3.5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-[#0071e3] text-white flex items-center justify-center text-xs font-bold shadow-xs">
                   <GitCompare className="w-3.5 h-3.5" />
                 </div>
-                <h4 className="text-xs sm:text-sm font-bold text-slate-900">
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                   🔄 [1:1 비교 실행] 버튼을 누르면 일어나는 4단계 순서
                 </h4>
               </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300">
                 실시간 자동 파이프라인
               </span>
             </div>
@@ -90,57 +90,57 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
             {/* 4단계 스텝 카드 그리드 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {/* Step 1 */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5 relative overflow-hidden">
+              <div className="bg-white dark:bg-[#252528] p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-1.5 relative overflow-hidden">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-50 text-blue-700 border border-blue-100">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
                     STEP 1
                   </span>
-                  <Search className="w-3.5 h-3.5 text-blue-500" />
+                  <Search className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                 </div>
-                <h5 className="text-xs font-bold text-slate-900">질문 입력 & 지자체 선택</h5>
-                <p className="text-[11px] text-slate-600 leading-snug">
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white">질문 입력 & 지자체 선택</h5>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
                   궁금한 정책 질의(예: 의료취약지 파견의사, 자체충족률 등)를 입력하고 분석할 지역을 지정합니다.
                 </p>
               </div>
 
               {/* Step 2 */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5 relative overflow-hidden">
+              <div className="bg-white dark:bg-[#252528] p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-1.5 relative overflow-hidden">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
                     STEP 2
                   </span>
-                  <Database className="w-3.5 h-3.5 text-indigo-500" />
+                  <Database className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                 </div>
-                <h5 className="text-xs font-bold text-slate-900">실시간 RAG 지침 검색 (팩트 추출)</h5>
-                <p className="text-[11px] text-slate-600 leading-snug">
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white">실시간 RAG 지침 검색 (팩트 추출)</h5>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
                   보건복지부 법령 및 <strong>직접 등록하신 내부 규정</strong>에서 가장 연관된 조항 3~4건을 실시간 발췌합니다.
                 </p>
               </div>
 
               {/* Step 3 */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5 relative overflow-hidden">
+              <div className="bg-white dark:bg-[#252528] p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-1.5 relative overflow-hidden">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
                     STEP 3
                   </span>
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                 </div>
-                <h5 className="text-xs font-bold text-slate-900">두 AI에 동일한 RAG 근거 동시 주입</h5>
-                <p className="text-[11px] text-slate-600 leading-snug">
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white">두 AI에 동일한 RAG 근거 동시 주입</h5>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
                   AI가 거짓말(환각)을 하지 못하도록, RAG가 찾은 원문 법령 근거를 <strong>두 모델의 프롬프트에 실시간 주입</strong>합니다.
                 </p>
               </div>
 
               {/* Step 4 */}
-              <div className="bg-white p-3.5 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5 relative overflow-hidden">
+              <div className="bg-white dark:bg-[#252528] p-3.5 rounded-xl border border-slate-200/80 dark:border-white/[0.08] shadow-xs space-y-1.5 relative overflow-hidden">
                 <div className="flex items-center justify-between">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 text-amber-800 border border-amber-100">
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-amber-50 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-100 dark:border-amber-800">
                     STEP 4
                   </span>
-                  <Check className="w-3.5 h-3.5 text-amber-600" />
+                  <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                 </div>
-                <h5 className="text-xs font-bold text-slate-900">1:1 나란히 결과 도출 및 비교 분석</h5>
-                <p className="text-[11px] text-slate-600 leading-snug">
+                <h5 className="text-xs font-bold text-slate-900 dark:text-white">1:1 나란히 결과 도출 및 비교 분석</h5>
+                <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-snug">
                   좌측(Gemini의 유려한 보고서)과 우측(Qwen의 유출 0% 안전 요약)을 <strong>1:1로 한 화면에서 즉시 비교</strong>합니다!
                 </p>
               </div>
@@ -150,24 +150,24 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
           {/* 1:1 쉬운 비교 카드 */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* 좌측: 외부 클라우드 AI */}
-            <div className="bg-[#f5f8ff] p-5 rounded-2xl border border-blue-200 flex flex-col justify-between space-y-3">
+            <div className="bg-[#f5f8ff] dark:bg-[#1c1c22] p-5 rounded-2xl border border-blue-200 dark:border-blue-800/60 flex flex-col justify-between space-y-3">
               <div>
-                <div className="flex items-center space-x-2.5 pb-2.5 border-b border-blue-100">
+                <div className="flex items-center space-x-2.5 pb-2.5 border-b border-blue-100 dark:border-white/[0.08]">
                   <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-sm">
                     <Cloud className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold text-blue-600">외부 클라우드 AI</span>
-                    <h4 className="text-sm font-bold text-slate-900">Google Gemini</h4>
+                    <span className="text-[11px] font-bold text-blue-600 dark:text-[#2997ff]">외부 클라우드 AI</span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">Google Gemini</h4>
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2 text-xs text-slate-700">
-                  <p className="font-semibold text-blue-900 flex items-center gap-1">
+                <div className="mt-3 space-y-2 text-xs text-slate-700 dark:text-slate-200">
+                  <p className="font-semibold text-blue-900 dark:text-blue-300 flex items-center gap-1">
                     <span>🧠</span>
                     <span>&quot;병원 밖의 슈퍼 브레인&quot;</span>
                   </p>
-                  <ul className="space-y-1.5 text-slate-600 leading-snug">
+                  <ul className="space-y-1.5 text-slate-600 dark:text-slate-300 leading-snug">
                     <li className="flex items-start gap-1.5">
                       <span className="text-blue-500 font-bold">✔</span>
                       <span><strong>종합 기획서 작성:</strong> 방대한 법령을 엮어서 장문의 완벽한 공문서 초안을 척척 작성</span>
@@ -180,8 +180,8 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-blue-100 text-[11px] space-y-1 text-slate-500">
-                <div className="flex items-center gap-1.5 text-amber-700 font-medium">
+              <div className="pt-2 border-t border-blue-100 dark:border-white/[0.08] text-[11px] space-y-1 text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 text-amber-700 dark:text-amber-400 font-medium">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   <span>인터넷망 통신 (환자 개인정보 전송 금지)</span>
                 </div>
@@ -193,24 +193,24 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
             </div>
 
             {/* 우측: 노트북 로컬 sLLM */}
-            <div className="bg-[#f4fbf6] p-5 rounded-2xl border border-emerald-200 flex flex-col justify-between space-y-3">
+            <div className="bg-[#f4fbf6] dark:bg-[#1c221e] p-5 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex flex-col justify-between space-y-3">
               <div>
-                <div className="flex items-center space-x-2.5 pb-2.5 border-b border-emerald-100">
+                <div className="flex items-center space-x-2.5 pb-2.5 border-b border-emerald-100 dark:border-white/[0.08]">
                   <div className="w-8 h-8 rounded-xl bg-[#34c759] text-white flex items-center justify-center shadow-sm">
                     <Laptop className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold text-emerald-700">노트북 On-Device AI</span>
-                    <h4 className="text-sm font-bold text-slate-900">Qwen2.5 (로컬 sLLM)</h4>
+                    <span className="text-[11px] font-bold text-emerald-700 dark:text-[#30d158]">노트북 On-Device AI</span>
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">Qwen2.5 (로컬 sLLM)</h4>
                   </div>
                 </div>
 
-                <div className="mt-3 space-y-2 text-xs text-slate-700">
-                  <p className="font-semibold text-emerald-900 flex items-center gap-1">
+                <div className="mt-3 space-y-2 text-xs text-slate-700 dark:text-slate-200">
+                  <p className="font-semibold text-emerald-900 dark:text-emerald-300 flex items-center gap-1">
                     <span>🛡️</span>
                     <span>&quot;병원 안의 완벽한 안전 금고&quot;</span>
                   </p>
-                  <ul className="space-y-1.5 text-slate-600 leading-snug">
+                  <ul className="space-y-1.5 text-slate-600 dark:text-slate-300 leading-snug">
                     <li className="flex items-start gap-1.5">
                       <span className="text-emerald-600 font-bold">✔</span>
                       <span><strong>100% 정보 유출 차단:</strong> 인터넷 선을 뽑아도 내 노트북 안에서만 연산되어 데이터 유출 0%</span>
@@ -223,8 +223,8 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-emerald-100 text-[11px] space-y-1 text-slate-500">
-                <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+              <div className="pt-2 border-t border-emerald-100 dark:border-white/[0.08] text-[11px] space-y-1 text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-semibold">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                   <span>원내 폐쇄망 보안 특화 (환자 EMR 안심 분석)</span>
                 </div>
@@ -237,27 +237,27 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
           </div>
 
           {/* 🎯 어떨 때 무엇을 쓰면 좋을까요? 꿀팁 가이드 */}
-          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2.5">
-            <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+          <div className="bg-slate-50 dark:bg-[#1c1c1e] border border-slate-200/80 dark:border-white/[0.08] rounded-2xl p-4 space-y-2.5">
+            <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <span>🎯</span>
               <span>어떤 AI를 선택하면 좋을까요? (추천 가이드)</span>
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-              <div className="p-3 bg-white rounded-xl border border-slate-200/60 flex items-start gap-2">
-                <FileText className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+              <div className="p-3 bg-white dark:bg-[#252528] rounded-xl border border-slate-200/60 dark:border-white/[0.08] flex items-start gap-2">
+                <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-blue-900 block mb-0.5">외부 클라우드 AI 추천</strong>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
+                  <strong className="text-blue-900 dark:text-blue-300 block mb-0.5">외부 클라우드 AI 추천</strong>
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                     복지부 국고보조금 제안서, 중장기 발전계획서처럼 <strong>문장이 매끄럽고 길게 잘 써야 할 때</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="p-3 bg-white rounded-xl border border-slate-200/60 flex items-start gap-2">
-                <Lock className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="p-3 bg-white dark:bg-[#252528] rounded-xl border border-slate-200/60 dark:border-white/[0.08] flex items-start gap-2">
+                <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-emerald-900 block mb-0.5">노트북 로컬 AI 추천</strong>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
+                  <strong className="text-emerald-900 dark:text-emerald-300 block mb-0.5">노트북 로컬 AI 추천</strong>
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px] leading-relaxed">
                     환자 진료기록(EMR) 요약, 관내 비식별 통계처럼 <strong>환자 정보가 단 1바이트도 나가면 안 될 때</strong>
                   </p>
                 </div>
@@ -267,8 +267,8 @@ export const 듀얼_AI_안내_모달: React.FC<듀얼_AI_안내_모달_속성> =
         </div>
 
         {/* 푸터 */}
-        <div className="p-4 bg-slate-50 border-t border-black/[0.05] flex items-center justify-between shrink-0">
-          <div className="text-[11px] text-slate-500 hidden sm:flex items-center gap-1">
+        <div className="p-4 bg-slate-50 dark:bg-[#161618] border-t border-black/[0.05] dark:border-white/[0.08] flex items-center justify-between shrink-0">
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>상단 [1:1 비교 스튜디오]에서 두 AI의 답변을 동시에 확인해 보세요!</span>
           </div>

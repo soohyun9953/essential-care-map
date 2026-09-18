@@ -4,7 +4,7 @@
 // 1. 실제 경량 하이브리드 RAG 엔진 연동
 // 2. 외부 클라우드 LLM(Google Gemini) vs 노트북 로컬 sLLM(Qwen2.5-0.5B-Instruct) 1:1 비교 스튜디오 탑재
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Bot,
   Sparkles,
@@ -147,6 +147,19 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   // 추천 정책질의 드롭다운 열림 상태
   const [is_dropdown_open, set_is_dropdown_open] = useState(false);
   const dropdown_ref = useRef<HTMLDivElement>(null);
+
+  // 입력창 추천 예시 및 Tab 자동완성 상태
+  const [sllm_suggestion_idx, set_sllm_suggestion_idx] = useState<number>(0);
+  const current_active_prompt_list = active_feature_tab === 'business_plan' ? business_prompt_list : qa_prompt_list;
+  const sllm_current_suggestion = useMemo(() => {
+    if (!current_prompt.trim()) {
+      return current_active_prompt_list[sllm_suggestion_idx % current_active_prompt_list.length] || '';
+    }
+    const matched = current_active_prompt_list.find(s =>
+      s.toLowerCase().includes(current_prompt.toLowerCase()) && s !== current_prompt
+    );
+    return matched || current_active_prompt_list[sllm_suggestion_idx % current_active_prompt_list.length] || '';
+  }, [current_active_prompt_list, sllm_suggestion_idx, current_prompt]);
 
   // 새로운 정책 질의 자동 등록 및 로컬스토리지 저장
   const save_prompt_if_new = (new_prompt: string, tab: 'business_plan' | 'general_qa') => {
@@ -763,22 +776,56 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       </div>
 
       {/* ========================================================= */}
-      {/* 5. 질의 입력 및 실행창 */}
+      {/* 5. [입력하는 곳 ✏️] 정책 질의 입력창 & Tab 키 자동완성 */}
       {/* ========================================================= */}
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between px-1">
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
             <span className="zone-badge-input">✏️ 직접 질의 입력</span>
             <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              원하는 정책·사업 주제를 직접 타이핑하거나 위 추천 목록을 수정할 수 있습니다.
+              원하는 정책·사업 주제를 직접 타이핑하거나 Tab 키로 예시를 자동 입력할 수 있습니다.
             </span>
           </div>
-          <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold hidden sm:inline">
-            Enter 키로 즉시 실행
-          </span>
+
+          {/* 예시 제안 바 & Tab 자동완성 안내 */}
+          {sllm_current_suggestion && (
+            <div className="flex items-center gap-1.5 text-[11px] max-w-full overflow-hidden">
+              <span className="text-slate-400 dark:text-slate-500 shrink-0">💡 예시:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  set_current_prompt(sllm_current_suggestion);
+                  set_workflow_step(0);
+                }}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition font-medium text-[11px] max-w-[260px] sm:max-w-md truncate group cursor-pointer shadow-2xs"
+                title="클릭하거나 Tab 키를 누르면 입력창에 자동 완성됩니다"
+              >
+                <span className="px-1.5 py-0.5 bg-indigo-200/80 dark:bg-indigo-800/80 text-indigo-900 dark:text-indigo-100 text-[10px] font-bold rounded font-mono shadow-2xs group-hover:bg-indigo-300">
+                  Tab ↹
+                </span>
+                <span className="truncate">{sllm_current_suggestion}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => set_sllm_suggestion_idx((prev) => (prev + 1) % current_active_prompt_list.length)}
+                className="p-1 px-1.5 text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition text-[11px] font-medium flex items-center gap-1 shrink-0"
+                title="다른 추천 예시 보기"
+              >
+                <span>↻</span>
+                <span className="text-[10px] hidden sm:inline">예시변경</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="relative">
+        <div className="relative flex items-center">
+          {/* 고스트 텍스트: 입력값이 비어있을 때 흐릿하게 예시 표시 */}
+          {!current_prompt && sllm_current_suggestion && (
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-xs sm:text-sm text-slate-400 dark:text-slate-500 truncate select-none pr-56 z-0">
+              <span className="truncate">{sllm_current_suggestion}</span>
+            </div>
+          )}
+
           <input
             type="text"
             value={current_prompt}
@@ -787,7 +834,13 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
               set_workflow_step(0);
             }}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') {
+              if (e.key === 'Tab') {
+                if (sllm_current_suggestion && current_prompt !== sllm_current_suggestion) {
+                  e.preventDefault();
+                  set_current_prompt(sllm_current_suggestion);
+                  set_workflow_step(0);
+                }
+              } else if (e.key === 'Enter') {
                 if (active_view_tab === 'compare' && !is_comparing) {
                   handle_execute_compare();
                 } else if (active_view_tab === 'single' && !is_running) {
@@ -796,16 +849,36 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
               }
             }}
             placeholder={
-              active_feature_tab === 'business_plan'
+              sllm_current_suggestion
+                ? ''
+                : active_feature_tab === 'business_plan'
                 ? '사업계획서 작성 주제 또는 분석하고자 하는 공공보건 지침을 입력하세요...'
                 : '공공보건의료 지침, 법령 요건, 보조금 규정 등 궁금한 점을 자유롭게 질문하세요...'
             }
-            className="zone-input-box w-full pl-4 pr-44 py-3.5 text-xs sm:text-sm rounded-2xl transition"
+            className="zone-input-box w-full pl-4 pr-56 py-3.5 text-xs sm:text-sm rounded-2xl transition relative z-10 bg-transparent"
           />
+
+          {/* 인라인 Tab 자동완성 칩 */}
+          {sllm_current_suggestion && current_prompt !== sllm_current_suggestion && (
+            <button
+              type="button"
+              tabIndex={-1}
+              onClick={() => {
+                set_current_prompt(sllm_current_suggestion);
+                set_workflow_step(0);
+              }}
+              className="absolute right-40 z-20 hidden md:flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-slate-600 hover:text-indigo-700 dark:text-slate-300 dark:hover:text-indigo-200 rounded-lg border border-slate-200 dark:border-slate-700 transition shadow-2xs select-none cursor-pointer"
+              title="클릭하거나 Tab 키를 누르면 자동 입력됩니다"
+            >
+              <span className="font-mono bg-white dark:bg-slate-900 px-1 rounded text-indigo-600 dark:text-indigo-400">Tab ↹</span>
+              <span>자동완성</span>
+            </button>
+          )}
+
           <button
             onClick={active_view_tab === 'compare' ? handle_execute_compare : handle_execute_workflow}
             disabled={is_running || is_comparing || !current_prompt.trim()}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60 cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>

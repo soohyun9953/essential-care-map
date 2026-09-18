@@ -138,6 +138,28 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
     );
   }, [selectedHospitalId]);
 
+  // 입력창 예시 제안 목록
+  const sampleSuggestions = useMemo(() => [
+    `${currentHospital.name}의 병상가동률(${currentEval.bedOccupancyRate}%) 개선을 위한 가장 효과적인 단기 대책은?`,
+    `의사 1인당 일평균 환자수(${currentEval.patientsPerDoctor}명)와 간호등급을 고려한 필수 인력 보강 방안은?`,
+    `필수의료 제공에 따른 착한 적자 보전 및 보건복지부 지원사업 신청 팁은?`,
+    `공공의료 평가등급(${currentEval.grade}등급, ${currentEval.score}점) 향상을 위한 핵심 취약점과 개선 방안은?`,
+    `응급실 야간 당직 인력 확충을 위한 공공임상교수제 파견 신청 요건 및 절차는?`,
+  ], [currentHospital.name, currentEval.bedOccupancyRate, currentEval.patientsPerDoctor, currentEval.grade, currentEval.score]);
+
+  const [activeSuggestionIdx, setActiveSuggestionIdx] = useState<number>(0);
+
+  // 현재 활성화된 추천 예시 (사용자 입력과 매칭 또는 순환)
+  const currentSuggestion = useMemo(() => {
+    if (!aiQuestion.trim()) {
+      return sampleSuggestions[activeSuggestionIdx % sampleSuggestions.length];
+    }
+    const matched = sampleSuggestions.find(s =>
+      s.toLowerCase().includes(aiQuestion.toLowerCase()) && s !== aiQuestion
+    );
+    return matched || sampleSuggestions[activeSuggestionIdx % sampleSuggestions.length];
+  }, [sampleSuggestions, activeSuggestionIdx, aiQuestion]);
+
   // AI 질의 핸들러 (Gemini + On-Device sLLM + RAG 법령 실시간 연동)
   const handleSendAiQuestion = async (customQ?: string) => {
     const q = (customQ || aiQuestion).trim();
@@ -999,32 +1021,89 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
               )}
             </div>
 
-            {/* [입력하는 곳 ✏️] 질문 입력 폼 */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-1.5">
-                <span className="zone-badge-input">✏️ 직접 입력</span>
-                <span className="text-[11px] text-slate-500">자유 질문이나 경영 현안을 입력하세요 (엔터 키 지원)</span>
+            {/* [입력하는 곳 ✏️] 질문 입력 폼 (예시 표시 & Tab키 자동완성) */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="zone-badge-input">✏️ 직접 입력</span>
+                  <span className="text-[11px] text-slate-500">질문 입력 또는 Tab 키로 예시 자동완성</span>
+                </div>
+
+                {/* 예시 제안 바 & Tab 자동완성 안내 */}
+                <div className="flex items-center gap-1.5 text-[11px] max-w-full overflow-hidden">
+                  <span className="text-slate-400 dark:text-slate-500 shrink-0">💡 예시:</span>
+                  <button
+                    type="button"
+                    onClick={() => setAiQuestion(currentSuggestion)}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800 transition font-medium text-[11px] max-w-[260px] sm:max-w-md truncate group cursor-pointer shadow-2xs"
+                    title="클릭하거나 Tab 키를 누르면 입력창에 자동 완성됩니다"
+                  >
+                    <span className="px-1.5 py-0.5 bg-purple-200/80 dark:bg-purple-800/80 text-purple-900 dark:text-purple-100 text-[10px] font-bold rounded font-mono shadow-2xs group-hover:bg-purple-300">
+                      Tab ↹
+                    </span>
+                    <span className="truncate">{currentSuggestion}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveSuggestionIdx((prev) => (prev + 1) % sampleSuggestions.length)}
+                    className="p-1 px-1.5 text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 transition text-[11px] font-medium flex items-center gap-1 shrink-0"
+                    title="다른 추천 예시 보기"
+                  >
+                    <span>↻</span>
+                    <span className="text-[10px] hidden sm:inline">예시변경</span>
+                  </button>
+                </div>
               </div>
-              <div className="zone-input-box p-1.5 flex gap-2">
-                <input
-                  type="text"
-                  aria-label="질의 입력"
-                  disabled={isGenerating}
-                  value={aiQuestion}
-                  onChange={(e) => setAiQuestion(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendAiQuestion()}
-                  placeholder={
-                    isGenerating
-                      ? "AI가 답변을 생성하고 있습니다..."
-                      : `${currentHospital.name}의 가동률, 의사인력, 착한적자 보전, 평가점수 등에 대해 질문하세요...`
-                  }
-                  className="flex-1 px-3 py-1.5 text-xs bg-transparent focus:outline-none text-slate-900 dark:text-slate-100 disabled:opacity-50"
-                />
+
+              <div className="zone-input-box p-1.5 flex items-center gap-2 relative">
+                <div className="relative flex-1 flex items-center min-w-0">
+                  {/* 고스트 텍스트: 입력값이 비어있을 때 흐릿하게 예시 표시 */}
+                  {!aiQuestion && (
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-xs text-slate-400 dark:text-slate-500 truncate select-none pr-20">
+                      <span className="truncate">{currentSuggestion}</span>
+                    </div>
+                  )}
+
+                  <input
+                    type="text"
+                    aria-label="질의 입력"
+                    disabled={isGenerating}
+                    value={aiQuestion}
+                    onChange={(e) => setAiQuestion(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Tab") {
+                        if (currentSuggestion && aiQuestion !== currentSuggestion) {
+                          e.preventDefault();
+                          setAiQuestion(currentSuggestion);
+                        }
+                      } else if (e.key === "Enter") {
+                        handleSendAiQuestion();
+                      }
+                    }}
+                    placeholder={isGenerating ? "AI가 답변을 생성하고 있습니다..." : ""}
+                    className="w-full px-3 py-1.5 text-xs bg-transparent focus:outline-none text-slate-900 dark:text-slate-100 disabled:opacity-50 relative z-10"
+                  />
+
+                  {/* 입력창 내부 우측 Tab 힌트 버튼 */}
+                  {currentSuggestion && aiQuestion !== currentSuggestion && (
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setAiQuestion(currentSuggestion)}
+                      className="absolute right-2 z-20 px-2 py-0.5 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-purple-100 dark:hover:bg-purple-900 text-slate-600 hover:text-purple-700 dark:text-slate-400 dark:hover:text-purple-300 rounded border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 shadow-2xs select-none cursor-pointer shrink-0"
+                      title="클릭하거나 Tab 키를 누르면 자동완성됩니다"
+                    >
+                      <span className="font-mono bg-white dark:bg-slate-900 px-1 rounded text-purple-600 dark:text-purple-400">Tab ↹</span>
+                      <span className="hidden sm:inline">자동완성</span>
+                    </button>
+                  )}
+                </div>
+
                 <button
                   type="button"
                   disabled={isGenerating || !aiQuestion.trim()}
                   onClick={() => handleSendAiQuestion()}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 shadow-xs shrink-0 cursor-pointer disabled:cursor-not-allowed z-10"
                 >
                   {isGenerating ? (
                     <>

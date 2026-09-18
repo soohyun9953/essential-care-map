@@ -266,7 +266,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
-      {/* 1. 최상단 글로벌 공공 헤더 (6대 도메인 네비게이션 & 퀵 유틸리티) */}
+      {/* 1. 최상단 글로벌 공공 헤더 (1줄에 모든 정보 통합) */}
       <글로벌_공공_헤더
         active_domain={current_domain}
         on_select_domain={handle_select_domain}
@@ -279,56 +279,10 @@ export default function Home() {
         on_toggle_dark_mode={toggle_dark_mode}
         google_api_key_registered={!!google_api_key}
         data_go_kr_key_registered={!!data_go_kr_api_key}
+        vulnerable_region_count={vulnerable_region_count}
       />
 
-      {/* 2. 상단 4대 플랫폼 운영 KPI 바 */}
-      <div className="bg-white dark:bg-[#15161b] border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 lg:px-8 py-2.5 shadow-sm">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-blue-50/60 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-              226
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">전국 시군구 진단</p>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
-                취약지 <span className="text-red-600 dark:text-red-400 font-extrabold">{vulnerable_region_count}</span>개소 감시
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-teal-50/60 dark:bg-teal-950/30 border border-teal-100 dark:border-teal-900/40">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-              70
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">중진료권 네트워크</p>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">권역·지역 책임의료</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-amber-50/60 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40">
-            <div className="w-8 h-8 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-              35
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">지방의료원 조기경보</p>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">경영위기 감지 엔진</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-purple-50/60 dark:bg-purple-950/30 border border-purple-100 dark:border-purple-900/40">
-            <div className="w-8 h-8 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
-              3대
-            </div>
-            <div className="min-w-0">
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">핵심 필수의료</p>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">응급 · 분만 · 소아</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. 본체 영역 (사이드바 + 메인 워크스페이스) */}
+      {/* 2. 본체 영역 (사이드바 + 메인 워크스페이스) */}
       <div className="flex-1 flex flex-col lg:flex-row min-w-0 min-h-0 overflow-hidden">
         {/* 좌측 기능 사이드바 네비게이션 */}
         <메인_사이드바_네비게이션
@@ -350,14 +304,14 @@ export default function Home() {
 
         {/* 우측 메인 워크스페이스 */}
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-          {/* 서브 헤더 바 (브레드크럼 & 지역 선택기 & 서브 탭) */}
-          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 lg:px-8 py-3 space-y-3 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-center space-x-3">
+          {/* 서브 헤더 바 (컴팩트 1줄 타이틀 & 지역 선택기) */}
+          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-2 space-y-2 shadow-xs">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center space-x-2.5 min-w-0">
                 {is_sidebar_hidden && (
                   <button
                     onClick={toggle_sidebar_hidden}
-                    className="hidden lg:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold shadow-xs transition shrink-0"
+                    className="hidden lg:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold shadow-xs transition shrink-0"
                     title="좌측 기능 메뉴 펼치기"
                   >
                     <PanelLeftOpen className="w-3.5 h-3.5 text-blue-600" />
@@ -365,37 +319,33 @@ export default function Home() {
                   </button>
                 )}
 
-                <div>
-                  <div className="flex items-center space-x-1.5 text-xs text-slate-500 font-semibold">
-                    <span>공공의료 AI 플랫폼</span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-blue-700 dark:text-blue-400 font-bold">
-                      {current_domain === 'status_diag' && '1. 현황진단'}
-                      {current_domain === 'ai_analysis' && '2. AI분석'}
-                      {current_domain === 'policy_plan' && '3. 정책기획'}
-                      {current_domain === 'field_manage' && '4. 현장관리'}
-                      {current_domain === 'public_service' && '5. 국민서비스'}
-                      {current_domain === 'my_hospital' && '6. MY의료기관'}
-                    </span>
-                  </div>
-                  <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/70 text-[#0071e3] dark:text-[#2997ff] text-[11px] font-bold shrink-0 border border-blue-200/60 dark:border-blue-900">
+                    {current_domain === 'status_diag' && '1. 현황진단'}
+                    {current_domain === 'ai_analysis' && '2. AI분석'}
+                    {current_domain === 'policy_plan' && '3. 정책기획'}
+                    {current_domain === 'field_manage' && '4. 현장관리'}
+                    {current_domain === 'public_service' && '5. 국민서비스'}
+                    {current_domain === 'my_hospital' && '6. MY의료기관'}
+                  </span>
+                  <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100 truncate">
                     {current_title_info.title}
-                  </h1>
+                  </h2>
                 </div>
               </div>
 
               {/* 빠른 바로가기 CTA */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => handle_select_domain('ai_analysis')}
-                  className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition flex items-center gap-1"
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition flex items-center gap-1"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
                   <span>듀얼 AI 분석</span>
                 </button>
                 <button
                   onClick={() => handle_select_domain('policy_plan')}
-                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-1"
+                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-1"
                 >
                   <span>사업계획서 작성</span>
                 </button>

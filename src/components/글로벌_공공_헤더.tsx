@@ -28,8 +28,8 @@ export type 메인_도메인 =
 export type 업무_도메인_타입 = 메인_도메인;
 
 interface 글로벌_공공_헤더_속성 {
-  active_domain: 메인_도메인;
-  on_select_domain: (domain: 메인_도메인) => void;
+  active_domain?: 메인_도메인;
+  on_select_domain?: (domain: 메인_도메인) => void;
   is_dark_mode: boolean;
   on_toggle_dark_mode: () => void;
   on_open_key_modal: () => void;
@@ -42,6 +42,7 @@ interface 글로벌_공공_헤더_속성 {
   google_api_key_registered?: boolean;
   data_go_kr_key_registered?: boolean;
   on_search_query?: (query: string) => void;
+  vulnerable_region_count?: number;
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
@@ -59,6 +60,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   google_api_key_registered,
   data_go_kr_key_registered,
   on_search_query,
+  vulnerable_region_count = 82,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_noti_open, set_is_noti_open] = useState(false);
@@ -87,50 +89,68 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors">
-      {/* 1. 상단 글로벌 네비게이션 바 */}
-      <div className="max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-16 flex items-center justify-between gap-4">
-          {/* 브랜드 로고 및 시스템 타이틀 */}
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors shadow-xs">
+      {/* 1줄 단일 헤더 (모든 정보 1줄에 컴팩트 통합) */}
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
+        <div className="h-14 flex items-center justify-between gap-3">
+          
+          {/* 1. 좌측: 브랜드 로고 & 단일 타이틀 */}
           <div
-            onClick={() => on_select_domain('status_diag')}
-            className="flex items-center space-x-3 cursor-pointer select-none shrink-0"
+            onClick={() => on_select_domain?.('status_diag')}
+            className="flex items-center space-x-2.5 cursor-pointer select-none shrink-0"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#003366] via-[#0055a5] to-[#0088cc] flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
-              <Activity className="w-5 h-5 text-white" />
+            <div className="w-8 h-8 rounded-lg bg-[#0071e3] flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
+              <Activity className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-[11px] font-bold tracking-wider text-[#0055a5] dark:text-[#38bdf8] uppercase">
-                  National Medical Center
-                </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold border border-slate-200 dark:border-slate-700">
-                  공공보건의료
-                </span>
-              </div>
-              <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
-                필수의료 헬스맵
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 hidden md:inline">
-                  | 정책의사결정지원 AI 플랫폼
-                </span>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
+                공공의료 정책의사결정지원 AI 플랫폼
               </h1>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden md:inline">
+                20260918 v0.24
+              </span>
             </div>
           </div>
 
+          {/* 2. 중앙: 1줄 컴팩트 핵심 운영 지표 티커 */}
+          <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+              <span className="text-slate-500 text-[11px]">시군구 226:</span>
+              <span className="font-bold text-red-600 dark:text-red-400">취약지 {vulnerable_region_count}개소</span>
+            </div>
 
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+              <span className="text-slate-500 text-[11px]">중진료권:</span>
+              <span className="font-bold text-teal-700 dark:text-teal-300">70개 네트워크</span>
+            </div>
 
-          {/* 우측 유틸리티: 검색 / 알림 / 테마 / 관리자 */}
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+              <span className="text-slate-500 text-[11px]">지방의료원:</span>
+              <span className="font-bold text-amber-700 dark:text-amber-300">35개 병원 경보</span>
+            </div>
+
+            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
+              <span className="text-slate-500 text-[11px]">핵심의료:</span>
+              <span className="font-bold text-purple-700 dark:text-purple-300">응급·분만·소아</span>
+            </div>
+
+            <span className="text-[11px] text-slate-400 hidden 2xl:inline">
+              (기준: 2026.09 NMC 월 1회 갱신)
+            </span>
+          </div>
+
+          {/* 3. 우측: 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
             {/* 시군구 빠른 검색 */}
-            <form onSubmit={handle_search_submit} className="relative hidden xl:block w-48">
+            <form onSubmit={handle_search_submit} className="relative hidden xl:block w-44">
               <input
                 type="text"
                 value={search_text}
                 onChange={(e) => set_search_text(e.target.value)}
                 placeholder="✏️ 지역·의료원 검색..."
-                className="zone-input-box w-full pl-8 pr-3 py-1.5 text-xs rounded-xl transition"
+                className="zone-input-box w-full pl-7 pr-2.5 py-1 text-xs rounded-lg transition"
               />
-              <Search className="w-3.5 h-3.5 text-indigo-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-indigo-500 absolute left-2 top-1/2 -translate-y-1/2" />
             </form>
 
             {/* 실시간 알림 팝오버 버튼 */}
@@ -138,11 +158,11 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               <button
                 type="button"
                 onClick={() => set_is_noti_open(!is_noti_open)}
-                className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative"
+                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative"
                 title="시스템 공지 및 RAG 업데이트 알림"
               >
                 <Bell className="w-4 h-4" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
               </button>
 
               {is_noti_open && (
@@ -168,18 +188,18 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             {/* 라이트/다크 테마 토글 */}
             <button
               onClick={on_toggle_dark_mode}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               title={is_dark_mode ? '화이트 테마로 전환' : '블랙 테마로 전환'}
             >
               {is_dark_mode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* 관리자 & 데이터 설정 드롭다운 (19번 요건: 개발자용 기능 분리 정돈) */}
+            {/* 관리자 & 데이터 설정 드롭다운 */}
             <div className="relative" ref={admin_ref}>
               <button
                 type="button"
                 onClick={() => set_is_admin_open(!is_admin_open)}
-                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition"
+                className="flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-semibold transition"
                 title="데이터 및 시스템 설정"
               >
                 <User className="w-3.5 h-3.5 text-slate-500" />
@@ -276,117 +296,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. 하위 서브 도메인 탭 바 (각 6대 영역별 서브 메뉴) */}
-      <div className="bg-slate-50/90 dark:bg-[#0b1329]/90 border-t border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2">
-        <div className="max-w-[1720px] mx-auto flex items-center justify-between overflow-x-auto text-xs">
-          <div className="flex items-center space-x-2 shrink-0">
-            {active_domain === 'status_diag' && (
-              <>
-                <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">현황진단:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[#003366] dark:text-sky-400 font-bold border border-slate-200 dark:border-slate-700 shadow-2xs">
-                  🗺️ 필수의료 헬스맵 (GIS 65:35)
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  📊 취약지 종합 진단 &amp; 사분면
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  ⚖️ 지자체 1:1 비교
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🏥 실시간 의료자원 모니터링
-                </span>
-              </>
-            )}
-
-            {active_domain === 'ai_analysis' && (
-              <>
-                <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">AI 분석:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[#003366] dark:text-sky-400 font-bold border border-slate-200 dark:border-slate-700 shadow-2xs">
-                  🤖 듀얼 AI 지역진단 (Gemini × sLLM)
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  📈 2030 의료수요 추계
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  ⚠️ 35개 지방의료원 경영위기 조기경보
-                </span>
-              </>
-            )}
-
-            {active_domain === 'policy_plan' && (
-              <>
-                <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">정책기획:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[#003366] dark:text-sky-400 font-bold border border-slate-200 dark:border-slate-700 shadow-2xs">
-                  📝 복지부 공모 표준 사업계획서 자동생성
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  💡 RAG 지침 기반 정책 대안 설계
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🎯 성과지표 추천 및 환각 검증
-                </span>
-              </>
-            )}
-
-            {active_domain === 'field_manage' && (
-              <>
-                <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">현장관리:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[#003366] dark:text-sky-400 font-bold border border-slate-200 dark:border-slate-700 shadow-2xs">
-                  🏢 35개 지방의료원 경영 성과 모니터링
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🤝 퇴원환자 지역사회 돌봄자원 AI 매칭
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🔗 지역 공공보건의료 연계 체계
-                </span>
-              </>
-            )}
-
-            {active_domain === 'citizen_svc' && (
-              <>
-                <span className="font-bold text-slate-700 dark:text-slate-300 mr-1">국민서비스:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-[#003366] dark:text-sky-400 font-bold border border-slate-200 dark:border-slate-700 shadow-2xs">
-                  🚑 일반국민 안심 공공병원 안내
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🌙 달빛어린이병원 &amp; 야간진료소
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  📱 모바일 퇴원돌봄 알리미
-                </span>
-              </>
-            )}
-
-            {active_domain === 'my_hospital' && (
-              <>
-                <span className="font-bold text-teal-800 dark:text-teal-300 mr-1">MY 의료기관:</span>
-                <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-teal-800 dark:text-teal-300 font-bold border border-teal-200 dark:border-teal-800 shadow-2xs">
-                  🏥 우리 의료기관 운영 현황 &amp; KPI
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  📈 12개월 추세 분석
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  ⚖️ 유사 의료기관 비교
-                </span>
-                <span className="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400">
-                  🤖 AI 우리 병원 분석 &amp; 개선과제
-                </span>
-              </>
-            )}
-          </div>
-
-          <div className="hidden md:flex items-center space-x-2 text-[11px] text-slate-500 dark:text-slate-400 shrink-0">
-            <span>데이터 기준일 : 2026.09</span>
-            <span>•</span>
-            <span>출처 : 국립중앙의료원</span>
-            <span>•</span>
-            <span>갱신주기 : 월 1회</span>
           </div>
         </div>
       </div>

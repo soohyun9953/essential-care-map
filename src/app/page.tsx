@@ -513,7 +513,7 @@ export default function Home() {
             {/* ============================================================== */}
             {active_menu === 'demand_forecast' && (
               <div className="space-y-6 animate-in fade-in duration-200">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
                   <의료수요_추계_차트 selected_region={selected_region} />
                   <의료지표_비교차트
                     selected_region={selected_region}

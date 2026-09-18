@@ -358,8 +358,8 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           </div>
         </div>
 
-        {/* 중앙: 6대 메인 메뉴 및 하위 메뉴 리스트 (아코디언 계층 구조) */}
-        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-3">
+        {/* 중앙: 6대 메인 메뉴 및 하위 메뉴 리스트 (1~6번 테두리선 진하게 강조) */}
+        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-3.5">
           {SIX_MAIN_CATEGORIES.map((main_cat) => {
             const is_expanded = expanded_categories[main_cat.id] ?? true;
             const MainIcon = main_cat.icon;
@@ -368,36 +368,36 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
             return (
               <div
                 key={main_cat.id}
-                className={`rounded-2xl border transition-all ${
+                className={`rounded-2xl border-2 transition-all ${
                   has_active_child
-                    ? 'border-blue-200/80 bg-blue-50/20 shadow-xs'
-                    : 'border-slate-200/70 bg-white hover:border-slate-300'
+                    ? 'border-[#0071e3] bg-blue-50/20 dark:bg-blue-950/20 shadow-md ring-2 ring-[#0071e3]/15'
+                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 shadow-xs hover:border-slate-400 dark:hover:border-slate-500'
                 }`}
               >
-                {/* 1계층: 6대 대메뉴 헤더 (클릭 시 하위메뉴 토글) */}
+                {/* 1계층: 6대 대메뉴 헤더 (명확한 타이틀 바) */}
                 <button
                   type="button"
                   onClick={() => toggle_category(main_cat.id)}
-                  className={`w-full flex items-center justify-between p-2.5 rounded-xl transition text-left cursor-pointer select-none ${
+                  className={`w-full flex items-center justify-between p-2.5 rounded-t-xl transition text-left cursor-pointer select-none ${
                     has_active_child
-                      ? 'text-[#0071e3] font-bold'
-                      : 'text-slate-800 hover:bg-slate-50 font-bold'
+                      ? 'bg-blue-50/70 dark:bg-blue-950/40 text-[#0071e3] font-bold'
+                      : 'bg-slate-50/80 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 hover:bg-slate-100/80 font-bold'
                   }`}
                 >
-                  <div className="flex items-center space-x-2 min-w-0">
+                  <div className="flex items-center space-x-2.5 min-w-0">
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                         has_active_child
                           ? 'bg-[#0071e3] text-white shadow-xs'
-                          : 'bg-slate-100 text-slate-600'
+                          : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold border border-slate-300 dark:border-slate-600'
                       }`}
                     >
                       <MainIcon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[13.5px] tracking-tight truncate flex items-center gap-1.5">
+                      <div className="text-[13.5px] tracking-tight truncate flex items-center gap-1.5 font-bold">
                         <span>{main_cat.title}</span>
-                        <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500">
+                        <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                           {main_cat.items.length}
                         </span>
                       </div>
@@ -405,15 +405,15 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                   </div>
 
                   <ChevronDown
-                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-1 ${
-                      is_expanded ? 'rotate-180 text-slate-600' : ''
+                    className={`w-4 h-4 text-slate-500 transition-transform duration-200 shrink-0 ml-1 ${
+                      is_expanded ? 'rotate-180 text-slate-700 dark:text-slate-300' : ''
                     }`}
                   />
                 </button>
 
                 {/* 2계층: 하위 메뉴 리스트 */}
                 {is_expanded && (
-                  <div className="px-2 pb-2.5 pt-0.5 space-y-1 border-t border-slate-100">
+                  <div className="px-2 pb-2.5 pt-1.5 space-y-1 border-t-2 border-slate-200 dark:border-slate-700/80">
                     {main_cat.items.map((sub_item) => {
                       const is_active = active_menu === sub_item.id;
                       const SubIcon = sub_item.icon;

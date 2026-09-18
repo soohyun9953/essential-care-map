@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { 
   Building2, Activity, TrendingUp, AlertTriangle, CheckCircle2, 
-  HelpCircle, ChevronRight, Stethoscope, Users, Bed, Award, 
+  HelpCircle, ChevronRight, ChevronDown, Stethoscope, Users, Bed, Award, 
   Search, ArrowUpRight, ArrowDownRight, MessageSquare, Sparkles,
   FileSpreadsheet, ShieldAlert, BarChart3, PieChart, Info,
   Compass, MapPin, Bot, Globe, Laptop, Database, Loader2, Check, Copy, BookOpen, Layers
@@ -417,56 +417,67 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
         </div>
       </div>
 
-      {/* 3. [선택하는 곳 🎯] 4대 탭 메뉴 네비게이션 */}
-      <div className="flex items-center gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto text-xs font-semibold">
-        <span className="zone-badge-select shrink-0">🎯 영역 선택:</span>
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`pb-3 px-1 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === "overview"
-              ? "border-blue-700 text-blue-800"
-              : "border-transparent hover:text-slate-900"
-          }`}
-        >
-          <BarChart3 className="w-4 h-4" />
-          기관 개요 및 지표 벤치마크
-        </button>
+      {/* 3. [선택하는 곳 🎯] 4대 탭 메뉴 네비게이션 (명확한 버튼 블록 구분) */}
+      <div className="bg-slate-100/90 dark:bg-slate-900/80 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5">
+          <div className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-slate-500 dark:text-slate-400 shrink-0">
+            <span className="zone-badge-select">🎯 영역 선택</span>
+          </div>
 
-        <button
-          onClick={() => setActiveTab("analysis")}
-          className={`pb-3 px-1 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === "analysis"
-              ? "border-blue-700 text-blue-800"
-              : "border-transparent hover:text-slate-900"
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-amber-500" />
-          AI 심층 원인 진단 (Fact/Assumption)
-        </button>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 flex-1">
+            <button
+              type="button"
+              onClick={() => setActiveTab("overview")}
+              className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all border ${
+                activeTab === "overview"
+                  ? "bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700 shadow-sm ring-1 ring-blue-500/20"
+                  : "bg-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent"
+              }`}
+            >
+              <BarChart3 className={`w-4 h-4 ${activeTab === "overview" ? "text-blue-600 dark:text-blue-400" : "text-slate-400"}`} />
+              <span className="truncate">1. 기관 개요 & 지표</span>
+            </button>
 
-        <button
-          onClick={() => setActiveTab("action")}
-          className={`pb-3 px-1 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === "action"
-              ? "border-blue-700 text-blue-800"
-              : "border-transparent hover:text-slate-900"
-          }`}
-        >
-          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-          단기/중장기 경영개선 과제
-        </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("analysis")}
+              className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all border ${
+                activeTab === "analysis"
+                  ? "bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700 shadow-sm ring-1 ring-amber-500/20"
+                  : "bg-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent"
+              }`}
+            >
+              <Sparkles className={`w-4 h-4 ${activeTab === "analysis" ? "text-amber-500" : "text-slate-400"}`} />
+              <span className="truncate">2. AI 심층 원인 진단</span>
+            </button>
 
-        <button
-          onClick={() => setActiveTab("qa")}
-          className={`pb-3 px-1 flex items-center gap-2 border-b-2 transition-colors ${
-            activeTab === "qa"
-              ? "border-blue-700 text-blue-800"
-              : "border-transparent hover:text-slate-900"
-          }`}
-        >
-          <MessageSquare className="w-4 h-4 text-purple-600" />
-          AI 병원 경영 Q&A 어시스턴트
-        </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("action")}
+              className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all border ${
+                activeTab === "action"
+                  ? "bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700 shadow-sm ring-1 ring-emerald-500/20"
+                  : "bg-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent"
+              }`}
+            >
+              <CheckCircle2 className={`w-4 h-4 ${activeTab === "action" ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`} />
+              <span className="truncate">3. 경영개선 과제 로드맵</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("qa")}
+              className={`py-2 px-3 rounded-lg flex items-center justify-center gap-2 text-xs font-bold transition-all border ${
+                activeTab === "qa"
+                  ? "bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700 shadow-sm ring-1 ring-purple-500/20"
+                  : "bg-transparent hover:bg-white/60 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white border-transparent"
+              }`}
+            >
+              <MessageSquare className={`w-4 h-4 ${activeTab === "qa" ? "text-purple-600 dark:text-purple-400" : "text-slate-400"}`} />
+              <span className="truncate">4. AI 병원 경영 Q&A</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 4. 탭 콘텐츠 영역 */}
@@ -815,223 +826,67 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
             </div>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
-            {/* [선택하는 곳 🎯] 추천 질의 태그 */}
-            <div>
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="zone-badge-select">🎯 추천 질의 선택</span>
-                <span className="text-[11px] text-slate-500">클릭 시 원내 DW + RAG 법령 기반 실시간 추론</span>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "현재 병상가동률 개선을 위한 가장 효과적인 단기 대책은?",
-                  "의사 1인당 환자수와 간호등급을 고려한 인력 보강 방안은?",
-                  "필수의료 제공에 따른 착한 적자 보전 및 지원사업 신청 팁은?",
-                  "타 지역 유사 규모 지방의료원 대비 취약한 평가항목은?"
-                ].map((tag, i) => (
-                  <button
-                    key={i}
-                    disabled={isGenerating}
-                    onClick={() => handleSendAiQuestion(tag)}
-                    className="zone-select-chip text-left disabled:opacity-50 disabled:cursor-not-allowed hover:border-purple-300"
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* [설명하는 곳 💡] 채팅 히스토리 창 */}
-            <div className="min-h-[320px] max-h-[500px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4 bg-slate-50/70 dark:bg-slate-900/40">
-              {chatHistory.map((msg, idx) => {
-                const isDual = msg.role === 'ai' && (msg.geminiResponse && msg.localResponse);
-                const currentDualTab = dualViewTabs[idx] || 'gemini';
-
-                return (
-                  <div
-                    key={idx}
-                    className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[92%] rounded-xl p-4 text-xs leading-relaxed ${
-                        msg.role === "user"
-                          ? "bg-blue-600 text-white rounded-br-none shadow-xs"
-                          : "bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-800 shadow-xs rounded-bl-none text-slate-800 dark:text-slate-200"
-                      }`}
-                    >
-                      {msg.role === "ai" && (
-                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800">
-                          <div className="flex items-center gap-2">
-                            <span className="zone-badge-info">💡 AI 진단</span>
-                            {msg.modelType === 'dual' && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded border border-purple-200">
-                                듀얼 AI (Gemini + On-Device)
-                              </span>
-                            )}
-                            {msg.modelType === 'gemini' && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 rounded border border-blue-200">
-                                Google Gemini 1.5 Flash
-                              </span>
-                            )}
-                            {msg.modelType === 'local' && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 rounded border border-emerald-200">
-                                On-Device sLLM (원내보안)
-                              </span>
-                            )}
-                            {msg.modelType === 'dw' && (
-                              <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded border border-amber-200">
-                                DW 지표 규칙 분석
-                              </span>
-                            )}
-                            {msg.elapsedMs && (
-                              <span className="text-[10px] text-slate-400">
-                                ({msg.elapsedMs}ms)
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {/* 답변 복사 버튼 */}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const textToCopy = isDual
-                                  ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse) || msg.content
-                                  : msg.content;
-                                navigator.clipboard.writeText(textToCopy);
-                                setCopiedIndex(idx);
-                                setTimeout(() => setCopiedIndex(null), 1500);
-                              }}
-                              className="px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded transition flex items-center gap-1"
-                              title="답변 복사"
-                            >
-                              {copiedIndex === idx ? (
-                                <>
-                                  <Check className="w-3 h-3 text-emerald-600" />
-                                  <span className="text-emerald-600 font-bold">복사됨</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3 h-3" />
-                                  <span>복사</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* 듀얼 모드일 때 모델별 탭 전환 스위치 */}
-                      {isDual && (
-                        <div className="mb-3 flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg">
-                          <button
-                            type="button"
-                            onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'gemini' })}
-                            className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
-                              currentDualTab === 'gemini'
-                                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
-                                : 'text-slate-500 hover:text-slate-800'
-                            }`}
-                          >
-                            <Globe className="w-3.5 h-3.5 text-blue-500" />
-                            <span>Google Gemini 응답</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'local' })}
-                            className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
-                              currentDualTab === 'local'
-                                ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
-                                : 'text-slate-500 hover:text-slate-800'
-                            }`}
-                          >
-                            <Laptop className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>On-Device sLLM 응답 (원내보안)</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* RAG 근거 법령 및 지침 아코디언 */}
-                      {msg.ragSources && msg.ragSources.length > 0 && (
-                        <div className="mb-3">
-                          <button
-                            type="button"
-                            onClick={() => setExpandedRagIdx(expandedRagIdx === idx ? null : idx)}
-                            className="w-full text-left p-2 rounded-lg bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-800/50 hover:bg-purple-100/50 transition flex items-center justify-between"
-                          >
-                            <span className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800 dark:text-purple-300">
-                              <BookOpen className="w-3.5 h-3.5 text-purple-600" />
-                              RAG 검색 법령·지침 근거 ({msg.ragSources.length}건 참조)
-                            </span>
-                            <span className="text-[10px] text-purple-600 font-semibold underline">
-                              {expandedRagIdx === idx ? '접기 ▲' : '자세히 보기 ▼'}
-                            </span>
-                          </button>
-
-                          {expandedRagIdx === idx && (
-                            <div className="mt-2 p-3 bg-purple-50/40 dark:bg-purple-950/20 rounded-lg border border-purple-200/50 space-y-2 text-[11px]">
-                              {msg.ragSources.map((source, sIdx) => (
-                                <div key={sIdx} className="p-2 bg-white dark:bg-slate-900/80 rounded border border-purple-100 dark:border-purple-900/40">
-                                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100 mb-1">
-                                    <span className="text-purple-700 dark:text-purple-400">
-                                      [{source.docName}] {source.article}
-                                    </span>
-                                    <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">
-                                      유사도 {source.score}%
-                                    </span>
-                                  </div>
-                                  <p className="text-slate-600 dark:text-slate-300 leading-snug line-clamp-3">
-                                    {source.text}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* 메시지 본문 렌더링 */}
-                      <div className="whitespace-pre-wrap leading-relaxed">
-                        {isDual
-                          ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse)
-                          : msg.content}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* 생성 중 로딩 인디케이터 */}
-              {isGenerating && (
-                <div className="flex justify-start">
-                  <div className="bg-white dark:bg-[#1a1c23] border border-purple-200 dark:border-purple-900/50 rounded-xl rounded-bl-none p-4 shadow-sm space-y-2">
-                    <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold text-xs">
-                      <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
-                      <span>
-                        {aiModelMode === 'dual' && 'Google Gemini & On-Device sLLM 동시 추론 중...'}
-                        {aiModelMode === 'gemini' && 'Google Gemini 1.5 Flash 실시간 추론 중...'}
-                        {aiModelMode === 'local' && 'On-Device sLLM 로컬 추론 중...'}
-                        {aiModelMode === 'dw' && '원내 DW 지표 분석 중...'}
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 pl-6">
-                      공공보건의료 지침 RAG 3건 검색 및 {currentHospital.name} DW 팩트 지표를 결합하고 있습니다.
-                    </p>
-                  </div>
+            {/* 1. [선택하는 곳 🎯] 추천 질의 드롭다운 */}
+            <div className="bg-purple-50/50 dark:bg-purple-950/20 p-3 rounded-xl border border-purple-200/70 dark:border-purple-800/40 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="zone-badge-select">🎯 추천 질의 선택</span>
+                  <span className="text-[11px] text-slate-500">자주 묻는 핵심 경영·정책 과제를 드롭다운에서 선택하세요</span>
                 </div>
-              )}
+                <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold hidden sm:inline">
+                  선택 즉시 입력창에 반영됩니다
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="relative flex-1">
+                  <select
+                    aria-label="추천 질의 드롭다운 선택"
+                    disabled={isGenerating}
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        setAiQuestion(e.target.value);
+                      }
+                    }}
+                    className="w-full appearance-none pl-3.5 pr-10 py-2.5 text-xs font-semibold bg-white dark:bg-slate-800 border border-purple-300 dark:border-purple-700 text-purple-950 dark:text-purple-200 rounded-lg hover:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 cursor-pointer shadow-2xs transition"
+                  >
+                    <option value="">-- 🎯 추천 경영·정책 질의 목록 열기 (선택 시 입력창 자동 채움) --</option>
+                    <option value={`${currentHospital.name}의 병상가동률(${currentEval.bedOccupancyRate}%) 개선을 위한 가장 효과적인 단기 대책은?`}>
+                      [병상가동] 현재 병상가동률({currentEval.bedOccupancyRate}%) 개선을 위한 단기 대책은?
+                    </option>
+                    <option value={`전문의 1인당 일평균 환자수(${currentEval.patientsPerDoctor}명)와 간호등급(${currentEval.nurseGrade}등급)을 고려한 필수 인력 보강 방안은?`}>
+                      [의료인력] 의사 1인당 환자수({currentEval.patientsPerDoctor}명) 및 간호등급({currentEval.nurseGrade}등급) 감안 인력 보강 방안
+                    </option>
+                    <option value={`필수의료 제공에 따른 착한 적자(영업이익률 ${currentEval.operatingProfitRatio}%) 보전 및 보건복지부 지원사업 신청 팁은?`}>
+                      [재정적자] 필수의료 착한 적자 보전 및 보건복지부 공공의료 지원사업 신청 팁
+                    </option>
+                    <option value={`공공보건의료 평가등급(${currentEval.grade}등급, ${currentEval.score}점) 향상을 위한 핵심 취약점과 개선 방안은?`}>
+                      [평가등급] 공공보건의료 평가({currentEval.grade}등급, ${currentEval.score}점) 취약항목 집중 개선 방안
+                    </option>
+                    <option value={`응급실 야간 당직 인력 확충을 위한 공공임상교수제 파견 신청 요건 및 절차는?`}>
+                      [응급당직] 응급실 야간 당직 전문의 확보를 위한 공공임상교수제 파견 절차
+                    </option>
+                    <option value={`지역 책임의료기관 협력체계 구축사업 및 퇴원환자 연계 사업 예산 신청 팁은?`}>
+                      [협력사업] 권역 책임의료기관 협력 및 퇴원환자 사후관리 국비 매칭 방안
+                    </option>
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-purple-600 dark:text-purple-400 absolute right-3 top-3 pointer-events-none" />
+                </div>
+              </div>
             </div>
 
-            {/* [입력하는 곳 ✏️] 질문 입력 폼 (예시 표시 & Tab키 자동완성) */}
+            {/* 2. [입력하는 곳 ✏️] 질문 입력 폼 (답변 창 위로 배치됨) */}
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5">
                   <span className="zone-badge-input">✏️ 직접 입력</span>
-                  <span className="text-[11px] text-slate-500">질문 입력 또는 Tab 키로 예시 자동완성</span>
+                  <span className="text-[11px] text-slate-500">질문 직접 타이핑 또는 Tab 키로 예시 자동완성 (Enter 키로 전송)</span>
                 </div>
 
                 {/* 예시 제안 바 & Tab 자동완성 안내 */}
                 <div className="flex items-center gap-1.5 text-[11px] max-w-full overflow-hidden">
-                  <span className="text-slate-400 dark:text-slate-500 shrink-0">💡 예시:</span>
+                  <span className="text-slate-400 dark:text-slate-500 shrink-0">💡 Tab 예시:</span>
                   <button
                     type="button"
                     onClick={() => setAiQuestion(currentSuggestion)}
@@ -1117,6 +972,199 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                     </>
                   )}
                 </button>
+              </div>
+            </div>
+
+            {/* 3. [설명하는 곳 💡] AI 진단 답변 및 대화 히스토리 창 */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <span className="zone-badge-info">💡 AI 진단 답변</span>
+                  <span className="text-[11px] text-slate-500">원내 DW 지표 및 실시간 RAG 법령 기반 분석 결과</span>
+                </div>
+                <span className="text-[11px] text-slate-400">
+                  총 {chatHistory.filter(m => m.role === 'ai').length}건의 진단 기록
+                </span>
+              </div>
+
+              <div className="min-h-[320px] max-h-[500px] overflow-y-auto border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4 bg-slate-50/70 dark:bg-slate-900/40">
+                {chatHistory.map((msg, idx) => {
+                  const isDual = msg.role === 'ai' && (msg.geminiResponse && msg.localResponse);
+                  const currentDualTab = dualViewTabs[idx] || 'gemini';
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[92%] rounded-xl p-4 text-xs leading-relaxed ${
+                          msg.role === "user"
+                            ? "bg-blue-600 text-white rounded-br-none shadow-xs"
+                            : "bg-white dark:bg-[#1a1c23] border border-slate-200 dark:border-slate-800 shadow-xs rounded-bl-none text-slate-800 dark:text-slate-200"
+                        }`}
+                      >
+                        {msg.role === "ai" && (
+                          <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-2">
+                              <span className="zone-badge-info">💡 AI 진단</span>
+                              {msg.modelType === 'dual' && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 rounded border border-purple-200">
+                                  듀얼 AI (Gemini + On-Device)
+                                </span>
+                              )}
+                              {msg.modelType === 'gemini' && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 rounded border border-blue-200">
+                                  Google Gemini 1.5 Flash
+                                </span>
+                              )}
+                              {msg.modelType === 'local' && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 rounded border border-emerald-200">
+                                  On-Device sLLM (원내보안)
+                                </span>
+                              )}
+                              {msg.modelType === 'dw' && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 rounded border border-amber-200">
+                                  DW 지표 규칙 분석
+                                </span>
+                              )}
+                              {msg.elapsedMs && (
+                                <span className="text-[10px] text-slate-400">
+                                  ({msg.elapsedMs}ms)
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {/* 답변 복사 버튼 */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const textToCopy = isDual
+                                    ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse) || msg.content
+                                    : msg.content;
+                                  navigator.clipboard.writeText(textToCopy);
+                                  setCopiedIndex(idx);
+                                  setTimeout(() => setCopiedIndex(null), 1500);
+                                }}
+                                className="px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-800 rounded transition flex items-center gap-1 cursor-pointer"
+                                title="답변 복사"
+                              >
+                                {copiedIndex === idx ? (
+                                  <>
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                    <span className="text-emerald-600 font-bold">복사됨</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3 h-3" />
+                                    <span>복사</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 듀얼 모드일 때 모델별 탭 전환 스위치 */}
+                        {isDual && (
+                          <div className="mb-3 flex items-center gap-2 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg">
+                            <button
+                              type="button"
+                              onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'gemini' })}
+                              className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
+                                currentDualTab === 'gemini'
+                                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-2xs'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              }`}
+                            >
+                              <Globe className="w-3.5 h-3.5 text-blue-500" />
+                              <span>Google Gemini 응답</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDualViewTabs({ ...dualViewTabs, [idx]: 'local' })}
+                              className={`flex-1 py-1 px-2.5 text-xs font-bold rounded-md transition flex items-center justify-center gap-1.5 ${
+                                currentDualTab === 'local'
+                                  ? 'bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-2xs'
+                                  : 'text-slate-500 hover:text-slate-800'
+                              }`}
+                            >
+                              <Laptop className="w-3.5 h-3.5 text-emerald-500" />
+                              <span>On-Device sLLM 응답 (원내보안)</span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* RAG 근거 법령 및 지침 아코디언 */}
+                        {msg.ragSources && msg.ragSources.length > 0 && (
+                          <div className="mb-3">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedRagIdx(expandedRagIdx === idx ? null : idx)}
+                              className="w-full text-left p-2 rounded-lg bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200/70 dark:border-purple-800/50 hover:bg-purple-100/50 transition flex items-center justify-between cursor-pointer"
+                            >
+                              <span className="flex items-center gap-1.5 text-[11px] font-bold text-purple-800 dark:text-purple-300">
+                                <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+                                RAG 검색 법령·지침 근거 ({msg.ragSources.length}건 참조)
+                              </span>
+                              <span className="text-[10px] text-purple-600 font-semibold underline">
+                                {expandedRagIdx === idx ? '접기 ▲' : '자세히 보기 ▼'}
+                              </span>
+                            </button>
+
+                            {expandedRagIdx === idx && (
+                              <div className="mt-2 p-3 bg-purple-50/40 dark:bg-purple-950/20 rounded-lg border border-purple-200/50 space-y-2 text-[11px]">
+                                {msg.ragSources.map((source, sIdx) => (
+                                  <div key={sIdx} className="p-2 bg-white dark:bg-slate-900/80 rounded border border-purple-100 dark:border-purple-900/40">
+                                    <div className="flex items-center justify-between font-bold text-slate-900 dark:text-slate-100 mb-1">
+                                      <span className="text-purple-700 dark:text-purple-400">
+                                        [{source.docName}] {source.article}
+                                      </span>
+                                      <span className="text-[10px] px-1.5 py-0.5 bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 rounded">
+                                        유사도 {source.score}%
+                                      </span>
+                                    </div>
+                                    <p className="text-slate-600 dark:text-slate-300 leading-snug line-clamp-3">
+                                      {source.text}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* 메시지 본문 렌더링 */}
+                        <div className="whitespace-pre-wrap leading-relaxed">
+                          {isDual
+                            ? (currentDualTab === 'gemini' ? msg.geminiResponse : msg.localResponse)
+                            : msg.content}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* 생성 중 로딩 인디케이터 */}
+                {isGenerating && (
+                  <div className="flex justify-start">
+                    <div className="bg-white dark:bg-[#1a1c23] border border-purple-200 dark:border-purple-900/50 rounded-xl rounded-bl-none p-4 shadow-sm space-y-2">
+                      <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-bold text-xs">
+                        <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
+                        <span>
+                          {aiModelMode === 'dual' && 'Google Gemini & On-Device sLLM 동시 추론 중...'}
+                          {aiModelMode === 'gemini' && 'Google Gemini 1.5 Flash 실시간 추론 중...'}
+                          {aiModelMode === 'local' && 'On-Device sLLM 로컬 추론 중...'}
+                          {aiModelMode === 'dw' && '원내 DW 지표 분석 중...'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 pl-6">
+                        공공보건의료 지침 RAG 3건 검색 및 {currentHospital.name} DW 팩트 지표를 결합하고 있습니다.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

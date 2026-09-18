@@ -367,15 +367,15 @@ export default function Home() {
 
                 <div>
                   <div className="flex items-center space-x-1.5 text-xs text-slate-500 font-semibold">
-                    <span>공공의료 의사결정 플랫폼</span>
+                    <span>공공의료 AI 플랫폼</span>
                     <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
                     <span className="text-blue-700 dark:text-blue-400 font-bold">
-                      {current_domain === 'status_diag' && '현황 진단 & GIS'}
-                      {current_domain === 'ai_analysis' && 'AI 심층 분석'}
-                      {current_domain === 'policy_plan' && '정책 및 사업기획'}
-                      {current_domain === 'field_manage' && '현장 운영 관리'}
-                      {current_domain === 'public_service' && '대국민 서비스'}
-                      {current_domain === 'my_hospital' && 'MY 의료기관'}
+                      {current_domain === 'status_diag' && '1. 현황진단'}
+                      {current_domain === 'ai_analysis' && '2. AI분석'}
+                      {current_domain === 'policy_plan' && '3. 정책기획'}
+                      {current_domain === 'field_manage' && '4. 현장관리'}
+                      {current_domain === 'public_service' && '5. 국민서비스'}
+                      {current_domain === 'my_hospital' && '6. MY의료기관'}
                     </span>
                   </div>
                   <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mt-0.5">
@@ -401,52 +401,6 @@ export default function Home() {
                 </button>
               </div>
             </div>
-
-            {/* 현황 진단 도메인일 때 서브탭 네비게이션 */}
-            {current_domain === 'status_diag' && (
-              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs overflow-x-auto pb-1">
-                {[
-                  { id: 'gis_map', label: '🗺️ GIS 헬스맵 & 취약지 DB' },
-                  { id: 'diagnosis_metrics', label: '📊 종합 지표 진단 & 사분면' },
-                  { id: 'compare_1to1', label: '⚖️ 지자체 1:1 비교' },
-                  { id: 'demand_forecast', label: '📈 2030 의료수요 추계' },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => handle_select_menu(tab.id as 메뉴_아이디)}
-                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                      active_menu === tab.id
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* 현장 관리 도메인일 때 서브탭 네비게이션 */}
-            {current_domain === 'field_manage' && (
-              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs overflow-x-auto pb-1">
-                {[
-                  { id: 'hospital_crisis', label: '🚨 35개 지방의료원 조기경보' },
-                  { id: 'discharge_care', label: '🤝 퇴원환자 지역사회 돌봄연계' },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => handle_select_menu(tab.id as 메뉴_아이디)}
-                    className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-colors ${
-                      active_menu === tab.id
-                        ? 'bg-blue-600 text-white font-semibold shadow-xs'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* 상단 글로벌 지역 신속 선택기 */}
             <상단_지역_선택기

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MapPin,
   Bot,
@@ -17,12 +17,18 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Menu,
   X,
   Sparkles,
   Layers,
   Key,
   Database,
+  Compass,
+  Brain,
+  FileText,
+  Building2,
+  Users,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
@@ -34,9 +40,10 @@ export type 메뉴_아이디 =
   | 'discharge_care'
   | 'compare_1to1'
   | 'demand_forecast'
-  | 'citizen_view';
+  | 'citizen_view'
+  | 'my_hospital';
 
-interface 사이드바_메뉴_항목 {
+export interface 사이드바_메뉴_항목 {
   id: 메뉴_아이디;
   label: string;
   icon: React.ElementType;
@@ -44,14 +51,21 @@ interface 사이드바_메뉴_항목 {
   desc: string;
 }
 
-interface 사이드바_카테고리 {
-  category: string;
+export interface 사이드바_대메뉴 {
+  id: string;
+  title: string;
+  icon: React.ElementType;
+  desc: string;
   items: 사이드바_메뉴_항목[];
 }
 
-const MENU_CATEGORIES: 사이드바_카테고리[] = [
+// 6대 메인 메뉴 및 하위 메뉴 구조
+const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
   {
-    category: '핵심 진단 & GIS',
+    id: 'status_diag',
+    title: '1. 현황진단',
+    icon: Compass,
+    desc: 'GIS 지도 기반 취약지 진단 & 지표 분석',
     items: [
       {
         id: 'gis_map',
@@ -66,10 +80,19 @@ const MENU_CATEGORIES: 사이드바_카테고리[] = [
         icon: Activity,
         desc: '3대 영역 지표 & 사분면 역량 분석',
       },
+      {
+        id: 'compare_1to1',
+        label: '지자체 1:1 비교 대시보드',
+        icon: GitCompare,
+        desc: '전국 2개 지자체 인프라 정밀 비교',
+      },
     ],
   },
   {
-    category: 'AI 에이전트 & 정책 기획',
+    id: 'ai_analysis',
+    title: '2. AI분석',
+    icon: Brain,
+    desc: '듀얼 LLM 추론 & 시계열 의료수요 예측',
     items: [
       {
         id: 'dual_ai_studio',
@@ -78,6 +101,20 @@ const MENU_CATEGORIES: 사이드바_카테고리[] = [
         badge: 'Dual AI',
         desc: '외부 클라우드 vs 로컬 sLLM 1:1 비교',
       },
+      {
+        id: 'demand_forecast',
+        label: '2030 의료수요 AI 추계',
+        icon: TrendingUp,
+        desc: '고령화 시계열 예측 & 시도 벤치마킹',
+      },
+    ],
+  },
+  {
+    id: 'policy_plan',
+    title: '3. 정책기획',
+    icon: FileText,
+    desc: '보건복지부 공모 표준 사업계획서 생성',
+    items: [
       {
         id: 'report_generator',
         label: '사업계획서 자동생성기',
@@ -88,7 +125,10 @@ const MENU_CATEGORIES: 사이드바_카테고리[] = [
     ],
   },
   {
-    category: '현장 연계 & 경영 모니터링',
+    id: 'field_manage',
+    title: '4. 현장관리',
+    icon: Building2,
+    desc: '의료원 경영위기 감지 & 돌봄자원 매칭',
     items: [
       {
         id: 'hospital_crisis',
@@ -104,22 +144,13 @@ const MENU_CATEGORIES: 사이드바_카테고리[] = [
         badge: '코디네이터',
         desc: '지역사회 보건소·장기요양 원클릭 연계',
       },
-      {
-        id: 'compare_1to1',
-        label: '지자체 1:1 비교 대시보드',
-        icon: GitCompare,
-        desc: '전국 2개 지자체 인프라 정밀 비교',
-      },
-      {
-        id: 'demand_forecast',
-        label: '2030 의료수요 추계',
-        icon: TrendingUp,
-        desc: '고령화 시계열 예측 & 시도 벤치마킹',
-      },
     ],
   },
   {
-    category: '대국민 안심 서비스',
+    id: 'public_service',
+    title: '5. 국민서비스',
+    icon: Users,
+    desc: '응급실·소아과 찾기 & 모바일 안심 알림',
     items: [
       {
         id: 'citizen_view',
@@ -127,6 +158,21 @@ const MENU_CATEGORIES: 사이드바_카테고리[] = [
         icon: UserCheck,
         badge: '국민안심',
         desc: '응급실·소아과 찾기 & 모바일 퇴원 알림',
+      },
+    ],
+  },
+  {
+    id: 'my_hospital',
+    title: '6. MY의료기관',
+    icon: HeartHandshake,
+    desc: '소속 기관 KPI·AI 병목진단·특화 Q&A',
+    items: [
+      {
+        id: 'my_hospital',
+        label: '우리 의료기관 대시보드',
+        icon: HeartHandshake,
+        badge: '기관특화',
+        desc: '병상·인력·수지 4대 KPI & 현장 Q&A',
       },
     ],
   },
@@ -167,6 +213,36 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 }) => {
   const [is_mobile_open, set_is_mobile_open] = useState(false);
 
+  // 모든 6대 대메뉴 기본 확장 상태로 초기화
+  const [expanded_categories, set_expanded_categories] = useState<Record<string, boolean>>({
+    status_diag: true,
+    ai_analysis: true,
+    policy_plan: true,
+    field_manage: true,
+    public_service: true,
+    my_hospital: true,
+  });
+
+  // 활성화된 메뉴가 속한 카테고리는 항상 열려있도록 보장
+  useEffect(() => {
+    const parent_cat = SIX_MAIN_CATEGORIES.find((cat) =>
+      cat.items.some((item) => item.id === active_menu)
+    );
+    if (parent_cat) {
+      set_expanded_categories((prev) => ({
+        ...prev,
+        [parent_cat.id]: true,
+      }));
+    }
+  }, [active_menu]);
+
+  const toggle_category = (cat_id: string) => {
+    set_expanded_categories((prev) => ({
+      ...prev,
+      [cat_id]: !prev[cat_id],
+    }));
+  };
+
   const handle_menu_click = (id: 메뉴_아이디) => {
     on_select_menu(id);
     set_is_mobile_open(false);
@@ -184,10 +260,14 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center space-x-2">
-            <div className="w-7 h-7 rounded-lg bg-[#1d1d1f] text-white flex items-center justify-center">
-              <Activity className="w-4 h-4" />
+            {/* 1. 아이콘 파랑색 수정 */}
+            <div className="w-7 h-7 rounded-lg bg-[#0071e3] text-white flex items-center justify-center shadow-sm">
+              <Activity className="w-4 h-4 text-white" />
             </div>
-            <span className="text-xs font-bold text-[#1d1d1f]">필수의료 헬스맵</span>
+            {/* 3. 모바일 타이틀 수정 */}
+            <span className="text-xs font-bold text-[#1d1d1f] truncate max-w-[180px]">
+              공공의료 정책의사결정지원 AI 플랫폼
+            </span>
           </div>
         </div>
 
@@ -217,26 +297,26 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         {/* 상단: 플랫폼 로고 및 헤더 */}
         <div className="p-4 sm:p-5 border-b border-black/[0.05]">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-b from-[#1d1d1f] to-[#2d2d30] text-white flex items-center justify-center shadow-apple-sm shrink-0">
+            <div className="flex items-center space-x-3 min-w-0">
+              {/* 1. 아이콘 파랑색 수정 (#0071e3) */}
+              <div className="w-11 h-11 rounded-xl bg-[#0071e3] text-white flex items-center justify-center shadow-apple-sm shrink-0">
                 <Activity className="w-5 h-5 text-white" />
               </div>
-              <div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="text-xs font-semibold text-[#86868b] tracking-tight">
-                    국립중앙의료원 지원센터
-                  </span>
-                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
+              <div className="min-w-0">
+                {/* 2. 국립중앙의료원 지원센터 삭제 및 배지만 유지 */}
+                <div className="flex items-center space-x-1.5 mb-0.5">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
                     20260918 v0.24
                   </span>
                 </div>
-                <h1 className="text-lg font-extrabold tracking-tight text-[#1d1d1f]">
-                  필수의료 취약지 헬스맵
+                {/* 3. 타이틀 수정: 공공의료 정책의사결정지원 AI 플랫폼 */}
+                <h1 className="text-[14.5px] font-extrabold tracking-tight text-[#1d1d1f] leading-snug">
+                  공공의료 정책의사결정지원 AI 플랫폼
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 shrink-0 ml-1">
               {/* 데스크톱 사이드바 접기/숨기기 버튼 */}
               {on_toggle_hide && (
                 <button
@@ -278,64 +358,118 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           </div>
         </div>
 
-        {/* 중앙: 기능 네비게이션 메뉴 리스트 (스크롤 가능) */}
-        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-5">
-          {MENU_CATEGORIES.map((cat, c_idx) => (
-            <div key={c_idx} className="space-y-1.5">
-              <div className="px-3 py-1 text-xs font-extrabold tracking-wider text-slate-500 uppercase">
-                {cat.category}
-              </div>
+        {/* 중앙: 6대 메인 메뉴 및 하위 메뉴 리스트 (아코디언 계층 구조) */}
+        <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-3">
+          {SIX_MAIN_CATEGORIES.map((main_cat) => {
+            const is_expanded = expanded_categories[main_cat.id] ?? true;
+            const MainIcon = main_cat.icon;
+            const has_active_child = main_cat.items.some((it) => it.id === active_menu);
 
-              <div className="space-y-1">
-                {cat.items.map((item) => {
-                  const is_active = active_menu === item.id;
-                  const Icon = item.icon;
-
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handle_menu_click(item.id)}
-                      className={`w-full text-left px-3.5 py-3 rounded-xl flex items-center justify-between transition-all group ${
-                        is_active
-                          ? 'bg-[#0071e3] text-white shadow-apple-sm font-bold'
-                          : 'text-[#1d1d1f] hover:bg-[#f5f5f7] font-medium'
+            return (
+              <div
+                key={main_cat.id}
+                className={`rounded-2xl border transition-all ${
+                  has_active_child
+                    ? 'border-blue-200/80 bg-blue-50/20 shadow-xs'
+                    : 'border-slate-200/70 bg-white hover:border-slate-300'
+                }`}
+              >
+                {/* 1계층: 6대 대메뉴 헤더 (클릭 시 하위메뉴 토글) */}
+                <button
+                  type="button"
+                  onClick={() => toggle_category(main_cat.id)}
+                  className={`w-full flex items-center justify-between p-2.5 rounded-xl transition text-left cursor-pointer select-none ${
+                    has_active_child
+                      ? 'text-[#0071e3] font-bold'
+                      : 'text-slate-800 hover:bg-slate-50 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center space-x-2 min-w-0">
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                        has_active_child
+                          ? 'bg-[#0071e3] text-white shadow-xs'
+                          : 'bg-slate-100 text-slate-600'
                       }`}
                     >
-                      <div className="flex items-center space-x-3 min-w-0">
-                        <Icon
-                          className={`w-5 h-5 shrink-0 transition-colors ${
-                            is_active ? 'text-white' : 'text-[#86868b] group-hover:text-[#0071e3]'
-                          }`}
-                        />
-                        <div className="truncate">
-                          <div className="text-[15px] truncate font-bold">{item.label}</div>
-                          <div
-                            className={`text-[13px] truncate mt-0.5 ${
-                              is_active ? 'text-white/85 font-medium' : 'text-[#86868b]'
-                            }`}
-                          >
-                            {item.desc}
-                          </div>
-                        </div>
+                      <MainIcon className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[13.5px] tracking-tight truncate flex items-center gap-1.5">
+                        <span>{main_cat.title}</span>
+                        <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500">
+                          {main_cat.items.length}
+                        </span>
                       </div>
+                    </div>
+                  </div>
 
-                      {item.badge && (
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-xs font-bold shrink-0 ml-2 ${
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 transition-transform duration-200 shrink-0 ml-1 ${
+                      is_expanded ? 'rotate-180 text-slate-600' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* 2계층: 하위 메뉴 리스트 */}
+                {is_expanded && (
+                  <div className="px-2 pb-2.5 pt-0.5 space-y-1 border-t border-slate-100">
+                    {main_cat.items.map((sub_item) => {
+                      const is_active = active_menu === sub_item.id;
+                      const SubIcon = sub_item.icon;
+
+                      return (
+                        <button
+                          key={sub_item.id}
+                          onClick={() => handle_menu_click(sub_item.id)}
+                          className={`w-full text-left pl-3 pr-2.5 py-2 rounded-xl flex items-center justify-between transition-all group ${
                             is_active
-                              ? 'bg-white/20 text-white'
-                              : 'bg-black/[0.05] text-[#86868b]'
+                              ? 'bg-[#0071e3] text-white shadow-apple-sm font-bold ring-1 ring-[#0071e3]'
+                              : 'text-slate-700 hover:bg-slate-100/80 font-medium'
                           }`}
                         >
-                          {item.badge}
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                          <div className="flex items-center space-x-2.5 min-w-0">
+                            {/* 서브 불릿 또는 아이콘 */}
+                            <SubIcon
+                              className={`w-4 h-4 shrink-0 transition-colors ${
+                                is_active
+                                  ? 'text-white'
+                                  : 'text-slate-400 group-hover:text-[#0071e3]'
+                              }`}
+                            />
+                            <div className="min-w-0">
+                              <div className="text-[13px] truncate leading-snug">
+                                {sub_item.label}
+                              </div>
+                              <div
+                                className={`text-[11px] truncate leading-tight mt-0.5 ${
+                                  is_active ? 'text-white/80' : 'text-slate-400'
+                                }`}
+                              >
+                                {sub_item.desc}
+                              </div>
+                            </div>
+                          </div>
+
+                          {sub_item.badge && (
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ml-1.5 ${
+                                is_active
+                                  ? 'bg-white/25 text-white'
+                                  : 'bg-slate-100 text-slate-500'
+                              }`}
+                            >
+                              {sub_item.badge}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* 하단: 퀵 액션 툴바 */}

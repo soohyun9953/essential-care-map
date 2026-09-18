@@ -14,12 +14,6 @@ import {
   Database,
   Moon,
   Sun,
-  Building2,
-  FileText,
-  Brain,
-  HeartHandshake,
-  Users,
-  Compass,
 } from 'lucide-react';
 
 export type 메인_도메인 =
@@ -123,85 +117,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </div>
           </div>
 
-          {/* 중앙: 6대 업무 도메인 네비게이션 */}
-          <nav className="hidden lg:flex items-center space-x-1">
-            <button
-              onClick={() => on_select_domain('status_diag')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ${
-                active_domain === 'status_diag'
-                  ? 'bg-[#003366] text-white shadow-sm dark:bg-[#0284c7]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Compass className="w-4 h-4" />
-              <span>현황진단</span>
-            </button>
 
-            <button
-              onClick={() => on_select_domain('ai_analysis')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ${
-                active_domain === 'ai_analysis'
-                  ? 'bg-[#003366] text-white shadow-sm dark:bg-[#0284c7]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Brain className="w-4 h-4" />
-              <span>AI 분석</span>
-            </button>
-
-            <button
-              onClick={() => on_select_domain('policy_plan')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ${
-                active_domain === 'policy_plan'
-                  ? 'bg-[#003366] text-white shadow-sm dark:bg-[#0284c7]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <FileText className="w-4 h-4" />
-              <span>정책기획</span>
-            </button>
-
-            <button
-              onClick={() => on_select_domain('field_manage')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ${
-                active_domain === 'field_manage'
-                  ? 'bg-[#003366] text-white shadow-sm dark:bg-[#0284c7]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              <span>현장관리</span>
-            </button>
-
-            <button
-              onClick={() => on_select_domain('citizen_svc')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ${
-                active_domain === 'citizen_svc'
-                  ? 'bg-[#003366] text-white shadow-sm dark:bg-[#0284c7]'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-              }`}
-            >
-              <Users className="w-4 h-4" />
-              <span>국민서비스</span>
-            </button>
-
-            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-
-            {/* 신규 29번: MY 의료기관 대시보드 강조 버튼 */}
-            <button
-              onClick={() => on_select_domain('my_hospital')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center space-x-1.5 ring-1 ${
-                active_domain === 'my_hospital'
-                  ? 'bg-teal-700 text-white shadow-sm ring-teal-700 dark:bg-teal-600'
-                  : 'bg-teal-50 text-teal-800 hover:bg-teal-100 dark:bg-teal-950/50 dark:text-teal-300 ring-teal-200 dark:ring-teal-800'
-              }`}
-              title="의료기관 담당자 전용 대시보드"
-            >
-              <HeartHandshake className="w-4 h-4" />
-              <span>MY 의료기관</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            </button>
-          </nav>
 
           {/* 우측 유틸리티: 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">

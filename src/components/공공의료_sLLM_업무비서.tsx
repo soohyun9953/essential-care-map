@@ -101,6 +101,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [compare_result, set_compare_result] = useState<LLM_비교_결과 | null>(null);
   const [is_comparing, set_is_comparing] = useState(false);
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
+  const [show_compare_rag, set_show_compare_rag] = useState(false);
 
   // 로컬 sLLM 서버 구동 상태
   const [local_server_status, set_local_server_status] = useState<{
@@ -461,6 +462,60 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
               <span>💻 온디바이스: Qwen2.5-0.5B (폐쇄망 지원)</span>
             </div>
           </div>
+
+          {/* RAG 실시간 지침 주입 알림 바 및 출처 보기 */}
+          {rag_result && (
+            <div className="bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-emerald-50/70 p-3.5 rounded-2xl border border-blue-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-[#0071e3] to-[#34c759] text-white flex items-center justify-center font-bold text-[10px] shadow-xs">
+                  RAG
+                </div>
+                <div>
+                  <span className="font-bold text-slate-900">
+                    🔗 RAG + 듀얼 AI 실시간 결합 가동 중:
+                  </span>{' '}
+                  <span className="text-slate-600">
+                    보건복지부 지침 DB에서 <strong>{rag_result.검색된_청크목록.length}건의 핵심 근거 조항</strong>을 실시간 검색하여, 두 모델(Gemini & 로컬 sLLM)의 프롬프트에 동시 주입하여 답변을 생성합니다.
+                  </span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => set_show_compare_rag(!show_compare_rag)}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0071e3] hover:underline bg-white px-3 py-1 rounded-xl border border-blue-200/80 shadow-xs self-start sm:self-auto shrink-0 transition"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>주입된 RAG 지침 {show_compare_rag ? '접기 ▲' : '열람하기 ▼'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* 펼쳐졌을 때의 RAG 근거 청크 목록 */}
+          {show_compare_rag && rag_result && (
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200 space-y-2.5 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+                <span className="flex items-center gap-1.5">
+                  <Database className="w-4 h-4 text-[#0071e3]" />
+                  <span>두 AI에게 동시에 전달된 공공보건 지침/법령 근거 데이터:</span>
+                </span>
+                <span className="text-[11px] text-slate-500 font-normal">총 {rag_result.검색된_청크목록.length}건 검색됨</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                {rag_result.검색된_청크목록.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-xl border border-slate-200/80 text-[11px] space-y-1 shadow-xs">
+                    <div className="flex items-center justify-between text-[#0071e3] font-bold">
+                      <span className="truncate max-w-[170px]">{item.청크.문서명}</span>
+                      <span className="shrink-0 text-[10px] bg-blue-50 px-1.5 py-0.5 rounded text-blue-700">일치도 {item.유사도_점수}%</span>
+                    </div>
+                    <div className="text-slate-400 text-[10px] font-medium">{item.청크.조항_페이지}</div>
+                    <div className="text-slate-600 line-clamp-3 text-[10px] leading-relaxed">
+                      {item.청크.본문}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* 2열 Split-View 그리드 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">

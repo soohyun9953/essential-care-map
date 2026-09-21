@@ -489,6 +489,7 @@ export default function Home() {
                   selected_region={selected_region}
                   sido_stat={sido_stat}
                   national_stat={national_stat}
+                  google_api_key={google_api_key}
                 />
               </div>
             )}

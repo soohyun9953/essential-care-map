@@ -1,6 +1,8 @@
 // 공공보건의료 법령·고시·지침 전문 청크 코퍼스 데이터셋
 // 보건복지부 실제 고시, 법률, 사업지침을 조항 단위 청크(Chunk)로 정형화한 데이터베이스
 
+import { get_indicator_rag_chunks } from './헬스맵_지표정의_코퍼스';
+
 export interface 지침_문서_청크 {
   id: string;
   문서명: string;
@@ -173,11 +175,16 @@ export function delete_user_chunk(id: string): void {
   }
 }
 
+let cached_indicator_chunks: 지침_문서_청크[] | null = null;
+
 /**
- * 기본 탑재 법령 코퍼스 + 사용자가 추가한 문서를 모두 합산한 전체 검색 대상 코퍼스 반환
+ * 기본 탑재 법령 코퍼스 + 331개 헬스맵 지표정의서 청크 + 사용자가 추가한 문서를 모두 합산한 전체 검색 대상 코퍼스 반환
  */
 export function get_all_corpus(): 지침_문서_청크[] {
   const user_chunks = get_user_chunks();
-  return [...user_chunks, ...공공의료_지침_코퍼스];
+  if (!cached_indicator_chunks) {
+    cached_indicator_chunks = get_indicator_rag_chunks();
+  }
+  return [...user_chunks, ...공공의료_지침_코퍼스, ...cached_indicator_chunks];
 }
 

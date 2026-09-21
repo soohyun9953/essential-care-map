@@ -29,11 +29,13 @@ import {
   FileText,
   Building2,
   Users,
+  Share2,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
   | 'gis_map'
   | 'diagnosis_metrics'
+  | 'patient_flow'
   | 'dual_ai_studio'
   | 'report_generator'
   | 'hospital_crisis'
@@ -77,6 +79,12 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         label: '취약지 종합 지표 진단',
         icon: Activity,
         desc: '3대 영역 지표 & 사분면 역량 분석',
+      },
+      {
+        id: 'patient_flow',
+        label: '환자 의료이용 유출입 분석 (OD 매트릭스)',
+        icon: Share2,
+        desc: '관내이용(RI)·관외유출·타지역 유입 실데이터 분석',
       },
       {
         id: 'compare_1to1',

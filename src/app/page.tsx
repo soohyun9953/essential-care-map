@@ -43,6 +43,7 @@ import { 의료지표_비교차트 } from '@/components/의료지표_비교차�
 import { 일반국민_공공병원_맞춤뷰 } from '@/components/일반국민_공공병원_맞춤뷰';
 import { 글로벌_공공_헤더, 업무_도메인_타입 } from '@/components/글로벌_공공_헤더';
 import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보드';
+import 환자_의료이용_유출입_대시보드 from '@/components/환자_의료이용_유출입_대시보드';
 
 import {
   Sparkles,
@@ -227,6 +228,10 @@ export default function Home() {
     diagnosis_metrics: {
       title: '취약지 종합 지표 진단 & 진료역량 사분면 포지셔닝',
       subtitle: '응급 미도달율, 관내이용률(RI), 분만율 및 7대 필수의료 세부 진료역량 분석',
+    },
+    patient_flow: {
+      title: '환자 의료이용 유출입 분석 (OD Matrix 대시보드)',
+      subtitle: '관내 환자의 외부 유출(Outflow), 타지역 환자 유입(Inflow) 및 4대 필수의료(투석·응급) 실데이터 이동 분석',
     },
     dual_ai_studio: {
       title: '공공보건의료 듀얼 AI 스튜디오 (Google Gemini × 노트북 sLLM)',
@@ -448,6 +453,18 @@ export default function Home() {
                   />
                   <진료실적_서브그룹_대시보드 selected_region={selected_region} />
                 </div>
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* [신규] 환자 의료이용 유출입 분석 (OD 매트릭스) */}
+            {/* ============================================================== */}
+            {active_menu === 'patient_flow' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <환자_의료이용_유출입_대시보드
+                  selected_region={selected_region}
+                  on_navigate={(menu_id) => handle_select_menu(menu_id as 메뉴_아이디)}
+                />
               </div>
             )}
 

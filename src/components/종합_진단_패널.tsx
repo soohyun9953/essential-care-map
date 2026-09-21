@@ -2,7 +2,7 @@
 
 // 애플 헬스(Apple Health) 스타일의 3대 필수의료 취약지 종합 진단 패널
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Siren,
   Baby,
@@ -15,13 +15,19 @@ import {
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
 import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { format_number_comma } from '@/lib/유틸리티';
+import { get_region_indicators_trend } from '@/lib/헬스맵_주제도_지표_데이터셋';
 
 interface 종합_진단_패널_속성 {
   selected_region: 필수의료_진단_결과 | null;
 }
 
 export const 종합_진단_패널: React.FC<종합_진단_패널_속성> = ({ selected_region }) => {
-  if (!selected_region) {
+  const region_trends = useMemo(() => {
+    if (!selected_region) return null;
+    return get_region_indicators_trend(selected_region.시도명, selected_region.시군구명);
+  }, [selected_region]);
+
+  if (!selected_region || !region_trends) {
     return (
       <div className="bg-white p-10 rounded-3xl border border-black/[0.05] shadow-apple-card text-center flex flex-col items-center justify-center min-h-[280px]">
         <div className="w-12 h-12 rounded-full bg-[#f5f5f7] flex items-center justify-center mb-3">
@@ -225,6 +231,66 @@ export const 종합_진단_패널: React.FC<종합_진단_패널_속성> = ({ se
           <p className="text-[11px] text-[#86868b] mt-3 pt-2.5 border-t border-black/[0.04] leading-relaxed">
             {selected_region.소아_판정근거}
           </p>
+        </div>
+      </div>
+
+      {/* 4대 영역 공식 헬스맵 실데이터 지표 요약 (수요·자원·이용·결과) */}
+      <div className="pt-5 border-t border-black/[0.05] space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-bold text-[#1d1d1f]">
+              4대 영역 공공보건의료 지표 (2024년 기준 & 6개년 추이)
+            </span>
+          </div>
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#f5f5f7] text-[#86868b]">
+            보건복지부 헬스맵 실데이터
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* 1. 의료수요: 치매유병률 & 의료급여 */}
+          <div className="p-3 rounded-2xl bg-[#f5f5f7]/80 dark:bg-slate-800/50 border border-black/[0.04] space-y-1">
+            <div className="text-[10.5px] font-semibold text-[#86868b]">수요: 추정 치매유병률</div>
+            <div className="text-sm font-bold text-[#1d1d1f] dark:text-white">
+              {region_trends.indicators['ABA10']?.values['2024'] ?? '-'} <span className="text-[10px] font-normal text-[#86868b]">명/천명</span>
+            </div>
+            <div className="text-[10px] text-slate-500">
+              2019년: {region_trends.indicators['ABA10']?.values['2019'] ?? '-'}명
+            </div>
+          </div>
+
+          {/* 2. 의료자원: 인구10만당 전문의수 */}
+          <div className="p-3 rounded-2xl bg-[#f5f5f7]/80 dark:bg-slate-800/50 border border-black/[0.04] space-y-1">
+            <div className="text-[10.5px] font-semibold text-[#86868b]">자원: 10만당 전문의</div>
+            <div className="text-sm font-bold text-[#0071e3]">
+              {region_trends.indicators['BAE04']?.values['2024'] ?? '-'} <span className="text-[10px] font-normal text-[#86868b]">명</span>
+            </div>
+            <div className="text-[10px] text-slate-500">
+              전국: {region_trends.national_indicators['BAE04']?.values['2024'] ?? '-'}명
+            </div>
+          </div>
+
+          {/* 3. 의료이용: 투석 관내이용률 RI */}
+          <div className="p-3 rounded-2xl bg-[#f5f5f7]/80 dark:bg-slate-800/50 border border-black/[0.04] space-y-1">
+            <div className="text-[10.5px] font-semibold text-[#86868b]">이용: 투석(인공신장실) RI</div>
+            <div className="text-sm font-bold text-emerald-600">
+              {region_trends.indicators['CBD06']?.values['2024'] ?? '-'}%
+            </div>
+            <div className="text-[10px] text-slate-500">
+              2019년 {region_trends.indicators['CBD06']?.values['2019'] ?? '-'}% 대비
+            </div>
+          </div>
+
+          {/* 4. 건강결과: 치료가능사망률(OECD) */}
+          <div className="p-3 rounded-2xl bg-[#f5f5f7]/80 dark:bg-slate-800/50 border border-black/[0.04] space-y-1">
+            <div className="text-[10.5px] font-semibold text-[#86868b]">결과: 치료가능사망률</div>
+            <div className="text-sm font-bold text-[#ff3b30]">
+              {region_trends.indicators['DAA14']?.values['2024'] ?? '-'} <span className="text-[10px] font-normal text-[#86868b]">명/10만</span>
+            </div>
+            <div className="text-[10px] text-slate-500">
+              전국: {region_trends.national_indicators['DAA14']?.values['2024'] ?? '-'}명
+            </div>
+          </div>
         </div>
       </div>
     </div>

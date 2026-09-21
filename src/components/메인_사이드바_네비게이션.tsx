@@ -59,7 +59,6 @@ export interface 사이드바_대메뉴 {
   items: 사이드바_메뉴_항목[];
 }
 
-// 6대 메인 메뉴 및 하위 메뉴 구조
 const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
   {
     id: 'status_diag',
@@ -71,7 +70,6 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'gis_map',
         label: 'GIS 헬스맵 & 취약지 DB',
         icon: MapPin,
-        badge: '전국 70개',
         desc: '중진료권 지도 & 226개 시군구 진단',
       },
       {
@@ -98,7 +96,6 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'dual_ai_studio',
         label: '듀얼 AI 스튜디오 (Gemini × sLLM)',
         icon: Bot,
-        badge: 'Dual AI',
         desc: '외부 클라우드 vs 로컬 sLLM 1:1 비교',
       },
       {
@@ -119,7 +116,6 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'report_generator',
         label: '사업계획서 자동생성기',
         icon: FileEdit,
-        badge: '원클릭',
         desc: '복지부 공모 표준 개조식 보고서 완성',
       },
     ],
@@ -134,14 +130,12 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'hospital_crisis',
         label: '지방의료원 경영위기 조기경보',
         icon: ShieldAlert,
-        badge: '35개 병원',
         desc: '공공병원 경영수지 & 선제 위기감지',
       },
       {
         id: 'discharge_care',
         label: '퇴원환자 돌봄자원 AI 매칭',
         icon: HeartHandshake,
-        badge: '코디네이터',
         desc: '지역사회 보건소·장기요양 원클릭 연계',
       },
     ],
@@ -156,7 +150,6 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'citizen_view',
         label: '일반국민 공공병원 맞춤뷰',
         icon: UserCheck,
-        badge: '국민안심',
         desc: '응급실·소아과 찾기 & 모바일 퇴원 알림',
       },
     ],
@@ -171,7 +164,6 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'my_hospital',
         label: '우리 의료기관 대시보드',
         icon: HeartHandshake,
-        badge: '기관특화',
         desc: '병상·인력·수지 4대 KPI & 현장 Q&A',
       },
     ],
@@ -395,9 +387,9 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                       <MainIcon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-[13.5px] tracking-tight truncate flex items-center gap-1.5 font-bold">
+                      <div className="text-[15px] tracking-tight truncate flex items-center gap-1.5 font-extrabold">
                         <span>{main_cat.title}</span>
-                        <span className="text-[10px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
+                        <span className="text-[11px] font-extrabold px-1.5 py-0.2 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600">
                           {main_cat.items.length}
                         </span>
                       </div>
@@ -413,7 +405,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
                 {/* 2계층: 하위 메뉴 리스트 */}
                 {is_expanded && (
-                  <div className="px-2 pb-2.5 pt-1.5 space-y-1 border-t-2 border-slate-200 dark:border-slate-700/80">
+                  <div className="px-2 pb-2.5 pt-1.5 space-y-1.5 border-t-2 border-slate-200 dark:border-slate-700/80">
                     {main_cat.items.map((sub_item) => {
                       const is_active = active_menu === sub_item.id;
                       const SubIcon = sub_item.icon;
@@ -422,7 +414,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                         <button
                           key={sub_item.id}
                           onClick={() => handle_menu_click(sub_item.id)}
-                          className={`w-full text-left pl-3 pr-2.5 py-2 rounded-xl flex items-center justify-between transition-all group ${
+                          className={`w-full text-left pl-3 pr-2.5 py-2.5 rounded-xl flex items-center justify-between transition-all group ${
                             is_active
                               ? 'bg-[#0071e3] text-white shadow-apple-sm font-bold ring-1 ring-[#0071e3]'
                               : 'text-slate-700 hover:bg-slate-100/80 font-medium'
@@ -431,37 +423,25 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                           <div className="flex items-center space-x-2.5 min-w-0">
                             {/* 서브 불릿 또는 아이콘 */}
                             <SubIcon
-                              className={`w-4 h-4 shrink-0 transition-colors ${
+                              className={`w-4.5 h-4.5 shrink-0 transition-colors ${
                                 is_active
                                   ? 'text-white'
                                   : 'text-slate-400 group-hover:text-[#0071e3]'
                               }`}
                             />
                             <div className="min-w-0">
-                              <div className="text-[13px] truncate leading-snug">
+                              <div className="text-sm font-bold truncate leading-snug">
                                 {sub_item.label}
                               </div>
                               <div
-                                className={`text-[11px] truncate leading-tight mt-0.5 ${
-                                  is_active ? 'text-white/80' : 'text-slate-400'
+                                className={`text-xs truncate leading-tight mt-0.5 ${
+                                  is_active ? 'text-white/85 font-medium' : 'text-slate-500'
                                 }`}
                               >
                                 {sub_item.desc}
                               </div>
                             </div>
                           </div>
-
-                          {sub_item.badge && (
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ml-1.5 ${
-                                is_active
-                                  ? 'bg-white/25 text-white'
-                                  : 'bg-slate-100 text-slate-500'
-                              }`}
-                            >
-                              {sub_item.badge}
-                            </span>
-                          )}
                         </button>
                       );
                     })}

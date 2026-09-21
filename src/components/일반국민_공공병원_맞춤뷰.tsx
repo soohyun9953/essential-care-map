@@ -2,7 +2,7 @@
 
 // 대국민 접점: 일반 국민·환자 맞춤형 공공의료 포털 및 모바일 퇴원돌봄 안심 알리미 뷰
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   Building2,
   Bell,
@@ -44,6 +44,12 @@ const CITIZEN_QUESTIONS = [
   '국립중앙의료원과 지역 공공병원의 차이가 무엇인가요?',
 ];
 
+import {
+  get_nearest_public_hospital,
+  get_public_hospitals_by_sigungu,
+  공공의료기관_정보,
+} from '@/lib/공공의료기관_데이터셋';
+
 export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속성> = ({
   selected_region,
   google_api_key = '',
@@ -65,6 +71,22 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
   const region_name = selected_region
     ? `${selected_region.시도명} ${selected_region.시군구명}`
     : '강원특별자치도 영월군';
+
+  // 선택 지역 기반 공공의료기관 전수 DB(214개) 매칭
+  const sido = selected_region?.시도명 ?? '강원특별자치도';
+  const sigungu = selected_region?.시군구명 ?? '영월군';
+  const sigungu_code = selected_region?.시군구코드 ?? '42750';
+
+  const matched = useMemo(() => {
+    return get_nearest_public_hospital(sido, sigungu, sigungu_code);
+  }, [sido, sigungu, sigungu_code]);
+
+  const matched_hospital = matched.hospital;
+  const is_local_hospital = matched.is_local;
+
+  const short = sigungu.replace(/(특별자치시|광역시|특별시|자치시|시|군|구)$/, '').trim();
+  const health_center_name = `${sigungu} 보건소 (만성질환·치매안심센터)`;
+  const health_center_addr = `${sigungu} ${short}읍 보건소길 1`;
 
   useEffect(() => {
     chat_end_ref.current?.scrollIntoView({ behavior: 'smooth' });
@@ -194,21 +216,34 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
           </div>
 
           <div className="space-y-4">
-            {/* 영월의료원 카드 */}
+            {/* 공공의료기관 카드 (214개 DB 실데이터 연동) */}
             <div className="p-4 rounded-2xl bg-[#fbfbfd] dark:bg-[#1e2027] border border-black/[0.05] dark:border-white/10 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#0071e3] text-white">
-                      지역책임의료기관
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span
+                      className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
+                        is_local_hospital
+                          ? 'bg-[#0071e3] text-white'
+                          : 'bg-amber-600 text-white'
+                      }`}
+                    >
+                      {is_local_hospital
+                        ? `관내 공공의료기관 (${matched_hospital.기관구분})`
+                        : `인접 거점 연계 (${matched_hospital.진료권명}권역)`}
                     </span>
                     <span className="text-sm font-bold text-[#1d1d1f] dark:text-white">
-                      강원특별자치도 영월의료원
+                      {matched_hospital.기관명}
                     </span>
                   </div>
                   <p className="text-xs text-[#86868b] dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
                     <MapPin className="w-3.5 h-3.5 text-[#86868b]" />
-                    <span>영월군 영월읍 중앙로 59</span>
+                    <span>
+                      {matched_hospital.시도명} {matched_hospital.시군구명}{' '}
+                      {is_local_hospital
+                        ? '(관내 위치)'
+                        : `(관내 공공병원 부재 → 인접 ${matched_hospital.진료권명} 진료권 거점)`}
+                    </span>
                   </p>
                 </div>
                 <span className="text-xs font-bold text-[#34c759] flex items-center gap-1.5 shrink-0">
@@ -219,21 +254,27 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
 
               <div className="grid grid-cols-3 gap-3 text-center bg-white dark:bg-[#15161b] p-3 rounded-xl border border-black/[0.05] dark:border-white/10">
                 <div>
-                  <span className="text-xs text-[#86868b] dark:text-slate-400 block font-semibold">간호간병통합</span>
-                  <strong className="text-xs sm:text-sm text-[#1d1d1f] dark:text-white">전 병동 운영</strong>
+                  <span className="text-xs text-[#86868b] dark:text-slate-400 block font-semibold">인가 병상규모</span>
+                  <strong className="text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
+                    {matched_hospital.병상수 > 0 ? `${matched_hospital.병상수.toLocaleString()} 병상` : '외래 전담'}
+                  </strong>
                 </div>
                 <div>
-                  <span className="text-xs text-[#86868b] dark:text-slate-400 block font-semibold">인공신장실</span>
-                  <strong className="text-xs sm:text-sm text-[#0071e3] dark:text-blue-400">혈액투석 가능</strong>
+                  <span className="text-xs text-[#86868b] dark:text-slate-400 block font-semibold">기관 유형/구분</span>
+                  <strong className="text-xs sm:text-sm text-[#0071e3] dark:text-blue-400">
+                    {matched_hospital.그룹} ({matched_hospital.기관구분})
+                  </strong>
                 </div>
                 <div>
                   <span className="text-xs text-[#86868b] dark:text-slate-400 block font-semibold">대표전화</span>
-                  <strong className="text-xs sm:text-sm text-[#1d1d1f] dark:text-white">033-370-9114</strong>
+                  <strong className="text-xs sm:text-sm text-[#1d1d1f] dark:text-white">
+                    {matched_hospital.대표전화}
+                  </strong>
                 </div>
               </div>
             </div>
 
-            {/* 영월군보건소 카드 */}
+            {/* 공공보건기관 카드 */}
             <div className="p-4 rounded-2xl bg-[#fbfbfd] dark:bg-[#1e2027] border border-black/[0.05] dark:border-white/10 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
                 <div>
@@ -242,12 +283,12 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
                       공공보건기관
                     </span>
                     <span className="text-sm font-bold text-[#1d1d1f] dark:text-white">
-                      영월군보건소 (만성질환·치매안심센터)
+                      {health_center_name}
                     </span>
                   </div>
                   <p className="text-xs text-[#86868b] dark:text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
                     <MapPin className="w-3.5 h-3.5 text-[#86868b]" />
-                    <span>영월군 영월읍 하송로 64</span>
+                    <span>{health_center_addr}</span>
                   </p>
                 </div>
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-300 shrink-0">

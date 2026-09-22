@@ -550,6 +550,8 @@ export default function Home() {
                 <일반국민_공공병원_맞춤뷰
                   selected_region={selected_region}
                   google_api_key={google_api_key}
+                  data_go_kr_api_key={data_go_kr_api_key}
+                  on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
                 />
               </div>
             )}

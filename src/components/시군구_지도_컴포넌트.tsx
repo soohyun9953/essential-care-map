@@ -2,8 +2,8 @@
 
 // 애플 지도(Apple Maps) 감성의 시·군·구 및 중진료권 GIS 인터랙티브 Choropleth 지도 컴포넌트
 
-import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Polygon, CircleMarker, Tooltip, useMap } from 'react-leaflet';
+import React, { useEffect, useMemo, useState } from 'react';
+import { MapContainer, TileLayer, Polygon, CircleMarker, Polyline, Tooltip, useMap } from 'react-leaflet';
 import {
   필수의료_진단_결과,
   지도_시각화_모드,
@@ -14,6 +14,8 @@ import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { get_region_location } from '@/lib/시군구_경계_데이터';
 import { 중진료권_매퍼 } from '@/lib/중진료권_데이터셋';
 import { format_number_comma } from '@/lib/유틸리티';
+import { get_patient_flow_data } from '@/lib/환자_유출입_데이터셋';
+import { build_patient_flow_arcs } from '@/lib/환자_이동_경로_도우미';
 
 interface 시군구_지도_컴포넌트_속성 {
   diagnosed_list: 필수의료_진단_결과[];
@@ -48,10 +50,24 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
   region_unit,
   on_change_region_unit,
 }) => {
+  // 환자 이동선(Flow Arc) 레이어 표시 여부
+  const [show_flow_arcs, set_show_flow_arcs] = useState<boolean>(true);
+
   // 70개 중진료권별 진단 데이터 집계
   const aggregated_zones = useMemo(() => {
     return 중진료권_매퍼.aggregate_zone_diagnostics(diagnosed_list);
   }, [diagnosed_list]);
+
+  // 선택된 시군구의 환자 이동선 데이터 계산
+  const current_flow_data = useMemo(() => {
+    if (!selected_region) return null;
+    return get_patient_flow_data(selected_region.시군구명);
+  }, [selected_region]);
+
+  const flow_arcs = useMemo(() => {
+    if (!show_flow_arcs || !current_flow_data) return [];
+    return build_patient_flow_arcs(current_flow_data, 'all');
+  }, [show_flow_arcs, current_flow_data]);
 
   // 시군구 모드별 색상 추출 함수
   const get_fill_color_by_mode = (item: 필수의료_진단_결과): string => {
@@ -129,6 +145,24 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
             </button>
           ))}
         </div>
+
+        {/* 환자 이동선(Flow Arc) 레이어 토글 스위치 */}
+        <button
+          onClick={() => set_show_flow_arcs(!show_flow_arcs)}
+          className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 ${
+            show_flow_arcs
+              ? 'bg-rose-500 text-white shadow-apple-sm'
+              : 'bg-white/90 backdrop-blur-xl text-[#86868b] hover:text-[#1d1d1f] border border-black/[0.06]'
+          }`}
+          title="선택된 지자체의 환자 유출입 공간 네트워크 곡선(Arc) 표시"
+        >
+          <span>환자 이동선(Arc)</span>
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              show_flow_arcs ? 'bg-white animate-pulse' : 'bg-slate-300'
+            }`}
+          />
+        </button>
       </div>
 
       {/* 우측 하단 미니멀 범례 (Apple Glass Badge) */}
@@ -368,6 +402,60 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
                 </React.Fragment>
               );
             })}
+
+          {/* 환자 이동선(Arc Polyline) 오버레이 렌더링 */}
+          {flow_arcs.map((arc) => (
+            <React.Fragment key={arc.id}>
+              <Polyline
+                positions={arc.arc_path}
+                pathOptions={{
+                  color: arc.color,
+                  weight: arc.weight + 1,
+                  opacity: 0.85,
+                  dashArray: arc.is_primary ? undefined : '5, 5',
+                  lineCap: 'round',
+                  lineJoin: 'round',
+                }}
+              >
+                <Tooltip sticky direction="top" opacity={0.96}>
+                  <div className="p-1.5 text-xs font-sans">
+                    <div className="font-bold flex items-center gap-1.5">
+                      <span
+                        className="w-2 h-2 rounded-full"
+                        style={{ backgroundColor: arc.color }}
+                      />
+                      <span>
+                        {arc.type === 'outflow' ? '관외 유출' : '타지역 유입'}:{' '}
+                        {arc.origin_name} ➔ {arc.dest_name}
+                      </span>
+                    </div>
+                    <div className="text-slate-600 font-medium mt-0.5">
+                      {format_number_comma(arc.days)}일 ({arc.pct}%)
+                    </div>
+                  </div>
+                </Tooltip>
+              </Polyline>
+
+              {/* 대상지 노드 마커 */}
+              <CircleMarker
+                center={arc.type === 'outflow' ? arc.end_coords : arc.start_coords}
+                radius={6}
+                pathOptions={{
+                  color: '#ffffff',
+                  weight: 1.5,
+                  fillColor: arc.color,
+                  fillOpacity: 0.9,
+                }}
+              >
+                <Tooltip direction="bottom" offset={[0, 6]} opacity={0.95}>
+                  <div className="text-[11px] font-bold">
+                    {arc.type === 'outflow' ? arc.dest_name : arc.origin_name} (
+                    {format_number_comma(arc.days)}일, {arc.pct}%)
+                  </div>
+                </Tooltip>
+              </CircleMarker>
+            </React.Fragment>
+          ))}
         </MapContainer>
       </div>
     </div>

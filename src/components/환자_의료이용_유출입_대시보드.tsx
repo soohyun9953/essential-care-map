@@ -32,6 +32,7 @@ import {
   get_patient_flow_data,
 } from '@/lib/환자_유출입_데이터셋';
 import { 필수의료_진단_결과 } from '@/lib/필수의료_타입';
+import 환자_이동_네트워크_플로우맵 from './환자_이동_네트워크_플로우맵';
 
 interface 환자_의료이용_유출입_대시보드_속성 {
   selected_region?: 필수의료_진단_결과 | null;
@@ -50,8 +51,8 @@ export default function 환자_의료이용_유출입_대시보드({
   // 시도 목록 및 시도 필터
   const [selected_sido_filter, set_selected_sido_filter] = useState<string>('전체');
 
-  // 활성 탭: 'summary' (종합 유출입), 'essential' (필수의료별), 'departments' (진료과별)
-  const [active_tab, set_active_tab] = useState<'summary' | 'essential' | 'departments'>('summary');
+  // 활성 탭: 'summary' (종합 유출입), 'essential' (필수의료별), 'departments' (진료과별), 'flowmap' (GIS 플로우맵 & 생키)
+  const [active_tab, set_active_tab] = useState<'summary' | 'essential' | 'departments' | 'flowmap'>('summary');
 
   // 데이터 조회
   const flow_data = useMemo(() => {
@@ -173,6 +174,17 @@ export default function 환자_의료이용_유출입_대시보드({
             }`}
           >
             🩺 5대 진료과목 & 종별 유출 분석
+          </button>
+          <button
+            onClick={() => set_active_tab('flowmap')}
+            className={`px-4 py-2 text-sm font-semibold rounded-xl transition-all flex items-center gap-1.5 ${
+              active_tab === 'flowmap'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/60'
+            }`}
+          >
+            🗺️ GIS 이동 플로우맵 & 생키 다이어그램
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />
           </button>
         </div>
       </div>
@@ -895,6 +907,14 @@ export default function 환자_의료이용_유출입_대시보드({
             </div>
           </div>
         </div>
+      )}
+
+      {/* 4번째 탭: GIS 이동 플로우맵 & 생키 다이어그램 */}
+      {active_tab === 'flowmap' && (
+        <환자_이동_네트워크_플로우맵
+          flow_data={flow_data}
+          on_select_sgg={(sgg) => set_selected_sgg(sgg)}
+        />
       )}
 
       {/* ============================================================== */}

@@ -41,6 +41,7 @@ import {
 } from '@/lib/헬스맵_지표정의_코퍼스';
 import { get_nearest_public_hospital } from '@/lib/공공의료기관_데이터셋';
 import { get_patient_flow_data } from '@/lib/환자_유출입_데이터셋';
+import { download_hwpx_plan_file } from '@/lib/hwpx_사업계획서_생성기';
 
 interface 사업계획서_서술문_생성기_속성 {
   selected_region: 필수의료_진단_결과 | null;
@@ -165,6 +166,35 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
     URL.revokeObjectURL(url);
   };
 
+  // 한글(HWPX) 공공 표준 사업계획서 파일 다운로드 핸들러
+  const [is_exporting_hwpx, set_is_exporting_hwpx] = useState<boolean>(false);
+  const handle_export_hwpx = async () => {
+    if (!selected_region) return;
+    set_is_exporting_hwpx(true);
+    try {
+      const cur_domain = 공모_분야_목록.find((d) => d.id === selected_domain) || 공모_분야_목록[0];
+      const filename = `${selected_region.시도명}_${selected_region.시군구명}_${selected_domain}_공공보건의료_사업계획서_표준양식.hwpx`;
+      await download_hwpx_plan_file(
+        {
+          region: selected_region,
+          sido_stat,
+          national_stat,
+          domain_info: cur_domain,
+          public_hospital,
+          patient_flow,
+          ai_result,
+          default_narrative: narrative_package,
+        },
+        filename
+      );
+    } catch (err) {
+      console.error('HWPX 생성 및 다운로드 오류:', err);
+      alert('한글 문서(HWPX) 생성 중 오류가 발생했습니다.');
+    } finally {
+      set_is_exporting_hwpx(false);
+    }
+  };
+
   // 재실행 버튼
   const handle_regenerate = async () => {
     set_is_generating(true);
@@ -219,6 +249,27 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
             다시 생성
           </button>
           <button
+            onClick={handle_export_hwpx}
+            disabled={is_exporting_hwpx || !selected_region}
+            className="px-4 py-2 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-700 text-white transition-all shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="보건복지부 표준 개조식 한글(HWPX) 사업계획서 파일 즉시 다운로드"
+          >
+            {is_exporting_hwpx ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                HWPX 생성 중...
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                한글(HWPX) 다운로드
+                <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded font-mono font-normal">
+                  .hwpx
+                </span>
+              </>
+            )}
+          </button>
+          <button
             onClick={() => {
               if (active_tab === 'ai_deep' && ai_result) {
                 handle_download_file(
@@ -232,10 +283,10 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
                 );
               }
             }}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center gap-1.5 cursor-pointer"
           >
-            <Download className="w-3.5 h-3.5" />
-            .txt 다운로드
+            <FileText className="w-3.5 h-3.5 text-slate-400" />
+            .txt
           </button>
           <button
             onClick={() => {

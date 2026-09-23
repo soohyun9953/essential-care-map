@@ -47,6 +47,7 @@ export type 메뉴_아이디 =
   | 'discharge_care'
   | 'cp_library'
   | 'policy_incentive'
+  | 'cp_variance'
   | 'compare_1to1'
   | 'citizen_view'
   | 'my_hospital';
@@ -159,6 +160,13 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         icon: Calculator,
         badge: 'NEW',
         desc: '1.0% 정책가산금 & 1.1.8 평가 자가진단',
+      },
+      {
+        id: 'cp_variance',
+        label: 'CP 변이분석 & ROI 대시보드',
+        icon: TrendingUp,
+        badge: 'NEW',
+        desc: '3대 변이 이탈원인 & 재원일수·재정 ROI',
       },
       {
         id: 'hospital_crisis',

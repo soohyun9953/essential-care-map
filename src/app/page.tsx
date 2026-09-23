@@ -1,149 +1,52 @@
 'use client';
 
-// 애플 사이트(Apple.com) 스타일 필수의료 취약지 종합 진단 & 사업계획서 자동생성 플랫폼
-// Left Sidebar Navigation + Right Workspace (healthy-project 스타일)
+// Essential Care Map - 공공의료 의사결정 지원 플랫폼
+// 5대 Global Workspace 통합 라우팅 및 상태 관리:
+// 1. [지역진단] 지역진단_통합_대시보드 (35:65 지도, 7대 Layer, 6단계 취약분석)
+// 2. [정책기획] 정책기획_통합_워크스페이스 (AI 정책대안 3옵션, 8대 항목 사업계획서, 1:1비교, 2030수요)
+// 3. [의료기관] 의료기관_통합_워크스페이스 (214개 공공병원, 데이터센터, 경영위기, 71개 CP, 신포괄, CP변이 ROI, 퇴원돌봄)
+// 4. [AI 분석] AI분석_통합_워크스페이스 (Cloud AI vs Local sLLM 듀얼 AI 스튜디오)
+// 5. [국민안심] 국민안심_서비스_뷰 (Mobile-First 5대 안심의료, 3단계 바텀시트)
 
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   시군구_원천_데이터,
   필수의료_진단_결과,
   지역_평균_통계,
-  지도_시각화_모드,
-  지역_구분_단위,
 } from '@/lib/필수의료_타입';
 import { 필수의료_진단_엔진 } from '@/lib/필수의료_엔진';
 import { 전국_시군구_샘플_데이터 } from '@/lib/시군구_데이터셋';
 import { export_element_as_png } from '@/lib/유틸리티';
 import { 크로스탭_엑셀_처리기 } from '@/lib/크로스탭_엑셀_처리기';
 
-// 좌측 사이드바 및 팝업 모달
-import { 메인_사이드바_네비게이션, 메뉴_아이디 } from '@/components/메인_사이드바_네비게이션';
+// 5대 Global Workspace 컴포넌트
+import { 글로벌_공공_헤더, 워크스페이스_타입 } from '@/components/글로벌_공공_헤더';
+import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
+import { 지역진단_통합_대시보드 } from '@/components/지역진단_통합_대시보드';
+import { 정책기획_통합_워크스페이스 } from '@/components/정책기획_통합_워크스페이스';
+import { 의료기관_통합_워크스페이스, 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
+import { AI분석_통합_워크스페이스 } from '@/components/AI분석_통합_워크스페이스';
+import { 국민안심_서비스_뷰 } from '@/components/국민안심_서비스_뷰';
+
+// 공통 모달 레이어
 import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰뷰_모달';
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 
-// 상단 전역 지역 신속 선택기
-import { 상단_지역_선택기 } from '@/components/상단_지역_선택기';
-
-// 기능별 9대 워크스페이스 컴포넌트
-import { 지도_래퍼 } from '@/components/지도_래퍼';
-import { 취약지_목록_테이블 } from '@/components/취약지_목록_테이블';
-import { 실시간_응급_소아_모니터링 } from '@/components/실시간_응급_소아_모니터링';
-import { 종합_진단_패널 } from '@/components/종합_진단_패널';
-import { 진료역량_사분면_분포도 } from '@/components/진료역량_사분면_분포도';
-import { 진료실적_서브그룹_대시보드 } from '@/components/진료실적_서브그룹_대시보드';
-import { 공공의료_sLLM_업무비서 } from '@/components/공공의료_sLLM_업무비서';
-import { 사업계획서_서술문_생성기 } from '@/components/사업계획서_서술문_생성기';
-import { 경영위기_조기경보_대시보드 } from '@/components/경영위기_조기경보_대시보드';
-import { 퇴원환자_돌봄자원_AI매칭 } from '@/components/퇴원환자_돌봄자원_AI매칭';
-import { 일대일_비교_대시보드 } from '@/components/일대일_비교_대시보드';
-import { 의료수요_추계_차트 } from '@/components/의료수요_추계_차트';
-import { 의료지표_비교차트 } from '@/components/의료지표_비교차트';
-import { 일반국민_공공병원_맞춤뷰 } from '@/components/일반국민_공공병원_맞춤뷰';
-import { 글로벌_공공_헤더, 업무_도메인_타입 } from '@/components/글로벌_공공_헤더';
-import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보드';
-import 환자_의료이용_유출입_대시보드 from '@/components/환자_의료이용_유출입_대시보드';
-import 인프라_확충_시뮬레이터 from '@/components/인프라_확충_시뮬레이터';
-import 공공의료_CP_오더세트_라이브러리 from '@/components/공공의료_CP_오더세트_라이브러리';
-import 신포괄_정책가산_평가_시뮬레이터 from '@/components/신포괄_정책가산_평가_시뮬레이터';
-import CP_변이분석_및_ROI_대시보드 from '@/components/CP_변이분석_및_ROI_대시보드';
-
-// [신규 2026 UI/UX 전면개선] 공공의료 의사결정 지도, HOME Hero, 기관 데이터센터
-import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
-import { 공공의료_의사결정_지도_뷰 } from '@/components/공공의료_의사결정_지도_뷰';
-import { 기관_데이터센터_대시보드 } from '@/components/기관_데이터센터_대시보드';
-import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
-
-import {
-  Sparkles,
-  Camera,
-  Key,
-  Database,
-  ShieldCheck,
-  ChevronRight,
-  Download,
-  Moon,
-  Sun,
-  PanelLeftOpen,
-  BookOpen,
-} from 'lucide-react';
-
 export default function Home() {
-  // [신규] 최상단 4대 메인 뷰: 'home' (기본 홈) | 'decision_map' (의사결정 지도) | 'datacenter' (기관 데이터센터) | 'policy_platform' (기존 정책·진단 플랫폼)
-  const [main_view, set_main_view] = useState<'home' | 'decision_map' | 'datacenter' | 'policy_platform'>('home');
-  const [search_filter_keyword, set_search_filter_keyword] = useState('');
-  const [search_filter_services, set_search_filter_services] = useState<의료서비스_코드[]>([]);
+  // 5대 Global Workspace 상태 (기본: 'home')
+  const [current_workspace, set_current_workspace] = useState<워크스페이스_타입>('home');
 
-  // 현재 활성화된 좌측 기능 메뉴
-  const [active_menu, set_active_menu] = useState<메뉴_아이디 | 'my_hospital'>('gis_map');
-  // 6대 글로벌 업무 도메인 상태
-  const [current_domain, set_current_domain] = useState<업무_도메인_타입>('status_diag');
+  // 정책기획 서브탭 및 의료기관 서브탭 딥링크 상태
+  const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'compare' | 'forecast'>('policy_ai');
+  const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
 
-  // 사이드바 숨김 및 다크/블랙 테마 상태
-  const [is_sidebar_hidden, set_is_sidebar_hidden] = useState(false);
-  const [is_dark_mode, set_is_dark_mode] = useState(false);
-
-  // HOME 화면에서 검색 또는 퀵필터 클릭 시 의사결정 지도로 이동
-  const handle_home_search = (keyword: string, selected_services: 의료서비스_코드[]) => {
-    set_search_filter_keyword(keyword);
-    set_search_filter_services(selected_services);
-    set_main_view('decision_map');
-  };
-
-  const handle_navigate_map = (service?: 의료서비스_코드) => {
-    if (service) {
-      set_search_filter_services([service]);
-      set_search_filter_keyword('');
-    } else {
-      set_search_filter_services([]);
-      set_search_filter_keyword('');
-    }
-    set_main_view('decision_map');
-  };
-
-  // 도메인 변경 시 대표 기능 메뉴 자동 활성화 및 정책 플랫폼 화면 표시
-  const handle_select_domain = (domain: 업무_도메인_타입) => {
-    set_current_domain(domain);
-    set_main_view('policy_platform');
-    if (domain === 'status_diag') {
-      if (!['gis_map', 'diagnosis_metrics', 'compare_1to1', 'demand_forecast'].includes(active_menu)) {
-        set_active_menu('gis_map');
-      }
-    } else if (domain === 'ai_analysis') {
-      set_active_menu('dual_ai_studio');
-    } else if (domain === 'policy_plan') {
-      set_active_menu('report_generator');
-    } else if (domain === 'field_manage') {
-      if (!['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care'].includes(active_menu)) {
-        set_active_menu('cp_library');
-      }
-    } else if (domain === 'public_service') {
-      set_active_menu('citizen_view');
-    } else if (domain === 'my_hospital') {
-      set_active_menu('my_hospital');
-    }
-  };
-
-  // 메뉴 변경 시 도메인 자동 동기화 및 정책 플랫폼 화면 표시
-  const handle_select_menu = (menu: 메뉴_아이디 | 'my_hospital') => {
-    set_active_menu(menu);
-    set_main_view('policy_platform');
-    if (['gis_map', 'diagnosis_metrics', 'patient_flow', 'compare_1to1'].includes(menu)) {
-      set_current_domain('status_diag');
-    } else if (['dual_ai_studio', 'demand_forecast', 'policy_simulator'].includes(menu)) {
-      set_current_domain('ai_analysis');
-    } else if (menu === 'report_generator') {
-      set_current_domain('policy_plan');
-    } else if (['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care'].includes(menu)) {
-      set_current_domain('field_manage');
-    } else if (menu === 'citizen_view') {
-      set_current_domain('public_service');
-    } else if (menu === 'my_hospital') {
-      set_current_domain('my_hospital');
-    }
-  };
+  // 전역 데이터셋 및 선택된 지역
+  const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_샘플_데이터);
+  const [diagnosed_list, set_diagnosed_list] = useState<필수의료_진단_결과[]>([]);
+  const [selected_region, set_selected_region] = useState<필수의료_진단_결과 | null>(null);
 
   // 모달 상태
   const [is_grounding_open, set_is_grounding_open] = useState(false);
@@ -154,16 +57,10 @@ export default function Home() {
   const [google_api_key, set_google_api_key] = useState('');
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
 
-  // 데이터셋 & 진단 상태
-  const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_샘플_데이터);
-  const [diagnosed_list, set_diagnosed_list] = useState<필수의료_진단_결과[]>([]);
-  const [selected_region, set_selected_region] = useState<필수의료_진단_결과 | null>(null);
+  // 테마 상태
+  const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 지도 옵션 상태
-  const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
-  const [region_unit, set_region_unit] = useState<지역_구분_단위>('시군구');
-
-  // 초기 데이터 로드 및 API 키, 테마, 사이드바 숨김 설정 복원
+  // 초기 설정 복원 (API 키 및 테마)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved_key = localStorage.getItem('google_gemini_api_key') || '';
@@ -179,13 +76,10 @@ export default function Home() {
       } else {
         document.documentElement.classList.remove('dark');
       }
-
-      const saved_sidebar_hidden = localStorage.getItem('healthmap_sidebar_hidden') === 'true';
-      set_is_sidebar_hidden(saved_sidebar_hidden);
     }
   }, []);
 
-  // 다크/블랙 테마 전환 핸들러
+  // 다크모드 토글
   const toggle_dark_mode = () => {
     const next = !is_dark_mode;
     set_is_dark_mode(next);
@@ -200,16 +94,7 @@ export default function Home() {
     }
   };
 
-  // 사이드바 숨기기 / 펼치기 토글 핸들러
-  const toggle_sidebar_hidden = () => {
-    const next = !is_sidebar_hidden;
-    set_is_sidebar_hidden(next);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('healthmap_sidebar_hidden', String(next));
-    }
-  };
-
-  // 원천 데이터 변경 시 일괄 진단 실행
+  // 원천 데이터 일괄 진단
   useEffect(() => {
     const diagnosed = 필수의료_진단_엔진.batch_diagnose(raw_dataset);
     set_diagnosed_list(diagnosed);
@@ -223,7 +108,7 @@ export default function Home() {
     set_selected_region(default_target);
   }, [raw_dataset]);
 
-  // 전국 및 시도 평균 통계
+  // 전국 및 시도 통계
   const national_stat: 지역_평균_통계 = useMemo(() => {
     return 필수의료_진단_엔진.calculate_region_statistics(diagnosed_list);
   }, [diagnosed_list]);
@@ -237,498 +122,179 @@ export default function Home() {
     return diagnosed_list.filter((item) => item.종합_취약도_등급 !== '정상').length;
   }, [diagnosed_list]);
 
-  const handle_load_sample_data = () => {
-    set_raw_dataset(전국_시군구_샘플_데이터);
+  // 지역 검색 핸들러 (홈 및 헤더 공통)
+  const handle_search_region = (query: string) => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      set_current_workspace('regional_diagnosis');
+      return;
+    }
+
+    // 226개 시군구 매칭
+    const matched = diagnosed_list.find(
+      (item) => item.시군구명.includes(trimmed) || item.시도명.includes(trimmed)
+    );
+
+    if (matched) {
+      set_selected_region(matched);
+    }
+    set_current_workspace('regional_diagnosis');
   };
 
-  const handle_data_loaded = (new_data: 시군구_원천_데이터[]) => {
-    set_raw_dataset(new_data);
+  // 홈 화면에서 4대 Quick Action 카드 클릭 시 네비게이션
+  const handle_navigate_from_home = (
+    workspace: 'regional_diagnosis' | 'policy_planning' | 'medical_institution' | 'ai_analysis' | 'national_safety',
+    sub_feature?: string
+  ) => {
+    if (workspace === 'policy_planning' && sub_feature) {
+      if (['compare', 'forecast', 'policy_ai', 'report'].includes(sub_feature)) {
+        set_policy_subtab(sub_feature as any);
+      }
+    } else if (workspace === 'medical_institution' && sub_feature) {
+      set_medical_subtab(sub_feature as any);
+    }
+    set_current_workspace(workspace);
   };
 
-  const handle_export_report_png = async () => {
-    const filename = selected_region
-      ? `${selected_region.시도명}_${selected_region.시군구명}_${active_menu}_리포트`
-      : `전국_필수의료_${active_menu}_리포트`;
-    await export_element_as_png('main-workspace-content', filename);
+  // 지역진단에서 정책 연계 액션 클릭 시 정책기획 탭 전환
+  const handle_navigate_policy = (feature: 'compare' | 'forecast' | 'policy_ai' | 'report') => {
+    set_policy_subtab(feature);
+    set_current_workspace('policy_planning');
   };
 
+  // 안내 모달에서 메뉴 네비게이션
+  const handle_guide_navigate = (menu_id: string) => {
+    set_is_guide_modal_open(false);
+    if (['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care'].includes(menu_id)) {
+      set_medical_subtab(menu_id as 의료기관_서브탭_타입);
+      set_current_workspace('medical_institution');
+    } else if (['report_generator', 'compare_1to1', 'demand_forecast'].includes(menu_id)) {
+      if (menu_id === 'report_generator') set_policy_subtab('report');
+      else if (menu_id === 'compare_1to1') set_policy_subtab('compare');
+      else if (menu_id === 'demand_forecast') set_policy_subtab('forecast');
+      set_current_workspace('policy_planning');
+    } else if (['gis_map', 'diagnosis_metrics', 'patient_flow'].includes(menu_id)) {
+      set_current_workspace('regional_diagnosis');
+    } else if (menu_id === 'dual_ai_studio') {
+      set_current_workspace('ai_analysis');
+    } else if (menu_id === 'citizen_view') {
+      set_current_workspace('national_safety');
+    }
+  };
+
+  // 엑셀 패키지 다운로드 및 캡처
   const handle_download_nmc_excel = () => {
     if (!selected_region) return;
     크로스탭_엑셀_처리기.download_nmc_standard_excel_package(selected_region);
   };
 
-  // 메뉴별 타이틀 및 설명 맵
-  const MENU_TITLES: Record<메뉴_아이디 | 'my_hospital', { title: string; subtitle: string }> = {
-    gis_map: {
-      title: '전국 70개 중진료권 GIS 헬스맵 & 226개 시군구 취약지 DB',
-      subtitle: '보건복지부 법정 고시 기준 알고리즘에 따른 응급·분만·소아 취약지 공간 시각화',
-    },
-    diagnosis_metrics: {
-      title: '취약지 종합 지표 진단 & 진료역량 사분면 포지셔닝',
-      subtitle: '응급 미도달율, 관내이용률(RI), 분만율 및 7대 필수의료 세부 진료역량 분석',
-    },
-    patient_flow: {
-      title: '환자 의료이용 유출입 분석 (OD Matrix 대시보드)',
-      subtitle: '관내 환자의 외부 유출(Outflow), 타지역 환자 유입(Inflow) 및 4대 필수의료(투석·응급) 실데이터 이동 분석',
-    },
-    dual_ai_studio: {
-      title: '공공보건의료 듀얼 AI 스튜디오 (Google Gemini × 노트북 sLLM)',
-      subtitle: '외부 클라우드 대형 LLM과 원내 폐쇄망 온디바이스 sLLM 1:1 비교 & 하이브리드 RAG 지침 질의',
-    },
-    policy_simulator: {
-      title: '공공병원 인프라 확충 효과 시뮬레이터',
-      subtitle: '병상 증설, 전문의 충원 및 장비 도입에 따른 자체충족률(RI) 상승·관외유출 감소 실시간 예측',
-    },
-    report_generator: {
-      title: '보건복지부 공모 표준 개조식 사업계획서 자동생성기',
-      subtitle: '지자체 DW 진단 지표와 정책 지침을 결합한 행정 보고서 문안 원클릭 완성',
-    },
-    hospital_crisis: {
-      title: '35개 지방의료원 경영위기 선제 감지 (Early Warning Engine)',
-      subtitle: '지방의료원 경영공시, 병상가동률, CP적용률, 의사인력 충원율 기반 조기경보',
-    },
-    discharge_care: {
-      title: '퇴원환자-지역사회 돌봄자원 AI 매칭 & 원클릭 연계',
-      subtitle: '의료원 공공의료협력팀 전용. 환자 ADL 및 상병 맞춤 보건소·장기요양 자원 매칭',
-    },
-    cp_library: {
-      title: '공공의료 71개 표준진료지침(CP) 스마트 라이브러리 & 오더세트',
-      subtitle: '국립중앙의료원 표준안 기반 다학제 Order Set, Branch CP 분기 경로 및 신포괄 1.0% 정책가산 연계',
-    },
-    policy_incentive: {
-      title: '신포괄 정책가산(1.0%) & 지역거점 공공병원 운영평가(1.1.8) 계산기',
-      subtitle: '건강보험심사평가원 지침 및 NMC 운영평가 16개 공문서 점검 기반 실시간 100점 만점 득점 및 가산 수가 산출',
-    },
-    cp_variance: {
-      title: 'CP 변이(Variance) 다차원 분석 & 재원일수·재정 ROI 대시보드',
-      subtitle: '환자·의료진·시스템 3대 변이 이탈 사유 정밀 추적, 불필요 재원일수 단축에 따른 병상 회전율 및 연간 순수 재정 기여도 실시간 산출',
-    },
-    compare_1to1: {
-      title: '지자체 1:1 심층 비교 대시보드',
-      subtitle: '동일 권역 또는 인근 지자체 간 필수의료 인프라 및 의료이용 격차 정밀 대조',
-    },
-    demand_forecast: {
-      title: '2030 필수의료 수요 추계 및 시도 평균 비교',
-      subtitle: '인구구조 고령화 추세를 반영한 중장기 필수의료 수요 예측 및 벤치마크',
-    },
-    citizen_view: {
-      title: '일반국민 안심 공공병원 안내 & 모바일 퇴원돌봄 알리미',
-      subtitle: '가장 가까운 응급실·소아과 보유 공공병원 확인 및 카카오 퇴원 알림톡 연계',
-    },
-    my_hospital: {
-      title: '의료기관 담당자 전용 대시보드 (My Hospital)',
-      subtitle: '소속 기관의 필수의료 4대 운영 지표, AI 병목 진단, 경영개선 과제 및 AI 질의응답',
-    },
+  const handle_export_report_png = async () => {
+    const filename = selected_region
+      ? `${selected_region.시도명}_${selected_region.시군구명}_공공의료리포트`
+      : '전국_필수의료_종합진단리포트';
+    await export_element_as_png('main-workspace-content', filename);
   };
-
-  const current_title_info = MENU_TITLES[active_menu];
 
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
-      {/* 1. 최상단 글로벌 공공 헤더 (1줄에 모든 정보 통합) */}
+      {/* 1. 최상단 글로벌 공공 헤더 (5대 워크스페이스 통합 네비게이션) */}
       <글로벌_공공_헤더
-        active_main_view={main_view}
-        on_change_main_view={(view) => set_main_view(view)}
-        active_domain={current_domain}
-        on_select_domain={handle_select_domain}
+        active_workspace={current_workspace}
+        on_change_workspace={(ws) => set_current_workspace(ws)}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
         on_open_grounding_modal={() => set_is_grounding_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
+        on_download_nmc_excel={handle_download_nmc_excel}
         on_export_capture={handle_export_report_png}
         is_dark_mode={is_dark_mode}
         on_toggle_dark_mode={toggle_dark_mode}
         google_api_key_registered={!!google_api_key}
         data_go_kr_key_registered={!!data_go_kr_api_key}
         vulnerable_region_count={vulnerable_region_count}
-        on_search_query={(q) => {
-          set_search_filter_keyword(q);
-          set_search_filter_services([]);
-          set_main_view('decision_map');
-        }}
+        on_search_query={handle_search_region}
       />
 
-      {/* 2. 메인 뷰 1: 공공의료 의사결정 지도 HOME (Hero + 9대 Quick Filter) */}
-      {main_view === 'home' && (
-        <div className="flex-1 w-full overflow-y-auto">
-          <공공의료_결정지도_홈
-            on_search_submit={handle_home_search}
-            on_navigate_map={handle_navigate_map}
-            on_open_guide_modal={() => set_is_guide_modal_open(true)}
-          />
-        </div>
-      )}
+      {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
+      <div id="main-workspace-content" className="flex-1 flex flex-col min-w-0">
+        {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
+        {current_workspace === 'home' && (
+          <div className="flex-1 w-full overflow-y-auto">
+            <공공의료_결정지도_홈
+              on_search_region={handle_search_region}
+              on_navigate_workspace={handle_navigate_from_home}
+              on_open_guide_modal={() => set_is_guide_modal_open(true)}
+            />
+          </div>
+        )}
 
-      {/* 3. 메인 뷰 2: 35:65 양방향 공공의료 의사결정 지도 (좌측 필터/목록 + 우측 Leaflet 지도) */}
-      {main_view === 'decision_map' && (
-        <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)]">
-          <공공의료_의사결정_지도_뷰
-            key={`${search_filter_keyword}_${search_filter_services.join(',')}`}
-            initial_keyword={search_filter_keyword}
-            initial_services={search_filter_services}
-          />
-        </div>
-      )}
-
-      {/* 4. 메인 뷰 3: 기관 데이터센터 대시보드 (데이터 품질 지수 & 병상/인력/응급 가동률) */}
-      {main_view === 'datacenter' && (
-        <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)]">
-          <기관_데이터센터_대시보드 />
-        </div>
-      )}
-
-      {/* 5. 메인 뷰 4: 기존 정책·진단 플랫폼 (71개 CP, 신포괄 정책가산, 변이 ROI, 듀얼 AI 등) */}
-      {main_view === 'policy_platform' && (
-        <div className="flex-1 flex flex-col lg:flex-row min-w-0 min-h-0 overflow-hidden">
-          {/* 좌측 기능 사이드바 네비게이션 */}
-          <메인_사이드바_네비게이션
-            active_menu={active_menu as 메뉴_아이디}
-          on_select_menu={handle_select_menu}
-          on_open_upload_modal={() => set_is_upload_modal_open(true)}
-          on_load_sample_data={handle_load_sample_data}
-          on_download_nmc_excel={handle_download_nmc_excel}
-          on_open_grounding_modal={() => set_is_grounding_open(true)}
-          on_open_key_modal={() => set_is_key_modal_open(true)}
-          google_api_key_registered={!!google_api_key}
-          data_go_kr_key_registered={!!data_go_kr_api_key}
-          on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
-          selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '영월군'}
-          selected_region_grade={selected_region?.종합_취약도_등급 ?? '심각'}
-          is_hidden={is_sidebar_hidden}
-          on_toggle_hide={toggle_sidebar_hidden}
-        />
-
-        {/* 우측 메인 워크스페이스 */}
-        <div className="flex-1 flex flex-col min-w-0 h-full overflow-y-auto">
-          {/* 서브 헤더 바 (컴팩트 1줄 타이틀 & 지역 선택기) */}
-          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-2 space-y-2 shadow-xs">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center space-x-2.5 min-w-0">
-                {is_sidebar_hidden && (
-                  <button
-                    onClick={toggle_sidebar_hidden}
-                    className="hidden lg:inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 text-slate-800 dark:text-slate-200 text-xs font-bold shadow-xs transition shrink-0"
-                    title="좌측 기능 메뉴 펼치기"
-                  >
-                    <PanelLeftOpen className="w-3.5 h-3.5 text-blue-600" />
-                    <span>메뉴 열기</span>
-                  </button>
-                )}
-
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                  <span className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/70 text-[#0071e3] dark:text-[#2997ff] text-[11px] font-bold shrink-0 border border-blue-200/60 dark:border-blue-900">
-                    {current_domain === 'status_diag' && '1. 현황진단'}
-                    {current_domain === 'ai_analysis' && '2. AI분석'}
-                    {current_domain === 'policy_plan' && '3. 정책기획'}
-                    {current_domain === 'field_manage' && '4. 현장관리'}
-                    {current_domain === 'public_service' && '5. 국민서비스'}
-                    {current_domain === 'my_hospital' && '6. MY의료기관'}
-                  </span>
-                  <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900 dark:text-slate-100 truncate">
-                    {current_title_info.title}
-                  </h2>
-                </div>
-              </div>
-
-              {/* 빠른 바로가기 CTA */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <button
-                  onClick={() => set_is_guide_modal_open(true)}
-                  className="px-2.5 py-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
-                  title="플랫폼 반영 데이터셋 및 2026 정부 법정 사업가이드 안내 팝업 열기"
-                >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>데이터·사업가이드 안내</span>
-                </button>
-                <button
-                  onClick={() => handle_select_domain('ai_analysis')}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition flex items-center gap-1"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>듀얼 AI 분석</span>
-                </button>
-                <button
-                  onClick={() => handle_select_domain('policy_plan')}
-                  className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition flex items-center gap-1"
-                >
-                  <span>사업계획서 작성</span>
-                </button>
-              </div>
-            </div>
-
-            {/* 상단 글로벌 지역 신속 선택기 */}
-            <상단_지역_선택기
+        {/* 워크스페이스 1: [지역진단] (35:65 진단지도, 7대 Layer, 6단계 취약분석 및 정책 연계) */}
+        {current_workspace === 'regional_diagnosis' && (
+          <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            <지역진단_통합_대시보드
               diagnosed_list={diagnosed_list}
               selected_region={selected_region}
-              on_select_region={(region) => set_selected_region(region)}
+              on_select_region={(reg) => set_selected_region(reg)}
+              on_navigate_policy={handle_navigate_policy}
             />
-          </header>
-
-          {/* 본문 작업 영역 (선택된 기능 메뉴만 단독 렌더링) */}
-          <div id="main-workspace-content" className="p-4 sm:p-6 lg:p-8 space-y-6">
-            {/* ============================================================== */}
-            {/* 1. GIS 헬스맵 & 시군구 취약지 데이터베이스 */}
-            {/* ============================================================== */}
-            {active_menu === 'gis_map' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-stretch">
-                  <div className="xl:col-span-7 h-[640px]">
-                    <지도_래퍼
-                      diagnosed_list={diagnosed_list}
-                      selected_region={selected_region}
-                      on_select_region={(region) => set_selected_region(region)}
-                      view_mode={view_mode}
-                      on_change_view_mode={set_view_mode}
-                      region_unit={region_unit}
-                      on_change_region_unit={set_region_unit}
-                    />
-                  </div>
-
-                  <div className="xl:col-span-5 flex flex-col gap-4">
-                    <div className="h-[480px]">
-                      <취약지_목록_테이블
-                        diagnosed_list={diagnosed_list}
-                        selected_region={selected_region}
-                        on_select_region={(region) => set_selected_region(region)}
-                      />
-                    </div>
-
-                    {/* 선택 지역 대상 의사결정 체인 퀵 액션 카드 */}
-                    {selected_region && (
-                      <div className="p-4 bg-white dark:bg-[#15161b] rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-slate-800 dark:text-slate-200">
-                            선택 지역: {selected_region.시도명} {selected_region.시군구명}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded font-bold ${
-                            selected_region.종합_취약도_등급 === '심각'
-                              ? 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300'
-                              : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
-                          }`}>
-                            취약도: {selected_region.종합_취약도_등급}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500">
-                          응급 미도달율 {selected_region.응급_60분_미도달_인구비율 ?? 35}%, 관내이용률 {selected_region.관내_응급_의료이용률 ?? 42}%
-                        </p>
-                        <div className="grid grid-cols-2 gap-2 pt-1">
-                          <button
-                            onClick={() => handle_select_domain('ai_analysis')}
-                            className="p-2 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold text-center transition"
-                          >
-                            AI 원인 심층분석 →
-                          </button>
-                          <button
-                            onClick={() => handle_select_domain('policy_plan')}
-                            className="p-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-semibold text-center transition"
-                          >
-                            사업계획서 작성 →
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 실시간 응급 소아 모니터링 바 */}
-                {selected_region && (
-                  <실시간_응급_소아_모니터링 selected_region={selected_region} />
-                )}
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 2. 취약지 종합 지표 진단 & 사분면 분석 */}
-            {/* ============================================================== */}
-            {active_menu === 'diagnosis_metrics' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <종합_진단_패널
-                  selected_region={selected_region}
-                />
-
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-                  <진료역량_사분면_분포도
-                    selected_region={selected_region}
-                  />
-                  <진료실적_서브그룹_대시보드 selected_region={selected_region} />
-                </div>
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* [신규] 환자 의료이용 유출입 분석 (OD 매트릭스) */}
-            {/* ============================================================== */}
-            {active_menu === 'patient_flow' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <환자_의료이용_유출입_대시보드
-                  selected_region={selected_region}
-                  on_navigate={(menu_id) => handle_select_menu(menu_id as 메뉴_아이디)}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 3. 듀얼 AI 스튜디오 (Google Gemini vs 로컬 sLLM) */}
-            {/* ============================================================== */}
-            {active_menu === 'dual_ai_studio' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <공공의료_sLLM_업무비서
-                  selected_region={selected_region}
-                  on_open_grounding={() => set_is_grounding_open(true)}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* [신규] 공공병원 인프라 확충 효과 시뮬레이터 */}
-            {/* ============================================================== */}
-            {active_menu === 'policy_simulator' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <인프라_확충_시뮬레이터
-                  selected_region={selected_region}
-                  on_navigate={(menu_id) => handle_select_menu(menu_id as 메뉴_아이디)}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 4. 사업계획서 자동생성기 */}
-            {/* ============================================================== */}
-            {active_menu === 'report_generator' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <사업계획서_서술문_생성기
-                  selected_region={selected_region}
-                  sido_stat={sido_stat}
-                  national_stat={national_stat}
-                  google_api_key={google_api_key}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* [신규 2026] 공공의료 71개 표준진료지침(CP) 스마트 라이브러리 & 오더세트 */}
-            {/* ============================================================== */}
-            {active_menu === 'cp_library' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <공공의료_CP_오더세트_라이브러리 />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* [신규 2026] 신포괄 정책가산(1.0%) & 공공병원 운영평가 1.1.8 계산기 */}
-            {/* ============================================================== */}
-            {active_menu === 'policy_incentive' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <신포괄_정책가산_평가_시뮬레이터 />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* [신규 2026] CP 변이(Variance) 다차원 분석 & 재원일수·재정 ROI 대시보드 */}
-            {/* ============================================================== */}
-            {active_menu === 'cp_variance' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <CP_변이분석_및_ROI_대시보드 />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 5. 35개 지방의료원 경영위기 조기경보 */}
-            {/* ============================================================== */}
-            {active_menu === 'hospital_crisis' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <경영위기_조기경보_대시보드
-                  on_open_grounding={() => set_is_grounding_open(true)}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 6. 퇴원환자 돌봄자원 AI 매칭 */}
-            {/* ============================================================== */}
-            {active_menu === 'discharge_care' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <퇴원환자_돌봄자원_AI매칭 />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 7. 지자체 1:1 비교 대시보드 */}
-            {/* ============================================================== */}
-            {active_menu === 'compare_1to1' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <일대일_비교_대시보드
-                  selected_region={selected_region}
-                  diagnosed_list={diagnosed_list}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 8. 2030 의료수요 추계 & 지표 비교 */}
-            {/* ============================================================== */}
-            {active_menu === 'demand_forecast' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
-                  <의료수요_추계_차트 selected_region={selected_region} />
-                  <의료지표_비교차트
-                    selected_region={selected_region}
-                    sido_stat={sido_stat}
-                    national_stat={national_stat}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 9. 일반국민 공공병원 안심뷰 */}
-            {/* ============================================================== */}
-            {active_menu === 'citizen_view' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <일반국민_공공병원_맞춤뷰
-                  selected_region={selected_region}
-                  google_api_key={google_api_key}
-                  data_go_kr_api_key={data_go_kr_api_key}
-                  on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
-                />
-              </div>
-            )}
-
-            {/* ============================================================== */}
-            {/* 10. [신규] 의료기관 담당자 My Hospital 대시보드 */}
-            {/* ============================================================== */}
-            {active_menu === 'my_hospital' && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                <OurHospitalDashboard
-                  google_api_key={google_api_key}
-                  onNavigateToGis={(regionName) => {
-                    handle_select_menu('gis_map');
-                  }}
-                  onNavigateToDualAi={(prompt) => {
-                    handle_select_menu('dual_ai_studio');
-                  }}
-                  onNavigateToPolicy={(topic) => {
-                    handle_select_menu('report_generator');
-                  }}
-                />
-              </div>
-            )}
           </div>
-        </div>
-      </div>
-    )}
+        )}
 
+        {/* 워크스페이스 2: [정책기획] (AI 정책대안 Option A/B/C, 8대 항목 사업계획서, 1:1 비교, 2030 수요추계) */}
+        {current_workspace === 'policy_planning' && (
+          <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            <정책기획_통합_워크스페이스
+              key={policy_subtab}
+              initial_tab={policy_subtab}
+              selected_region={selected_region}
+              diagnosed_list={diagnosed_list}
+              sido_stat={sido_stat}
+              national_stat={national_stat}
+              google_api_key={google_api_key}
+            />
+          </div>
+        )}
+
+        {/* 워크스페이스 3: [의료기관] (214개 공공병원, 기관 데이터센터, 경영위기, 71개 CP, 신포괄 계산기, CP변이 ROI, 퇴원돌봄) */}
+        {current_workspace === 'medical_institution' && (
+          <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            <의료기관_통합_워크스페이스
+              key={medical_subtab}
+              initial_subtab={medical_subtab}
+              on_navigate_tab={(tab) => set_medical_subtab(tab)}
+            />
+          </div>
+        )}
+
+        {/* 워크스페이스 4: [AI 분석] (Cloud AI vs Local sLLM 듀얼 AI 스튜디오 & RAG 지침 질의) */}
+        {current_workspace === 'ai_analysis' && (
+          <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
+            <AI분석_통합_워크스페이스
+              selected_region={selected_region}
+              google_api_key={google_api_key}
+              on_open_key_modal={() => set_is_key_modal_open(true)}
+            />
+          </div>
+        )}
+
+        {/* 워크스페이스 5: [국민안심] (Mobile-First 5대 안심의료 검색, 즉시 전화/길찾기, 3단계 바텀시트) */}
+        {current_workspace === 'national_safety' && (
+          <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)] overflow-hidden">
+            <국민안심_서비스_뷰 />
+          </div>
+        )}
+      </div>
 
       {/* ============================================================== */}
-      {/* 공통 팝업 모달 레이어 */}
+      {/* 전역 공통 팝업 모달 레이어 */}
       {/* ============================================================== */}
 
       {/* 엑셀/CSV 데이터 업로더 모달 */}
       <파일_업로더_모달
         is_open={is_upload_modal_open}
         on_close={() => set_is_upload_modal_open(false)}
-        on_data_loaded={handle_data_loaded}
+        on_data_loaded={(new_data) => set_raw_dataset(new_data)}
       />
 
       {/* 환각 제로 원문 대조 신뢰 뷰 모달 */}
@@ -751,11 +317,11 @@ export default function Home() {
         on_key_saved={(new_key) => set_data_go_kr_api_key(new_key)}
       />
 
-      {/* [신규 2026] 플랫폼 탑재 데이터셋 & 정부 법정 사업가이드 안내 팝업 모달 */}
+      {/* 플랫폼 탑재 데이터셋 & 정부 법정 사업가이드 안내 팝업 모달 */}
       <데이터_사업가이드_안내_모달
         is_open={is_guide_modal_open}
         on_close={() => set_is_guide_modal_open(false)}
-        on_navigate={(menu) => handle_select_menu(menu)}
+        on_navigate={handle_guide_navigate}
       />
     </main>
   );

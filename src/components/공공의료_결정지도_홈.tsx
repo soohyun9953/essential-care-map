@@ -1,216 +1,250 @@
 'use client';
 
+// Essential Care Map HOME 화면
+// 공공의료 의사결정 지원 플랫폼 정체성 반영 (Section 4 & 5 표준 구현)
+
 import React, { useState } from 'react';
 import {
   Search,
-  Activity,
-  ShieldAlert,
-  Heart,
-  Baby,
-  Sparkles,
-  Droplet,
-  Brain,
-  UserCheck,
-  Bed,
   MapPin,
-  ChevronRight,
-  Building2,
-  Navigation,
-  ShieldCheck,
-  Award,
   ArrowRight,
+  ShieldCheck,
+  Building2,
   TrendingUp,
-  Clock,
+  FileText,
   Compass,
+  CheckCircle2,
 } from 'lucide-react';
-import {
-  의료서비스_코드,
-  주요_9대_퀵필터_목록,
-  의료서비스_검색_엔진,
-} from '@/lib/의료서비스_검색_엔진';
+import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
 
 interface 공공의료_결정지도_홈_속성 {
-  on_search_submit: (keyword: string, selected_services: 의료서비스_코드[]) => void;
-  on_navigate_map: (service?: 의료서비스_코드) => void;
+  on_search_region: (region_name: string) => void;
+  on_navigate_workspace: (
+    workspace: 'regional_diagnosis' | 'policy_planning' | 'medical_institution' | 'ai_analysis' | 'national_safety',
+    sub_feature?: string
+  ) => void;
   on_open_guide_modal?: () => void;
+  // 하위 호환성 핸들러
+  on_search_submit?: (keyword: string, selected_services: 의료서비스_코드[]) => void;
+  on_navigate_map?: (service?: 의료서비스_코드) => void;
 }
 
+const SAMPLE_REGIONS = ['서울특별시', '영월군', '강원특별자치도', '부산광역시'];
+
 export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_홈_속성> = ({
+  on_search_region,
+  on_navigate_workspace,
+  on_open_guide_modal,
   on_search_submit,
   on_navigate_map,
-  on_open_guide_modal,
 }) => {
   const [search_input, setSearch_input] = useState('');
-  const [selected_tags, setSelected_tags] = useState<의료서비스_코드[]>([]);
 
-  // 퀵필터 클릭 토글
-  const handle_filter_click = (code: 의료서비스_코드) => {
-    // 즉시 해당 서비스 조건으로 지도 탐색 화면 전환
-    on_navigate_map(code);
-  };
-
-  const handle_search = (e: React.FormEvent) => {
+  const handle_submit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!search_input.trim() && selected_tags.length === 0) {
-      on_navigate_map();
+    const query = search_input.trim();
+    if (!query) {
+      on_navigate_workspace('regional_diagnosis');
       return;
     }
-
-    // 자연어 질의 파싱
-    const parsed = 의료서비스_검색_엔진.parse_natural_language_search(search_input);
-    const combined_services = Array.from(new Set([...selected_tags, ...(parsed.선택된_서비스 || [])]));
-    on_search_submit(search_input.trim(), combined_services);
+    on_search_region(query);
   };
 
-  const get_icon_component = (name: string) => {
-    switch (name) {
-      case 'Activity': return <Activity className="w-4 h-4" />;
-      case 'ShieldAlert': return <ShieldAlert className="w-4 h-4" />;
-      case 'Heart': return <Heart className="w-4 h-4" />;
-      case 'Baby': return <Baby className="w-4 h-4" />;
-      case 'Sparkles': return <Sparkles className="w-4 h-4" />;
-      case 'Droplet': return <Droplet className="w-4 h-4" />;
-      case 'Brain': return <Brain className="w-4 h-4" />;
-      case 'UserCheck': return <UserCheck className="w-4 h-4" />;
-      case 'Bed': return <Bed className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
-    }
+  const handle_select_sample = (region: string) => {
+    setSearch_input(region);
+    on_search_region(region);
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 py-8 sm:py-12 md:py-16 space-y-12 animate-in fade-in duration-300">
+    <div className="w-full max-w-5xl mx-auto px-4 py-12 sm:py-16 md:py-20 space-y-12 animate-in fade-in duration-300">
       {/* ============================================================== */}
-      {/* 1. 메인 HERO 섹션 */}
+      {/* 1. 메인 HERO 영역 (Section 4) */}
       {/* ============================================================== */}
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/70 border border-blue-200/80 dark:border-blue-800 text-[#0071e3] dark:text-[#2997ff] text-xs font-bold shadow-xs">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>대한민국 공공보건의료 의사결정 지도</span>
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+          <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <span>대한민국 공공의료 정책의사결정지원 플랫폼</span>
         </div>
 
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-          필요한 의료서비스를 찾아보세요
+          우리 지역의 필수의료, 지금 진단해보세요.
         </h1>
 
-        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-          응급실 실시간 가용병상부터 분만·소아·혈액투석·중환자실까지, <br className="hidden sm:inline" />
-          내 주변 <strong>214개 공공의료기관</strong>의 진료 역량과 운영 현황을 빠르고 투명하게 비교합니다.
+        <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+          지역별 의료취약도를 분석하고 AI 기반 정책대안을 확인할 수 있습니다.
         </p>
       </div>
 
       {/* ============================================================== */}
-      {/* 2. 대형 통합 검색창 */}
+      {/* 2. 중앙 지역 검색창 (Section 4) */}
       {/* ============================================================== */}
-      <div className="max-w-2xl mx-auto">
-        <form onSubmit={handle_search} className="relative">
-          <div className="flex items-center bg-white dark:bg-[#12141a] rounded-2xl shadow-lg border-2 border-blue-600/40 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/10 p-2 transition-all">
-            <Search className="w-5 h-5 text-slate-400 dark:text-slate-500 ml-3 shrink-0" />
+      <div className="max-w-2xl mx-auto space-y-3">
+        <form onSubmit={handle_submit} className="relative">
+          <div className="flex items-center bg-white dark:bg-[#15161b] rounded-2xl shadow-sm hover:shadow-md border-2 border-slate-300 dark:border-slate-700 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/10 p-2 transition-all">
+            <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
             <input
               type="text"
               value={search_input}
               onChange={(e) => setSearch_input(e.target.value)}
-              placeholder="지역, 의료기관 또는 의료서비스를 검색하세요"
-              className="w-full px-3 py-2.5 text-sm sm:text-base bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none"
+              placeholder="시군구 또는 지역명을 검색하세요"
+              className="w-full px-3 py-2.5 text-base bg-transparent text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
             />
             <button
               type="submit"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-sm transition active:scale-95 shrink-0"
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-xs transition active:scale-95 shrink-0 cursor-pointer"
             >
-              검색하기
+              진단하기
             </button>
           </div>
         </form>
 
-        {/* ============================================================== */}
-        {/* 3. 9대 Quick Filter 버튼 목록 */}
-        {/* ============================================================== */}
-        <div className="mt-5 space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
-            <span className="font-semibold flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              자주 찾는 필수의료 퀵 필터
-            </span>
-            <span className="text-[11px]">클릭 시 해당 조건으로 지도 바로 이동</span>
+        {/* 검색 예시 칩 */}
+        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 px-2 flex-wrap">
+          <span className="font-semibold">검색 예:</span>
+          {SAMPLE_REGIONS.map((region) => (
+            <button
+              key={region}
+              type="button"
+              onClick={() => handle_select_sample(region)}
+              className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 hover:text-blue-600 font-medium transition cursor-pointer"
+            >
+              {region}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 3. 4대 Home Quick Action 카드 (Section 5) */}
+      {/* ============================================================== */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+          <span>주요 분석 워크스페이스 바로가기</span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 카드 1: 지역 진단 */}
+          <div
+            onClick={() => on_navigate_workspace('regional_diagnosis')}
+            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                  지역 진단
+                </span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                우리 지역 필수의료 진단
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                응급·분만·소아 취약도와 7대 GIS 레이어로 관내 의료자원을 확인합니다.
+              </p>
+            </div>
+            <div className="pt-4 text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+              <span>진단 대시보드 열기</span>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-            {주요_9대_퀵필터_목록.map((filter) => (
-              <button
-                key={filter.id}
-                type="button"
-                onClick={() => handle_filter_click(filter.id)}
-                className="group flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 transition-all shadow-xs hover:shadow active:scale-95 cursor-pointer"
-              >
-                <span className="text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
-                  {get_icon_component(filter.아이콘_이름)}
+          {/* 카드 2: 지역 비교 */}
+          <div
+            onClick={() => on_navigate_workspace('policy_planning', 'compare')}
+            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                  지역 비교
                 </span>
-                <span>{filter.라벨}</span>
-              </button>
-            ))}
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                유사 지자체 1:1 비교
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                인근 권역 및 동일 규모 지자체와 필수의료 인프라 격차를 정밀 대조합니다.
+              </p>
+            </div>
+            <div className="pt-4 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+              <span>비교 분석 시작하기</span>
+            </div>
+          </div>
+
+          {/* 카드 3: 의료수요 예측 */}
+          <div
+            onClick={() => on_navigate_workspace('policy_planning', 'forecast')}
+            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
+                  의료수요 예측
+                </span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                2030 의료수요 변화
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                인구 고령화와 질환별 의료이용 추세를 반영한 중장기 수요를 예측합니다.
+              </p>
+            </div>
+            <div className="pt-4 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <span>수요 추계 확인</span>
+            </div>
+          </div>
+
+          {/* 카드 4: AI 정책기획 */}
+          <div
+            onClick={() => on_navigate_workspace('policy_planning', 'policy_ai')}
+            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+          >
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                  AI 정책기획
+                </span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                정책대안 및 사업계획서
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                진단 데이터를 근거로 3대 정책대안과 복지부 표준 사업계획서를 자동 완성합니다.
+              </p>
+            </div>
+            <div className="pt-4 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <span>정책대안 도출하기</span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* ============================================================== */}
-      {/* 4. 서비스 핵심 가이드 카드 3선 */}
+      {/* 4. 데이터 신뢰성 & 5대 사업가이드 안내 배너 */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4">
-        {/* 카드 1: 의사결정 지도 */}
-        <div
-          onClick={() => on_navigate_map()}
-          className="p-6 rounded-3xl bg-white dark:bg-[#12141a] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-blue-300 dark:hover:border-blue-800 transition-all cursor-pointer group space-y-3"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
-            <Compass className="w-6 h-6" />
+      <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200">데이터 신뢰성 고지:</span>
+            <span className="text-slate-600 dark:text-slate-400">
+              보건복지부 취약지 고시, 국립중앙의료원 공공보건의료통계, 건강보험심사평가원 DW 기준
+            </span>
           </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center justify-between">
-              <span>35:65 양방향 의사결정 지도</span>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              좌측 목록과 우측 지도가 실시간으로 동기화되어 원하는 의료자원을 한눈에 비교하고 선택합니다.
-            </p>
-          </div>
+          <p className="text-[11px] text-slate-500">
+            전국 226개 시·군·구 및 70개 중진료권 데이터가 매월 1회 정기 검증됩니다.
+          </p>
         </div>
-
-        {/* 카드 2: 데이터 신뢰성 & 정부 가이드 */}
-        <div
-          onClick={on_open_guide_modal}
-          className="p-6 rounded-3xl bg-white dark:bg-[#12141a] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-emerald-300 dark:hover:border-emerald-800 transition-all cursor-pointer group space-y-3"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center justify-between">
-              <span>7대 데이터셋 &amp; 5대 사업가이드</span>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              2026 보건복지부 취약지 고시, 심평원 신포괄 지침 및 NMC CP 운영평가 기준을 100% 투명하게 공개합니다.
-            </p>
-          </div>
-        </div>
-
-        {/* 카드 3: 기관 데이터센터 */}
-        <div
-          onClick={() => on_navigate_map()}
-          className="p-6 rounded-3xl bg-white dark:bg-[#12141a] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md hover:border-indigo-300 dark:hover:border-indigo-800 transition-all cursor-pointer group space-y-3"
-        >
-          <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:scale-105 transition-transform">
-            <Building2 className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center justify-between">
-              <span>214개 공공병원 실시간 모니터링</span>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" />
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              응급실 가용병상, 중환자실, 소아진료 및 혈액투석 가동 상태를 실시간 연계 데이터로 제공합니다.
-            </p>
-          </div>
-        </div>
+        {on_open_guide_modal && (
+          <button
+            type="button"
+            onClick={on_open_guide_modal}
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 transition whitespace-nowrap cursor-pointer"
+          >
+            데이터·사업가이드 총람 보기
+          </button>
+        )}
       </div>
     </div>
   );

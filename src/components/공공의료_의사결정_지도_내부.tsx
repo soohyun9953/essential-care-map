@@ -8,7 +8,8 @@ import { 공공의료기관_상세_프로필 } from '@/lib/의료서비스_검�
 interface 공공의료_의사결정_지도_내부_속성 {
   hospitals: 공공의료기관_상세_프로필[];
   active_hospital: 공공의료기관_상세_프로필 | null;
-  on_select_marker: (hospital: 공공의료기관_상세_프로필) => void;
+  on_select_marker?: (hospital: 공공의료기관_상세_프로필) => void;
+  on_select_hospital?: (hospital: 공공의료기관_상세_프로필) => void;
 }
 
 const MapCameraController: React.FC<{ target_lat?: number; target_lng?: number; zoom?: number }> = ({
@@ -29,7 +30,9 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
   hospitals,
   active_hospital,
   on_select_marker,
+  on_select_hospital,
 }) => {
+  const handle_select = on_select_hospital || on_select_marker || (() => {});
   const default_center: [number, number] = active_hospital
     ? [active_hospital.위도, active_hospital.경도]
     : [36.3, 127.8];
@@ -92,7 +95,7 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
                   fillOpacity: 0.95,
                 }}
                 eventHandlers={{
-                  click: () => on_select_marker(h),
+                  click: () => handle_select(h),
                 }}
               >
                 <Tooltip direction="top" offset={[0, -10]} opacity={0.98}>

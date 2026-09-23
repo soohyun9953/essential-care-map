@@ -1,0 +1,374 @@
+'use client';
+
+// Essential Care Map - 의료기관 통합 워크스페이스
+// Section 14 (공공의료기관 Card & 검색), Section 15 (기관 상세 5대 탭), Section 16 (기관 담당자 Dashboard)
+// 및 기존 5대 현장관리 모듈(경영위기, CP 라이브러리, 신포괄, CP변이 ROI, 퇴원돌봄) 100% 무손실 보존
+
+import React, { useState, useMemo } from 'react';
+import {
+  Building2,
+  Search,
+  Filter,
+  Phone,
+  Navigation,
+  CheckCircle2,
+  ShieldCheck,
+  AlertTriangle,
+  Activity,
+  Layers,
+  Sparkles,
+  Bed,
+  Users,
+  ChevronRight,
+  TrendingUp,
+} from 'lucide-react';
+import {
+  전체_공공의료기관_상세목록,
+  공공의료기관_상세_프로필,
+  의료서비스_코드,
+} from '@/lib/의료서비스_검색_엔진';
+import { 의료기관_상세_정보_모달 } from './의료기관_상세_정보_모달';
+import { 기관_데이터센터_대시보드 } from './기관_데이터센터_대시보드';
+import { 경영위기_조기경보_대시보드 } from './경영위기_조기경보_대시보드';
+import 공공의료_CP_오더세트_라이브러리 from './공공의료_CP_오더세트_라이브러리';
+import 신포괄_정책가산_평가_시뮬레이터 from './신포괄_정책가산_평가_시뮬레이터';
+import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대시보드';
+import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';
+
+export type 의료기관_서브탭_타입 =
+  | 'hospitals'
+  | 'datacenter'
+  | 'crisis'
+  | 'cp_library'
+  | 'policy_incentive'
+  | 'cp_variance'
+  | 'discharge_care';
+
+interface 의료기관_통합_워크스페이스_속성 {
+  initial_subtab?: 의료기관_서브탭_타입;
+  on_navigate_tab?: (tab: 의료기관_서브탭_타입) => void;
+}
+
+export const 의료기관_통합_워크스페이스: React.FC<의료기관_통합_워크스페이스_속성> = ({
+  initial_subtab = 'hospitals',
+  on_navigate_tab,
+}) => {
+  const [active_subtab, setActive_subtab] = useState<의료기관_서브탭_타입>(initial_subtab);
+
+  // 검색 및 필터
+  const [keyword, setKeyword] = useState('');
+  const [selected_sido, setSelected_sido] = useState('전체');
+  const [selected_type, setSelected_type] = useState<'전체' | '권역책임' | '지역책임' | '특수공공'>('전체');
+
+  // 상세 모달 대상 기관
+  const [detail_modal_hospital, set_detail_modal_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
+
+  // 시도 목록
+  const sido_list = useMemo(() => {
+    const set = new Set(전체_공공의료기관_상세목록.map((h) => h.시도명));
+    return ['전체', ...Array.from(set)];
+  }, []);
+
+  // 필터링된 기관 목록
+  const filtered_hospitals = useMemo(() => {
+    return 전체_공공의료기관_상세목록.filter((h) => {
+      const match_kw =
+        h.기관명.includes(keyword) || h.시군구명.includes(keyword) || h.시도명.includes(keyword);
+      const match_sido = selected_sido === '전체' || h.시도명 === selected_sido;
+      const match_type = selected_type === '전체' || h.기관유형 === selected_type;
+      return match_kw && match_sido && match_type;
+    });
+  }, [keyword, selected_sido, selected_type]);
+
+  const handle_tab_change = (tab: 의료기관_서브탭_타입) => {
+    setActive_subtab(tab);
+    on_navigate_tab?.(tab);
+  };
+
+  return (
+    <div className="w-full space-y-6 animate-in fade-in duration-200">
+      {/* ============================================================== */}
+      {/* 1. 상단 서브탭 네비게이션 */}
+      {/* ============================================================== */}
+      <div className="bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-1.5 flex-wrap">
+        <button
+          onClick={() => handle_tab_change('hospitals')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'hospitals'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5" />
+          <span>공공의료기관 탐색 (214개소)</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('datacenter')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'datacenter'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Activity className="w-3.5 h-3.5" />
+          <span>기관 데이터센터 (담당자 전용)</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('crisis')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'crisis'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <AlertTriangle className="w-3.5 h-3.5" />
+          <span>지방의료원 경영위기 조기경보 (35개소)</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('cp_library')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'cp_library'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>71개 표준진료지침(CP) 라이브러리</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('policy_incentive')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'policy_incentive'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          <span>신포괄 정책가산(1.0%) 계산기</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('cp_variance')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'cp_variance'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <TrendingUp className="w-3.5 h-3.5" />
+          <span>CP 변이 분석 &amp; ROI</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('discharge_care')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'discharge_care'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Users className="w-3.5 h-3.5" />
+          <span>퇴원환자 돌봄자원 매칭</span>
+        </button>
+      </div>
+
+      {/* ============================================================== */}
+      {/* 2. SUBTAB 1: 공공의료기관 탐색 (Section 14 & 15 표준 Card) */}
+      {/* ============================================================== */}
+      {active_subtab === 'hospitals' && (
+        <div className="space-y-4">
+          {/* 검색 및 필터 헤더 */}
+          <div className="bg-white dark:bg-[#15161b] p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
+            <div className="relative w-full md:w-96">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                placeholder="기관명, 지역(시군구) 검색..."
+                className="w-full pl-9 pr-3 py-2 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:border-blue-600"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <select
+                value={selected_sido}
+                onChange={(e) => setSelected_sido(e.target.value)}
+                className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none"
+              >
+                {sido_list.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+
+              <select
+                value={selected_type}
+                onChange={(e) => setSelected_type(e.target.value as any)}
+                className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-slate-700 dark:text-slate-300 focus:outline-none"
+              >
+                <option value="전체">모든 유형</option>
+                <option value="권역책임">권역책임의료기관</option>
+                <option value="지역책임">지역책임의료기관</option>
+                <option value="특수공공">특수공공병원</option>
+              </select>
+
+              <span className="text-xs text-slate-400 font-semibold whitespace-nowrap pl-2">
+                총 {filtered_hospitals.length}개소
+              </span>
+            </div>
+          </div>
+
+          {/* Section 14 표준 기관 Card 그리드 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered_hospitals.map((h) => {
+              const has_emergency = h.주요_의료서비스.includes('응급');
+              const has_pediatric = h.주요_의료서비스.includes('소아');
+              const has_dialysis = h.주요_의료서비스.includes('투석');
+              const has_inpatient = h.주요_의료서비스.includes('입원');
+
+              return (
+                <div
+                  key={h.id}
+                  className="bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md transition-all flex flex-col justify-between space-y-4"
+                >
+                  {/* 상단: 기관명 & 유형 & 운영상태 */}
+                  <div className="space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-base font-black text-slate-900 dark:text-white">
+                          {h.기관명}
+                        </h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          종합병원 · {h.기관유형}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
+                        <span>🟢</span>
+                        <span>{h.운영_상태}</span>
+                      </span>
+                    </div>
+
+                    {/* Section 14 표준 필수서비스 체크박스 (응급 ✓ / 소아 ✓ / 투석 ✓ / 입원 ✓) */}
+                    <div className="flex items-center gap-3 text-xs text-slate-700 dark:text-slate-300 pt-1">
+                      <span className={`flex items-center gap-0.5 ${has_emergency ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
+                        응급 {has_emergency ? '✓' : '-'}
+                      </span>
+                      <span className={`flex items-center gap-0.5 ${has_pediatric ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
+                        소아 {has_pediatric ? '✓' : '-'}
+                      </span>
+                      <span className={`flex items-center gap-0.5 ${has_dialysis ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
+                        투석 {has_dialysis ? '✓' : '-'}
+                      </span>
+                      <span className={`flex items-center gap-0.5 ${has_inpatient ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
+                        입원 {has_inpatient ? '✓' : '-'}
+                      </span>
+                    </div>
+
+                    {/* 병상 자원 수치 */}
+                    <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span>가용 / 총 병상:</span>
+                      <strong className="text-slate-900 dark:text-white">
+                        병상 {h.의료자원.병상.총병상 - h.의료자원.병상.가용병상} / {h.의료자원.병상.총병상}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* 하단 3대 액션 버튼: [상세정보] [길찾기] [전화] */}
+                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => set_detail_modal_hospital(h)}
+                      className="py-1.5 px-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs text-center transition shadow-xs cursor-pointer"
+                    >
+                      상세정보
+                    </button>
+                    <a
+                      href={`https://map.kakao.com/link/to/${encodeURIComponent(h.기관명)},${h.위도},${h.경도}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold text-xs text-center transition flex items-center justify-center gap-1"
+                    >
+                      <Navigation className="w-3 h-3" />
+                      <span>길찾기</span>
+                    </a>
+                    <a
+                      href={`tel:${h.전화번호}`}
+                      className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 font-bold text-xs text-center transition flex items-center justify-center gap-1"
+                    >
+                      <Phone className="w-3 h-3 text-emerald-600" />
+                      <span>전화</span>
+                    </a>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* 5대 탭 상세 모달 (Section 15) */}
+          <의료기관_상세_정보_모달
+            hospital={detail_modal_hospital}
+            is_open={!!detail_modal_hospital}
+            on_close={() => set_detail_modal_hospital(null)}
+          />
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 3. SUBTAB 2: 기관 데이터센터 (Section 16) */}
+      {/* ============================================================== */}
+      {active_subtab === 'datacenter' && (
+        <기관_데이터센터_대시보드 />
+      )}
+
+      {/* ============================================================== */}
+      {/* 4. SUBTAB 3: 지방의료원 경영위기 조기경보 */}
+      {/* ============================================================== */}
+      {active_subtab === 'crisis' && (
+        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <경영위기_조기경보_대시보드 />
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 5. SUBTAB 4: 71개 표준진료지침(CP) 라이브러리 */}
+      {/* ============================================================== */}
+      {active_subtab === 'cp_library' && (
+        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <공공의료_CP_오더세트_라이브러리 />
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 6. SUBTAB 5: 신포괄 정책가산 계산기 */}
+      {/* ============================================================== */}
+      {active_subtab === 'policy_incentive' && (
+        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <신포괄_정책가산_평가_시뮬레이터 />
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 7. SUBTAB 6: CP 변이 분석 & ROI 대시보드 */}
+      {/* ============================================================== */}
+      {active_subtab === 'cp_variance' && (
+        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <CP_변이분석_및_ROI_대시보드 />
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 8. SUBTAB 7: 퇴원환자 돌봄자원 AI 매칭 */}
+      {/* ============================================================== */}
+      {active_subtab === 'discharge_care' && (
+        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <퇴원환자_돌봄자원_AI매칭 />
+        </div>
+      )}
+    </div>
+  );
+};

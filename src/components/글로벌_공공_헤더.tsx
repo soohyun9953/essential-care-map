@@ -18,6 +18,14 @@ import {
   HelpCircle,
 } from 'lucide-react';
 
+export type 워크스페이스_타입 =
+  | 'home'
+  | 'regional_diagnosis'    // ① 지역진단
+  | 'policy_planning'       // ② 정책기획
+  | 'medical_institution'   // ③ 의료기관
+  | 'ai_analysis'           // ④ AI 분석
+  | 'national_safety';      // ⑤ 국민안심
+
 export type 메인_도메인 =
   | 'status_diag'    // 1. 현황진단
   | 'ai_analysis'    // 2. AI 분석
@@ -30,8 +38,11 @@ export type 메인_도메인 =
 export type 업무_도메인_타입 = 메인_도메인;
 
 interface 글로벌_공공_헤더_속성 {
-  active_main_view?: 'home' | 'decision_map' | 'datacenter' | 'policy_platform';
-  on_change_main_view?: (view: 'home' | 'decision_map' | 'datacenter' | 'policy_platform') => void;
+  active_workspace?: 워크스페이스_타입;
+  on_change_workspace?: (ws: 워크스페이스_타입) => void;
+  // 하위 호환성 속성
+  active_main_view?: any;
+  on_change_main_view?: (view: any) => void;
   active_domain?: 메인_도메인;
   on_select_domain?: (domain: 메인_도메인) => void;
   is_dark_mode: boolean;
@@ -51,7 +62,9 @@ interface 글로벌_공공_헤더_속성 {
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
-  active_main_view = 'home',
+  active_workspace = 'home',
+  on_change_workspace,
+  active_main_view,
   on_change_main_view,
   active_domain,
   on_select_domain,
@@ -76,6 +89,15 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   const admin_ref = useRef<HTMLDivElement>(null);
   const noti_ref = useRef<HTMLDivElement>(null);
 
+  // 워크스페이스 변경 통합 핸들러
+  const handle_workspace_change = (ws: 워크스페이스_타입) => {
+    if (on_change_workspace) {
+      on_change_workspace(ws);
+    } else if (on_change_main_view) {
+      on_change_main_view(ws as any);
+    }
+  };
+
   useEffect(() => {
     const handle_click_outside = (e: MouseEvent) => {
       if (admin_ref.current && !admin_ref.current.contains(e.target as Node)) {
@@ -96,6 +118,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     }
   };
 
+  const current_active = active_workspace || (active_main_view as any) || 'home';
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors shadow-xs">
       {/* 1줄 단일 헤더 (모든 정보 1줄에 컴팩트 통합) */}
@@ -104,7 +128,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           
           {/* 1. 좌측: 브랜드 로고 & Essential Care Map 타이틀 */}
           <div
-            onClick={() => on_change_main_view?.('home')}
+            onClick={() => handle_workspace_change('home')}
             className="flex items-center space-x-2.5 cursor-pointer select-none shrink-0"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
@@ -120,59 +144,70 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold block leading-tight">
-                공공의료 의사결정 지도
+                공공의료 의사결정 지원 플랫폼
               </span>
             </div>
           </div>
 
-          {/* 2. 중앙: 4대 핵심 네비게이션 메뉴 (홈 / 지도 / 기관 데이터센터 / 정책·진단 플랫폼) */}
-          <nav className="hidden md:flex items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+          {/* 2. 중앙: 5대 핵심 워크스페이스 네비게이션 ([지역진단] [정책기획] [의료기관] [AI 분석] [국민안심]) */}
+          <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
             <button
-              onClick={() => on_change_main_view?.('home')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                active_main_view === 'home'
+              onClick={() => handle_workspace_change('regional_diagnosis')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                current_active === 'regional_diagnosis'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              홈
+              지역진단
             </button>
 
             <button
-              onClick={() => on_change_main_view?.('decision_map')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                active_main_view === 'decision_map'
+              onClick={() => handle_workspace_change('policy_planning')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                current_active === 'policy_planning'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              지도
+              정책기획
             </button>
 
             <button
-              onClick={() => on_change_main_view?.('datacenter')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                active_main_view === 'datacenter'
+              onClick={() => handle_workspace_change('medical_institution')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                current_active === 'medical_institution'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <span>기관 데이터센터</span>
+              <span>의료기관</span>
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             </button>
 
             <button
-              onClick={() => on_change_main_view?.('policy_platform')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                active_main_view === 'policy_platform'
+              onClick={() => handle_workspace_change('ai_analysis')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                current_active === 'ai_analysis'
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-600 dark:text-indigo-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
-              title="71개 CP 라이브러리, 신포괄 정책가산 계산기, 경영위기 조기경보, 사업계획서 생성기"
             >
-              정책·진단 플랫폼
+              AI 분석
+            </button>
+
+            <button
+              onClick={() => handle_workspace_change('national_safety')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                current_active === 'national_safety'
+                  ? 'bg-white dark:bg-[#1a1d24] text-emerald-600 dark:text-emerald-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              국민안심
             </button>
           </nav>
+
 
           {/* 3. 우측: 데이터/사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">

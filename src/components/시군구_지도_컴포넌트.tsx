@@ -69,7 +69,7 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
     return build_patient_flow_arcs(current_flow_data, 'all');
   }, [show_flow_arcs, current_flow_data]);
 
-  // 시군구 모드별 색상 추출 함수
+  // 시군구 모드별 색상 추출 함수 (7대 Layer 완벽 지원)
   const get_fill_color_by_mode = (item: 필수의료_진단_결과): string => {
     if (view_mode === '종합취약도') {
       return 취약도_등급_정보[item.종합_취약도_등급].색상코드;
@@ -79,6 +79,16 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
       return item.분만취약지역_여부 ? '#ff6934' : '#34c759';
     } else if (view_mode === '소아중증') {
       return item.소아취약지역_여부 ? '#ff9500' : '#34c759';
+    } else if (view_mode === '의료인력') {
+      return (item.인구_천명당_의사수 !== undefined && item.인구_천명당_의사수 < 1.6) || item.종합_취약도_등급 === '심각'
+        ? '#ff3b30'
+        : '#34c759';
+    } else if (view_mode === '병상인프라') {
+      return (item.인구_천명당_병상수 !== undefined && item.인구_천명당_병상수 < 5.0) || item.종합_취약도_등급 === '취약' || item.종합_취약도_등급 === '심각'
+        ? '#ff9500'
+        : '#34c759';
+    } else if (view_mode === '공공의료기관') {
+      return item.종합_취약도_등급 === '심각' ? '#0071e3' : '#60a5fa';
     }
     return '#34c759';
   };
@@ -93,6 +103,12 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
       return zone.분만취약_여부 ? '#ff6934' : '#34c759';
     } else if (view_mode === '소아중증') {
       return zone.소아취약_여부 ? '#ff9500' : '#34c759';
+    } else if (view_mode === '의료인력') {
+      return zone.종합_취약도_등급 === '심각' ? '#ff3b30' : '#34c759';
+    } else if (view_mode === '병상인프라') {
+      return zone.종합_취약도_등급 === '취약' ? '#ff9500' : '#34c759';
+    } else if (view_mode === '공공의료기관') {
+      return '#0071e3';
     }
     return '#34c759';
   };
@@ -129,19 +145,27 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
           </button>
         </div>
 
-        {/* 지표 레이어 스위처 */}
-        <div className="bg-white/90 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1">
-          {(['종합취약도', '응급의료', '분만모자', '소아중증'] as 지도_시각화_모드[]).map((mode) => (
+        {/* 7대 지표 레이어 스위처 (Section 7) */}
+        <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1 flex-wrap">
+          {([
+            { id: '종합취약도', label: '취약도' },
+            { id: '응급의료', label: '응급' },
+            { id: '분만모자', label: '분만' },
+            { id: '소아중증', label: '소아' },
+            { id: '의료인력', label: '의료인력' },
+            { id: '병상인프라', label: '병상' },
+            { id: '공공의료기관', label: '공공의료기관' },
+          ] as { id: 지도_시각화_모드; label: string }[]).map((mode) => (
             <button
-              key={mode}
-              onClick={() => on_change_view_mode(mode)}
-              className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
-                view_mode === mode
-                  ? 'bg-[#1d1d1f] text-white shadow-apple-sm'
-                  : 'text-[#86868b] hover:text-[#1d1d1f]'
+              key={mode.id}
+              onClick={() => on_change_view_mode(mode.id)}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
+                view_mode === mode.id
+                  ? 'bg-blue-600 text-white shadow-apple-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              {mode}
+              {mode.label}
             </button>
           ))}
         </div>
@@ -457,6 +481,31 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
             </React.Fragment>
           ))}
         </MapContainer>
+
+        {/* 4단계 취약도 표준 범례 (Section 8: 색상+아이콘+텍스트 병기) */}
+        <div className="absolute bottom-4 right-4 z-[400] bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-3 rounded-2xl shadow-apple-card border border-black/[0.06] text-xs space-y-1.5 pointer-events-none sm:pointer-events-auto">
+          <div className="font-bold text-[#1d1d1f] dark:text-white text-[11px] pb-1 border-b border-black/[0.05]">
+            취약도 판정 범례
+          </div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] shrink-0" />
+              <span>🔴 심각</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff9500] shrink-0" />
+              <span>🟠 주의</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ffcc00] shrink-0" />
+              <span>🟡 관심</span>
+            </div>
+            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] shrink-0" />
+              <span>🟢 양호</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

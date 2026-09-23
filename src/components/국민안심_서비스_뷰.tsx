@@ -2,33 +2,26 @@
 
 // Essential Care Map - 국민안심 서비스 뷰 (Mobile-First)
 // Section 18 (국민안심 UX) & Section 19 (모바일 3단계 바텀시트) 표준 구현
-// 정책 용어 전면 배제, "지금 필요한 의료기관을 즉시 찾는다"에 집중
+// 정책 용어 전면 배제, "지금 필요한 공공의료기관을 즉시 찾는다"에 집중
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Search,
   Phone,
   Navigation,
   MapPin,
-  Clock,
   CheckCircle2,
   ChevronUp,
   ChevronDown,
-  Activity,
-  Heart,
-  Baby,
-  Moon,
-  Bed,
-  Sparkles,
   LocateFixed,
   X,
-  Building2,
+  AlertCircle,
+  RefreshCw,
 } from 'lucide-react';
 import {
   전체_공공의료기관_상세목록,
   공공의료기관_상세_프로필,
-  의료서비스_코드,
 } from '@/lib/의료서비스_검색_엔진';
 
 // Leaflet 지도 동적 로드 (SSR 오류 방지)
@@ -45,8 +38,10 @@ const DecisionLeafletMap = dynamic(
 );
 
 export const 국민안심_서비스_뷰: React.FC = () => {
-  // 5대 필수 서비스 선택기 (Section 18: [응급] [소아] [분만] [야간] [입원])
-  const [selected_service, setSelected_service] = useState<'all' | 'emergency' | 'pediatric' | 'delivery' | 'night' | 'inpatient'>('all');
+  // 5대 필수 서비스 선택기 (Section 18: [전체] [응급] [소아] [분만] [야간] [입원])
+  const [selected_service, setSelected_service] = useState<
+    'all' | 'emergency' | 'pediatric' | 'delivery' | 'night' | 'inpatient'
+  >('all');
 
   // 현재 위치 좌표 (기본: 서울 광화문 기준)
   const [user_location, setUser_location] = useState<{ lat: number; lng: number }>({
@@ -105,14 +100,58 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         거리: calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도),
       }))
       .filter((h) => {
-        const match_search = !search_text.trim() || h.기관명.includes(search_text) || h.시군구명.includes(search_text);
-        let match_service = true;
-        if (selected_service === 'emergency') match_service = h.주요_의료서비스.includes('응급');
-        if (selected_service === 'pediatric') match_service = h.주요_의료서비스.includes('소아');
-        if (selected_service === 'delivery') match_service = h.주요_의료서비스.includes('분만');
-        if (selected_service === 'night') match_service = h.주요_의료서비스.includes('응급') || h.주요_의료서비스.includes('소아');
-        if (selected_service === 'inpatient') match_service = h.주요_의료서비스.includes('입원');
-        return match_search && match_service;
+        const query = search_text.trim().toLowerCase();
+        const match_search =
+          !query ||
+          h.기관명.toLowerCase().includes(query) ||
+          h.시군구명.toLowerCase().includes(query) ||
+          h.시도명.toLowerCase().includes(query) ||
+          h.진료권명.toLowerCase().includes(query);
+
+        if (!match_search) return false;
+        if (selected_service === 'all') return true;
+
+        if (selected_service === 'emergency') {
+          return (
+            h.주요_의료서비스.some((s) => s.includes('응급')) ||
+            h.서비스_상세.some((s) => s.코드 === 'emergency' && s.상태 !== '미운영') ||
+            h.기관유형.includes('권역') ||
+            h.기관유형.includes('지역')
+          );
+        }
+        if (selected_service === 'pediatric') {
+          return (
+            h.주요_의료서비스.some((s) => s.includes('소아')) ||
+            h.서비스_상세.some((s) => s.코드 === 'pediatric' && s.상태 !== '미운영') ||
+            h.기관명.includes('어린이') ||
+            h.기관유형.includes('소아')
+          );
+        }
+        if (selected_service === 'delivery') {
+          return (
+            h.주요_의료서비스.some((s) => s.includes('분만') || s.includes('산부인과') || s.includes('모자')) ||
+            h.서비스_상세.some((s) => s.코드 === 'delivery' && s.상태 !== '미운영') ||
+            h.기관유형.includes('권역') ||
+            h.의료자원.병상.총병상 >= 200
+          );
+        }
+        if (selected_service === 'night') {
+          return (
+            h.주요_의료서비스.some((s) => s.includes('응급') || s.includes('소아') || s.includes('당직')) ||
+            h.서비스_상세.some((s) => (s.코드 === 'emergency' || s.코드 === 'pediatric') && s.상태 !== '미운영') ||
+            h.기관유형.includes('권역') ||
+            h.기관유형.includes('지역')
+          );
+        }
+        if (selected_service === 'inpatient') {
+          return (
+            h.주요_의료서비스.some((s) => s.includes('입원') || s.includes('병상')) ||
+            h.서비스_상세.some((s) => s.코드 === 'inpatient' && s.상태 !== '미운영') ||
+            h.의료자원.병상.총병상 > 0
+          );
+        }
+
+        return true;
       })
       .sort((a, b) => parseFloat(a.거리) - parseFloat(b.거리));
   }, [user_location, selected_service, search_text]);
@@ -141,35 +180,68 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             type="button"
             onClick={handle_get_location}
             disabled={is_locating}
-            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shrink-0 self-start sm:self-center cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1.5 shrink-0 self-start sm:self-center cursor-pointer active:scale-95"
           >
             <LocateFixed className="w-3.5 h-3.5 text-blue-600" />
             <span>{is_locating ? '위치 확인 중...' : '현재 위치 기준 재검색'}</span>
           </button>
         </div>
 
-        {/* 5대 빠른 서비스 선택 버튼 (Section 18: [응급] [소아] [분만] [야간] [입원]) */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
-          {[
-            { id: 'all', label: '전체' },
-            { id: 'emergency', label: '🚨 응급실' },
-            { id: 'pediatric', label: '👶 소아청소년과' },
-            { id: 'delivery', label: '🤰 분만산부인과' },
-            { id: 'night', label: '🌙 야간/휴일' },
-            { id: 'inpatient', label: '🛏️ 일반/격리입원' },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setSelected_service(item.id as any)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer ${
-                selected_service === item.id
-                  ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+        {/* 검색 인풋 & 5대 빠른 서비스 선택 버튼 */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          {/* 빠른 검색창 */}
+          <div className="relative flex-1 sm:max-w-xs">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={search_text}
+              onChange={(e) => {
+                setSearch_text(e.target.value);
+                setSelected_hospital(null);
+              }}
+              placeholder="기관명, 지역명(예: 종로구, 영월)..."
+              className="w-full pl-9 pr-8 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+            />
+            {search_text && (
+              <button
+                type="button"
+                onClick={() => setSearch_text('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* 5대 빠른 서비스 선택 버튼 (Section 18: [전체] [응급] [소아] [분만] [야간] [입원]) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+            {[
+              { id: 'all', label: '전체' },
+              { id: 'emergency', label: '🚨 응급실' },
+              { id: 'pediatric', label: '👶 소아청소년과' },
+              { id: 'delivery', label: '🤰 분만산부인과' },
+              { id: 'night', label: '🌙 야간/휴일' },
+              { id: 'inpatient', label: '🛏️ 일반/격리입원' },
+            ].map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setSelected_service(item.id as any);
+                  setSelected_hospital(null);
+                  if (sheet_state === 'min') {
+                    set_sheet_state('half');
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer active:scale-95 ${
+                  selected_service === item.id
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -206,7 +278,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             else if (sheet_state === 'half') set_sheet_state('full');
             else set_sheet_state('half');
           }}
-          className="p-2.5 flex flex-col items-center justify-center cursor-pointer select-none border-b border-slate-100 dark:border-slate-800"
+          className="p-2.5 flex flex-col items-center justify-center cursor-pointer select-none border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition"
         >
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mb-1" />
           <div className="flex items-center justify-between w-full px-4 text-xs">
@@ -222,75 +294,98 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
         {/* 바텀시트 스크롤 카드 목록 */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {hospital_list.slice(0, sheet_state === 'full' ? 50 : 15).map((h) => {
-            const is_selected = active_target?.id === h.id;
-            return (
-              <div
-                key={h.id}
-                onClick={() => setSelected_hospital(h)}
-                className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2.5 ${
-                  is_selected
-                    ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-1 ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
-                }`}
+          {hospital_list.length === 0 ? (
+            <div className="py-12 px-4 text-center space-y-3">
+              <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
+              <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                선택하신 조건에 부합하는 공공의료기관이 없습니다.
+              </p>
+              <p className="text-xs text-slate-500">
+                검색어 또는 필터 조건을 변경해 보세요.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected_service('all');
+                  setSearch_text('');
+                }}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer inline-flex items-center gap-1.5"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        <span>약 {h.거리}km</span>
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        {h.시도명} {h.시군구명}
-                      </span>
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>전체 공공의료기관 보기</span>
+              </button>
+            </div>
+          ) : (
+            hospital_list.slice(0, sheet_state === 'full' ? 50 : 15).map((h) => {
+              const is_selected = active_target?.id === h.id;
+              return (
+                <div
+                  key={h.id}
+                  onClick={() => setSelected_hospital(h)}
+                  className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2.5 ${
+                    is_selected
+                      ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-1 ring-emerald-500/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>약 {h.거리}km</span>
+                        </span>
+                        <span className="text-[10px] text-slate-400">
+                          {h.시도명} {h.시군구명}
+                        </span>
+                      </div>
+                      <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
+                        {h.기관명}
+                      </h4>
                     </div>
-                    <h4 className="text-base font-bold text-slate-900 dark:text-white mt-0.5">
-                      {h.기관명}
-                    </h4>
+
+                    {/* 이용 가능 상태 */}
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1 shrink-0">
+                      <CheckCircle2 className="w-3 h-3" />
+                      <span>이용 가능</span>
+                    </span>
                   </div>
 
-                  {/* 이용 가능 상태 */}
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1 shrink-0">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>이용 가능</span>
-                  </span>
-                </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <span>
+                      가용병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.가용병상}석</strong>
+                    </span>
+                    <span className="text-[11px]">
+                      {h.주요_의료서비스.slice(0, 3).map((s) => `#${s}`).join(' ')}
+                    </span>
+                  </div>
 
-                <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
-                  <span>
-                    가용병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.가용병상}석</strong>
-                  </span>
-                  <span className="text-[11px]">
-                    {h.주요_의료서비스.slice(0, 3).map((s) => `#${s}`).join(' ')}
-                  </span>
-                </div>
+                  {/* Section 18 표준 버튼: [전화] [길찾기] */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <a
+                      href={`tel:${h.전화번호}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <Phone className="w-3.5 h-3.5" />
+                      <span>전화 걸기 ({h.전화번호})</span>
+                    </a>
 
-                {/* Section 18 표준 버튼: [전화] [길찾기] */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <a
-                    href={`tel:${h.전화번호}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-xs"
-                  >
-                    <Phone className="w-3.5 h-3.5" />
-                    <span>전화 걸기 ({h.전화번호})</span>
-                  </a>
-
-                  <a
-                    href={`https://map.kakao.com/link/to/${encodeURIComponent(h.기관명)},${h.위도},${h.경도}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1.5"
-                  >
-                    <Navigation className="w-3.5 h-3.5 text-blue-600" />
-                    <span>길찾기</span>
-                  </a>
+                    <a
+                      href={`https://map.kakao.com/link/to/${encodeURIComponent(h.기관명)},${h.위도},${h.경도}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1.5"
+                    >
+                      <Navigation className="w-3.5 h-3.5 text-blue-600" />
+                      <span>길찾기</span>
+                    </a>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

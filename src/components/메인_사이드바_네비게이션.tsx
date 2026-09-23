@@ -31,6 +31,7 @@ import {
   Users,
   Share2,
   Sliders,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
@@ -43,6 +44,7 @@ export type 메뉴_아이디 =
   | 'report_generator'
   | 'hospital_crisis'
   | 'discharge_care'
+  | 'cp_library'
   | 'compare_1to1'
   | 'citizen_view'
   | 'my_hospital';
@@ -143,6 +145,13 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
     icon: Building2,
     desc: '의료원 경영위기 감지 & 돌봄자원 매칭',
     items: [
+      {
+        id: 'cp_library',
+        label: '표준진료지침(CP) & 오더세트',
+        icon: FileSpreadsheet,
+        badge: 'NEW',
+        desc: '71개 공공의료 CP·오더세트·Branch 분기',
+      },
       {
         id: 'hospital_crisis',
         label: '지방의료원 경영위기 조기경보',

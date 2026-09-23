@@ -45,6 +45,7 @@ import { 글로벌_공공_헤더, 업무_도메인_타입 } from '@/components/�
 import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보드';
 import 환자_의료이용_유출입_대시보드 from '@/components/환자_의료이용_유출입_대시보드';
 import 인프라_확충_시뮬레이터 from '@/components/인프라_확충_시뮬레이터';
+import 공공의료_CP_오더세트_라이브러리 from '@/components/공공의료_CP_오더세트_라이브러리';
 
 import {
   Sparkles,
@@ -81,8 +82,8 @@ export default function Home() {
     } else if (domain === 'policy_plan') {
       set_active_menu('report_generator');
     } else if (domain === 'field_manage') {
-      if (!['hospital_crisis', 'discharge_care'].includes(active_menu)) {
-        set_active_menu('hospital_crisis');
+      if (!['cp_library', 'hospital_crisis', 'discharge_care'].includes(active_menu)) {
+        set_active_menu('cp_library');
       }
     } else if (domain === 'public_service') {
       set_active_menu('citizen_view');
@@ -100,7 +101,7 @@ export default function Home() {
       set_current_domain('ai_analysis');
     } else if (menu === 'report_generator') {
       set_current_domain('policy_plan');
-    } else if (['hospital_crisis', 'discharge_care'].includes(menu)) {
+    } else if (['cp_library', 'hospital_crisis', 'discharge_care'].includes(menu)) {
       set_current_domain('field_manage');
     } else if (menu === 'citizen_view') {
       set_current_domain('public_service');
@@ -253,6 +254,10 @@ export default function Home() {
     discharge_care: {
       title: '퇴원환자-지역사회 돌봄자원 AI 매칭 & 원클릭 연계',
       subtitle: '의료원 공공의료협력팀 전용. 환자 ADL 및 상병 맞춤 보건소·장기요양 자원 매칭',
+    },
+    cp_library: {
+      title: '공공의료 71개 표준진료지침(CP) 스마트 라이브러리 & 오더세트',
+      subtitle: '국립중앙의료원 표준안 기반 다학제 Order Set, Branch CP 분기 경로 및 신포괄 1.0% 정책가산 연계',
     },
     compare_1to1: {
       title: '지자체 1:1 심층 비교 대시보드',
@@ -508,6 +513,15 @@ export default function Home() {
                   national_stat={national_stat}
                   google_api_key={google_api_key}
                 />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* [신규 2026] 공공의료 71개 표준진료지침(CP) 스마트 라이브러리 & 오더세트 */}
+            {/* ============================================================== */}
+            {active_menu === 'cp_library' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <공공의료_CP_오더세트_라이브러리 />
               </div>
             )}
 

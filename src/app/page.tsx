@@ -46,6 +46,7 @@ import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보
 import 환자_의료이용_유출입_대시보드 from '@/components/환자_의료이용_유출입_대시보드';
 import 인프라_확충_시뮬레이터 from '@/components/인프라_확충_시뮬레이터';
 import 공공의료_CP_오더세트_라이브러리 from '@/components/공공의료_CP_오더세트_라이브러리';
+import 신포괄_정책가산_평가_시뮬레이터 from '@/components/신포괄_정책가산_평가_시뮬레이터';
 
 import {
   Sparkles,
@@ -82,7 +83,7 @@ export default function Home() {
     } else if (domain === 'policy_plan') {
       set_active_menu('report_generator');
     } else if (domain === 'field_manage') {
-      if (!['cp_library', 'hospital_crisis', 'discharge_care'].includes(active_menu)) {
+      if (!['cp_library', 'policy_incentive', 'hospital_crisis', 'discharge_care'].includes(active_menu)) {
         set_active_menu('cp_library');
       }
     } else if (domain === 'public_service') {
@@ -101,7 +102,7 @@ export default function Home() {
       set_current_domain('ai_analysis');
     } else if (menu === 'report_generator') {
       set_current_domain('policy_plan');
-    } else if (['cp_library', 'hospital_crisis', 'discharge_care'].includes(menu)) {
+    } else if (['cp_library', 'policy_incentive', 'hospital_crisis', 'discharge_care'].includes(menu)) {
       set_current_domain('field_manage');
     } else if (menu === 'citizen_view') {
       set_current_domain('public_service');
@@ -258,6 +259,10 @@ export default function Home() {
     cp_library: {
       title: '공공의료 71개 표준진료지침(CP) 스마트 라이브러리 & 오더세트',
       subtitle: '국립중앙의료원 표준안 기반 다학제 Order Set, Branch CP 분기 경로 및 신포괄 1.0% 정책가산 연계',
+    },
+    policy_incentive: {
+      title: '신포괄 정책가산(1.0%) & 지역거점 공공병원 운영평가(1.1.8) 계산기',
+      subtitle: '건강보험심사평가원 지침 및 NMC 운영평가 16개 공문서 점검 기반 실시간 100점 만점 득점 및 가산 수가 산출',
     },
     compare_1to1: {
       title: '지자체 1:1 심층 비교 대시보드',
@@ -522,6 +527,15 @@ export default function Home() {
             {active_menu === 'cp_library' && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 <공공의료_CP_오더세트_라이브러리 />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* [신규 2026] 신포괄 정책가산(1.0%) & 공공병원 운영평가 1.1.8 계산기 */}
+            {/* ============================================================== */}
+            {active_menu === 'policy_incentive' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <신포괄_정책가산_평가_시뮬레이터 />
               </div>
             )}
 

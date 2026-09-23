@@ -32,6 +32,7 @@ import {
   Share2,
   Sliders,
   FileSpreadsheet,
+  Calculator,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
@@ -45,6 +46,7 @@ export type 메뉴_아이디 =
   | 'hospital_crisis'
   | 'discharge_care'
   | 'cp_library'
+  | 'policy_incentive'
   | 'compare_1to1'
   | 'citizen_view'
   | 'my_hospital';
@@ -149,8 +151,14 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'cp_library',
         label: '표준진료지침(CP) & 오더세트',
         icon: FileSpreadsheet,
-        badge: 'NEW',
         desc: '71개 공공의료 CP·오더세트·Branch 분기',
+      },
+      {
+        id: 'policy_incentive',
+        label: '신포괄 정책가산 & 운영평가 계산기',
+        icon: Calculator,
+        badge: 'NEW',
+        desc: '1.0% 정책가산금 & 1.1.8 평가 자가진단',
       },
       {
         id: 'hospital_crisis',

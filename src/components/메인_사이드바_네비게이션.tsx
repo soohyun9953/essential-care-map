@@ -306,7 +306,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         </div>
 
         <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
-          20260918 v0.24
+          20260923 v1.0.0
         </span>
       </div>
 
@@ -340,7 +340,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
                 {/* 2. 국립중앙의료원 지원센터 삭제 및 배지만 유지 */}
                 <div className="flex items-center space-x-1.5 mb-0.5">
                   <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
-                    20260918 v0.24
+                    20260923 v1.0.0
                   </span>
                 </div>
                 {/* 3. 타이틀 수정: 공공의료 정책의사결정지원 AI 플랫폼 */}

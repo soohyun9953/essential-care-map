@@ -1,6 +1,6 @@
 {
   "name": "health-map-essential-care",
-  "version": "20260918-v0.24",
+  "version": "20260923-v1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

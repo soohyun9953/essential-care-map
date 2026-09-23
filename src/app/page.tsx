@@ -50,6 +50,12 @@ import 공공의료_CP_오더세트_라이브러리 from '@/components/공공의
 import 신포괄_정책가산_평가_시뮬레이터 from '@/components/신포괄_정책가산_평가_시뮬레이터';
 import CP_변이분석_및_ROI_대시보드 from '@/components/CP_변이분석_및_ROI_대시보드';
 
+// [신규 2026 UI/UX 전면개선] 공공의료 의사결정 지도, HOME Hero, 기관 데이터센터
+import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
+import { 공공의료_의사결정_지도_뷰 } from '@/components/공공의료_의사결정_지도_뷰';
+import { 기관_데이터센터_대시보드 } from '@/components/기관_데이터센터_대시보드';
+import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
+
 import {
   Sparkles,
   Camera,
@@ -65,6 +71,11 @@ import {
 } from 'lucide-react';
 
 export default function Home() {
+  // [신규] 최상단 4대 메인 뷰: 'home' (기본 홈) | 'decision_map' (의사결정 지도) | 'datacenter' (기관 데이터센터) | 'policy_platform' (기존 정책·진단 플랫폼)
+  const [main_view, set_main_view] = useState<'home' | 'decision_map' | 'datacenter' | 'policy_platform'>('home');
+  const [search_filter_keyword, set_search_filter_keyword] = useState('');
+  const [search_filter_services, set_search_filter_services] = useState<의료서비스_코드[]>([]);
+
   // 현재 활성화된 좌측 기능 메뉴
   const [active_menu, set_active_menu] = useState<메뉴_아이디 | 'my_hospital'>('gis_map');
   // 6대 글로벌 업무 도메인 상태
@@ -74,9 +85,28 @@ export default function Home() {
   const [is_sidebar_hidden, set_is_sidebar_hidden] = useState(false);
   const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 도메인 변경 시 대표 기능 메뉴 자동 활성화
+  // HOME 화면에서 검색 또는 퀵필터 클릭 시 의사결정 지도로 이동
+  const handle_home_search = (keyword: string, selected_services: 의료서비스_코드[]) => {
+    set_search_filter_keyword(keyword);
+    set_search_filter_services(selected_services);
+    set_main_view('decision_map');
+  };
+
+  const handle_navigate_map = (service?: 의료서비스_코드) => {
+    if (service) {
+      set_search_filter_services([service]);
+      set_search_filter_keyword('');
+    } else {
+      set_search_filter_services([]);
+      set_search_filter_keyword('');
+    }
+    set_main_view('decision_map');
+  };
+
+  // 도메인 변경 시 대표 기능 메뉴 자동 활성화 및 정책 플랫폼 화면 표시
   const handle_select_domain = (domain: 업무_도메인_타입) => {
     set_current_domain(domain);
+    set_main_view('policy_platform');
     if (domain === 'status_diag') {
       if (!['gis_map', 'diagnosis_metrics', 'compare_1to1', 'demand_forecast'].includes(active_menu)) {
         set_active_menu('gis_map');
@@ -96,9 +126,10 @@ export default function Home() {
     }
   };
 
-  // 메뉴 변경 시 도메인 자동 동기화
+  // 메뉴 변경 시 도메인 자동 동기화 및 정책 플랫폼 화면 표시
   const handle_select_menu = (menu: 메뉴_아이디 | 'my_hospital') => {
     set_active_menu(menu);
+    set_main_view('policy_platform');
     if (['gis_map', 'diagnosis_metrics', 'patient_flow', 'compare_1to1'].includes(menu)) {
       set_current_domain('status_diag');
     } else if (['dual_ai_studio', 'demand_forecast', 'policy_simulator'].includes(menu)) {
@@ -296,6 +327,8 @@ export default function Home() {
     <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
       {/* 1. 최상단 글로벌 공공 헤더 (1줄에 모든 정보 통합) */}
       <글로벌_공공_헤더
+        active_main_view={main_view}
+        on_change_main_view={(view) => set_main_view(view)}
         active_domain={current_domain}
         on_select_domain={handle_select_domain}
         on_open_key_modal={() => set_is_key_modal_open(true)}
@@ -309,13 +342,48 @@ export default function Home() {
         google_api_key_registered={!!google_api_key}
         data_go_kr_key_registered={!!data_go_kr_api_key}
         vulnerable_region_count={vulnerable_region_count}
+        on_search_query={(q) => {
+          set_search_filter_keyword(q);
+          set_search_filter_services([]);
+          set_main_view('decision_map');
+        }}
       />
 
-      {/* 2. 본체 영역 (사이드바 + 메인 워크스페이스) */}
-      <div className="flex-1 flex flex-col lg:flex-row min-w-0 min-h-0 overflow-hidden">
-        {/* 좌측 기능 사이드바 네비게이션 */}
-        <메인_사이드바_네비게이션
-          active_menu={active_menu as 메뉴_아이디}
+      {/* 2. 메인 뷰 1: 공공의료 의사결정 지도 HOME (Hero + 9대 Quick Filter) */}
+      {main_view === 'home' && (
+        <div className="flex-1 w-full overflow-y-auto">
+          <공공의료_결정지도_홈
+            on_search_submit={handle_home_search}
+            on_navigate_map={handle_navigate_map}
+            on_open_guide_modal={() => set_is_guide_modal_open(true)}
+          />
+        </div>
+      )}
+
+      {/* 3. 메인 뷰 2: 35:65 양방향 공공의료 의사결정 지도 (좌측 필터/목록 + 우측 Leaflet 지도) */}
+      {main_view === 'decision_map' && (
+        <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)]">
+          <공공의료_의사결정_지도_뷰
+            key={`${search_filter_keyword}_${search_filter_services.join(',')}`}
+            initial_keyword={search_filter_keyword}
+            initial_services={search_filter_services}
+          />
+        </div>
+      )}
+
+      {/* 4. 메인 뷰 3: 기관 데이터센터 대시보드 (데이터 품질 지수 & 병상/인력/응급 가동률) */}
+      {main_view === 'datacenter' && (
+        <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)]">
+          <기관_데이터센터_대시보드 />
+        </div>
+      )}
+
+      {/* 5. 메인 뷰 4: 기존 정책·진단 플랫폼 (71개 CP, 신포괄 정책가산, 변이 ROI, 듀얼 AI 등) */}
+      {main_view === 'policy_platform' && (
+        <div className="flex-1 flex flex-col lg:flex-row min-w-0 min-h-0 overflow-hidden">
+          {/* 좌측 기능 사이드바 네비게이션 */}
+          <메인_사이드바_네비게이션
+            active_menu={active_menu as 메뉴_아이디}
           on_select_menu={handle_select_menu}
           on_open_upload_modal={() => set_is_upload_modal_open(true)}
           on_load_sample_data={handle_load_sample_data}
@@ -649,6 +717,7 @@ export default function Home() {
           </div>
         </div>
       </div>
+    )}
 
 
       {/* ============================================================== */}

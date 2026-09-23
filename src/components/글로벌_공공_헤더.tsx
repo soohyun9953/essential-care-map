@@ -30,6 +30,8 @@ export type 메인_도메인 =
 export type 업무_도메인_타입 = 메인_도메인;
 
 interface 글로벌_공공_헤더_속성 {
+  active_main_view?: 'home' | 'decision_map' | 'datacenter' | 'policy_platform';
+  on_change_main_view?: (view: 'home' | 'decision_map' | 'datacenter' | 'policy_platform') => void;
   active_domain?: 메인_도메인;
   on_select_domain?: (domain: 메인_도메인) => void;
   is_dark_mode: boolean;
@@ -49,6 +51,8 @@ interface 글로벌_공공_헤더_속성 {
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
+  active_main_view = 'home',
+  on_change_main_view,
   active_domain,
   on_select_domain,
   is_dark_mode,
@@ -98,50 +102,77 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
         <div className="h-14 flex items-center justify-between gap-3">
           
-          {/* 1. 좌측: 브랜드 로고 & 단일 타이틀 */}
+          {/* 1. 좌측: 브랜드 로고 & Essential Care Map 타이틀 */}
           <div
-            onClick={() => on_select_domain?.('status_diag')}
+            onClick={() => on_change_main_view?.('home')}
             className="flex items-center space-x-2.5 cursor-pointer select-none shrink-0"
           >
-            <div className="w-8 h-8 rounded-lg bg-[#0071e3] flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
               <Activity className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white">
-                공공의료 정책의사결정지원 AI 플랫폼
-              </h1>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden md:inline">
-                20260918 v0.24
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                  Essential Care Map
+                </h1>
+                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden xl:inline">
+                  2026.09
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold block leading-tight">
+                공공의료 의사결정 지도
               </span>
             </div>
           </div>
 
-          {/* 2. 중앙: 1줄 컴팩트 핵심 운영 지표 티커 */}
-          <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-slate-600 dark:text-slate-300">
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-              <span className="text-slate-500 text-[11px]">시군구 226:</span>
-              <span className="font-bold text-red-600 dark:text-red-400">취약지 {vulnerable_region_count}개소</span>
-            </div>
+          {/* 2. 중앙: 4대 핵심 네비게이션 메뉴 (홈 / 지도 / 기관 데이터센터 / 정책·진단 플랫폼) */}
+          <nav className="hidden md:flex items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+            <button
+              onClick={() => on_change_main_view?.('home')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                active_main_view === 'home'
+                  ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              홈
+            </button>
 
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-              <span className="text-slate-500 text-[11px]">중진료권:</span>
-              <span className="font-bold text-teal-700 dark:text-teal-300">70개 네트워크</span>
-            </div>
+            <button
+              onClick={() => on_change_main_view?.('decision_map')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                active_main_view === 'decision_map'
+                  ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              지도
+            </button>
 
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-              <span className="text-slate-500 text-[11px]">지방의료원:</span>
-              <span className="font-bold text-amber-700 dark:text-amber-300">35개 병원 경보</span>
-            </div>
+            <button
+              onClick={() => on_change_main_view?.('datacenter')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                active_main_view === 'datacenter'
+                  ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              <span>기관 데이터센터</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </button>
 
-            <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700">
-              <span className="text-slate-500 text-[11px]">핵심의료:</span>
-              <span className="font-bold text-purple-700 dark:text-purple-300">응급·분만·소아</span>
-            </div>
-
-            <span className="text-[11px] text-slate-400 hidden 2xl:inline">
-              (기준: 2026.09 NMC 월 1회 갱신)
-            </span>
-          </div>
+            <button
+              onClick={() => on_change_main_view?.('policy_platform')}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                active_main_view === 'policy_platform'
+                  ? 'bg-white dark:bg-[#1a1d24] text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+              title="71개 CP 라이브러리, 신포괄 정책가산 계산기, 경영위기 조기경보, 사업계획서 생성기"
+            >
+              정책·진단 플랫폼
+            </button>
+          </nav>
 
           {/* 3. 우측: 데이터/사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">

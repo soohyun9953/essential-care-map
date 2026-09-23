@@ -14,6 +14,8 @@ import {
   Database,
   Moon,
   Sun,
+  BookOpen,
+  HelpCircle,
 } from 'lucide-react';
 
 export type 메인_도메인 =
@@ -36,6 +38,7 @@ interface 글로벌_공공_헤더_속성 {
   on_open_data_go_kr_modal: () => void;
   on_open_upload_modal: () => void;
   on_open_grounding_modal: () => void;
+  on_open_guide_modal?: () => void;
   on_download_nmc_excel?: () => void;
   on_export_capture?: () => void;
   google_key_registered?: boolean;
@@ -54,6 +57,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   on_open_data_go_kr_modal,
   on_open_upload_modal,
   on_open_grounding_modal,
+  on_open_guide_modal,
   on_download_nmc_excel,
   on_export_capture,
   google_key_registered,
@@ -139,10 +143,25 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </span>
           </div>
 
-          {/* 3. 우측: 검색 / 알림 / 테마 / 관리자 */}
+          {/* 3. 우측: 데이터/사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
+            {/* 데이터 & 사업가이드 팝업 안내 버튼 (초기 화면 주요 안내 아이콘) */}
+            <button
+              type="button"
+              onClick={on_open_guide_modal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs shadow-sm hover:shadow-md transition active:scale-95 ring-2 ring-blue-400/20 group cursor-pointer"
+              title="플랫폼 탑재 7대 데이터셋 & 2026 정부 법정 사업가이드 총람 보기"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-blue-200 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline">데이터·사업가이드</span>
+              <span className="sm:hidden inline">가이드</span>
+              <span className="px-1 py-0.2 rounded bg-white/20 text-[10px] font-extrabold text-white">
+                안내
+              </span>
+            </button>
+
             {/* 시군구 빠른 검색 */}
-            <form onSubmit={handle_search_submit} className="relative hidden xl:block w-44">
+            <form onSubmit={handle_search_submit} className="relative hidden xl:block w-40">
               <input
                 type="text"
                 value={search_text}
@@ -213,6 +232,20 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                     <span className="font-bold text-slate-900 dark:text-white block">시스템 &amp; 데이터 관리</span>
                     <span className="text-[10px] text-slate-400">데이터 연동 및 API 키 설정</span>
                   </div>
+
+                  <button
+                    onClick={() => {
+                      on_open_guide_modal?.();
+                      set_is_admin_open(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-50/60 dark:bg-blue-950/40 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 text-left transition mb-1 border border-blue-200/50 dark:border-blue-900/50"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-blue-900 dark:text-blue-200 font-bold">데이터·사업가이드 총람</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-blue-200/50 dark:border-blue-800/50">안내</span>
+                  </button>
 
                   <button
                     onClick={() => {

@@ -22,6 +22,7 @@ import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
 import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰뷰_모달';
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
+import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 
 // 상단 전역 지역 신속 선택기
 import { 상단_지역_선택기 } from '@/components/상단_지역_선택기';
@@ -60,6 +61,7 @@ import {
   Moon,
   Sun,
   PanelLeftOpen,
+  BookOpen,
 } from 'lucide-react';
 
 export default function Home() {
@@ -114,6 +116,7 @@ export default function Home() {
 
   // 모달 상태
   const [is_grounding_open, set_is_grounding_open] = useState(false);
+  const [is_guide_modal_open, set_is_guide_modal_open] = useState(false);
   const [is_upload_modal_open, set_is_upload_modal_open] = useState(false);
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
   const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
@@ -299,6 +302,7 @@ export default function Home() {
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
         on_open_grounding_modal={() => set_is_grounding_open(true)}
+        on_open_guide_modal={() => set_is_guide_modal_open(true)}
         on_export_capture={handle_export_report_png}
         is_dark_mode={is_dark_mode}
         on_toggle_dark_mode={toggle_dark_mode}
@@ -361,6 +365,14 @@ export default function Home() {
 
               {/* 빠른 바로가기 CTA */}
               <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => set_is_guide_modal_open(true)}
+                  className="px-2.5 py-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-bold shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer"
+                  title="플랫폼 반영 데이터셋 및 2026 정부 법정 사업가이드 안내 팝업 열기"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>데이터·사업가이드 안내</span>
+                </button>
                 <button
                   onClick={() => handle_select_domain('ai_analysis')}
                   className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-semibold transition flex items-center gap-1"
@@ -668,6 +680,13 @@ export default function Home() {
         is_open={is_data_go_kr_modal_open}
         on_close={() => set_is_data_go_kr_modal_open(false)}
         on_key_saved={(new_key) => set_data_go_kr_api_key(new_key)}
+      />
+
+      {/* [신규 2026] 플랫폼 탑재 데이터셋 & 정부 법정 사업가이드 안내 팝업 모달 */}
+      <데이터_사업가이드_안내_모달
+        is_open={is_guide_modal_open}
+        on_close={() => set_is_guide_modal_open(false)}
+        on_navigate={(menu) => handle_select_menu(menu)}
       />
     </main>
   );

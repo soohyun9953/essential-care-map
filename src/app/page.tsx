@@ -44,6 +44,7 @@ import { 일반국민_공공병원_맞춤뷰 } from '@/components/일반국민_�
 import { 글로벌_공공_헤더, 업무_도메인_타입 } from '@/components/글로벌_공공_헤더';
 import { OurHospitalDashboard } from '@/components/우리_의료기관_대시보드';
 import 환자_의료이용_유출입_대시보드 from '@/components/환자_의료이용_유출입_대시보드';
+import 인프라_확충_시뮬레이터 from '@/components/인프라_확충_시뮬레이터';
 
 import {
   Sparkles,
@@ -93,9 +94,9 @@ export default function Home() {
   // 메뉴 변경 시 도메인 자동 동기화
   const handle_select_menu = (menu: 메뉴_아이디 | 'my_hospital') => {
     set_active_menu(menu);
-    if (['gis_map', 'diagnosis_metrics', 'compare_1to1', 'demand_forecast'].includes(menu)) {
+    if (['gis_map', 'diagnosis_metrics', 'patient_flow', 'compare_1to1'].includes(menu)) {
       set_current_domain('status_diag');
-    } else if (menu === 'dual_ai_studio') {
+    } else if (['dual_ai_studio', 'demand_forecast', 'policy_simulator'].includes(menu)) {
       set_current_domain('ai_analysis');
     } else if (menu === 'report_generator') {
       set_current_domain('policy_plan');
@@ -236,6 +237,10 @@ export default function Home() {
     dual_ai_studio: {
       title: '공공보건의료 듀얼 AI 스튜디오 (Google Gemini × 노트북 sLLM)',
       subtitle: '외부 클라우드 대형 LLM과 원내 폐쇄망 온디바이스 sLLM 1:1 비교 & 하이브리드 RAG 지침 질의',
+    },
+    policy_simulator: {
+      title: '공공병원 인프라 확충 효과 시뮬레이터',
+      subtitle: '병상 증설, 전문의 충원 및 장비 도입에 따른 자체충족률(RI) 상승·관외유출 감소 실시간 예측',
     },
     report_generator: {
       title: '보건복지부 공모 표준 개조식 사업계획서 자동생성기',
@@ -476,6 +481,18 @@ export default function Home() {
                 <공공의료_sLLM_업무비서
                   selected_region={selected_region}
                   on_open_grounding={() => set_is_grounding_open(true)}
+                />
+              </div>
+            )}
+
+            {/* ============================================================== */}
+            {/* [신규] 공공병원 인프라 확충 효과 시뮬레이터 */}
+            {/* ============================================================== */}
+            {active_menu === 'policy_simulator' && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                <인프라_확충_시뮬레이터
+                  selected_region={selected_region}
+                  on_navigate={(menu_id) => handle_select_menu(menu_id as 메뉴_아이디)}
                 />
               </div>
             )}

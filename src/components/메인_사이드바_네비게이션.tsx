@@ -30,6 +30,7 @@ import {
   Building2,
   Users,
   Share2,
+  Sliders,
 } from 'lucide-react';
 
 export type 메뉴_아이디 =
@@ -37,11 +38,12 @@ export type 메뉴_아이디 =
   | 'diagnosis_metrics'
   | 'patient_flow'
   | 'dual_ai_studio'
+  | 'demand_forecast'
+  | 'policy_simulator'
   | 'report_generator'
   | 'hospital_crisis'
   | 'discharge_care'
   | 'compare_1to1'
-  | 'demand_forecast'
   | 'citizen_view'
   | 'my_hospital';
 
@@ -111,6 +113,13 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         label: '2030 의료수요 AI 추계',
         icon: TrendingUp,
         desc: '고령화 시계열 예측 & 시도 벤치마킹',
+      },
+      {
+        id: 'policy_simulator',
+        label: '인프라 확충 효과 시뮬레이터',
+        icon: Sliders,
+        badge: 'NEW',
+        desc: '병상·전문의 증설에 따른 RI·유출 감소 예측',
       },
     ],
   },

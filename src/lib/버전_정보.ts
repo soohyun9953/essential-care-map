@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.28',
-  fullLabel: '20260924 버전 1.0.28',
-  packageVersion: '20260924-v1.0.28',
+  semver: '1.0.29',
+  fullLabel: '20260924 버전 1.0.29',
+  packageVersion: '20260924-v1.0.29',
   updatedAt: '2026-09-24',
-  changelog: '경영위기 조기경보 실제 기관명 익명화 및 예시 표기, CP ROI 보고서 추정치 명시, 퇴원 돌봄 매칭 예시 표기·미검증 연락처 제거, 실시간·실거리 표기 정정',
+  changelog: 'sLLM 사전 작성 템플릿의 미확인·모순 정책 수치 제거, 지표값 기반 판정 문구 적용, 영월 전용 내용 일반화 및 원문 확인 안내 추가',
 };

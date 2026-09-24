@@ -83,11 +83,16 @@ ${effective_gemini_rag}
 3. 문체는 격조 있는 공문서 개조식(개요, 현황, 대책, 결론)으로 작성하세요.`;
     }
 
-    // 1. Google Gemini 호출 함수
-    // 1. Google Gemini 다중 모델 순차 호출 함수 (가용 모델을 성공할 때까지 간격을 두고 시도)
+    // 1. Google Gemini 호출 함수 (단일 또는 멀티 키 로드밸런싱 지원)
     const fetch_gemini = async () => {
       const start_t = Date.now();
-      const clean_key = final_google_key.trim().replace(/^["']|["']$/g, '').replace(/[\r\n\t]/g, '');
+      const key_candidates = final_google_key
+        .split(/[\n,;]+/)
+        .map((k) => k.trim().replace(/^["']|["']$/g, '').replace(/[\r\n\t]/g, ''))
+        .filter(Boolean);
+      const clean_key = key_candidates.length > 0
+        ? key_candidates[Math.floor(Math.random() * key_candidates.length)]
+        : '';
 
       if (!clean_key) {
         return {

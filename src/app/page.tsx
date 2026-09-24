@@ -211,6 +211,7 @@ export default function Home() {
         is_dark_mode={is_dark_mode}
         on_toggle_dark_mode={toggle_dark_mode}
         google_api_key_registered={!!google_api_key}
+        google_api_key={google_api_key}
         data_go_kr_key_registered={!!data_go_kr_api_key}
         vulnerable_region_count={vulnerable_region_count}
         on_search_query={handle_search_region}

@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.1',
-  fullLabel: '20260924 버전 1.0.1',
-  packageVersion: '20260924-v1.0.1',
+  semver: '1.0.2',
+  fullLabel: '20260924 버전 1.0.2',
+  packageVersion: '20260924-v1.0.2',
   updatedAt: '2026-09-24',
-  changelog: '글로벌 타이포그래피 전수 상향, 다크 모드 가독성 보강, 홈 퀵액션 카드 개선',
+  changelog: '우측 상단 Gemini API 키 실시간 연결 상태 위젯 추가 및 멀티 키 로드밸런싱 지원',
 };

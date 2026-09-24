@@ -94,9 +94,21 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
                 type="password"
                 value={api_key}
                 onChange={(e) => set_api_key(e.target.value)}
-                placeholder="AIzaSy..."
+                placeholder="AIzaSy... (복수 키는 콤마나 줄바꿈으로 구분)"
                 className="w-full px-3.5 py-2.5 bg-[#f5f5f7] dark:bg-[#1c1c1e] border border-black/[0.08] dark:border-white/[0.1] rounded-xl text-xs font-mono text-[#1d1d1f] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0071e3]/40 transition"
               />
+            </div>
+            <div className="flex items-center justify-between text-[11px] pt-1">
+              <span className="text-[#86868b] dark:text-slate-400">
+                단일 키 또는 복수 키(Multi-Key, 콤마 구분) 등록 시 자동 로드밸런싱
+              </span>
+              {api_key.split(/[\n,;]+/).map((k) => k.trim()).filter(Boolean).length > 0 ? (
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 shrink-0">
+                  {api_key.split(/[\n,;]+/).map((k) => k.trim()).filter(Boolean).length}개 키 등록됨
+                </span>
+              ) : (
+                <span className="text-slate-400 dark:text-slate-500 shrink-0">키 미등록</span>
+              )}
             </div>
             <p className="text-[11px] text-[#86868b] dark:text-slate-400 leading-relaxed">
               Google AI Studio에서 발급받은 무료 API 키를 입력하시면, 질문 시 구글의 최신 <strong>Gemini 1.5 Flash</strong> 모델이 실제 실시간으로 답변을 생성합니다.

@@ -57,6 +57,7 @@ interface 글로벌_공공_헤더_속성 {
   on_export_capture?: () => void;
   google_key_registered?: boolean;
   google_api_key_registered?: boolean;
+  google_api_key?: string;
   data_go_kr_key_registered?: boolean;
   on_search_query?: (query: string) => void;
   vulnerable_region_count?: number;
@@ -80,14 +81,27 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   on_export_capture,
   google_key_registered,
   google_api_key_registered,
+  google_api_key,
   data_go_kr_key_registered,
   on_search_query,
   vulnerable_region_count = 82,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_hovering_medical, set_is_hovering_medical] = useState(false);
+  const [is_hovering_gemini, set_is_hovering_gemini] = useState(false);
   const admin_ref = useRef<HTMLDivElement>(null);
   const medical_ref = useRef<HTMLDivElement>(null);
+  const gemini_ref = useRef<HTMLDivElement>(null);
+
+  // Gemini API 키 등록 현황 및 멀티 키 카운트
+  const raw_gemini_keys = (google_api_key || '')
+    .split(/[\n,;]+/)
+    .map((k) => k.trim())
+    .filter(Boolean);
+  const gemini_key_count = raw_gemini_keys.length > 0
+    ? raw_gemini_keys.length
+    : (google_api_key_registered || google_key_registered ? 1 : 0);
+  const is_gemini_connected = gemini_key_count > 0;
 
   // 워크스페이스 변경 통합 핸들러
   const handle_workspace_change = (ws: 워크스페이스_타입) => {
@@ -105,6 +119,9 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       }
       if (medical_ref.current && !medical_ref.current.contains(e.target as Node)) {
         set_is_hovering_medical(false);
+      }
+      if (gemini_ref.current && !gemini_ref.current.contains(e.target as Node)) {
+        set_is_hovering_gemini(false);
       }
     };
     document.addEventListener('mousedown', handle_click_outside);
@@ -258,8 +275,105 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           </nav>
 
 
-          {/* 3. 우측: 데이터/사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
+          {/* 3. 우측: Gemini Multi-Key 상태 위젯 / 데이터·사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
+            {/* 3-1. Gemini API Multi-Key 실시간 연결 상태 위젯 (레퍼런스 이미지 디자인 구현) */}
+            <div
+              className="relative"
+              ref={gemini_ref}
+              onMouseEnter={() => set_is_hovering_gemini(true)}
+              onMouseLeave={() => set_is_hovering_gemini(false)}
+            >
+              <button
+                type="button"
+                onClick={on_open_key_modal}
+                className="h-9 px-3 py-1 bg-[#13151c] hover:bg-[#191d27] dark:bg-[#0c0e14] dark:hover:bg-[#141822] text-white rounded-xl border border-slate-700/80 dark:border-slate-800 transition-all flex items-center gap-2.5 cursor-pointer shadow-xs select-none group"
+                title="Google Gemini API 연결 상태 (클릭 시 API 키 관리)"
+              >
+                {/* 텍스트 2줄 영역 */}
+                <div className="flex flex-col text-left">
+                  <span className="text-[9px] font-black tracking-wider text-slate-400 uppercase leading-none">
+                    API MULTI-KEY
+                  </span>
+                  <span
+                    className={`text-xs font-black tracking-tight leading-tight mt-0.5 ${
+                      is_gemini_connected
+                        ? 'text-[#10b981]'
+                        : 'text-slate-400 dark:text-slate-500'
+                    }`}
+                  >
+                    {is_gemini_connected
+                      ? (gemini_key_count > 1 ? `${gemini_key_count} Keys Connected` : '1 Key Connected')
+                      : 'Not Connected'}
+                  </span>
+                </div>
+
+                {/* 우측 인디케이터 바 (레퍼런스 이미지 [==---] 게이지 구현) */}
+                <div className="w-9 h-1.5 bg-[#252834] dark:bg-[#1e2028] rounded-full overflow-hidden flex items-center shrink-0">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      is_gemini_connected
+                        ? gemini_key_count >= 2
+                          ? 'w-full bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.8)]'
+                          : 'w-1/2 bg-[#10b981] shadow-[0_0_8px_rgba(16,185,129,0.8)]'
+                        : 'w-0 bg-[#10b981]'
+                    }`}
+                  />
+                </div>
+              </button>
+
+              {/* 호버 시 상세 상태 안내 팝오버 */}
+              {is_hovering_gemini && (
+                <div className="absolute top-full right-0 mt-2 w-72 p-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-auto">
+                  {is_gemini_connected ? (
+                    <>
+                      <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs mb-1">
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>Gemini AI 실시간 연동 활성화</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                        Google Gemini API 키(총 {gemini_key_count}개)가 연결되어 실시간 AI 지침 분석 및 사업계획서 생성이 가능합니다.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          set_is_hovering_gemini(false);
+                          on_open_key_modal();
+                        }}
+                        className="w-full py-1.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Key className="w-3.5 h-3.5 text-amber-500" />
+                        <span>API 키 관리 및 추가 키 등록</span>
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span>Gemini AI 키 미연결 (시뮬레이션 모드)</span>
+                      </div>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                        현재 API 키가 등록되지 않아 시뮬레이션 모드로 동작 중입니다. 구글 최신 Gemini 1.5 Flash 실제 호출을 위해 키를 연결해주세요.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          set_is_hovering_gemini(false);
+                          on_open_key_modal();
+                        }}
+                        className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                      >
+                        <Key className="w-3.5 h-3.5" />
+                        <span>Gemini API 무료 키 등록하기 ➔</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* 데이터 & 사업가이드 팝업 안내 버튼 (초기 화면 주요 안내 아이콘) */}
             <button
               type="button"
@@ -329,8 +443,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                       <Key className="w-3.5 h-3.5 text-amber-600" />
                       <span className="text-slate-700 dark:text-slate-200 font-medium">Google Gemini API 키</span>
                     </div>
-                    {google_key_registered ? (
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">등록됨</span>
+                    {is_gemini_connected ? (
+                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
+                        {gemini_key_count > 1 ? `${gemini_key_count}개 등록됨` : '등록됨'}
+                      </span>
                     ) : (
                       <span className="text-[10px] text-slate-400">미등록</span>
                     )}

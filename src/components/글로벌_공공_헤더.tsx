@@ -13,7 +13,6 @@ import {
   Moon,
   Sun,
   BookOpen,
-  Search,
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
@@ -89,7 +88,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_hovering_medical, set_is_hovering_medical] = useState(false);
   const [is_hovering_gemini, set_is_hovering_gemini] = useState(false);
-  const [search_query_text, set_search_query_text] = useState('');
   const admin_ref = useRef<HTMLDivElement>(null);
   const medical_ref = useRef<HTMLDivElement>(null);
   const gemini_ref = useRef<HTMLDivElement>(null);
@@ -103,15 +101,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     ? raw_gemini_keys.length
     : (google_api_key_registered || google_key_registered ? 1 : 0);
   const is_gemini_connected = gemini_key_count > 0;
-
-  // 헤더 지역 빠른 검색 핸들러
-  const handle_header_search = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (on_search_query && search_query_text.trim()) {
-      on_search_query(search_query_text.trim());
-      set_search_query_text('');
-    }
-  };
 
   // 워크스페이스 변경 통합 핸들러
   const handle_workspace_change = (ws: 워크스페이스_타입) => {
@@ -284,26 +273,9 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </button>
           </nav>
 
-          {/* 2-1. 헤더 간편 지역 검색창 (어느 화면에서나 즉시 시군구 검색 연동) */}
-          {on_search_query && (
-            <form
-              onSubmit={handle_header_search}
-              className="hidden xl:flex items-center relative select-none"
-            >
-              <input
-                type="text"
-                value={search_query_text}
-                onChange={(e) => set_search_query_text(e.target.value)}
-                placeholder="지역 검색 (예: 영월군)"
-                className="w-36 lg:w-44 pl-8 pr-3 py-1.5 bg-slate-100/90 dark:bg-slate-900/90 hover:bg-slate-200/60 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-slate-200 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition cursor-text shadow-2xs"
-              />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 pointer-events-none" />
-            </form>
-          )}
-
-          {/* 3. 우측: Gemini Multi-Key 상태 위젯 / 데이터·사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
+          {/* 3. 우측: Gemini Multi-Key 상태 위젯 (한 줄 구성) / 데이터·사업가이드 안내 / 검색 / 알림 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
-            {/* 3-1. Gemini API Multi-Key 실시간 연결 상태 위젯 (레퍼런스 이미지 디자인 구현) */}
+            {/* 3-1. Gemini API Multi-Key 실시간 연결 상태 위젯 (한 줄 컴팩트 배치) */}
             <div
               className="relative"
               ref={gemini_ref}
@@ -313,29 +285,29 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               <button
                 type="button"
                 onClick={on_open_key_modal}
-                className="h-9 px-3 py-1 bg-[#13151c] hover:bg-[#191d27] dark:bg-[#0c0e14] dark:hover:bg-[#141822] text-white rounded-xl border border-slate-700/80 dark:border-slate-800 transition-all flex items-center gap-2.5 cursor-pointer shadow-xs select-none group"
+                className="h-9 px-3 py-1.5 bg-[#13151c] hover:bg-[#191d27] dark:bg-[#0c0e14] dark:hover:bg-[#141822] text-white rounded-xl border border-slate-700/80 dark:border-slate-800 transition-all flex items-center gap-2 cursor-pointer shadow-xs select-none group whitespace-nowrap"
                 title="Google Gemini API 연결 상태 (클릭 시 API 키 관리)"
               >
-                {/* 텍스트 2줄 영역 */}
-                <div className="flex flex-col text-left">
-                  <span className="text-[10px] font-black tracking-wider text-slate-400 uppercase leading-none">
-                    API MULTI-KEY
-                  </span>
-                  <span
-                    className={`text-xs font-black tracking-tight leading-tight mt-0.5 ${
-                      is_gemini_connected
-                        ? 'text-[#10b981]'
-                        : 'text-slate-400 dark:text-slate-500'
-                    }`}
-                  >
-                    {is_gemini_connected
-                      ? (gemini_key_count > 1 ? `${gemini_key_count} Keys Connected` : '1 Key Connected')
-                      : 'Not Connected'}
-                  </span>
-                </div>
+                <span className="text-[11px] font-black tracking-wider text-slate-400 uppercase">
+                  API MULTI-KEY
+                </span>
+                <span className="text-slate-600 dark:text-slate-600 font-bold text-xs select-none">
+                  ·
+                </span>
+                <span
+                  className={`text-xs font-black tracking-tight ${
+                    is_gemini_connected
+                      ? 'text-[#10b981]'
+                      : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  {is_gemini_connected
+                    ? (gemini_key_count > 1 ? `${gemini_key_count} Keys Connected` : '1 Key Connected')
+                    : 'Not Connected'}
+                </span>
 
                 {/* 우측 인디케이터 바 (레퍼런스 이미지 [==---] 게이지 구현) */}
-                <div className="w-9 h-1.5 bg-[#252834] dark:bg-[#1e2028] rounded-full overflow-hidden flex items-center shrink-0">
+                <div className="w-8 h-1.5 bg-[#252834] dark:bg-[#1e2028] rounded-full overflow-hidden flex items-center shrink-0 ml-0.5">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
                       is_gemini_connected

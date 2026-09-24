@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.3',
-  fullLabel: '20260924 버전 1.0.3',
-  packageVersion: '20260924-v1.0.3',
+  semver: '1.0.4',
+  fullLabel: '20260924 버전 1.0.4',
+  packageVersion: '20260924-v1.0.4',
   updatedAt: '2026-09-24',
-  changelog: '글로벌 타이포그래피 스케일 정합화, 헤더 통합 검색 지원, 공공데이터 실시간 연계 개선 및 코드 품질 최적화',
+  changelog: '상단 헤더 지역검색 제거 및 API 멀티키 상태 위젯 한 줄 컴팩트 UI 적용',
 };

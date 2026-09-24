@@ -117,9 +117,6 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* ============================================================== */}
       {/* 3. 4대 Home Quick Action 카드 (Section 5) */}
       {/* ============================================================== */}
-      {/* ============================================================== */}
-      {/* 3. 4대 Home Quick Action 카드 (Section 5) */}
-      {/* ============================================================== */}
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider px-1">
           <span>주요 분석 워크스페이스 바로가기</span>

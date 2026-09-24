@@ -27,10 +27,20 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
   if (!is_open) return null;
 
   const handle_save = () => {
+    const clean_keys = api_key
+      .split(/[\n,;]+/)
+      .map((k) => k.trim().replace(/^["']|["']$/g, ''))
+      .filter(Boolean)
+      .join(', ');
+
     if (typeof window !== 'undefined') {
-      localStorage.setItem('google_gemini_api_key', api_key.trim());
+      if (clean_keys) {
+        localStorage.setItem('google_gemini_api_key', clean_keys);
+      } else {
+        localStorage.removeItem('google_gemini_api_key');
+      }
     }
-    on_key_saved(api_key.trim());
+    on_key_saved(clean_keys);
     set_is_saved(true);
     setTimeout(() => {
       set_is_saved(false);

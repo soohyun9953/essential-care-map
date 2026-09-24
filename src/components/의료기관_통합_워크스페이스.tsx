@@ -47,11 +47,15 @@ export type 의료기관_서브탭_타입 =
 interface 의료기관_통합_워크스페이스_속성 {
   initial_subtab?: 의료기관_서브탭_타입;
   on_navigate_tab?: (tab: 의료기관_서브탭_타입) => void;
+  data_go_kr_api_key?: string;
+  on_open_data_modal?: () => void;
 }
 
 export const 의료기관_통합_워크스페이스: React.FC<의료기관_통합_워크스페이스_속성> = ({
   initial_subtab = 'hospitals',
   on_navigate_tab,
+  data_go_kr_api_key,
+  on_open_data_modal,
 }) => {
   const [active_subtab, setActive_subtab] = useState<의료기관_서브탭_타입>(initial_subtab);
 
@@ -175,6 +179,26 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           <Users className="w-3.5 h-3.5" />
           <span>퇴원환자 돌봄자원 매칭</span>
         </button>
+
+        {/* 공공데이터포털 실시간 연계 상태 뱃지 */}
+        <div className="ml-auto flex items-center gap-2">
+          {data_go_kr_api_key ? (
+            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>data.go.kr 실시간 연동 활성</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={on_open_data_modal}
+              className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/60 dark:hover:bg-amber-900/60 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center gap-1.5 transition cursor-pointer shadow-2xs"
+              title="공공데이터포털 API 인증키 설정"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>실시간 연계 키 등록</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ============================================================== */}

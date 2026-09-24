@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.2',
-  fullLabel: '20260924 버전 1.0.2',
-  packageVersion: '20260924-v1.0.2',
+  semver: '1.0.3',
+  fullLabel: '20260924 버전 1.0.3',
+  packageVersion: '20260924-v1.0.3',
   updatedAt: '2026-09-24',
-  changelog: '우측 상단 Gemini API 키 실시간 연결 상태 위젯 추가 및 멀티 키 로드밸런싱 지원',
+  changelog: '글로벌 타이포그래피 스케일 정합화, 헤더 통합 검색 지원, 공공데이터 실시간 연계 개선 및 코드 품질 최적화',
 };

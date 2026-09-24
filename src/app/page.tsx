@@ -264,6 +264,8 @@ export default function Home() {
               key={medical_subtab}
               initial_subtab={medical_subtab}
               on_navigate_tab={(tab) => set_medical_subtab(tab)}
+              data_go_kr_api_key={data_go_kr_api_key}
+              on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
             />
           </div>
         )}

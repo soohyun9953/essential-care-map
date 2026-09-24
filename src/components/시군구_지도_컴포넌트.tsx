@@ -189,42 +189,6 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
         </button>
       </div>
 
-      {/* 우측 하단 미니멀 범례 (Apple Glass Badge) */}
-      <div className="absolute bottom-4 right-4 z-[400] bg-white/90 backdrop-blur-xl p-3.5 rounded-2xl shadow-apple-glass border border-black/[0.06] text-xs">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <p className="font-semibold text-[#1d1d1f] text-[11px] tracking-tight">
-            {view_mode === '종합취약도' ? '취약도 등급' : `${view_mode} 판정`}
-          </p>
-          <span className="text-[10px] font-medium text-[#0071e3] bg-[#0071e3]/10 px-1.5 py-0.2 rounded-full">
-            {region_unit === '중진료권' ? '70개 권역 기준' : '250개 시군구 기준'}
-          </span>
-        </div>
-        {view_mode === '종합취약도' ? (
-          <div className="space-y-1.5">
-            {(['심각', '취약', '관찰', '정상'] as 취약도_등급[]).map((grade) => (
-              <div key={grade} className="flex items-center space-x-2">
-                <span
-                  className="w-2.5 h-2.5 rounded-full shadow-sm"
-                  style={{ backgroundColor: 취약도_등급_정보[grade].색상코드 }}
-                />
-                <span className="text-[#1d1d1f] text-[11px] font-medium">{취약도_등급_정보[grade].라벨}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-1.5">
-            <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] shadow-sm" />
-              <span className="text-[#1d1d1f] text-[11px] font-medium">취약 권역/지역 (기준 미달)</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] shadow-sm" />
-              <span className="text-[#1d1d1f] text-[11px] font-medium">적정 권역/지역 (기준 충족)</span>
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* React-Leaflet 지도 컨테이너 */}
       <div className="flex-1 w-full h-full relative" id="gis-map-canvas-container">
         <MapContainer
@@ -482,29 +446,48 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
           ))}
         </MapContainer>
 
-        {/* 4단계 취약도 표준 범례 (Section 8: 색상+아이콘+텍스트 병기) */}
-        <div className="absolute bottom-4 right-4 z-[400] bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-3 rounded-2xl shadow-apple-card border border-black/[0.06] text-xs space-y-1.5 pointer-events-none sm:pointer-events-auto">
-          <div className="font-bold text-[#1d1d1f] dark:text-white text-[11px] pb-1 border-b border-black/[0.05]">
-            취약도 판정 범례
+        {/* GIS 시각화 단일 통합 범례 (Section 8 표준: view_mode 반응형 단일 카드) */}
+        <div className="absolute bottom-4 right-4 z-[400] bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-3.5 rounded-2xl shadow-apple-card border border-black/[0.06] dark:border-slate-800 text-xs space-y-2 pointer-events-auto">
+          <div className="flex items-center justify-between gap-3 pb-1.5 border-b border-black/[0.05] dark:border-slate-800">
+            <span className="font-bold text-[#1d1d1f] dark:text-white text-xs">
+              {view_mode === '종합취약도' ? '취약도 판정 범례' : `${view_mode} 판정 범례`}
+            </span>
+            <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-200/50 dark:border-blue-900/50">
+              {region_unit === '중진료권' ? '70개 권역' : '250개 시군구'}
+            </span>
           </div>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
-            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] shrink-0" />
-              <span>🔴 심각</span>
+
+          {view_mode === '종합취약도' ? (
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+              <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] shrink-0 shadow-xs" />
+                <span>🔴 심각</span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ff9500] shrink-0 shadow-xs" />
+                <span>🟠 주의</span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ffcc00] shrink-0 shadow-xs" />
+                <span>🟡 관심</span>
+              </div>
+              <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] shrink-0 shadow-xs" />
+                <span>🟢 양호</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff9500] shrink-0" />
-              <span>🟠 주의</span>
+          ) : (
+            <div className="space-y-1.5 text-[11px]">
+              <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] shrink-0 shadow-xs" />
+                <span>취약 권역/지역 (기준 미달)</span>
+              </div>
+              <div className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] shrink-0 shadow-xs" />
+                <span>적정 권역/지역 (기준 충족)</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ffcc00] shrink-0" />
-              <span>🟡 관심</span>
-            </div>
-            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#34c759] shrink-0" />
-              <span>🟢 양호</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

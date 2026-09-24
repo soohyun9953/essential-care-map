@@ -122,15 +122,12 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             <div>
               <div className="flex items-center gap-1.5">
                 <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-none">
-                  필수의료 결정지도
+                  공공의료 의사결정 지원 플랫폼
                 </h1>
                 <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden sm:inline">
                   20260923 버전 1.0.0
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold block leading-tight">
-                공공의료 의사결정 지원 플랫폼
-              </span>
             </div>
           </div>
 

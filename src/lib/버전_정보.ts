@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.14',
-  fullLabel: '20260924 버전 1.0.14',
-  packageVersion: '20260924-v1.0.14',
+  semver: '1.0.15',
+  fullLabel: '20260924 버전 1.0.15',
+  packageVersion: '20260924-v1.0.15',
   updatedAt: '2026-09-24',
-  changelog: '사전 작성 템플릿·내장 기준 데이터를 AI 실시간 답변·실측 병상으로 오표시하던 문제 정정 및 기관 데이터센터 연계 확인 기능 실제 동작화',
+  changelog: '응급실 실시간 API 조회 시각을 배포 서버(UTC)에서도 한국 시간으로 표시하도록 수정',
 };

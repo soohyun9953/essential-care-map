@@ -28,7 +28,9 @@ export async function GET(req: NextRequest) {
       process.env.DATA_GO_KR_API_KEY ||
       '';
 
+    // 배포 서버(Vercel)는 UTC이므로 한국 시간대를 명시
     const now_time_str = new Date().toLocaleTimeString('ko-KR', {
+      timeZone: 'Asia/Seoul',
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',

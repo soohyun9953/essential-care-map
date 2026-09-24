@@ -11,6 +11,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { 파일_처리기 } from '@/lib/파일_처리기';
+import { PLATFORM_VERSION } from '@/lib/버전_정보';
 
 interface 헤더_네비게이션_속성 {
   on_open_upload_modal: () => void;
@@ -47,8 +48,8 @@ export const 헤더_네비게이션: React.FC<헤더_네비게이션_속성> = (
                 <span className="text-[11px] font-semibold tracking-tight text-[#86868b]">
                   국립중앙의료원 공공보건의료지원센터
                 </span>
-                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
-                  20260923 v1.0.0
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
+                  {PLATFORM_VERSION.fullLabel}
                 </span>
               </div>
               <h1 className="text-sm sm:text-base font-semibold tracking-tight text-[#1d1d1f] flex items-center gap-1.5">

@@ -17,6 +17,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
+import { PLATFORM_VERSION } from '@/lib/버전_정보';
 
 export type 워크스페이스_타입 =
   | 'home'
@@ -134,7 +135,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               </h1>
               {/* 1. 좌측 버전 폰트 사이즈 확대 적용 (text-xs sm:text-[13px] font-bold) */}
               <span className="text-xs sm:text-[13px] px-2.5 py-0.5 rounded-md bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800 shadow-2xs hidden sm:inline-flex items-center justify-center leading-none">
-                20260923 버전 1.0.0
+                {PLATFORM_VERSION.fullLabel}
               </span>
             </div>
           </button>

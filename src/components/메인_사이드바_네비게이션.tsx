@@ -34,6 +34,7 @@ import {
   FileSpreadsheet,
   Calculator,
 } from 'lucide-react';
+import { PLATFORM_VERSION } from '@/lib/버전_정보';
 
 export type 메뉴_아이디 =
   | 'gis_map'
@@ -305,8 +306,8 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           </div>
         </div>
 
-        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
-          20260923 v1.0.0
+        <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
+          {PLATFORM_VERSION.fullLabel}
         </span>
       </div>
 
@@ -339,8 +340,8 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               <div className="min-w-0">
                 {/* 2. 국립중앙의료원 지원센터 삭제 및 배지만 유지 */}
                 <div className="flex items-center space-x-1.5 mb-0.5">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
-                    20260923 v1.0.0
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
+                    {PLATFORM_VERSION.fullLabel}
                   </span>
                 </div>
                 {/* 3. 타이틀 수정: 공공의료 정책의사결정지원 AI 플랫폼 */}

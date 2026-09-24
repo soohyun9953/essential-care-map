@@ -158,8 +158,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              <span>의료기관</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span>의료기관(실시간)</span>
             </button>
 
             <button

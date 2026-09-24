@@ -169,9 +169,12 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>지금 필요한 공공의료기관 찾기</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                정밀 GIS 실거리순
+              </span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              야간·휴일 응급실 및 소아·분만 진료가 가능한 가장 가까운 병원을 안내합니다.
+              야간·휴일 응급실 및 소아·분만 진료가 가능한 가장 가까운 병원을 안내합니다. (기준: {user_location.lat === 37.5665 ? '서울시청 중심' : '현재 확인된 사용자 위치'})
             </p>
           </div>
 
@@ -282,8 +285,9 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         >
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mb-1" />
           <div className="flex items-center justify-between w-full px-4 text-xs">
-            <span className="font-bold text-slate-800 dark:text-slate-200">
-              내 주변 이용 가능 공공의료기관 <strong>{hospital_list.length}</strong>개소
+            <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <span>내 주변 이용 가능 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">(실시간 최단거리순)</span>
             </span>
             <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
               {sheet_state === 'min' ? '목록 펼치기' : sheet_state === 'half' ? '전체 보기' : '축소'}

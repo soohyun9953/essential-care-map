@@ -10,7 +10,8 @@
  */
 
 import { 전국_공공의료기관_목록, 공공의료기관_정보 } from './공공의료기관_데이터셋';
-import { get_region_location } from './시군구_경계_데이터';
+import { get_region_location, get_sgg_coordinates } from './시군구_경계_데이터';
+import { get_public_hospital_coords } from './공공의료기관_좌표_데이터';
 
 export type 의료서비스_코드 =
   | 'emergency'     // 응급
@@ -143,9 +144,7 @@ export interface 검색_필터_옵션 {
 // =============================================================================
 function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
   return 전국_공공의료기관_목록.map((h, idx) => {
-    const loc = get_region_location(h.시군구명, h.시도명);
-    const lat = loc?.위도 ?? (37.5 + (idx % 20) * 0.05);
-    const lng = loc?.경도 ?? (127.0 + (idx % 20) * 0.05);
+    const [lat, lng] = get_public_hospital_coords(h.id, h.시군구명, h.시도명);
 
     const is_regional = h.그룹 === '권역';
     const is_local = h.그룹 === '지역';

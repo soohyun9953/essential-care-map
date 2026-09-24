@@ -111,20 +111,25 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
         <div className="h-14 flex items-center justify-between gap-3">
           
-          {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 (정적 표시, 완벽한 수직 중앙 정렬) */}
-          <div className="flex items-center gap-2.5 select-none shrink-0 cursor-default">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0">
+          {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 (클릭 시 최초 초기 화면으로 이동) */}
+          <button
+            type="button"
+            onClick={() => handle_workspace_change('home')}
+            className="flex items-center gap-2.5 select-none shrink-0 cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
+            title="최초 초기 화면으로 이동"
+          >
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
               <Activity className="w-4 h-4 text-white" />
             </div>
             <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-normal flex items-center">
+              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-normal flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 공공의료 의사결정 지원 플랫폼
               </h1>
               <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden sm:inline-flex items-center justify-center leading-none">
                 20260923 버전 1.0.0
               </span>
             </div>
-          </div>
+          </button>
 
           {/* 2. 중앙: 5대 핵심 워크스페이스 네비게이션 ([지역진단] [정책기획] [의료기관] [AI 분석] [국민안심]) */}
           <nav className="hidden lg:flex items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">

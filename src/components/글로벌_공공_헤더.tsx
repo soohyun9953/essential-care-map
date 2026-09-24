@@ -14,6 +14,8 @@ import {
   Sun,
   BookOpen,
   HelpCircle,
+  AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 export type 워크스페이스_타입 =
@@ -82,7 +84,9 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   vulnerable_region_count = 82,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
+  const [is_hovering_medical, set_is_hovering_medical] = useState(false);
   const admin_ref = useRef<HTMLDivElement>(null);
+  const medical_ref = useRef<HTMLDivElement>(null);
 
   // 워크스페이스 변경 통합 핸들러
   const handle_workspace_change = (ws: 워크스페이스_타입) => {
@@ -97,6 +101,9 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     const handle_click_outside = (e: MouseEvent) => {
       if (admin_ref.current && !admin_ref.current.contains(e.target as Node)) {
         set_is_admin_open(false);
+      }
+      if (medical_ref.current && !medical_ref.current.contains(e.target as Node)) {
+        set_is_hovering_medical(false);
       }
     };
     document.addEventListener('mousedown', handle_click_outside);
@@ -125,7 +132,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-normal flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 공공의료 의사결정 지원 플랫폼
               </h1>
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden sm:inline-flex items-center justify-center leading-none">
+              {/* 1. 좌측 버전 폰트 사이즈 확대 적용 (text-xs sm:text-[13px] font-bold) */}
+              <span className="text-xs sm:text-[13px] px-2.5 py-0.5 rounded-md bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800 shadow-2xs hidden sm:inline-flex items-center justify-center leading-none">
                 20260923 버전 1.0.0
               </span>
             </div>
@@ -155,16 +163,75 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               정책기획
             </button>
 
-            <button
-              onClick={() => handle_workspace_change('medical_institution')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
-                current_active === 'medical_institution'
-                  ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
+            {/* 2. 의료기관(실시간): 연결 시 녹색 표시, 미연결 시 호버 툴팁 안내 */}
+            <div
+              className="relative"
+              ref={medical_ref}
+              onMouseEnter={() => set_is_hovering_medical(true)}
+              onMouseLeave={() => set_is_hovering_medical(false)}
             >
-              <span>의료기관(실시간)</span>
-            </button>
+              <button
+                type="button"
+                onClick={() => handle_workspace_change('medical_institution')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  current_active === 'medical_institution'
+                    ? 'bg-white dark:bg-[#1a1d24] text-blue-600 dark:text-blue-400 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <span>의료기관</span>
+                <span
+                  className={`font-extrabold transition-colors ${
+                    data_go_kr_key_registered
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-slate-400 dark:text-slate-500'
+                  }`}
+                >
+                  (실시간)
+                </span>
+                {data_go_kr_key_registered && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
+                )}
+              </button>
+
+              {/* 실시간 연결됨: 호버 시 정상 연동 상태 툴팁 */}
+              {data_go_kr_key_registered && is_hovering_medical && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-emerald-200 dark:border-emerald-800/60 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-none">
+                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>실시간 공공데이터 연계 정상</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    공공데이터포털(data.go.kr) 중앙응급의료센터 API와 실시간 동기화 중입니다.
+                  </p>
+                </div>
+              )}
+
+              {/* 실시간 미연결: 호버 시 연결 방법 안내 팝오버 & API 키 설정 모달 오픈 */}
+              {!data_go_kr_key_registered && is_hovering_medical && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 p-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-auto">
+                  <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>실시간 병상 데이터 미연결</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
+                    현재 로컬 기준 데이터로 표출 중입니다. 국립중앙의료원 실시간 응급실·병상 정보를 수신하려면 공공데이터포털(data.go.kr) 인증키를 등록해주세요.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      set_is_hovering_medical(false);
+                      on_open_data_go_kr_modal();
+                    }}
+                    className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+                  >
+                    <Key className="w-3.5 h-3.5" />
+                    <span>공공데이터포털 API 키 등록하기 ➔</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={() => handle_workspace_change('ai_analysis')}

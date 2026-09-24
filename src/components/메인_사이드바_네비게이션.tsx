@@ -299,13 +299,13 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               <Activity className="w-4 h-4 text-white" />
             </div>
             {/* 3. 모바일 타이틀 수정 */}
-            <span className="text-xs font-bold text-[#1d1d1f] truncate max-w-[180px]">
+            <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[180px]">
               공공의료 정책의사결정지원 AI 플랫폼
             </span>
           </div>
         </div>
 
-        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 text-[#0071e3]">
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
           20260923 v1.0.0
         </span>
       </div>
@@ -320,7 +320,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
 
       {/* 좌측 사이드바 본체 */}
       <aside
-        className={`fixed lg:static top-0 bottom-0 left-0 z-50 bg-white border-r border-black/[0.06] flex flex-col justify-between transition-all duration-300 ease-in-out shadow-lg lg:shadow-none ${
+        className={`fixed lg:static top-0 bottom-0 left-0 z-50 bg-white dark:bg-[#15161b] border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out shadow-lg lg:shadow-none ${
           is_mobile_open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${
           is_hidden
@@ -329,7 +329,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
         }`}
       >
         {/* 상단: 플랫폼 로고 및 헤더 */}
-        <div className="p-4 sm:p-5 border-b border-black/[0.05]">
+        <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3 min-w-0">
               {/* 1. 아이콘 파랑색 수정 (#0071e3) */}
@@ -339,12 +339,12 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               <div className="min-w-0">
                 {/* 2. 국립중앙의료원 지원센터 삭제 및 배지만 유지 */}
                 <div className="flex items-center space-x-1.5 mb-0.5">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0071e3]/10 text-[#0071e3]">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
                     20260923 v1.0.0
                   </span>
                 </div>
                 {/* 3. 타이틀 수정: 공공의료 정책의사결정지원 AI 플랫폼 */}
-                <h1 className="text-[14.5px] font-extrabold tracking-tight text-[#1d1d1f] leading-snug">
+                <h1 className="text-[14.5px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-snug">
                   공공의료 정책의사결정지원 AI 플랫폼
                 </h1>
               </div>
@@ -355,7 +355,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               {on_toggle_hide && (
                 <button
                   onClick={on_toggle_hide}
-                  className="hidden lg:flex p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+                  className="hidden lg:flex p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   title="사이드바 메뉴 숨기기 (화면 넓게 보기)"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -365,7 +365,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
               {/* 모바일 닫기 버튼 */}
               <button
                 onClick={() => set_is_mobile_open(false)}
-                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600"
+                className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -373,10 +373,10 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
           </div>
 
           {/* 현재 선택된 진단 지역 간이 카드 */}
-          <div className="mt-3.5 p-3 rounded-xl bg-[#f5f5f7] border border-black/[0.04] flex items-center justify-between text-base">
+          <div className="mt-3.5 p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-base">
             <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-[#0071e3] shrink-0" />
-              <span className="font-bold text-slate-800">{selected_region_name}</span>
+              <MapPin className="w-4 h-4 text-[#0071e3] dark:text-blue-400 shrink-0" />
+              <span className="font-bold text-slate-800 dark:text-white">{selected_region_name}</span>
             </div>
             <span
               className={`px-2.5 py-1 rounded-lg text-xs font-extrabold ${

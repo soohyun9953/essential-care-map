@@ -89,47 +89,47 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
     switch (grade) {
       case '심각':
       case '경고':
-        return 'bg-[#ff3b30]/10 text-[#ff3b30] border-[#ff3b30]/25';
+        return 'bg-[#ff3b30]/10 dark:bg-rose-950/40 text-[#ff3b30] dark:text-rose-400 border-[#ff3b30]/25 dark:border-rose-800/50';
       case '주의':
-        return 'bg-[#ff9500]/10 text-[#ff9500] border-[#ff9500]/25';
+        return 'bg-[#ff9500]/10 dark:bg-amber-950/40 text-[#ff9500] dark:text-amber-400 border-[#ff9500]/25 dark:border-amber-800/50';
       case '정상':
-        return 'bg-[#34c759]/10 text-[#34c759] border-[#34c759]/25';
+        return 'bg-[#34c759]/10 dark:bg-emerald-950/40 text-[#34c759] dark:text-emerald-400 border-[#34c759]/25 dark:border-emerald-800/50';
     }
   };
 
   return (
-    <div className="bg-white p-6 sm:p-7 rounded-3xl border border-black/[0.05] shadow-apple-card space-y-5">
+    <div className="bg-white dark:bg-[#15161b] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
       {/* 헤더 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-black/[0.05]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#ff3b30] to-[#af52de] text-white flex items-center justify-center shadow-apple-sm">
             <ShieldAlert className="w-5 h-5 text-white" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="text-[11px] font-semibold tracking-tight text-[#86868b]">
+              <span className="text-[11px] font-semibold tracking-tight text-slate-500 dark:text-slate-400">
                 공공병원 성과 모니터링 &amp; 경영위기 조기경보
               </span>
-              <span className="px-2 py-0.5 rounded-full bg-[#ff3b30]/10 text-[#ff3b30] text-[10px] font-bold">
+              <span className="px-2 py-0.5 rounded-full bg-[#ff3b30]/10 dark:bg-[#ff3b30]/20 text-[#ff3b30] dark:text-red-400 text-[10px] font-bold">
                 Early Warning Engine
               </span>
             </div>
-            <h3 className="text-base sm:text-lg font-bold tracking-tight text-[#1d1d1f]">
+            <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
               35개 지방의료원 성과평가 자동 스크리닝 &amp; 위기 조기감지
             </h3>
           </div>
         </div>
 
         {/* 필터 탭 */}
-        <div className="bg-[#f5f5f7] p-1 rounded-full flex items-center space-x-1 text-xs font-semibold">
+        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-full flex items-center space-x-1 text-xs font-semibold">
           {(['전체', '경고', '주의', '정상'] as const).map((filter) => (
             <button
               key={filter}
               onClick={() => set_selected_filter(filter)}
-              className={`px-3 py-1 rounded-full transition ${
+              className={`px-3 py-1 rounded-full transition cursor-pointer ${
                 selected_filter === filter
-                  ? 'bg-[#1d1d1f] text-white shadow-apple-sm'
-                  : 'text-[#86868b] hover:text-[#1d1d1f]'
+                  ? 'bg-slate-900 dark:bg-blue-600 text-white shadow-apple-sm'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               {filter}
@@ -139,36 +139,36 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
       </div>
 
       {/* 조기경보 하이라이트 배너 (영월의료원 사례) */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border border-[#ff3b30]/20 space-y-2.5">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 dark:from-rose-950/30 dark:via-amber-950/20 dark:to-orange-950/20 border border-[#ff3b30]/20 dark:border-rose-800/40 space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] animate-ping" />
-            <span className="text-xs font-bold text-[#ff3b30] flex items-center gap-1">
+            <span className="text-xs font-bold text-[#ff3b30] dark:text-rose-400 flex items-center gap-1">
               <AlertTriangle className="w-4 h-4" />
               <span>실시간 AI 조기경보 트리거: 강원특별자치도 영월의료원</span>
             </span>
           </div>
-          <span className="text-[10px] font-semibold text-[#86868b]">감지일시: 2026-09-16 08:30</span>
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">감지일시: 2026-09-16 08:30</span>
         </div>
 
-        <p className="text-xs text-slate-800 font-medium leading-relaxed">
+        <p className="text-xs text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
           ⚠️ <strong>최근 3개월간 외래 환자 수 18.4% 급감 및 필수의료 전문의 결원 감지.</strong>
           소아청소년과 1인 체계의 한계로 평일 야간 외래가 중단되면서, 소아 및 동반 가족 환자층이 원주세브란스로 연쇄 유출되고 있습니다.
         </p>
 
-        <div className="pt-2 border-t border-black/[0.05] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
-          <div className="flex items-center space-x-1 text-[#0071e3] font-semibold">
+        <div className="pt-2 border-t border-black/[0.05] dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center space-x-1 text-[#0071e3] dark:text-blue-400 font-semibold">
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI 맞춤 처방: 의료취약지 공공임상교수 파견 쿼터 즉시 배정 권고</span>
           </div>
-          <span className="text-[11px] text-[#86868b]">국립중앙의료원 공공보건의료지원센터 자동 보고 완료</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">국립중앙의료원 공공보건의료지원센터 자동 보고 완료</span>
         </div>
       </div>
 
       {/* 지방의료원 성과평가 테이블 */}
-      <div className="overflow-x-auto rounded-2xl border border-black/[0.04]">
-        <table className="w-full text-left text-xs text-[#1d1d1f]">
-          <thead className="bg-[#f5f5f7] text-[#86868b] font-semibold border-b border-black/[0.04]">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
+        <table className="w-full text-left text-xs text-slate-800 dark:text-slate-200">
+          <thead className="bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="py-3 px-4">지방의료원명</th>
               <th className="py-3 px-3">관할 진료권</th>
@@ -179,25 +179,25 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
               <th className="py-3 px-3 text-center">위기 등급</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-black/[0.03]">
+          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {filtered_list.map((h) => (
-              <tr key={h.병원코드} className="hover:bg-slate-50/80 transition">
-                <td className="py-3 px-4 font-bold flex items-center gap-1.5">
-                  <Building2 className="w-3.5 h-3.5 text-[#86868b]" />
+              <tr key={h.병원코드} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition">
+                <td className="py-3 px-4 font-bold flex items-center gap-1.5 text-slate-900 dark:text-white">
+                  <Building2 className="w-3.5 h-3.5 text-slate-400" />
                   <span>{h.병원명}</span>
                 </td>
-                <td className="py-3 px-3 text-[#86868b]">{h.중진료권명}</td>
+                <td className="py-3 px-3 text-slate-500 dark:text-slate-400">{h.중진료권명}</td>
                 <td className="py-3 px-3 font-semibold">{h.병상가동률}%</td>
-                <td className="py-3 px-3 font-semibold text-[#0071e3]">{h.표준진료지침_CP적용률}%</td>
+                <td className="py-3 px-3 font-semibold text-[#0071e3] dark:text-blue-400">{h.표준진료지침_CP적용률}%</td>
                 <td className="py-3 px-3">
-                  <span className={`font-semibold ${h.의사인력_충원율 < 70 ? 'text-[#ff3b30]' : 'text-[#1d1d1f]'}`}>
+                  <span className={`font-semibold ${h.의사인력_충원율 < 70 ? 'text-[#ff3b30] dark:text-rose-400' : 'text-slate-800 dark:text-slate-200'}`}>
                     {h.의사인력_충원율}%
                   </span>
                 </td>
                 <td className="py-3 px-3 font-semibold">
                   <span
                     className={`inline-flex items-center gap-0.5 ${
-                      h.월간외래_환자변화율 < 0 ? 'text-[#ff3b30]' : 'text-[#34c759]'
+                      h.월간외래_환자변화율 < 0 ? 'text-[#ff3b30] dark:text-rose-400' : 'text-[#34c759] dark:text-emerald-400'
                     }`}
                   >
                     {h.월간외래_환자변화율 < 0 ? <TrendingDown className="w-3.5 h-3.5" /> : <TrendingUp className="w-3.5 h-3.5" />}

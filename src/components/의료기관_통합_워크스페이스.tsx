@@ -329,45 +329,35 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
       {/* 4. SUBTAB 3: 지방의료원 경영위기 조기경보 */}
       {/* ============================================================== */}
       {active_subtab === 'crisis' && (
-        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <경영위기_조기경보_대시보드 />
-        </div>
+        <경영위기_조기경보_대시보드 />
       )}
 
       {/* ============================================================== */}
       {/* 5. SUBTAB 4: 71개 표준진료지침(CP) 라이브러리 */}
       {/* ============================================================== */}
       {active_subtab === 'cp_library' && (
-        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <공공의료_CP_오더세트_라이브러리 />
-        </div>
+        <공공의료_CP_오더세트_라이브러리 />
       )}
 
       {/* ============================================================== */}
       {/* 6. SUBTAB 5: 신포괄 정책가산 계산기 */}
       {/* ============================================================== */}
       {active_subtab === 'policy_incentive' && (
-        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <신포괄_정책가산_평가_시뮬레이터 />
-        </div>
+        <신포괄_정책가산_평가_시뮬레이터 />
       )}
 
       {/* ============================================================== */}
       {/* 7. SUBTAB 6: CP 변이 분석 & ROI 대시보드 */}
       {/* ============================================================== */}
       {active_subtab === 'cp_variance' && (
-        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <CP_변이분석_및_ROI_대시보드 />
-        </div>
+        <CP_변이분석_및_ROI_대시보드 />
       )}
 
       {/* ============================================================== */}
       {/* 8. SUBTAB 7: 퇴원환자 돌봄자원 AI 매칭 */}
       {/* ============================================================== */}
       {active_subtab === 'discharge_care' && (
-        <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
-          <퇴원환자_돌봄자원_AI매칭 />
-        </div>
+        <퇴원환자_돌봄자원_AI매칭 />
       )}
     </div>
   );

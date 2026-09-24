@@ -3,8 +3,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Activity,
-  Search,
-  Bell,
   User,
   ChevronDown,
   ShieldCheck,
@@ -84,10 +82,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   vulnerable_region_count = 82,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
-  const [is_noti_open, set_is_noti_open] = useState(false);
-  const [search_text, set_search_text] = useState('');
   const admin_ref = useRef<HTMLDivElement>(null);
-  const noti_ref = useRef<HTMLDivElement>(null);
 
   // 워크스페이스 변경 통합 핸들러
   const handle_workspace_change = (ws: 워크스페이스_타입) => {
@@ -103,20 +98,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       if (admin_ref.current && !admin_ref.current.contains(e.target as Node)) {
         set_is_admin_open(false);
       }
-      if (noti_ref.current && !noti_ref.current.contains(e.target as Node)) {
-        set_is_noti_open(false);
-      }
     };
     document.addEventListener('mousedown', handle_click_outside);
     return () => document.removeEventListener('mousedown', handle_click_outside);
   }, []);
-
-  const handle_search_submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (on_search_query && search_text.trim()) {
-      on_search_query(search_text.trim());
-    }
-  };
 
   const current_active = active_workspace || (active_main_view as any) || 'home';
 
@@ -225,50 +210,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 안내
               </span>
             </button>
-
-            {/* 시군구 빠른 검색 */}
-            <form onSubmit={handle_search_submit} className="relative hidden xl:block w-40">
-              <input
-                type="text"
-                value={search_text}
-                onChange={(e) => set_search_text(e.target.value)}
-                placeholder="✏️ 지역·의료원 검색..."
-                className="zone-input-box w-full pl-7 pr-2.5 py-1 text-xs rounded-lg transition"
-              />
-              <Search className="w-3.5 h-3.5 text-indigo-500 absolute left-2 top-1/2 -translate-y-1/2" />
-            </form>
-
-            {/* 실시간 알림 팝오버 버튼 */}
-            <div className="relative" ref={noti_ref}>
-              <button
-                type="button"
-                onClick={() => set_is_noti_open(!is_noti_open)}
-                className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition relative"
-                title="시스템 공지 및 RAG 업데이트 알림"
-              >
-                <Bell className="w-4 h-4" />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500 ring-2 ring-white dark:ring-slate-900" />
-              </button>
-
-              {is_noti_open && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-3.5 text-xs z-50 animate-in fade-in zoom-in-95">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                    <span className="font-bold text-slate-900 dark:text-white">실시간 알림</span>
-                    <span className="text-[10px] text-[#0055a5] font-semibold">전체 2건</span>
-                  </div>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-800 py-1">
-                    <div className="py-2 space-y-0.5">
-                      <p className="font-bold text-slate-800 dark:text-slate-200">2026.09 필수의료 DW 지표 갱신</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">전국 226개 시군구 7대 필수의료 취약도 산정 완료</p>
-                    </div>
-                    <div className="py-2 space-y-0.5">
-                      <p className="font-bold text-slate-800 dark:text-slate-200">하이브리드 RAG 지침 코퍼스 가동</p>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400">보건복지부 법정 고시 및 지자체 지침 12건 연동</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
 
             {/* 라이트/다크 테마 토글 */}
             <button

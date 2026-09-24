@@ -74,7 +74,7 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
   const [realtime_hospitals, set_realtime_hospitals] = useState<실시간_응급실_기관정보[]>([]);
   const [is_live_api, set_is_live_api] = useState<boolean>(false);
   const [data_source_label, set_data_source_label] = useState<string>('로딩 중...');
-  const [last_sync_time, set_last_sync_time] = useState<string>('방금 전');
+  const [last_sync_time, set_last_sync_time] = useState<string>('조회 전');
   const [is_refreshing, set_is_refreshing] = useState<boolean>(false);
 
   // 스마트폰 목업 탭: 'medication' (복약) | 'rehab' (방문재활) | 'emergency' (응급실 가이드)
@@ -173,7 +173,7 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
       if (res.ok) {
         const data = await res.json();
         const ai_text =
-          data.gemini?.response ||
+          (data.google_gemini?.is_live ? data.google_gemini.response : '') ||
           data.local_sllm?.response ||
           `${sigungu} 관내에서는 ${matched_hospital.기관명}에서 24시간 응급 진료를 이용하실 수 있습니다. 상세 진료 안내는 대표전화(${matched_hospital.대표전화})로 문의하시면 빠릅니다.`;
 
@@ -222,8 +222,8 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/60 dark:text-rose-400 border border-rose-100 dark:border-rose-900/50 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-              국립중앙의료원 E-Gen 라이브 안전망
+              <span className={`w-2 h-2 rounded-full bg-rose-500 ${is_live_api ? 'animate-pulse' : ''}`}></span>
+              국립중앙의료원 E-Gen 응급의료 정보
             </span>
             <span
               className={`px-2.5 py-0.5 rounded-full text-2xs font-semibold flex items-center gap-1 border ${
@@ -233,7 +233,7 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
               }`}
             >
               <Radio className="w-3 h-3" />
-              {is_live_api ? '공공데이터포털 실시간 OpenAPI 연동' : '안심 시뮬레이션 모드'}
+              {is_live_api ? '공공데이터포털 실시간 OpenAPI 연동' : '기준 데이터 (실시간 병상 아님)'}
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">

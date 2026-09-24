@@ -1213,8 +1213,14 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                   ) : compare_result ? (
                     <div className="zone-info-box border-l-4 border-l-[#34c759] rounded-xl p-3 bg-white dark:bg-[#121214]">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="zone-badge-info">💡 온디바이스 로컬 sLLM 답변</span>
-                        <span className="text-[10px] text-slate-400">원내 폐쇄망 보안 출력</span>
+                        {compare_result.local_sllm.is_live ? (
+                          <span className="zone-badge-info">💡 온디바이스 로컬 sLLM 답변</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+                            📋 사전 작성 템플릿 (로컬 sLLM 미연결 · AI 미사용)
+                          </span>
+                        )}
+                        <span className="text-[10px] text-slate-400">{compare_result.local_sllm.model}</span>
                       </div>
                       <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed max-h-[360px] overflow-y-auto">
                         {compare_result.local_sllm.response}

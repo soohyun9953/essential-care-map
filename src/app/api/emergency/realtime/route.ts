@@ -77,44 +77,28 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. 서비스키 미입력 또는 API 실패 시: 실감형 정밀 라이브 시뮬레이션 모드 가동
+    // 2. 서비스키 미입력 또는 API 실패 시: 플랫폼 내장 기준 데이터 반환
+    //    (실제 병상 현황이 아니므로 임의 변동을 주지 않고, 실시간이 아님을 명시)
     const resource = 공공의료_자원_서비스.get_integrated_resources(sigungu, sido);
-    const hospital_list = resource.응급의료기관_목록 || [];
+    const base_hospitals: 실시간_응급실_기관정보[] = (resource.응급의료기관_목록 || []).map((h) => ({
+      ...h,
+      최종_업데이트: '기준 데이터 (실시간 아님)',
+    }));
 
-    // 동적 가용 병상 미세 변동 시뮬레이션 (실감 나는 모니터링 체감)
-    const randomized_hospitals: 실시간_응급실_기관정보[] = hospital_list.map(
-      (h, idx) => {
-        // 기본 가용병상에서 약간의 변동
-        const base_bed = h.응급실_가용병상;
-        const variation = (Date.now() + idx * 7) % 3; // 0, 1, 2
-        const adjusted_bed = Math.max(1, base_bed + (variation === 2 ? -1 : variation === 1 ? 1 : 0));
-        let status: 실시간_응급실_기관정보['포화도_상태'] = '보통';
-        if (adjusted_bed >= 5) status = '여유';
-        else if (adjusted_bed <= 2) status = '혼잡';
-
-        return {
-          ...h,
-          응급실_가용병상: adjusted_bed,
-          포화도_상태: status,
-          최종_업데이트: `${now_time_str} (국립중앙의료원 공공망)`,
-        };
-      }
-    );
-
-    const local_h = randomized_hospitals[0] || null;
-    const regional_h = randomized_hospitals.length > 1 ? randomized_hospitals[1] : null;
+    const local_h = base_hospitals[0] || null;
+    const regional_h = base_hospitals.length > 1 ? base_hospitals[1] : null;
 
     return NextResponse.json<RealtimeEmergencyResponse>({
       is_live_api: false,
       source: service_key
-        ? '국립중앙의료원(NMC) 공공의료 자원망 (보안 안전 모드)'
-        : '국립중앙의료원 응급자원 시뮬레이터 (공공데이터 API 키 미등록)',
+        ? '플랫폼 내장 기준 데이터 (공공데이터포털 실시간 API 조회 실패 · 실제 병상 현황 아님)'
+        : '플랫폼 내장 기준 데이터 (공공데이터 API 키 미등록 · 실제 병상 현황 아님)',
       sido,
       sigungu,
-      last_updated: `${now_time_str} (30초 주기 갱신)`,
+      last_updated: `기준 데이터 (조회 ${now_time_str})`,
       local_hospital: local_h,
       regional_center: regional_h,
-      all_hospitals: randomized_hospitals,
+      all_hospitals: base_hospitals,
     });
   } catch (err: any) {
     return NextResponse.json(

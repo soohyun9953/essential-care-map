@@ -369,14 +369,13 @@ ${failure_details}
         // 계속 진행
       }
 
-      // 3순위: 온디바이스 특화 지침 RAG 분석 엔진 (정확한 질의 기반 규정/수치 도출)
-      const elapsed_ms = Math.floor(Math.random() * 80) + 120; // 120~200ms 경량 연산
+      // 3순위: 로컬 sLLM 미연결 시 키워드별 사전 작성 지침 요약 템플릿 (AI 모델 추론 아님)
 
       let detailed_answer = '';
 
       if (mode === 'general_qa') {
         if (query.includes('파견의사') || query.includes('자격') || query.includes('보조')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 관련 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -392,7 +391,7 @@ ${failure_details}
 3. 현장 행정 조치 권고
   - 정기 신청 기간(매년 11월) 이전, 관내 결원 필수진료과 수요 조사를 완료하고 지자체 예산 매칭 확약서를 사전 확보하시기 바랍니다.`;
         } else if (query.includes('책임의료기관') || query.includes('권역') || query.includes('지역책임')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 
 1. 권역책임의료기관 vs 지역책임의료기관 핵심 차이
@@ -404,7 +403,7 @@ ${failure_details}
   - 중환자실 및 심뇌혈관 전문의 24시간 원격협진 시스템 가동
   - 필수진료과 전문의 순환 파견 및 의료인력 임상 연수 협약`;
         } else if (query.includes('자체충족률') || query.includes('RI') || query.includes('산정') || query.includes('공식')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 
 1. 필수의료 자체충족률(RI, Relevance Index) 산정 산식
@@ -415,7 +414,7 @@ ${failure_details}
   - 법정 기준선: 30.0% 미만 시 '필수 중점 관리 대상 지자체'로 분류 (${region_name}: 현재 ${region_stats.ri_rate}%)
   - 성과 가점: 전년 대비 RI 지표가 1.0%p 이상 개선될 경우, 정부 공공보건의료계획 시행결과 평가에서 지표 만점(10점) 부여`;
         } else if (query.includes('분만취약지') || query.includes('A등급') || query.includes('B등급')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 
 1. 분만취약지 A등급과 B등급의 차이
@@ -425,7 +424,7 @@ ${failure_details}
 2. ${region_name} 적용 포인트
   - 관내 분만율이 ${region_stats.maternity_rate}%로 법정 기준선(40%)에 미달하므로, 국비 지원 사업 신청 자격을 완벽히 충족합니다.`;
         } else if (query.includes('당직') || query.includes('응급실') || query.includes('수당')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 
 1. 심야 응급실 당직 수당 국비 지원 한도
@@ -436,7 +435,7 @@ ${failure_details}
 2. 신청 및 정산 절차
   - 지자체 보건과를 통해 응급실 당직 근무일지 및 진료 실적부를 첨부하여 매 분기 익월 10일까지 국립중앙의료원에 국비 교부 신청`;
         } else {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 정책 질의응답 요약]
+          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
 질문: "${query}"
 대상 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -454,7 +453,7 @@ ${failure_details}
       } else {
         // mode === 'business_plan' (사업계획서 / 실적보고서)
         if (query.includes('파견의사') || query.includes('당직비')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 요약]
+          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
 ■ 보건복지부 의료취약지 파견의사 지원사업 핵심 규정 (${region_name})
 
 1. 사업 신청 자격 요건
@@ -471,7 +470,7 @@ ${failure_details}
   - 최소 의무 재직기간: 1년 단위 협약 (분기별 진료 실적 및 당직 일지 시·도 보고 의무화)
   - 예산 신청 기한: 매년 11월 보건복지부 공공의료과 정기 배정 신청 접수`;
         } else if (query.includes('자체충족률') || query.includes('평가지표') || query.includes('영월의료원')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 요약]
+          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
 ■ 2026년 공공보건의료계획 평가지표 및 실적보고서 초안 (${region_name})
 
 1. 필수의료 자체충족률(RI) 산정 기준
@@ -487,7 +486,7 @@ ${failure_details}
     ② 인근 상급종합병원(원주세브란스 등)과의 원격 협진 핫라인 구축
     ③ 필수의료 전담 코디네이터 배치 및 중증환자 이송 골든타임 확보`;
         } else if (query.includes('분만취약지') || query.includes('A등급') || query.includes('B등급')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 요약]
+          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
 ■ 분만취약지 A등급·B등급 지원 기준 및 국비 지원 규모 비교
 
 1. 취약지 등급 분류 기준
@@ -501,7 +500,7 @@ ${failure_details}
 3. ${region_name} 권고사항
   - 관내 분만율 ${region_stats.maternity_rate}% 극복을 위해 안전한 출산 인프라 및 산모 이송 바우처 연계 필요`;
         } else if (query.includes('달빛어린이병원') || query.includes('야간진료') || query.includes('소아청소년과')) {
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 요약]
+          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
 ■ 달빛어린이병원 지정 요건 및 야간진료 관리료 가산 규정
 
 1. 지정 요건
@@ -521,7 +520,7 @@ ${failure_details}
             ? effective_local_rag.split('\n').filter(s => s.trim().length > 10).slice(0, 4).join('\n  - ')
             : `관내 응급 60분 미도달율 ${region_stats.emergency_rate}%, RI ${region_stats.ri_rate}%`;
 
-          detailed_answer = `[온디바이스 Qwen2.5-0.5B 공공보건 지침 분석]
+          detailed_answer = `[사전 작성 공공보건 지침 분석 · AI 모델 미사용]
 ■ 질의 요약 검토: ${query}
 ■ 대상 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -539,9 +538,9 @@ ${failure_details}
       }
 
       return {
-        model: 'Qwen/Qwen2.5-0.5B-Instruct (노트북 On-Device RAG)',
-        is_live: true,
-        elapsed_ms,
+        model: '사전 작성 지침 요약 템플릿 (AI 모델 미사용 · 로컬 sLLM 미연결)',
+        is_live: false,
+        elapsed_ms: Date.now() - start_t,
         response: detailed_answer,
         security: '원내 폐쇄망 100% 자립 (데이터 외부 유출 0%)',
         cost: '무제한 무료 (토큰 비용 0원)',

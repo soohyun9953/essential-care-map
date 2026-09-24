@@ -59,7 +59,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
   // 모달 및 알림 상태
   const [is_detail_view_open, setIs_detail_view_open] = useState(false);
   const [action_notice, set_action_notice] = useState<string | null>(null);
-  const [sync_time, set_sync_time] = useState<string>(get_current_sync_time_str);
+  // 실제로 공공데이터 API 연결을 확인한 시각 (확인 전에는 빈 값)
+  const [sync_time, set_sync_time] = useState<string>('');
   const [is_refreshing, set_is_refreshing] = useState<boolean>(false);
 
   // 전체 기관 일괄 업데이트 관련 상태
@@ -68,63 +69,73 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
   const [bulk_current_name, set_bulk_current_name] = useState<string>('');
   const [is_bulk_modal_open, setIs_bulk_modal_open] = useState<boolean>(false);
   const [bulk_done, set_bulk_done] = useState<boolean>(false);
+  const [bulk_result, set_bulk_result] = useState<'미등록' | '성공' | '실패' | null>(null);
 
   // 지금 즉시 데이터 동기화 핸들러 (선택된 기관 1곳)
   const handle_refresh_data = async () => {
     set_is_refreshing(true);
     try {
-      if (data_go_kr_api_key) {
-        await fetch(
-          `/api/emergency/realtime?sido=${encodeURIComponent(selected_hospital.시도명)}&sigungu=${encodeURIComponent(selected_hospital.시군구명)}`,
-          { headers: { 'x-data-go-kr-key': data_go_kr_api_key } }
-        );
+      if (!data_go_kr_api_key) {
+        set_action_notice('ℹ️ 공공데이터포털 API 키가 등록되지 않아 실시간 조회를 수행하지 않았습니다. 화면의 수치는 플랫폼 내장 기준 데이터입니다.');
+        return;
       }
+      const is_live = await 실시간_API_확인(selected_hospital.시도명, selected_hospital.시군구명);
       const new_time = get_current_sync_time_str();
       set_sync_time(new_time);
-      set_action_notice(`✅ ${selected_hospital.기관명}의 최신 병상 및 전산 자원 데이터가 방금 전(${new_time}) 성공적으로 동기화되었습니다.`);
-    } catch {
-      const new_time = get_current_sync_time_str();
-      set_sync_time(new_time);
-      set_action_notice(`✅ ${selected_hospital.기관명}의 내부 공공데이터가 현재 시각(${new_time})으로 최신화되었습니다.`);
+      set_action_notice(
+        is_live
+          ? `✅ 공공데이터포털(E-Gen) 실시간 API 조회 성공 (${selected_hospital.시도명} ${selected_hospital.시군구명}, ${new_time}). 대시보드 수치는 내장 기준 데이터이며 자동 반영되지 않습니다.`
+          : `⚠️ 공공데이터포털 실시간 API 조회에 실패했습니다 (${new_time}). 인증키 또는 API 상태를 확인해 주세요. 화면의 수치는 내장 기준 데이터입니다.`
+      );
     } finally {
       set_is_refreshing(false);
     }
   };
 
   // 전국 214개 전체 공공의료기관 일괄 업데이트 핸들러
+  // 공공데이터포털 E-Gen 실시간 API 조회 가능 여부 확인 (is_live_api 응답 기준)
+  const 실시간_API_확인 = async (sido: string, sigungu: string): Promise<boolean> => {
+    try {
+      const res = await fetch(
+        `/api/emergency/realtime?sido=${encodeURIComponent(sido)}&sigungu=${encodeURIComponent(sigungu)}`,
+        { headers: { 'x-data-go-kr-key': data_go_kr_api_key || '' } }
+      );
+      if (!res.ok) return false;
+      const data = await res.json();
+      return data.is_live_api === true;
+    } catch {
+      return false;
+    }
+  };
+
   const handle_bulk_sync_all = async () => {
     setIs_bulk_modal_open(true);
     set_is_bulk_syncing(true);
     set_bulk_progress(0);
     set_bulk_done(false);
 
-    const total = 전체_공공의료기관_상세목록.length;
+    set_bulk_result(null);
 
-    // 공공데이터 API 키가 있으면 주요 권역센터 실시간 OpenAPI 호출
+    // 실제 수행 작업: 공공데이터포털 E-Gen 실시간 API 연결 확인 (기관별 전수 수집은 미구현)
+    let result: '미등록' | '성공' | '실패' = '미등록';
     if (data_go_kr_api_key) {
-      try {
-        await fetch(
-          `/api/emergency/realtime?sido=${encodeURIComponent('강원특별자치도')}&sigungu=${encodeURIComponent('원주시')}`,
-          { headers: { 'x-data-go-kr-key': data_go_kr_api_key } }
-        );
-      } catch {
-        // fallback
-      }
+      set_bulk_current_name('공공데이터포털(E-Gen) 실시간 API 연결 확인 중...');
+      set_bulk_progress(50);
+      result = (await 실시간_API_확인(selected_hospital.시도명, selected_hospital.시군구명)) ? '성공' : '실패';
+      set_sync_time(get_current_sync_time_str());
     }
 
-    // 214개 전수 기관 순차 진행률 시뮬레이션
-    for (let i = 0; i < total; i++) {
-      const h = 전체_공공의료기관_상세목록[i];
-      set_bulk_current_name(`[${h.시도명}] ${h.기관명} (${h.기관유형})`);
-      set_bulk_progress(Math.round(((i + 1) / total) * 100));
-      await new Promise((resolve) => setTimeout(resolve, 8));
-    }
-
-    const new_time = get_current_sync_time_str();
-    set_sync_time(new_time);
+    set_bulk_progress(100);
+    set_bulk_result(result);
     set_bulk_done(true);
     set_is_bulk_syncing(false);
-    set_action_notice(`✅ 전국 ${total}개 공공의료기관 전수(권역 17, 지역 41, 특수공공 156개소)의 병상·인력·응급실 가동 현황이 오늘 현재 시각(${new_time})으로 일괄 업데이트되었습니다.`);
+    set_action_notice(
+      result === '성공'
+        ? '✅ 공공데이터포털 실시간 API 연결을 확인했습니다. 214개 기관 수치는 내장 기준 데이터이며, 기관별 실시간 수집은 아직 지원되지 않습니다.'
+        : result === '실패'
+          ? '⚠️ 공공데이터포털 실시간 API 연결에 실패했습니다. 인증키 또는 API 상태를 확인해 주세요.'
+          : 'ℹ️ 공공데이터포털 API 키가 없어 실시간 연결 확인을 수행하지 않았습니다. 화면의 수치는 내장 기준 데이터입니다.'
+    );
   };
 
   return (
@@ -139,8 +150,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
               <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                 기관 담당자 전용
               </span>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                실시간 연계 상태 정상
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                내장 기준 데이터 (기관별 실시간 연계 미지원)
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
@@ -176,7 +187,11 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>최종 동기화 시각: <strong className="text-slate-800 dark:text-slate-200">{sync_time}</strong> (전국 214개소 연계 정상)</span>
+            <span>
+              실시간 API 최종 확인:{' '}
+              <strong className="text-slate-800 dark:text-slate-200">{sync_time || '확인 이력 없음'}</strong>
+              {!data_go_kr_api_key && ' (공공데이터 API 키 미등록)'}
+            </span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -186,13 +201,10 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
               onClick={handle_bulk_sync_all}
               disabled={is_bulk_syncing}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-              title="전국 214개 공공의료기관의 병상·인력 데이터를 지금 즉시 일괄 동기화합니다."
+              title="공공데이터포털 실시간 API 연결 상태를 확인합니다. (기관별 전수 수집은 아직 지원되지 않습니다)"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-white ${is_bulk_syncing ? 'animate-spin' : ''}`} />
-              <span>전체 업데이트</span>
-              <span className="text-[10px] px-1.5 py-0.2 bg-white/20 text-white rounded-md font-extrabold">
-                전국 214개소
-              </span>
+              <span>연계 상태 확인</span>
             </button>
 
             {/* 2. 현재 선택 기관만 갱신 */}
@@ -201,10 +213,10 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
               onClick={handle_refresh_data}
               disabled={is_refreshing || is_bulk_syncing}
               className="px-3.5 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 disabled:opacity-50"
-              title={`[${selected_hospital.기관명}] 데이터 즉시 갱신`}
+              title={`[${selected_hospital.기관명}] 소재 지역의 실시간 API 조회를 확인합니다`}
             >
               <RefreshCw className={`w-3.5 h-3.5 text-blue-600 dark:text-blue-400 ${is_refreshing ? 'animate-spin' : ''}`} />
-              <span>{is_refreshing ? '동기화 중...' : '선택 기관 갱신'}</span>
+              <span>{is_refreshing ? '확인 중...' : '선택 기관 조회 확인'}</span>
             </button>
 
             {/* 3. 데이터 상세 */}
@@ -430,10 +442,10 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-900 dark:text-white">
-                    전국 공공의료 데이터 전체 일괄 업데이트
+                    공공데이터 실시간 연계 상태 확인
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    전국 {전체_공공의료기관_상세목록.length}개 공공의료기관 실시간 전산 동기화
+                    공공데이터포털(E-Gen) 실시간 API 연결 여부를 점검합니다
                   </p>
                 </div>
               </div>
@@ -451,7 +463,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
             {/* 진행 상황 프로그레스 */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-                <span>{bulk_done ? '동기화 완료' : '전국 기관 데이터 수집 및 정합성 검증 중...'}</span>
+                <span>{bulk_done ? '확인 완료' : '연결 확인 중...'}</span>
                 <span className="text-blue-600 dark:text-blue-400 font-extrabold">{bulk_progress}%</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
@@ -461,23 +473,40 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
                 />
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                {bulk_done ? `총 ${전체_공공의료기관_상세목록.length}개 의료기관 최신 동기화 완료 (${sync_time})` : `처리 중: ${bulk_current_name}`}
+                {bulk_done ? (sync_time ? `확인 시각: ${sync_time}` : 'API 키 미등록으로 확인을 건너뛰었습니다') : bulk_current_name}
               </p>
             </div>
 
             {/* 완료 상태 표시 카드 */}
             {bulk_done && (
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-800 dark:text-emerald-300 font-bold text-xs">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>전국 {전체_공공의료기관_상세목록.length}개 공공의료기관 일괄 업데이트 완료!</span>
+              <div
+                className={`p-4 rounded-2xl border space-y-2 ${
+                  bulk_result === '성공'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60'
+                    : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/60'
+                }`}
+              >
+                <div
+                  className={`flex items-center gap-2 font-bold text-xs ${
+                    bulk_result === '성공' ? 'text-emerald-800 dark:text-emerald-300' : 'text-amber-800 dark:text-amber-300'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>
+                    {bulk_result === '성공'
+                      ? '공공데이터포털 실시간 API 연결 정상'
+                      : bulk_result === '실패'
+                        ? '공공데이터포털 실시간 API 연결 실패'
+                        : '공공데이터포털 API 키 미등록'}
+                  </span>
                 </div>
-                <ul className="text-[11px] text-emerald-700 dark:text-emerald-400 space-y-1 pl-6 list-disc">
-                  <li>권역책임의료기관 17개소 실시간 병상·중환자실 가동 동기화</li>
-                  <li>지역책임의료기관 41개소 필수의료 인력 및 응급실 현황 갱신</li>
-                  <li>특수목적·전문공공병원 156개소 진료자원 연계 완료</li>
-                  <li>공공데이터포털(E-Gen) 및 심평원 실시간 연계망 정합성 검증 통과</li>
-                  <li>최종 동기화 시점: <strong>{sync_time}</strong></li>
+                <ul className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-6 list-disc">
+                  <li>
+                    대시보드의 {전체_공공의료기관_상세목록.length}개 기관 수치는 플랫폼에 내장된 기준 데이터입니다.
+                  </li>
+                  <li>기관별 병상·인력 실시간 전수 수집은 아직 지원되지 않습니다.</li>
+                  {bulk_result === '실패' && <li>인증키가 올바른지, 공공데이터포털 API 활용 신청이 승인되었는지 확인해 주세요.</li>}
+                  {bulk_result === '미등록' && <li>상단 [공공데이터 API 키] 메뉴에서 인증키를 등록하면 연결을 확인할 수 있습니다.</li>}
                 </ul>
               </div>
             )}
@@ -490,7 +519,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
                   onClick={() => setIs_bulk_modal_open(false)}
                   className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition cursor-pointer shadow-sm"
                 >
-                  확인 및 대시보드 반영
+                  확인
                 </button>
               ) : (
                 <button
@@ -498,7 +527,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
                   disabled
                   className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 font-bold text-xs cursor-wait"
                 >
-                  전체 데이터 동기화 중... ({bulk_progress}%)
+                  연결 확인 중... ({bulk_progress}%)
                 </button>
               )}
             </div>

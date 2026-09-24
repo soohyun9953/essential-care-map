@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.13',
-  fullLabel: '20260924 버전 1.0.13',
-  packageVersion: '20260924-v1.0.13',
+  semver: '1.0.14',
+  fullLabel: '20260924 버전 1.0.14',
+  packageVersion: '20260924-v1.0.14',
   updatedAt: '2026-09-24',
-  changelog: 'ESLint 설정 및 GitHub Actions CI 도입, 로컬 sLLM 실행 배치파일 경로 상대화, MCP 서버 빌드 산출물 git 추적 해제',
+  changelog: '사전 작성 템플릿·내장 기준 데이터를 AI 실시간 답변·실측 병상으로 오표시하던 문제 정정 및 기관 데이터센터 연계 확인 기능 실제 동작화',
 };

@@ -146,11 +146,12 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
           {active_tab === 'datasets' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-xs text-blue-950 dark:text-blue-200 leading-relaxed">
-                💡 <strong>데이터 무결성 안내:</strong> 본 시스템의 모든 데이터셋은 대한민국 통계청, 보건복지부, 건강보험심사평가원, 국립중앙의료원(NMC) 및 국민건강보험공단의 실제 공시·원천 데이터를 가공하여 상호 검증(Cross-validation)을 거쳐 탑재되었습니다.
+                💡 <strong>데이터 출처 안내:</strong> 데이터셋마다 출처와 성격이 다릅니다. 환자 유출입(데이터셋 3)은 원천 엑셀 자료에서 추출한 값이고, 공공의료기관 목록·총 병상은 내장 데이터셋(2024년 기준)입니다.
+                의료기관별 인력·장비·진료 서비스 운영 여부는 기관 유형·규모 기반 <strong>추정치</strong>이며, 시뮬레이터·대시보드의 일부 수치는 <strong>예시 기본값</strong>입니다. 실시간 연계는 공공데이터포털 응급실 API(선택)만 지원합니다.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 1) 전국 226개 시군구 필수의료 DB */}
+                {/* 1) 시군구 필수의료 DB (내장 144개 시군구) */}
                 <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
@@ -164,14 +165,14 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    전국 226개 시군구 필수의료 원천 데이터셋
+                    시군구 필수의료 지표 데이터셋 (내장 144개 시군구)
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
-                    <li>인구수, 65세 이상 고령자 비율, 기초수급자 비율</li>
-                    <li>응급의료: 60분 미도달율(%), 자체충족률(RI, %), 전원율(%)</li>
+                    <li>인구수</li>
+                    <li>응급의료: 60분 미도달율(%), 관내 응급 의료이용률(RI, %)</li>
                     <li>분만취약: 관내 분만율(%), 산부인과 60분 미도달율(%)</li>
-                    <li>소아청소년: 필요 병상 대비 공급비율(%), 24시간 진료 여부</li>
-                    <li>종합 취약도 등급(정상/주의/심각) 자동 산정</li>
+                    <li>소아청소년: 필요 병상 대비 공급비율(%), 야간·휴일 접근성 지수</li>
+                    <li>종합 취약도 등급(정상/관찰/취약/심각 4단계) 자동 산정</li>
                   </ul>
                 </div>
 
@@ -192,9 +193,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     전국 70개 중진료권 공간 경계 및 책임의료기관
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
-                    <li>보건복지부 고시 전국 70개 중진료권 지리정보 100% 매핑</li>
-                    <li>17개 권역책임의료기관 (국립대병원 등 상급종합병원)</li>
-                    <li>43개 지역책임의료기관 (지방의료원 등 공공병원)</li>
+                    <li>70개 중진료권 및 포함 시군구 매핑</li>
+                    <li>내장 공공의료기관 목록 기준 권역 그룹 19개·지역 그룹 49개 기관</li>
                     <li>권역 내 필수의료 연계·협력 네트워크 관할 구역 정보</li>
                   </ul>
                 </div>
@@ -217,12 +217,12 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>시군구별 관내이용(RI), 관외유출(Outflow), 유입(Inflow)</li>
-                    <li>4대 필수의료: 만성신부전 투석, 심뇌혈관 응급, 고위험 분만, 소아 입원</li>
-                    <li>관외 유출 상위 3대 목적지 병원 및 이동 사유 매핑</li>
+                    <li>필수의료 4개 분야: 투석, 응급, 분만, 중환자</li>
+                    <li>관외 유출 상위 목적지 시군구 (원천: 의료이용 유출입 데이터 2019–2024 중 2024년)</li>
                   </ul>
                 </div>
 
-                {/* 4) 전국 41개 공공병원 경영공시 DB */}
+                {/* 4) 공공병원 40개 프리셋 */}
                 <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
@@ -236,13 +236,13 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    전국 41개 공공병원 경영공시 &amp; 병상수 프리셋
+                    공공병원 40개 병상수·진료비 프리셋 (시뮬레이터용)
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
-                    <li>전국 35개 지방의료원 + 6개 적십자병원 실증 데이터</li>
+                    <li>지방의료원 34개 + 적십자병원 6개</li>
                     <li>병상 규모별 분류 (500병상 초과, 300~500, 300 이하, 병원급)</li>
-                    <li>연간 신포괄 진료비 공시액 (120억 원 ~ 420억 원)</li>
-                    <li>병상가동률, 의사인력 충원율, 경영위기 조기경보 지표</li>
+                    <li>연간 신포괄 진료비 기본값 (120억 원 ~ 420억 원, 출처 확인 필요)</li>
+                    <li>정책가산 시뮬레이터 입력값으로 사용 (수치 조정 가능)</li>
                   </ul>
                 </div>
 
@@ -284,7 +284,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    3대 변이(Variance) 15개 사유 &amp; 실증 ROI 통계
+                    3대 변이(Variance) 15개 사유 &amp; ROI 시뮬레이션 기본값
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>환자(43.5%) vs 의료진(32.1%) vs 시스템(24.4%) 15개 세부 코드</li>
@@ -293,7 +293,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </ul>
                 </div>
 
-                {/* 7) 실시간 응급(NEDIS) API */}
+                {/* 7) 공공데이터포털 응급실 실시간 병상 API (선택 연동) */}
                 <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-3 md:col-span-2">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
@@ -307,10 +307,11 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    국립중앙의료원 중앙응급의료센터(NEDIS) 실시간 API 연동
+                    공공데이터포털 응급실 실시간 가용병상 API (선택 연동)
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
-                    전국 응급의료기관의 실시간 일반 가용 병상, 소아 전용 병상, 음압 격리병상 및 CT·MRI·인공호흡기 가동 현황 실시간 동기화
+                    공공데이터포털 인증키를 등록하면 국립중앙의료원 E-Gen 응급실 가용병상 조회를 시도합니다. 키가 없거나 조회에 실패하면 내장 기준 데이터를 표시하며,
+                    기관별 병상·장비(CT·MRI·인공호흡기) 현황의 실시간 동기화는 지원하지 않습니다.
                   </p>
                 </div>
               </div>
@@ -323,7 +324,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
           {active_tab === 'guidelines' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 leading-relaxed">
-                ⚖️ <strong>법적 근거 및 정책 정합성:</strong> 본 플랫폼의 진단 규칙과 시뮬레이션 알고리즘은 아래 5대 정부 공식 법령 및 2026년 최신 평가지침의 원문 조항을 그대로 적용하였습니다.
+                ⚖️ <strong>법적 근거 및 정책 정합성:</strong> 본 플랫폼의 진단 규칙과 시뮬레이션 알고리즘은 아래 법령·지침을 참고하여 구현했습니다. 실제 적용 시 세부 기준은 각 원문과 대조해 확인하시기 바랍니다.
               </div>
 
               <div className="space-y-4">
@@ -489,7 +490,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
         <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Info className="w-4 h-4 text-blue-500" />
-            <span>원천 출처: 보건복지부 공공보건의료정책관 &amp; 건강보험심사평가원</span>
+            <span>출처: 데이터셋별 상이 (탭 1의 각 항목 참고)</span>
           </div>
 
           <button

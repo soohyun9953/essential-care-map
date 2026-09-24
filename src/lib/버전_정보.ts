@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.25',
-  fullLabel: '20260924 버전 1.0.25',
-  packageVersion: '20260924-v1.0.25',
+  semver: '1.0.26',
+  fullLabel: '20260924 버전 1.0.26',
+  packageVersion: '20260924-v1.0.26',
   updatedAt: '2026-09-24',
-  changelog: '중환자 치료·급성 심뇌혈관 운영 추정에서 요양·정신·재활 등 특수목적 병원 제외 및 중환자실 규모 표시 일관화',
+  changelog: '데이터·사업가이드 안내 모달의 데이터셋 규모·출처·연동 범위 표기를 실제 코드·데이터와 일치하도록 정정',
 };

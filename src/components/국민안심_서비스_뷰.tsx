@@ -110,45 +110,15 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         if (!match_search) return false;
         if (selected_service === 'all') return true;
 
-        if (selected_service === 'emergency') {
-          return (
-            h.주요_의료서비스.some((s) => s.includes('응급')) ||
-            h.서비스_상세.some((s) => s.코드 === 'emergency' && s.상태 !== '미운영') ||
-            h.기관유형.includes('권역') ||
-            h.기관유형.includes('지역')
-          );
-        }
-        if (selected_service === 'pediatric') {
-          return (
-            h.주요_의료서비스.some((s) => s.includes('소아')) ||
-            h.서비스_상세.some((s) => s.코드 === 'pediatric' && s.상태 !== '미운영') ||
-            h.기관명.includes('어린이') ||
-            h.기관유형.includes('소아')
-          );
-        }
-        if (selected_service === 'delivery') {
-          return (
-            h.주요_의료서비스.some((s) => s.includes('분만') || s.includes('산부인과') || s.includes('모자')) ||
-            h.서비스_상세.some((s) => s.코드 === 'delivery' && s.상태 !== '미운영') ||
-            h.기관유형.includes('권역') ||
-            h.의료자원.병상.총병상 >= 200
-          );
-        }
-        if (selected_service === 'night') {
-          return (
-            h.주요_의료서비스.some((s) => s.includes('응급') || s.includes('소아') || s.includes('당직')) ||
-            h.서비스_상세.some((s) => (s.코드 === 'emergency' || s.코드 === 'pediatric') && s.상태 !== '미운영') ||
-            h.기관유형.includes('권역') ||
-            h.기관유형.includes('지역')
-          );
-        }
-        if (selected_service === 'inpatient') {
-          return (
-            h.주요_의료서비스.some((s) => s.includes('입원') || s.includes('병상')) ||
-            h.서비스_상세.some((s) => s.코드 === 'inpatient' && s.상태 !== '미운영') ||
-            h.의료자원.병상.총병상 > 0
-          );
-        }
+        // 서비스 운영 여부는 추정값이므로 '운영(추정)'인 기관만 포함하고, '확인필요'는 제외
+        const 운영_추정 = (code: string) => h.서비스_상세.some((s) => s.코드 === code && s.상태 === '운영');
+
+        if (selected_service === 'emergency') return 운영_추정('emergency');
+        if (selected_service === 'pediatric') return 운영_추정('pediatric');
+        if (selected_service === 'delivery') return 운영_추정('delivery');
+        // 야간·휴일 진료는 24시간 응급실 운영(추정) 기관 기준
+        if (selected_service === 'night') return 운영_추정('emergency');
+        if (selected_service === 'inpatient') return 운영_추정('inpatient');
 
         return true;
       })
@@ -301,7 +271,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
-              표시된 병상 수와 진료 정보는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
+              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>이며, 응급실·분만·소아 등 <strong>진료 가능 여부는 기관 유형·규모로 추정한 값</strong>입니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
               응급 상황에서는 <strong>119</strong>에 연락하세요.
             </p>
           </div>

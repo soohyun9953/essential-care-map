@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.21',
-  fullLabel: '20260924 버전 1.0.21',
-  packageVersion: '20260924-v1.0.21',
+  semver: '1.0.22',
+  fullLabel: '20260924 버전 1.0.22',
+  packageVersion: '20260924-v1.0.22',
   updatedAt: '2026-09-24',
-  changelog: '임의 생성 주소·홈페이지 URL·진료시간·운영상태 표기 제거 및 미제공/확인필요 명시',
+  changelog: '국민안심 진료 필터가 추정 미운영 기관까지 포함하던 문제(분만 214개소) 수정 및 진료 서비스 운영 여부를 추정치로 명시',
 };

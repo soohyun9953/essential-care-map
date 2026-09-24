@@ -256,10 +256,12 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           {/* Section 14 표준 기관 Card 그리드 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered_hospitals.map((h) => {
-              const has_emergency = h.주요_의료서비스.includes('응급');
-              const has_pediatric = h.주요_의료서비스.includes('소아');
-              const has_dialysis = h.주요_의료서비스.includes('투석');
-              const has_inpatient = h.주요_의료서비스.includes('입원');
+              // 기존 태그 정확일치 비교('응급' 등)는 '지역응급' 같은 태그와 일치하지 않아 항상 '-'였음 → 서비스 상태(추정) 기준
+              const 운영_추정 = (code: string) => h.서비스_상세.some((s) => s.코드 === code && s.상태 === '운영');
+              const has_emergency = 운영_추정('emergency');
+              const has_pediatric = 운영_추정('pediatric');
+              const has_dialysis = 운영_추정('dialysis');
+              const has_inpatient = 운영_추정('inpatient');
 
               return (
                 <div
@@ -286,7 +288,10 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
                     </div>
 
                     {/* Section 14 표준 필수서비스 체크박스 (응급 ✓ / 소아 ✓ / 투석 ✓ / 입원 ✓) */}
-                    <div className="flex items-center gap-3 text-xs text-slate-700 dark:text-slate-300 pt-1">
+                    <div
+                      className="flex items-center gap-3 text-xs text-slate-700 dark:text-slate-300 pt-1"
+                      title="기관 유형·병상 규모 기반 추정 (방문 전 기관 확인 필요)"
+                    >
                       <span className={`flex items-center gap-0.5 ${has_emergency ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
                         응급 {has_emergency ? '✓' : '-'}
                       </span>
@@ -299,6 +304,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
                       <span className={`flex items-center gap-0.5 ${has_inpatient ? 'font-bold text-blue-600' : 'text-slate-300'}`}>
                         입원 {has_inpatient ? '✓' : '-'}
                       </span>
+                      <span className="text-[10px] text-slate-400">(추정)</span>
                     </div>
 
                     {/* 병상 자원 수치: 총 병상은 원본 데이터, 가용 병상은 기관별 실시간 연계 미지원 */}

@@ -80,7 +80,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>운영 중</span>
+          <span>운영 추정</span>
         </span>
       );
     } else if (status === '확인필요') {
@@ -94,7 +94,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
           <AlertCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-          <span>미운영</span>
+          <span>미운영 추정</span>
         </span>
       );
     } else {
@@ -263,7 +263,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
           {active_tab === 'services' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
-                <span>9대 핵심 의료서비스 운영 상태 (실시간 전산 연계 기준)</span>
+                <span>9대 핵심 의료서비스 운영 여부 (기관 유형·규모 기반 추정 · 방문 전 기관 확인 필요)</span>
                 <span className="text-[11px]">기준: {hospital.데이터_신뢰성.기준시점}</span>
               </div>
 

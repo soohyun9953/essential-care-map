@@ -290,31 +290,27 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="bg-white dark:bg-[#12141a] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span className="font-semibold">병상 현황</span>
-            <span className="text-blue-600 dark:text-blue-400 font-bold">
-              가동률 {selected_hospital.의료자원.병상.가동률}%
-            </span>
+            <span className="text-slate-400 font-bold">가동률: 실시간 미연동</span>
           </div>
           <div className="text-2xl font-black text-blue-600 dark:text-blue-400">
-            {selected_hospital.의료자원.병상.사용병상} / {selected_hospital.의료자원.병상.총병상}석
+            총 {selected_hospital.의료자원.병상.총병상}석
           </div>
           <p className="text-[11px] text-slate-400">
-            실시간 가용 잔여 병상: <strong>{selected_hospital.의료자원.병상.가용병상}석</strong>
+            사용·가용 병상: <span className="text-amber-600 dark:text-amber-400 font-semibold">실시간 미연동</span>
           </p>
         </div>
 
         {/* 응급실 현황 */}
         <div className="bg-white dark:bg-[#12141a] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-semibold">응급실 상태</span>
-            <span className="text-rose-600 dark:text-rose-400 font-bold">
-              {selected_hospital.의료자원.응급실.상태}
-            </span>
+            <span className="font-semibold">응급실</span>
+            <span className="text-slate-400 font-bold">상태: 실시간 미연동</span>
           </div>
-          <div className="text-2xl font-black text-rose-600 dark:text-rose-400">
-            가용 {selected_hospital.의료자원.응급실.가용병상}석
+          <div className="text-xl font-black text-rose-600 dark:text-rose-400">
+            {selected_hospital.의료자원.응급실.구분}
           </div>
           <p className="text-[11px] text-slate-400">
-            소아 전용 가용: <strong>{selected_hospital.의료자원.응급실.소아가용병상}석</strong>
+            응급실·소아 가용 병상: <span className="text-amber-600 dark:text-amber-400 font-semibold">실시간 미연동</span>
           </p>
         </div>
 
@@ -347,17 +343,18 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
           </h3>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">중환자실 총 병상:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{selected_hospital.의료자원.중환자실.총병상}석</span>
+              <span className="text-slate-500">중환자실 병상 (추정):</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">약 {selected_hospital.의료자원.중환자실.총병상}석</span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">실시간 가용 중환자실:</span>
-              <span className="font-bold text-emerald-600">{selected_hospital.의료자원.중환자실.가용병상}석 잔여</span>
+              <span className="text-slate-500">가용 중환자실:</span>
+              <span className="text-amber-600 dark:text-amber-400 font-semibold">실시간 미연동</span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">정규 수술실 가동:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{selected_hospital.의료자원.수술실.가동실} / {selected_hospital.의료자원.수술실.총실}실</span>
+              <span className="text-slate-500">정규 수술실 (추정):</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">약 {selected_hospital.의료자원.수술실.총실}실</span>
             </div>
+            <p className="text-[10px] text-slate-400">* 중환자실·수술실 규모는 총 병상 수 기반 추정치입니다.</p>
           </div>
         </div>
 
@@ -421,8 +418,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
             <div>• AGENCY_NAME: {selected_hospital.기관명}</div>
             <div>• AGENCY_TYPE: {selected_hospital.기관유형}</div>
             <div>• REGION_CODE: {selected_hospital.시도명} {selected_hospital.시군구명} ({selected_hospital.진료권명})</div>
-            <div>• TOTAL_BEDS: {selected_hospital.의료자원.병상.총병상} | OCCUPIED: {selected_hospital.의료자원.병상.사용병상} | AVAILABLE: {selected_hospital.의료자원.병상.가용병상}</div>
-            <div>• ER_CAPACITY: {selected_hospital.의료자원.응급실.가용병상} | STATUS: {selected_hospital.의료자원.응급실.상태}</div>
+            <div>• TOTAL_BEDS: {selected_hospital.의료자원.병상.총병상} | OCCUPIED: N/A | AVAILABLE: N/A (실시간 미연동)</div>
+            <div>• ER_TYPE: {selected_hospital.의료자원.응급실.구분} | ER_CAPACITY: N/A | STATUS: N/A (실시간 미연동)</div>
             <div>• DOCTORS_TOTAL: {selected_hospital.의료자원.의료인력.전체의사수} | SPECIALISTS: {selected_hospital.의료자원.의료인력.전체의사수}</div>
             <div>• SYNC_TIMESTAMP: {sync_time}:00Z | ERROR_FLAG: 0</div>
           </div>

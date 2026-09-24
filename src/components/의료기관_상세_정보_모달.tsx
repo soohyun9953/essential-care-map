@@ -301,29 +301,13 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                     <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                       <Bed className="w-4 h-4 text-blue-600" /> 일반 입원병상
                     </span>
-                    <span className="font-bold text-blue-600 dark:text-blue-400">
-                      가동률 {hospital.의료자원.병상.가동률}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5">
-                    <div
-                      className="bg-blue-600 h-2.5 rounded-full"
-                      style={{ width: `${hospital.의료자원.병상.가동률}%` }}
-                    />
+                    <span className="font-semibold text-slate-400">가동률: 실시간 미연동</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px] text-slate-500">
                     <span>총 {hospital.의료자원.병상.총병상}병상</span>
-                    <span>사용 {hospital.의료자원.병상.사용병상}석</span>
-                    {data_go_kr_api_key ? (
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        가용 {hospital.의료자원.병상.가용병상}석 잔여 (실시간)
-                      </span>
-                    ) : (
-                      <span className="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200/60 text-[10.5px]">
-                        가용: 실시간 미연동
-                      </span>
-                    )}
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200/60 text-[10.5px]">
+                      사용·가용: 실시간 미연동
+                    </span>
                   </div>
                 </div>
 
@@ -333,34 +317,16 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                     <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                       <Activity className="w-4 h-4 text-rose-600" /> 응급실 ({hospital.의료자원.응급실.구분})
                     </span>
-                    <span className="font-bold text-rose-600 dark:text-rose-400">
-                      {data_go_kr_api_key ? `상태: ${hospital.의료자원.응급실.상태}` : '상태: 실시간 미연동'}
-                    </span>
+                    <span className="font-bold text-slate-400">상태: 실시간 미연동</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                     <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-center">
                       <span className="text-[10px] text-slate-400 block">응급실 잔여</span>
-                      {data_go_kr_api_key ? (
-                        <strong className="text-base text-rose-600 dark:text-rose-400">
-                          {hospital.의료자원.응급실.가용병상}석
-                        </strong>
-                      ) : (
-                        <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                          미연동 (-)
-                        </strong>
-                      )}
+                      <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">미연동 (-)</strong>
                     </div>
                     <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-center">
                       <span className="text-[10px] text-slate-400 block">소아 잔여</span>
-                      {data_go_kr_api_key ? (
-                        <strong className="text-base text-emerald-600 dark:text-emerald-400">
-                          {hospital.의료자원.응급실.소아가용병상}석
-                        </strong>
-                      ) : (
-                        <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">
-                          미연동 (-)
-                        </strong>
-                      )}
+                      <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">미연동 (-)</strong>
                     </div>
                   </div>
                 </div>
@@ -368,16 +334,17 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                 {/* 3) 중환자실 & 수술실 */}
                 <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-2">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                    중환자실 &amp; 수술실 가동 현황
+                    중환자실 &amp; 수술실 규모
                   </span>
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 pt-1">
                     <span>중환자실(ICU):</span>
-                    <span>총 {hospital.의료자원.중환자실.총병상}석 중 <strong>{hospital.의료자원.중환자실.가용병상}석 가용</strong></span>
+                    <span>약 {hospital.의료자원.중환자실.총병상}석 (가용: 실시간 미연동)</span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
                     <span>정규 수술실:</span>
-                    <span>총 {hospital.의료자원.수술실.총실}실 중 <strong>{hospital.의료자원.수술실.가동실}실 가동</strong></span>
+                    <span>약 {hospital.의료자원.수술실.총실}실 (가동: 실시간 미연동)</span>
                   </div>
+                  <p className="text-[10px] text-slate-400">* 중환자실·수술실 규모는 총 병상 수 기반 추정치입니다.</p>
                 </div>
 
                 {/* 4) 의료인력 현황 */}

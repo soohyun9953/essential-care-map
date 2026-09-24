@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.17',
-  fullLabel: '20260924 버전 1.0.17',
-  packageVersion: '20260924-v1.0.17',
+  semver: '1.0.18',
+  fullLabel: '20260924 버전 1.0.18',
+  packageVersion: '20260924-v1.0.18',
   updatedAt: '2026-09-24',
-  changelog: '국민안심 화면에서 추정 가용병상·이용 가능 표시 제거, 총 병상(원본) 표시 및 기준 데이터 안내 추가',
+  changelog: '의료기관 목록·상세 모달·기관 데이터센터의 추정 가용병상/가동률/응급실 상태를 실시간 값으로 표시하던 문제 정정',
 };

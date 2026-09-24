@@ -41,6 +41,8 @@ interface 의료기관_상세_정보_모달_속성 {
   is_open: boolean;
   on_close: () => void;
   on_open_directions?: (hospital: 공공의료기관_상세_프로필) => void;
+  data_go_kr_api_key?: string;
+  on_open_data_modal?: () => void;
 }
 
 export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정보_모달_속성> = ({
@@ -48,6 +50,8 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
   is_open,
   on_close,
   on_open_directions,
+  data_go_kr_api_key,
+  on_open_data_modal,
 }) => {
   const [active_tab, setActive_tab] = useState<'info' | 'services' | 'resources' | 'public_role' | 'location'>('info');
   const [is_copied, setIs_copied] = useState(false);
@@ -307,12 +311,19 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                       style={{ width: `${hospital.의료자원.병상.가동률}%` }}
                     />
                   </div>
-                  <div className="flex justify-between text-[11px] text-slate-500">
+                  <div className="flex justify-between items-center text-[11px] text-slate-500">
                     <span>총 {hospital.의료자원.병상.총병상}병상</span>
                     <span>사용 {hospital.의료자원.병상.사용병상}석</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                      가용 {hospital.의료자원.병상.가용병상}석 잔여
-                    </span>
+                    {data_go_kr_api_key ? (
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        가용 {hospital.의료자원.병상.가용병상}석 잔여 (실시간)
+                      </span>
+                    ) : (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-200/60 text-[10.5px]">
+                        가용: 실시간 미연동
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -323,21 +334,33 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                       <Activity className="w-4 h-4 text-rose-600" /> 응급실 ({hospital.의료자원.응급실.구분})
                     </span>
                     <span className="font-bold text-rose-600 dark:text-rose-400">
-                      상태: {hospital.의료자원.응급실.상태}
+                      {data_go_kr_api_key ? `상태: ${hospital.의료자원.응급실.상태}` : '상태: 실시간 미연동'}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                     <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-center">
                       <span className="text-[10px] text-slate-400 block">응급실 잔여</span>
-                      <strong className="text-base text-rose-600 dark:text-rose-400">
-                        {hospital.의료자원.응급실.가용병상}석
-                      </strong>
+                      {data_go_kr_api_key ? (
+                        <strong className="text-base text-rose-600 dark:text-rose-400">
+                          {hospital.의료자원.응급실.가용병상}석
+                        </strong>
+                      ) : (
+                        <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">
+                          미연동 (-)
+                        </strong>
+                      )}
                     </div>
                     <div className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 text-center">
                       <span className="text-[10px] text-slate-400 block">소아 잔여</span>
-                      <strong className="text-base text-emerald-600 dark:text-emerald-400">
-                        {hospital.의료자원.응급실.소아가용병상}석
-                      </strong>
+                      {data_go_kr_api_key ? (
+                        <strong className="text-base text-emerald-600 dark:text-emerald-400">
+                          {hospital.의료자원.응급실.소아가용병상}석
+                        </strong>
+                      ) : (
+                        <strong className="text-sm text-slate-400 dark:text-slate-500 font-medium">
+                          미연동 (-)
+                        </strong>
+                      )}
                     </div>
                   </div>
                 </div>

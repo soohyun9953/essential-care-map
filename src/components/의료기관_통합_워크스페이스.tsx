@@ -293,12 +293,34 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
                       </span>
                     </div>
 
-                    {/* 병상 자원 수치 */}
+                    {/* 병상 자원 수치 (실시간 연계 여부 반영) */}
                     <div className="flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-slate-100 dark:border-slate-800">
                       <span>가용 / 총 병상:</span>
-                      <strong className="text-slate-900 dark:text-white">
-                        병상 {h.의료자원.병상.총병상 - h.의료자원.병상.가용병상} / {h.의료자원.병상.총병상}
-                      </strong>
+                      {data_go_kr_api_key ? (
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
+                            병상 {h.의료자원.병상.가용병상} / {h.의료자원.병상.총병상}
+                          </strong>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <span className="text-slate-400 dark:text-slate-500 font-medium">
+                            - / {h.의료자원.병상.총병상}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              on_open_data_modal?.();
+                            }}
+                            className="text-[11px] text-amber-700 dark:text-amber-300 hover:underline font-bold ml-1 cursor-pointer bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-200/80 dark:border-amber-800/80 transition"
+                            title="실시간 응급실·병상 정보 연동을 위한 API 키 등록"
+                          >
+                            실시간 연계 필요
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -338,6 +360,8 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
             hospital={detail_modal_hospital}
             is_open={!!detail_modal_hospital}
             on_close={() => set_detail_modal_hospital(null)}
+            data_go_kr_api_key={data_go_kr_api_key}
+            on_open_data_modal={on_open_data_modal}
           />
         </div>
       )}

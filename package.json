@@ -1,6 +1,6 @@
 {
   "name": "health-map-essential-care",
-  "version": "20260924-v1.0.26",
+  "version": "20260924-v1.0.27",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -23,7 +23,7 @@
     "react-leaflet": "^4.2.1",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.3.0",
-    "xlsx": "^0.18.5"
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@types/leaflet": "^1.9.12",

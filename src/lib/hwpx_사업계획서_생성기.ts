@@ -55,6 +55,9 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
   // 최다 유출지 및 유입지 데이터
   const top_outflow = patient_flow?.outflow_top.find((x) => !x.is_self) || patient_flow?.outflow_top[0];
   const top_inflow = patient_flow?.inflow_top.find((x) => !x.is_self) || patient_flow?.inflow_top[0];
+  // 유출입 자료가 없으면 다른 지역 수치로 대체하지 않고 '자료 없음'으로 명시
+  const ri_str = patient_flow ? `${patient_flow.ri}%` : '자료 없음';
+  const ri_목표_증분 = patient_flow && patient_flow.ri < 40 ? ` (+${(40 - patient_flow.ri).toFixed(1)}%p)` : '';
 
   // 총 소요예산 (국비 70% + 지방비 30%)
   const total_budget = domain_info.id === 'dialysis' ? 3500 : domain_info.id === 'emergency' ? 5000 : 4000;
@@ -272,7 +275,7 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>현행 ${patient_flow?.ri ?? 25.1}% ➔ 40.0% (+15%p)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>현행 ${ri_str} ➔ 40.0%${ri_목표_증분}</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="12260" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -342,14 +345,26 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
 
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0"><hp:run charPrIDRef="0"><hp:t/></hp:run></hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  □ 관내 거주 주민의 총 입원 의료이용량은 ${format_number_comma(patient_flow?.total_days ?? 152042)}일(재원)이며, 이 중 관외 유출률은 ${patient_flow?.outflow_rate ?? 74.9}%에 달하여 심각한 환자 유출 현상이 발생하고 있음.</hp:t></hp:run>
-  </hp:p>
+    <hp:run charPrIDRef="1"><hp:t>${
+      patient_flow
+        ? `  □ 관내 거주 주민의 총 입원 의료이용량은 ${format_number_comma(patient_flow.total_days)}일(재원)이며, 이 중 관외 유출률은 ${patient_flow.outflow_rate}%에 달하여 심각한 환자 유출 현상이 발생하고 있음.`
+        : `  □ 해당 지역의 2024년 환자 유출입(재원일수) 자료가 내장 데이터에 없어 정량 분석을 생략함. (자료 확보 후 보완 필요)`
+    }</hp:t></hp:run>
+  </hp:p>${
+    top_outflow
+      ? `
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 최다 유출 지역은 ${top_outflow?.dest_sido} ${top_outflow?.dest_sgg}으로 전체의 ${top_outflow?.pct}%(${format_number_comma(top_outflow?.days ?? 0)}일)를 차지하며, 상급종합 및 종합병원급 필수 인프라 부족으로 인한 원정 진료 의존도가 극심함.</hp:t></hp:run>
-  </hp:p>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 최다 유출 지역은 ${top_outflow.dest_sido} ${top_outflow.dest_sgg}으로 전체의 ${top_outflow.pct}%(${format_number_comma(top_outflow.days)}일)를 차지하며, 상급종합 및 종합병원급 필수 인프라 부족으로 인한 원정 진료 의존도가 극심함.</hp:t></hp:run>
+  </hp:p>`
+      : ''
+  }${
+    top_inflow
+      ? `
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 반면, 관내 거점의료기관은 인근 취약지인 ${top_inflow?.orig_sgg}(${top_inflow?.pct}%, ${format_number_comma(top_inflow?.days ?? 0)}일) 등의 환자를 지속적으로 수용하며 폐광지역·농어촌 배후 거점의 안전망 기능을 실질적으로 분담하고 있음.</hp:t></hp:run>
-  </hp:p>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 반면, 관내 거점의료기관은 인근 취약지인 ${top_inflow.orig_sgg}(${top_inflow.pct}%, ${format_number_comma(top_inflow.days)}일) 등의 환자를 지속적으로 수용하며 지역 배후 거점의 안전망 기능을 실질적으로 분담하고 있음.</hp:t></hp:run>
+  </hp:p>`
+      : ''
+  }
 
   <!-- 유출 상위 5대 경로 표 (Table 2: 5열 x 6행) -->
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
@@ -771,7 +786,7 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
     <hp:run charPrIDRef="1"><hp:t>  □ 정량적 기대효과 및 목표 지표 달성 계획</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 자체충족률(RI): 현행 ${patient_flow?.ri ?? 25.1}% ➔ 사업 완료 시 40.0% 이상 달성 (원정진료 35,000일 감축)</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 자체충족률(RI): 현행 ${ri_str} ➔ 사업 완료 시 40.0% 이상 달성 (원정진료 35,000일 감축)</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="1"><hp:t>  ○ 필수 골든타임(60분) 초진 도달률: 45.2% ➔ 80.0% 이상으로 대폭 개선</hp:t></hp:run>

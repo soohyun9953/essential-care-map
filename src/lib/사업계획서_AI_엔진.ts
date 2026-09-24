@@ -122,13 +122,13 @@ export class 사업계획서_AI_엔진 {
       ?.filter((x) => !x.is_self)
       ?.slice(0, 2)
       ?.map((x) => `${x.dest_sido} ${x.dest_sgg}(${x.pct}%, ${x.days.toLocaleString()}일)`)
-      ?.join(', ') || '인근 대도시';
+      ?.join(', ') || '자료 없음';
 
     const top_inflow_str = flow_info?.inflow_top
       ?.filter((x) => !x.is_self)
       ?.slice(0, 2)
       ?.map((x) => `${x.orig_sgg}(${x.pct}%)`)
-      ?.join(', ') || '인근 지자체';
+      ?.join(', ') || '자료 없음';
 
     // API 호출 시도 (Google Gemini API)
     let generated_text = '';
@@ -236,10 +236,21 @@ export class 사업계획서_AI_엔진 {
 
     const today_str = new Date().toISOString().split('T')[0];
     const hospital_name = hospital_info?.기관명 || `${region_name} 관내 공공의료원`;
-    const total_days = flow_info?.total_days?.toLocaleString() || '152,019';
-    const self_days = flow_info?.self_days?.toLocaleString() || '25,615';
-    const ri_rate = flow_info?.ri ?? target_region.관내_응급_의료이용률;
-    const outflow_rate = flow_info?.outflow_rate ?? (100 - ri_rate);
+    // 유출입 자료가 없는 지역은 다른 지역 수치로 대체하지 않고 '자료 없음'으로 명시
+    const 유출입_현황_문단 = flow_info
+      ? `    - 2024년 기준 ${region_name} 거주 주민의 총 입원 의료이용량은 ${flow_info.total_days.toLocaleString()}일(재원일수)에 달함.
+    - 그러나 관내 의료기관에서 자체 충족되는 재원일수는 ${flow_info.self_days.toLocaleString()}일로, 관내자체충족률(RI)이 ${flow_info.ri}%에 불과하며, 전체 환자의 ${flow_info.outflow_rate}%가 관외로 유출되고 있음.`
+      : `    - ${region_name}의 2024년 환자 유출입(재원일수) 자료가 내장 데이터에 없어 정량 분석을 생략함. (자료 확보 후 보완 필요)
+    - 참고: 시군구 필수의료 지표 기준 관내 응급 의료이용률(RI)은 ${target_region.관내_응급_의료이용률}%임.`;
+    const 현행_RI_문구 = flow_info ? `현행 ${flow_info.ri}%에서` : '현행값 확인 후(유출입 자료 없음)';
+    const 주요_유출지_문구 = flow_info?.outflow_top
+      ?.filter((x) => !x.is_self)
+      ?.slice(0, 2)
+      ?.map((x) => x.dest_sgg)
+      ?.join(', ');
+    const 유입_현황_문장 = flow_info
+      ? `    - ${hospital_name} 등 관내 의료기관의 환자 유입(Inflow) 분석 결과, 외부 유입 환자 비중이 ${flow_info.outsider_inflow_rate}%에 달함.`
+      : `    - 환자 유입 자료가 없어 인근 지역 환자 흡수 실적은 확인되지 않음. (자료 확보 후 보완 필요)`;
 
     return `【 2025년도 공공보건의료 취약지 기능보강 공모사업 신청서 】
 
@@ -255,15 +266,14 @@ export class 사업계획서_AI_엔진 {
 
 1.1. 지역 내 필수의료 이용 및 환자 관외 유출 실태
   ○ (총 의료이용량 및 자체충족률 한계)
-    - 2024년 기준 ${region_name} 거주 주민의 총 입원 의료이용량은 ${total_days}일(재원일수)에 달함.
-    - 그러나 관내 의료기관에서 자체 충족되는 재원일수는 ${self_days}일로, 관내자체충족률(RI)이 ${ri_rate}%에 불과하며, 전체 환자의 ${outflow_rate}%가 관외로 유출되고 있음.
+${유출입_현황_문단}
   ○ (인접 대도시로의 심각한 환자 유출 현상)
     - 유출 목적지 전수 분석 결과, 최다 유출지는 [${top_outflow_str}] 등으로 나타남.
     - 특히 3차 상급종합병원 및 대형 종합병원으로의 원정 진료로 인해 관내 주민의 교통비·체류비 부담이 가중되고 응급 골든타임 확보가 저해됨.
 
 1.2. 지역책임의료기관의 광역 거점 공공보건의료 앵커 역할
   ○ (인근 취약지 환자 흡수 실적 실증)
-    - ${hospital_name} 등 관내 의료기관의 환자 유입(Inflow) 분석 결과, 외부 유입 환자 비중이 ${flow_info?.outsider_inflow_rate ?? 37.1}%에 달함.
+${유입_현황_문장}
     - 특히 [${top_inflow_str}] 등 인근 의료취약지 주민이 ${hospital_name}의 필수진료를 실질적으로 이용하고 있어, 본 사업 지원 시 인접 군 지역까지 파급되는 광역 공공보건의료 편익이 지대함.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -316,9 +326,9 @@ export class 사업계획서_AI_엔진 {
 Ⅴ. 정량적 성과 목표치 및 기대효과
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ○ (자체충족률 향상) 관내 필수의료 이용률(RI)을 현행 ${ri_rate}%에서 3개년 내 45.0% 이상으로 대폭 개선
-  ○ (관외 유출 억제) 타 시도(제천, 원주 등)로의 불필요한 환자 유출 비율 20%p 감축 달성
-  ○ (골든타임 확보) 응급 중증환자 이송시간을 평균 68분에서 40분 이내로 단축
+  ○ (자체충족률 향상) 관내 필수의료 이용률(RI)을 ${현행_RI_문구} 3개년 내 45.0% 이상으로 대폭 개선
+  ○ (관외 유출 억제) ${주요_유출지_문구 ? `관외(${주요_유출지_문구} 등)` : '관외'}로의 불필요한 환자 유출 비율 20%p 감축 달성
+  ○ (골든타임 확보) 응급 중증환자 이송시간을 40분 이내로 단축
   ○ (인접 취약지 안전망) 정선·평창 등 의료취약 인접지역 환자 포용률을 현행 대비 25% 확대하여 국가 균형발전 및 의료안전망 강화에 기여.`;
   }
 }

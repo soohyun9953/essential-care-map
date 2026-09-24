@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.26',
-  fullLabel: '20260924 버전 1.0.26',
-  packageVersion: '20260924-v1.0.26',
+  semver: '1.0.27',
+  fullLabel: '20260924 버전 1.0.27',
+  packageVersion: '20260924-v1.0.27',
   updatedAt: '2026-09-24',
-  changelog: '데이터·사업가이드 안내 모달의 데이터셋 규모·출처·연동 범위 표기를 실제 코드·데이터와 일치하도록 정정',
+  changelog: 'SheetJS 보안 버전(0.20.3) 전환, 사업계획서의 타 지역 고정 수치·영월 전용 표현 제거, 헤더 실시간 표기 정정',
 };

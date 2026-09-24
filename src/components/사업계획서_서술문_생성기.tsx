@@ -349,10 +349,10 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
           </span>
           <div className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5 truncate">
             <Share2 className="w-3.5 h-3.5 shrink-0" />
-            RI {patient_flow?.ri ?? selected_region.관내_응급_의료이용률}% / 유출 {patient_flow?.outflow_rate ?? 80}%
+            {patient_flow ? `RI ${patient_flow.ri}% / 유출 ${patient_flow.outflow_rate}%` : '유출입 자료 없음'}
           </div>
           <span className="text-2xs text-slate-500 truncate block">
-            최다 유출: {patient_flow?.outflow_top.find((x) => !x.is_self)?.dest_sgg || '인접 시군'}
+            최다 유출: {patient_flow?.outflow_top.find((x) => !x.is_self)?.dest_sgg || '자료 없음'}
           </span>
         </div>
 

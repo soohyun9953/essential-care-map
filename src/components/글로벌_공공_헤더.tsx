@@ -181,7 +181,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               정책기획
             </button>
 
-            {/* 2. 의료기관(실시간): 연결 시 녹색 표시, 미연결 시 호버 툴팁 안내 */}
+            {/* 2. 의료기관: 공공데이터 API 키 등록 여부를 호버 툴팁으로 안내 (의료기관 수치는 내장 기준 데이터) */}
             <div
               className="relative"
               ref={medical_ref}
@@ -198,42 +198,30 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 }`}
               >
                 <span>의료기관</span>
-                <span
-                  className={`font-extrabold transition-colors ${
-                    data_go_kr_key_registered
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}
-                >
-                  (실시간)
-                </span>
-                {data_go_kr_key_registered && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" />
-                )}
               </button>
 
-              {/* 실시간 연결됨: 호버 시 정상 연동 상태 툴팁 */}
+              {/* API 키 등록됨: 호버 시 키 사용 범위 안내 */}
               {data_go_kr_key_registered && is_hovering_medical && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-emerald-200 dark:border-emerald-800/60 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-none">
                   <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
                     <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>실시간 공공데이터 연계 정상</span>
+                    <span>공공데이터 API 키 등록됨</span>
                   </div>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                    공공데이터포털(data.go.kr) 중앙응급의료센터 API와 실시간 동기화 중입니다.
+                    기관 데이터센터에서 공공데이터포털 응급실 API 연결을 확인할 수 있습니다. 의료기관 화면의 수치는 내장 기준 데이터입니다.
                   </p>
                 </div>
               )}
 
-              {/* 실시간 미연결: 호버 시 연결 방법 안내 팝오버 & API 키 설정 모달 오픈 */}
+              {/* API 키 미등록: 호버 시 안내 팝오버 & API 키 설정 모달 오픈 */}
               {!data_go_kr_key_registered && is_hovering_medical && (
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 p-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-auto">
                   <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">
                     <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>실시간 병상 데이터 미연결</span>
+                    <span>공공데이터 API 키 미등록</span>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
-                    현재 로컬 기준 데이터로 표출 중입니다. 국립중앙의료원 실시간 응급실·병상 정보를 수신하려면 공공데이터포털(data.go.kr) 인증키를 등록해주세요.
+                    의료기관 화면의 수치는 내장 기준 데이터입니다. 공공데이터포털(data.go.kr) 인증키를 등록하면 기관 데이터센터에서 응급실 API 연결을 확인할 수 있습니다.
                   </p>
                   <button
                     type="button"

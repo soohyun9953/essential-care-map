@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   web:
-    name: 웹앱 (lint · 타입검사 · 빌드)
+    name: 웹앱 (lint · 테스트 · 타입검사 · 빌드)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,8 @@ jobs:
       - run: npm ci
       - name: ESLint
         run: npm run lint
+      - name: 테스트 (Vitest)
+        run: npm test
       - name: 빌드 (타입검사 포함)
         run: npm run build
 

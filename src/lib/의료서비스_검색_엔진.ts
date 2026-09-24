@@ -151,6 +151,8 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
     const is_senior = h.그룹 === '노인';
     const is_mental = h.그룹 === '정신';
     const is_rehab = h.그룹 === '재활(소아)';
+    // 분만과 무관한 특수목적 병원 (병상 규모와 관계없이 분만 미운영으로 추정)
+    const is_non_obstetric = is_senior || is_mental || is_rehab || h.그룹 === '치과' || h.그룹 === '한방';
 
     // 주요 의료서비스 태그 결정
     const services: string[] = [];
@@ -192,7 +194,8 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       {
         코드: 'delivery',
         서비스명: '분만 산부인과',
-        상태: is_regional ? '운영' : h.병상수 > 350 ? '운영' : '확인필요',
+        // 권역 기관 또는 350병상 초과 지역 기관만 운영 추정 (보훈·암·산재·감염 등 특수목적 병원은 확인필요)
+        상태: is_regional || (is_local && h.병상수 > 350) ? '운영' : is_non_obstetric ? '미운영' : '확인필요',
         비고: 추정_비고,
       },
       {

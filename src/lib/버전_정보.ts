@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.23',
-  fullLabel: '20260924 버전 1.0.23',
-  packageVersion: '20260924-v1.0.23',
+  semver: '1.0.24',
+  fullLabel: '20260924 버전 1.0.24',
+  packageVersion: '20260924-v1.0.24',
   updatedAt: '2026-09-24',
-  changelog: '어디서도 사용되지 않는 컴포넌트 15개 및 엔진 1개 삭제 (약 7,100줄)',
+  changelog: 'Vitest 테스트 38건 도입(CI 연동) 및 분만 운영 추정 기준에서 요양·정신·보훈·암 등 특수목적 병원 제외',
 };

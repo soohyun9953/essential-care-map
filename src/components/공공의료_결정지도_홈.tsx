@@ -117,8 +117,11 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* ============================================================== */}
       {/* 3. 4대 Home Quick Action 카드 (Section 5) */}
       {/* ============================================================== */}
+      {/* ============================================================== */}
+      {/* 3. 4대 Home Quick Action 카드 (Section 5) */}
+      {/* ============================================================== */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+        <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-500 uppercase tracking-wider px-1">
           <span>주요 분석 워크스페이스 바로가기</span>
         </div>
 
@@ -126,23 +129,23 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           {/* 카드 1: 지역 진단 */}
           <div
             onClick={() => on_navigate_workspace('regional_diagnosis')}
-            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
           >
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
+                <span className="px-2.5 py-1 rounded-md text-xs sm:text-[13px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400">
                   지역 진단
                 </span>
                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 우리 지역 필수의료 진단
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 응급·분만·소아 취약도와 7대 GIS 레이어로 관내 의료자원을 확인합니다.
               </p>
             </div>
-            <div className="pt-4 text-[11px] font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+            <div className="pt-2 text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1 group-hover:underline">
               <span>진단 대시보드 열기</span>
             </div>
           </div>
@@ -150,23 +153,23 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           {/* 카드 2: 지역 비교 */}
           <div
             onClick={() => on_navigate_workspace('policy_planning', 'compare')}
-            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-indigo-600 dark:hover:border-indigo-500 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
           >
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                <span className="px-2.5 py-1 rounded-md text-xs sm:text-[13px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
                   지역 비교
                 </span>
                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 유사 지자체 1:1 비교
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 인근 권역 및 동일 규모 지자체와 필수의료 인프라 격차를 정밀 대조합니다.
               </p>
             </div>
-            <div className="pt-4 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+            <div className="pt-2 text-xs sm:text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 group-hover:underline">
               <span>비교 분석 시작하기</span>
             </div>
           </div>
@@ -174,23 +177,23 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           {/* 카드 3: 의료수요 예측 */}
           <div
             onClick={() => on_navigate_workspace('policy_planning', 'forecast')}
-            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-amber-600 dark:hover:border-amber-500 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
           >
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
+                <span className="px-2.5 py-1 rounded-md text-xs sm:text-[13px] font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
                   의료수요 예측
                 </span>
                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 2030 의료수요 변화
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 인구 고령화와 질환별 의료이용 추세를 반영한 중장기 수요를 예측합니다.
               </p>
             </div>
-            <div className="pt-4 text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+            <div className="pt-2 text-xs sm:text-sm font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1 group-hover:underline">
               <span>수요 추계 확인</span>
             </div>
           </div>
@@ -198,23 +201,23 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           {/* 카드 4: AI 정책기획 */}
           <div
             onClick={() => on_navigate_workspace('policy_planning', 'policy_ai')}
-            className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-600 dark:hover:border-blue-500 shadow-xs hover:shadow transition-all cursor-pointer group flex flex-col justify-between"
+            className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-emerald-600 dark:hover:border-emerald-500 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-4"
           >
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
+                <span className="px-2.5 py-1 rounded-md text-xs sm:text-[13px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400">
                   AI 정책기획
                 </span>
                 <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                 정책대안 및 사업계획서
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 진단 데이터를 근거로 3대 정책대안과 복지부 표준 사업계획서를 자동 완성합니다.
               </p>
             </div>
-            <div className="pt-4 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+            <div className="pt-2 text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1 group-hover:underline">
               <span>정책대안 도출하기</span>
             </div>
           </div>
@@ -224,15 +227,17 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* ============================================================== */}
       {/* 4. 데이터 신뢰성 & 5대 사업가이드 안내 배너 */}
       {/* ============================================================== */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-800 dark:text-slate-200">데이터 신뢰성 고지:</span>
-            <span className="text-slate-600 dark:text-slate-400">
+      <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2 text-sm sm:text-base">
+            <span className="font-black text-slate-900 dark:text-slate-100 whitespace-nowrap">
+              데이터 신뢰성 고지:
+            </span>
+            <span className="text-slate-700 dark:text-slate-300 font-semibold">
               보건복지부 취약지 고시, 국립중앙의료원 공공보건의료통계, 건강보험심사평가원 DW 기준
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
             전국 226개 시·군·구 및 70개 중진료권 데이터가 매월 1회 정기 검증됩니다.
           </p>
         </div>
@@ -240,7 +245,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           <button
             type="button"
             onClick={on_open_guide_modal}
-            className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 transition whitespace-nowrap cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition whitespace-nowrap cursor-pointer text-xs sm:text-sm shadow-xs shrink-0"
           >
             데이터·사업가이드 총람 보기
           </button>

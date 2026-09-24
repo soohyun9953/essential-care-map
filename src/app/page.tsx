@@ -34,6 +34,7 @@ import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰�
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
+import { API키_불러오기 } from '@/lib/API키_저장소';
 
 export default function Home() {
   // 5대 Global Workspace 상태 (기본: 'home')
@@ -63,11 +64,8 @@ export default function Home() {
   // 초기 설정 복원 (API 키 및 테마)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved_key = localStorage.getItem('google_gemini_api_key') || '';
-      set_google_api_key(saved_key);
-
-      const saved_data_key = localStorage.getItem('data_go_kr_api_key') || '';
-      set_data_go_kr_api_key(saved_data_key);
+      set_google_api_key(API키_불러오기('google_gemini_api_key'));
+      set_data_go_kr_api_key(API키_불러오기('data_go_kr_api_key'));
 
       const saved_theme = localStorage.getItem('healthmap_theme');
       if (saved_theme === 'dark') {

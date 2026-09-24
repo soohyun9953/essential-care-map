@@ -47,6 +47,7 @@ import { get_all_corpus } from '@/lib/공공의료_지침_코퍼스';
 import { 지침_문서_등록_모달 } from './지침_문서_등록_모달';
 import { 구글_api키_설정_모달 } from './구글_api키_설정_모달';
 import { 듀얼_AI_안내_모달 } from './듀얼_AI_안내_모달';
+import { API키_불러오기 } from '@/lib/API키_저장소';
 
 interface sLLM_업무비서_속성 {
   selected_region?: 필수의료_진단_결과 | null;
@@ -257,8 +258,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   // 로컬스토리지 API 키 및 초기 RAG 세팅
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const saved_key = localStorage.getItem('google_gemini_api_key') || '';
-      set_google_api_key(saved_key);
+      set_google_api_key(API키_불러오기('google_gemini_api_key'));
 
       // 사용자가 이전에 직접 등록했던 사업계획서 질의들 복원
       const saved_b_prompts = localStorage.getItem('user_saved_business_prompts');

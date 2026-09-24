@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Database, X, Check, ExternalLink, ShieldCheck, Trash2, Globe } from 'lucide-react';
+import { API키_불러오기, API키_기기저장_여부, API키_저장하기, API키_삭제하기 } from '@/lib/API키_저장소';
 
 interface 공공데이터_api키_설정_모달_속성 {
   is_open: boolean;
@@ -16,20 +17,17 @@ export const 공공데이터_api키_설정_모달: React.FC<공공데이터_api�
 }) => {
   const [api_key, set_api_key] = useState('');
   const [is_saved, set_is_saved] = useState(false);
+  const [remember_on_device, set_remember_on_device] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('data_go_kr_api_key') || '';
-      set_api_key(saved);
-    }
+    set_api_key(API키_불러오기('data_go_kr_api_key'));
+    set_remember_on_device(API키_기기저장_여부('data_go_kr_api_key'));
   }, [is_open]);
 
   if (!is_open) return null;
 
   const handle_save = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('data_go_kr_api_key', api_key.trim());
-    }
+    API키_저장하기('data_go_kr_api_key', api_key.trim(), remember_on_device);
     on_key_saved(api_key.trim());
     set_is_saved(true);
     setTimeout(() => {
@@ -39,9 +37,7 @@ export const 공공데이터_api키_설정_모달: React.FC<공공데이터_api�
   };
 
   const handle_clear = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('data_go_kr_api_key');
-    }
+    API키_삭제하기('data_go_kr_api_key');
     set_api_key('');
     on_key_saved('');
   };
@@ -96,7 +92,7 @@ export const 공공데이터_api키_설정_모달: React.FC<공공데이터_api�
 
             <div className="relative">
               <input
-                type="text"
+                type="password"
                 value={api_key}
                 onChange={(e) => set_api_key(e.target.value)}
                 placeholder="일반 인증키(Encoding 또는 Decoding)를 입력하세요..."
@@ -122,11 +118,23 @@ export const 공공데이터_api키_설정_모달: React.FC<공공데이터_api�
             </ul>
           </div>
 
+          <label className="flex items-start gap-2 cursor-pointer select-none text-xs text-[#1d1d1f] dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={remember_on_device}
+              onChange={(e) => set_remember_on_device(e.target.checked)}
+              className="mt-0.5 accent-[#0071e3]"
+            />
+            <span>
+              <strong>이 기기에 저장</strong> — 체크하지 않으면 브라우저 탭을 닫을 때 키가 자동 삭제됩니다. 공용 PC에서는 체크하지 마세요.
+            </span>
+          </label>
+
           {/* 보안 안내 */}
           <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40 rounded-xl flex items-start gap-2 text-emerald-800 dark:text-emerald-300 text-xs">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <p>
-              <strong>보안 안심:</strong> 등록하신 인증키는 외부 서버로 전송되지 않으며, 사용자 본인 브라우저의 <strong>LocalStorage</strong>에만 안전하게 저장됩니다.
+              <strong>보안 안내:</strong> 등록하신 인증키는 서버에 저장되지 않으며, 조회 시에만 요청 헤더로 플랫폼 서버를 거쳐 공공데이터포털에 전달됩니다. 키는 본인 브라우저에만 보관되며, 기본적으로 탭을 닫으면 삭제됩니다.
             </p>
           </div>
         </div>

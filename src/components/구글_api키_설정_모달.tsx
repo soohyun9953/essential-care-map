@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Key, X, Check, ExternalLink, ShieldCheck, Trash2, Sparkles } from 'lucide-react';
+import { API키_불러오기, API키_기기저장_여부, API키_저장하기, API키_삭제하기 } from '@/lib/API키_저장소';
 
 interface 구글_api키_설정_모달_속성 {
   is_open: boolean;
@@ -16,12 +17,11 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
 }) => {
   const [api_key, set_api_key] = useState('');
   const [is_saved, set_is_saved] = useState(false);
+  const [remember_on_device, set_remember_on_device] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('google_gemini_api_key') || '';
-      set_api_key(saved);
-    }
+    set_api_key(API키_불러오기('google_gemini_api_key'));
+    set_remember_on_device(API키_기기저장_여부('google_gemini_api_key'));
   }, [is_open]);
 
   if (!is_open) return null;
@@ -33,13 +33,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
       .filter(Boolean)
       .join(', ');
 
-    if (typeof window !== 'undefined') {
-      if (clean_keys) {
-        localStorage.setItem('google_gemini_api_key', clean_keys);
-      } else {
-        localStorage.removeItem('google_gemini_api_key');
-      }
-    }
+    API키_저장하기('google_gemini_api_key', clean_keys, remember_on_device);
     on_key_saved(clean_keys);
     set_is_saved(true);
     setTimeout(() => {
@@ -49,9 +43,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
   };
 
   const handle_clear = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('google_gemini_api_key');
-    }
+    API키_삭제하기('google_gemini_api_key');
     set_api_key('');
     on_key_saved('');
   };
@@ -125,10 +117,22 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
             </p>
           </div>
 
+          <label className="flex items-start gap-2 cursor-pointer select-none text-[11px] text-[#1d1d1f] dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={remember_on_device}
+              onChange={(e) => set_remember_on_device(e.target.checked)}
+              className="mt-0.5 accent-[#0071e3]"
+            />
+            <span>
+              <strong>이 기기에 저장</strong> — 체크하지 않으면 브라우저 탭을 닫을 때 키가 자동 삭제됩니다. 공용 PC에서는 체크하지 마세요.
+            </span>
+          </label>
+
           <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/50 rounded-xl flex items-start gap-2 text-emerald-800 dark:text-emerald-300 text-[11px]">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <p>
-              <strong>보안 안심:</strong> 입력하신 API 키는 외부 서버로 절대 수집되거나 저장되지 않으며, 오직 본인 컴퓨터 브라우저의 <strong>LocalStorage</strong>에만 안전하게 보관됩니다.
+              <strong>보안 안내:</strong> 입력하신 API 키는 서버에 저장되지 않으며, 질의 시에만 플랫폼 서버를 거쳐 Google로 전달됩니다. 키는 본인 브라우저에만 보관되며, 기본적으로 탭을 닫으면 삭제됩니다.
             </p>
           </div>
         </div>

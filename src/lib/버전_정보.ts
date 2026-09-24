@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.5',
-  fullLabel: '20260924 버전 1.0.5',
-  packageVersion: '20260924-v1.0.5',
+  semver: '1.0.6',
+  fullLabel: '20260924 버전 1.0.6',
+  packageVersion: '20260924-v1.0.6',
   updatedAt: '2026-09-24',
-  changelog: '실시간 API 미연결 시 가용병상 비활성화 표기(- / 총병상) 및 실시간 연계 등록 안내 반영',
+  changelog: '미연동 기능(오류 신고, 데이터 갱신 요청, 연계의뢰서 전송) 비활성 툴팁 및 안내 알림 처리',
 };

@@ -17,6 +17,7 @@ import {
   ArrowRight,
   ShieldCheck,
   RefreshCw,
+  X,
 } from 'lucide-react';
 import { 퇴원환자_정보, 돌봄_자원_추천항목 } from '@/lib/필수의료_타입';
 
@@ -91,32 +92,20 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
   const [selected_patient, set_selected_patient] = useState<퇴원환자_정보>(SAMPLE_PATIENTS[0]);
   const [resources, set_resources] = useState<돌봄_자원_추천항목[]>(INITIAL_RECOMMENDED_RESOURCES);
   const [is_matching, set_is_matching] = useState(false);
-  const [is_transmitting, set_is_transmitting] = useState(false);
-  const [transmission_complete, set_transmission_complete] = useState(false);
+  const [referral_notice, set_referral_notice] = useState<string | null>(null);
 
-  // AI 매칭 재실행 시뮬레이션
+  // AI 매칭 재실행
   const handle_run_ai_match = () => {
     set_is_matching(true);
-    set_transmission_complete(false);
     setTimeout(() => {
       set_is_matching(false);
       set_resources(INITIAL_RECOMMENDED_RESOURCES.map((r) => ({ ...r, 연계상태: '미의뢰' })));
-    }, 800);
+    }, 600);
   };
 
-  // 원클릭 일괄 연계의뢰서 전송
+  // 원클릭 일괄 연계의뢰서 전송 안내
   const handle_send_all_referrals = () => {
-    set_is_transmitting(true);
-    setTimeout(() => {
-      set_is_transmitting(false);
-      set_transmission_complete(true);
-      set_resources((prev) =>
-        prev.map((r) => ({
-          ...r,
-          연계상태: '접수완료',
-        }))
-      );
-    }, 1200);
+    set_referral_notice('퇴원환자 연계의뢰서 전자 전송 기능은 보건복지부 차세대 사회보장정보시스템(행복e음) 및 지자체 돌봄망 정식 연동 후 제공될 예정입니다.');
   };
 
   return (
@@ -223,12 +212,9 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
             <span className="text-[10px] text-slate-500 dark:text-slate-400">보건소·공단·지자체 복지망 실시간 매핑</span>
           </div>
 
-          {transmission_complete && (
-            <span className="inline-flex items-center space-x-1 text-xs font-bold text-[#34c759] dark:text-emerald-400">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>3개 기관 전자연계의뢰 접수 완료</span>
-            </span>
-          )}
+          <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+            전자연계망 연동 준비 중
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -289,44 +275,46 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
         </div>
       </div>
 
-      {/* 하단 액션 바: 원클릭 연계의뢰서 전송 */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="space-y-0.5">
-          <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-[#0071e3] dark:text-blue-400" />
-            <span>기존 팩스·전화 중심 수기 의뢰(소요시간 3~5일) ➔ 전자연계망 1초 종결</span>
-          </p>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            환자 사전 동의서 서명 완료 · 보건복지부 공공보건의료 연계표준 서식 전자문서 암호화 전송
-          </p>
+      {/* 하단 액션 바: 연계의뢰서 전송 (준비 중 안내) */}
+      <div className="space-y-3">
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#0071e3] dark:text-blue-400" />
+              <span>기존 팩스·전화 중심 수기 의뢰 ➔ 전자연계망 연계 준비</span>
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              환자 사전 동의서 서명 완료 · 보건복지부 공공보건의료 연계표준 서식 전자문서 암호화 규격 지원
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handle_send_all_referrals}
+            className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-full text-xs font-bold transition shadow-2xs bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 cursor-not-allowed select-none"
+            title="보건복지부 차세대 사회보장정보시스템(행복e음) 정식 연동 후 제공 예정"
+          >
+            <Send className="w-3.5 h-3.5 text-slate-400" />
+            <span>원클릭 연계의뢰서 전자 전송</span>
+            <span className="text-[10px] px-1.5 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-md font-semibold">연동 준비중</span>
+          </button>
         </div>
 
-        <button
-          onClick={handle_send_all_referrals}
-          disabled={is_transmitting || transmission_complete}
-          className={`inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-full text-xs font-bold transition shadow-apple-sm active:scale-95 cursor-pointer ${
-            transmission_complete
-              ? 'bg-emerald-600 text-white cursor-default'
-              : 'bg-slate-900 hover:bg-black dark:bg-blue-600 dark:hover:bg-blue-500 text-white disabled:opacity-60'
-          }`}
-        >
-          {is_transmitting ? (
-            <>
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              <span>전자연계망 3개 기관 동시 전송 중...</span>
-            </>
-          ) : transmission_complete ? (
-            <>
-              <CheckCircle2 className="w-4 h-4" />
-              <span>연계의뢰 전송 및 접수 승인 완료</span>
-            </>
-          ) : (
-            <>
-              <Send className="w-3.5 h-3.5" />
-              <span>3개 기관 원클릭 일괄 연계의뢰서 전송</span>
-            </>
-          )}
-        </button>
+        {referral_notice && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="font-semibold">{referral_notice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => set_referral_notice(null)}
+              className="text-amber-700 hover:text-amber-900 dark:text-amber-400 p-1 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

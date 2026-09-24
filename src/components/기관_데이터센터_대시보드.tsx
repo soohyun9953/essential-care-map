@@ -38,36 +38,9 @@ export const 기관_데이터센터_대시보드: React.FC = () => {
 
   const [selected_hospital, setSelected_hospital] = useState<공공의료기관_상세_프로필>(default_hospital);
 
-  // 모달 상태
-  const [is_report_modal_open, setIs_report_modal_open] = useState(false);
+  // 모달 및 알림 상태
   const [is_detail_view_open, setIs_detail_view_open] = useState(false);
-  const [is_refreshing, setIs_refreshing] = useState(false);
-  const [refresh_success, setRefresh_success] = useState(false);
-
-  // 오류 신고 폼 상태
-  const [report_category, setReport_category] = useState<'병상' | '응급실' | '인력' | '운영상태' | '기타'>('병상');
-  const [report_content, setReport_content] = useState('');
-  const [report_submitted, setReport_submitted] = useState(false);
-
-  // 실시간 갱신 시뮬레이션
-  const handle_request_refresh = () => {
-    setIs_refreshing(true);
-    setTimeout(() => {
-      setIs_refreshing(false);
-      setRefresh_success(true);
-      setTimeout(() => setRefresh_success(false), 3000);
-    }, 1200);
-  };
-
-  const handle_submit_report = (e: React.FormEvent) => {
-    e.preventDefault();
-    setReport_submitted(true);
-    setTimeout(() => {
-      setReport_submitted(false);
-      setIs_report_modal_open(false);
-      setReport_content('');
-    }, 1500);
-  };
+  const [action_notice, set_action_notice] = useState<string | null>(null);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-6 md:py-8 space-y-6 animate-in fade-in duration-200">
@@ -130,24 +103,56 @@ export const 기관_데이터센터_대시보드: React.FC = () => {
               <span>{is_detail_view_open ? '데이터 상세 닫기' : '데이터 상세'}</span>
             </button>
 
-            <button
-              onClick={() => setIs_report_modal_open(true)}
-              className="px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 text-xs font-bold transition flex items-center gap-1.5"
-            >
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              <span>오류 신고</span>
-            </button>
+            {/* 오류 신고 버튼 (정식 연동 전 비활성 안내 툴팁 및 클릭 메시지) */}
+            <div className="relative group">
+              <button
+                type="button"
+                onClick={() => {
+                  set_action_notice('의료기관 데이터 오류 신고 및 정정 요청 기능은 보건복지부 및 국립중앙의료원(NMC) 전산망 정식 연동 후 제공될 예정입니다.');
+                }}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-not-allowed select-none"
+                title="공공의료 전산망 정식 연동 후 제공 예정"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-slate-400" />
+                <span>오류 신고</span>
+                <span className="text-[10px] px-1.5 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-md font-semibold">준비중</span>
+              </button>
+            </div>
 
-            <button
-              onClick={handle_request_refresh}
-              disabled={is_refreshing}
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5 active:scale-95 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${is_refreshing ? 'animate-spin' : ''}`} />
-              <span>{refresh_success ? '갱신 완료!' : '데이터 갱신 요청'}</span>
-            </button>
+            {/* 데이터 갱신 요청 버튼 (자동 수집 상태 안내) */}
+            <div className="relative group">
+              <button
+                type="button"
+                onClick={() => {
+                  set_action_notice('본 플랫폼은 공공데이터포털 5분 주기 정기 자동 수집으로 정상 운영 중이며, 수동 즉시 갱신은 기관 전산망 직접 연동 후 제공될 예정입니다.');
+                }}
+                className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 text-xs font-bold transition flex items-center gap-1.5 cursor-not-allowed select-none"
+                title="자동 수집 운영 중 (수동 갱신은 정식 전산망 연동 후 제공)"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+                <span>데이터 갱신 요청</span>
+                <span className="text-[10px] px-1.5 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-md font-semibold">자동수집중</span>
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* 비활성 기능 클릭 시 명확한 안내 알림창 */}
+        {action_notice && (
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 rounded-2xl flex items-center justify-between text-xs text-amber-900 dark:text-amber-200 animate-in fade-in">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="font-semibold">{action_notice}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => set_action_notice(null)}
+              className="text-amber-700 hover:text-amber-900 dark:text-amber-400 p-1 cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ============================================================== */}
@@ -311,98 +316,6 @@ export const 기관_데이터센터_대시보드: React.FC = () => {
             <div>• ER_CAPACITY: {selected_hospital.의료자원.응급실.가용병상} | STATUS: {selected_hospital.의료자원.응급실.상태}</div>
             <div>• DOCTORS_TOTAL: {selected_hospital.의료자원.의료인력.전체의사수} | SPECIALISTS: {selected_hospital.의료자원.의료인력.전체의사수}</div>
             <div>• SYNC_TIMESTAMP: 2026-09-23T09:32:00Z | ERROR_FLAG: 0</div>
-          </div>
-        </div>
-      )}
-
-      {/* ============================================================== */}
-      {/* 5. 오류 신고 팝업 모달 */}
-      {/* ============================================================== */}
-      {is_report_modal_open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#12141a] rounded-3xl p-6 max-w-lg w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5 text-amber-500" />
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  의료데이터 오류 신고 및 정정 요청
-                </h3>
-              </div>
-              <button
-                onClick={() => setIs_report_modal_open(false)}
-                className="text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {report_submitted ? (
-              <div className="py-8 text-center space-y-2 text-emerald-600">
-                <CheckCircle2 className="w-12 h-12 mx-auto" />
-                <p className="font-bold text-sm">오류 신고가 정상 접수되었습니다.</p>
-                <p className="text-xs text-slate-400">데이터 검증 센터에서 1시간 이내 확인 후 반영됩니다.</p>
-              </div>
-            ) : (
-              <form onSubmit={handle_submit_report} className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300">대상 기관</label>
-                  <input
-                    type="text"
-                    disabled
-                    value={selected_hospital.기관명}
-                    className="w-full p-2.5 rounded-xl bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300">오류 항목 분류</label>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    {(['병상', '응급실', '인력', '운영상태', '기타'] as const).map((cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setReport_category(cat)}
-                        className={`py-1.5 rounded-lg font-bold border transition ${
-                          report_category === cat
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-slate-300">정정 요청 상세 내용</label>
-                  <textarea
-                    rows={4}
-                    required
-                    value={report_content}
-                    onChange={(e) => setReport_content(e.target.value)}
-                    placeholder="예: 실제 가용 병상은 5석이나 시스템에는 1석으로 표기되어 있습니다. 즉시 정정 바랍니다."
-                    className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setIs_report_modal_open(false)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold"
-                  >
-                    취소
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-5 py-2 rounded-xl bg-blue-600 text-white font-bold"
-                  >
-                    신고서 제출
-                  </button>
-                </div>
-              </form>
-            )}
           </div>
         </div>
       )}

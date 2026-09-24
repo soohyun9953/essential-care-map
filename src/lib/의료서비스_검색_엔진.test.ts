@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { 전체_공공의료기관_상세목록 as 목록, 의료서비스_검색_엔진 } from './의료서비스_검색_엔진';
+import { 전체_공공의료기관_상세목록 as 목록, 의료서비스_검색_엔진, 분만가능_기관_조회 } from './의료서비스_검색_엔진';
+import { 분만가능_의료기관_목록, 분만가능_의료기관_출처 } from './분만가능_의료기관_데이터셋';
 import { 전국_공공의료기관_목록 } from './공공의료기관_데이터셋';
 
 const 서비스_상태 = (h: (typeof 목록)[number], code: string) => h.서비스_상세.find((s) => s.코드 === code)?.상태;
@@ -46,16 +47,19 @@ describe('임의 생성값 회귀 방지 (v1.0.19~v1.0.21 정정 사항)', () =>
     }
   });
 
-  it('서비스 비고에 근거 없는 구체적 주장을 넣지 않는다', () => {
+  it('서비스 비고는 추정임을 밝히거나 공개 데이터 출처를 명시한다', () => {
     for (const h of 목록) {
-      for (const s of h.서비스_상세) expect(s.비고).toContain('추정');
+      for (const s of h.서비스_상세) {
+        if (s.근거 === '청구실적') expect(s.비고).toContain('심평원');
+        else expect(s.비고).toContain('추정');
+      }
     }
   });
 });
 
 describe('진료 서비스 운영 추정 규칙', () => {
-  // 급성기 서비스별 '지역 기관' 운영 추정 병상 기준
-  const 급성기_기준: Record<string, number> = { delivery: 350, severe: 250, cardio_cerebro: 300 };
+  // 급성기 서비스별 '지역 기관' 운영 추정 병상 기준 (분만은 심평원 청구 실적 목록으로 판정하므로 제외)
+  const 급성기_기준: Record<string, number> = { severe: 250, cardio_cerebro: 300 };
 
   it.each(Object.entries(급성기_기준))('%s: 권역 기관 또는 기준 병상 초과 지역 기관만 운영으로 추정한다', (code, 기준) => {
     const 운영 = 목록.filter((h) => 서비스_상태(h, code) === '운영');
@@ -68,7 +72,7 @@ describe('진료 서비스 운영 추정 규칙', () => {
 
   it('노인·정신·치과·한방·재활 병원은 분만·중환자·심뇌혈관 미운영으로 추정한다', () => {
     for (const h of 목록.filter((h) => ['노인', '정신', '치과', '한방', '재활(소아)'].includes(유형(h)))) {
-      for (const code of Object.keys(급성기_기준)) expect(서비스_상태(h, code), `${h.기관명} ${code}`).toBe('미운영');
+      for (const code of ['delivery', ...Object.keys(급성기_기준)]) expect(서비스_상태(h, code), `${h.기관명} ${code}`).toBe('미운영');
     }
   });
 
@@ -82,6 +86,34 @@ describe('진료 서비스 운영 추정 규칙', () => {
     for (const h of 목록.filter((h) => 서비스_상태(h, 'emergency') === '운영')) {
       expect(['권역', '지역']).toContain(유형(h));
     }
+  });
+});
+
+describe('분만: 심평원 분만가능 의료기관 목록(청구 실적) 기반 판정', () => {
+  it('원본 데이터셋은 420개 기관, 필수 항목과 출처 정보를 갖는다', () => {
+    expect(분만가능_의료기관_목록.length).toBe(420);
+    for (const h of 분만가능_의료기관_목록) {
+      expect(h.기관명 && h.시도 && h.종별, JSON.stringify(h)).toBeTruthy();
+    }
+    expect(분만가능_의료기관_출처.이용허락).toContain('공공누리');
+  });
+
+  it('공공병원의 분만 운영 여부는 목록 등재 여부와 정확히 일치하고 근거를 청구실적으로 표시한다', () => {
+    for (const h of 목록) {
+      const svc = h.서비스_상세.find((s) => s.코드 === 'delivery')!;
+      expect(svc.상태 === '운영', h.기관명).toBe(!!분만가능_기관_조회(h.기관명));
+      expect(svc.근거).toBe('청구실적');
+    }
+  });
+
+  it('공공병원 중 목록 등재 기관은 33곳이며, 요양병원이 본원 이름으로 오대응되지 않는다', () => {
+    expect(목록.filter((h) => 서비스_상태(h, 'delivery') === '운영').length).toBe(33);
+    const 이름 = (n: string) => 목록.find((h) => h.기관명 === n)!;
+    expect(서비스_상태(이름('울진군의료원'), 'delivery')).toBe('운영');
+    expect(서비스_상태(이름('울진군의료원요양병원'), 'delivery')).toBe('미운영');
+    expect(서비스_상태(이름('강원특별자치도영월의료원'), 'delivery')).toBe('운영');
+    // 병상 규모로는 '운영 추정'이었지만 실제 분만 청구 실적이 없는 기관
+    expect(서비스_상태(이름('경찰병원'), 'delivery')).toBe('미운영');
   });
 });
 

@@ -270,7 +270,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
-              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>이며, 응급실·분만·소아 등 <strong>진료 가능 여부는 기관 유형·규모로 추정한 값</strong>입니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
+              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 분만은 <strong>건강보험심사평가원 분만가능 의료기관 목록</strong>(2025.1~2026.4 청구 실적, 공공누리 제1유형)으로, 응급실·소아 등은 <strong>기관 유형·규모로 추정</strong>해 표시합니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
               응급 상황에서는 <strong>119</strong>에 연락하세요.
             </p>
           </div>

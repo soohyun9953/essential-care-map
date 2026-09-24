@@ -147,7 +147,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-xs text-blue-950 dark:text-blue-200 leading-relaxed">
                 💡 <strong>데이터 출처 안내:</strong> 데이터셋마다 출처와 성격이 다릅니다. 환자 유출입(데이터셋 3)은 원천 엑셀 자료에서 추출한 값이고, 공공의료기관 목록·총 병상은 내장 데이터셋(2024년 기준)입니다.
-                의료기관별 인력·장비·진료 서비스 운영 여부는 기관 유형·규모 기반 <strong>추정치</strong>이며, 시뮬레이터·대시보드의 일부 수치는 <strong>예시 기본값</strong>입니다. 실시간 연계는 공공데이터포털 응급실 API(선택)만 지원합니다.
+                분만 가능 여부는 건강보험심사평가원 「분만가능 의료기관 목록」(2025.1~2026.4 청구 실적, 공공누리 제1유형)을 사용합니다.
+                그 밖의 의료기관별 인력·장비·진료 서비스 운영 여부는 기관 유형·규모 기반 <strong>추정치</strong>이며, 시뮬레이터·대시보드의 일부 수치는 <strong>예시 기본값</strong>입니다. 실시간 연계는 공공데이터포털 응급실 API(선택)만 지원합니다.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

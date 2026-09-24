@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.15',
-  fullLabel: '20260924 버전 1.0.15',
-  packageVersion: '20260924-v1.0.15',
+  semver: '1.0.16',
+  fullLabel: '20260924 버전 1.0.16',
+  packageVersion: '20260924-v1.0.16',
   updatedAt: '2026-09-24',
-  changelog: '응급실 실시간 API 조회 시각을 배포 서버(UTC)에서도 한국 시간으로 표시하도록 수정',
+  changelog: 'ESLint react-hooks/exhaustive-deps 경고 2건 정리 (lint 경고 0건)',
 };

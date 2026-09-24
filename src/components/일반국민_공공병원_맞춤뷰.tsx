@@ -2,7 +2,7 @@
 
 // 대국민 접점: 일반 국민·환자 맞춤형 공공의료 포털, E-Gen 실시간 응급실·소아병상 라이브 모니터링 & 모바일 퇴원돌봄 안심 알리미
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import {
   Building2,
   Bell,
@@ -112,7 +112,7 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
   const health_center_addr = `${sigungu} ${short}읍 보건소길 1`;
 
   // 실시간 E-Gen 응급의료 데이터 Fetch 함수
-  const fetch_emergency_data = async () => {
+  const fetch_emergency_data = useCallback(async () => {
     set_is_refreshing(true);
     try {
       const query_params = new URLSearchParams({ sido, sigungu });
@@ -132,11 +132,11 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
     } finally {
       set_is_refreshing(false);
     }
-  };
+  }, [sido, sigungu, data_go_kr_api_key]);
 
   useEffect(() => {
     fetch_emergency_data();
-  }, [sido, sigungu, data_go_kr_api_key]);
+  }, [fetch_emergency_data]);
 
   useEffect(() => {
     chat_end_ref.current?.scrollIntoView({ behavior: 'smooth' });

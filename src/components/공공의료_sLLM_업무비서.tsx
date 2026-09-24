@@ -300,6 +300,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     return () => {
       document.removeEventListener('mousedown', handle_click_outside);
     };
+    // 마운트 시 1회만 실행 (초기 RAG 미리보기·서버 상태 확인·리스너 등록).
+    // 이후 RAG 재계산은 실행/문서등록 핸들러에서 명시적으로 수행하므로 의존성을 비워 둠
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 새 문서 등록 시 코퍼스 갱신

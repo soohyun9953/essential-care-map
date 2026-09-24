@@ -56,29 +56,31 @@ export class 필수의료_진단_엔진 {
    */
   public static diagnose_region(raw_data: 시군구_원천_데이터): 필수의료_진단_결과 {
     // 1. 응급의료 취약지 판정: 60분 미도달 인구 > 30% 또는 RI(의료이용률) < 30%
-    const is_emergency_unreachable = raw_data.응급_60분_미도달_인구비율 > 30;
+    // 응급의료취약지 선정 기준: 도달 불가 인구 30% '이상' (보건복지부 기준, 2026-09-24 원문 대조)
+    const is_emergency_unreachable = raw_data.응급_60분_미도달_인구비율 >= 30;
     const is_emergency_low_ri = raw_data.관내_응급_의료이용률 < 30;
     const is_emergency_vulnerable = is_emergency_unreachable || is_emergency_low_ri;
 
     let emergency_reason = '기준 충족 (정상)';
     if (is_emergency_unreachable && is_emergency_low_ri) {
-      emergency_reason = `60분 미도달(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% > 30%) 및 관내이용률(${raw_data.관내_응급_의료이용률.toFixed(1)}% < 30%) 동시 취약`;
+      emergency_reason = `60분 미도달(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 및 관내이용률(${raw_data.관내_응급_의료이용률.toFixed(1)}% < 30%) 동시 취약`;
     } else if (is_emergency_unreachable) {
-      emergency_reason = `60분 미도달 인구(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% > 30%) 초과`;
+      emergency_reason = `60분 미도달 인구(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 기준 해당`;
     } else if (is_emergency_low_ri) {
       emergency_reason = `관내 의료이용률(${raw_data.관내_응급_의료이용률.toFixed(1)}% < 30%) 기준치 미달`;
     }
 
     // 2. 분만·모자의료 취약지 판정: 60분 미도달 인구 > 30% 또는 분만율 < 40%
-    const is_delivery_unreachable = raw_data.분만_60분_미도달_인구비율 > 30;
+    // 분만취약지 선정 기준: 60분 내 분만기관 접근 불가 인구 30% '이상' (보건복지부 분만취약지 지원사업)
+    const is_delivery_unreachable = raw_data.분만_60분_미도달_인구비율 >= 30;
     const is_delivery_low_rate = raw_data.관내_분만율 < 40;
     const is_delivery_vulnerable = is_delivery_unreachable || is_delivery_low_rate;
 
     let delivery_reason = '기준 충족 (정상)';
     if (is_delivery_unreachable && is_delivery_low_rate) {
-      delivery_reason = `60분 미도달(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% > 30%) 및 관내분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 동시 취약`;
+      delivery_reason = `60분 미도달(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 및 관내분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 동시 취약`;
     } else if (is_delivery_unreachable) {
-      delivery_reason = `60분 미도달 인구(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% > 30%) 초과`;
+      delivery_reason = `60분 미도달 인구(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 기준 해당`;
     } else if (is_delivery_low_rate) {
       delivery_reason = `관내 분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 기준치 미달`;
     }

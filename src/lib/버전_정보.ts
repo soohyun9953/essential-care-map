@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.29',
-  fullLabel: '20260924 버전 1.0.29',
-  packageVersion: '20260924-v1.0.29',
+  semver: '1.0.30',
+  fullLabel: '20260924 버전 1.0.30',
+  packageVersion: '20260924-v1.0.30',
   updatedAt: '2026-09-24',
-  changelog: 'sLLM 사전 작성 템플릿의 미확인·모순 정책 수치 제거, 지표값 기반 판정 문구 적용, 영월 전용 내용 일반화 및 원문 확인 안내 추가',
+  changelog: '지침 코퍼스 원문 대조(12개 청크 검증상태 표기), 가공 법령 인용 모달 정정, 응급·분만 취약 기준 30% 이상 적용 및 분만취약지 실제 선정기준·지원액 반영',
 };

@@ -343,7 +343,11 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                   </span>
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400 pt-1">
                     <span>중환자실(ICU):</span>
-                    <span>약 {hospital.의료자원.중환자실.총병상}석 (가용: 실시간 미연동)</span>
+                    <span>
+                      {hospital.의료자원.중환자실.총병상 > 0
+                        ? `약 ${hospital.의료자원.중환자실.총병상}석 (가용: 실시간 미연동)`
+                        : '미보유 추정'}
+                    </span>
                   </div>
                   <div className="flex justify-between text-xs text-slate-600 dark:text-slate-400">
                     <span>정규 수술실:</span>

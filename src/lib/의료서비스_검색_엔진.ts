@@ -151,8 +151,12 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
     const is_senior = h.그룹 === '노인';
     const is_mental = h.그룹 === '정신';
     const is_rehab = h.그룹 === '재활(소아)';
-    // 분만과 무관한 특수목적 병원 (병상 규모와 관계없이 분만 미운영으로 추정)
-    const is_non_obstetric = is_senior || is_mental || is_rehab || h.그룹 === '치과' || h.그룹 === '한방';
+    // 급성기(분만·중환자·심뇌혈관) 진료와 무관한 특수목적 병원 (병상 규모와 관계없이 미운영으로 추정)
+    const is_non_acute = is_senior || is_mental || is_rehab || h.그룹 === '치과' || h.그룹 === '한방';
+    // 급성기 서비스 공통 추정: 권역 기관 또는 일정 규모 초과 지역 기관만 운영, 특수목적 병원은 미운영,
+    // 보훈·암·산재·감염 병원 등은 확인필요
+    const 급성기_추정 = (지역_병상_기준: number): 서비스_운영_상태 =>
+      is_regional || (is_local && h.병상수 > 지역_병상_기준) ? '운영' : is_non_acute ? '미운영' : '확인필요';
 
     // 주요 의료서비스 태그 결정
     const services: string[] = [];
@@ -176,13 +180,13 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       {
         코드: 'severe',
         서비스명: '중환자 치료',
-        상태: is_regional ? '운영' : h.병상수 > 250 ? '운영' : '미운영',
+        상태: 급성기_추정(250),
         비고: 추정_비고,
       },
       {
         코드: 'cardio_cerebro',
         서비스명: '급성 심뇌혈관',
-        상태: is_regional ? '운영' : h.병상수 > 300 ? '운영' : '확인필요',
+        상태: 급성기_추정(300),
         비고: 추정_비고,
       },
       {
@@ -194,8 +198,7 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       {
         코드: 'delivery',
         서비스명: '분만 산부인과',
-        // 권역 기관 또는 350병상 초과 지역 기관만 운영 추정 (보훈·암·산재·감염 등 특수목적 병원은 확인필요)
-        상태: is_regional || (is_local && h.병상수 > 350) ? '운영' : is_non_obstetric ? '미운영' : '확인필요',
+        상태: 급성기_추정(350),
         비고: 추정_비고,
       },
       {
@@ -230,8 +233,9 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
     const used_beds = Math.round((total_beds * occ_rate) / 100);
     const avail_beds = Math.max(2, total_beds - used_beds);
 
-    const icu_total = Math.max(4, Math.round(total_beds * 0.06));
-    const icu_avail = Math.max(1, Math.round(icu_total * 0.15));
+    // 중환자실 규모(추정): 중환자 치료 미운영 추정 기관은 0 (서비스 상태와 일치)
+    const icu_total = is_non_acute ? 0 : Math.max(4, Math.round(total_beds * 0.06));
+    const icu_avail = icu_total === 0 ? 0 : Math.max(1, Math.round(icu_total * 0.15));
 
     const or_total = Math.max(2, Math.round(total_beds * 0.025));
     const or_active = Math.max(1, or_total - (idx % 2));

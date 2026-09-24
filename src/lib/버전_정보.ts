@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.24',
-  fullLabel: '20260924 버전 1.0.24',
-  packageVersion: '20260924-v1.0.24',
+  semver: '1.0.25',
+  fullLabel: '20260924 버전 1.0.25',
+  packageVersion: '20260924-v1.0.25',
   updatedAt: '2026-09-24',
-  changelog: 'Vitest 테스트 38건 도입(CI 연동) 및 분만 운영 추정 기준에서 요양·정신·보훈·암 등 특수목적 병원 제외',
+  changelog: '중환자 치료·급성 심뇌혈관 운영 추정에서 요양·정신·재활 등 특수목적 병원 제외 및 중환자실 규모 표시 일관화',
 };

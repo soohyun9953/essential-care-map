@@ -341,7 +341,9 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
           <div className="space-y-2 text-xs">
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">중환자실 병상 (추정):</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">약 {selected_hospital.의료자원.중환자실.총병상}석</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                {selected_hospital.의료자원.중환자실.총병상 > 0 ? `약 ${selected_hospital.의료자원.중환자실.총병상}석` : '미보유 추정'}
+              </span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">가용 중환자실:</span>

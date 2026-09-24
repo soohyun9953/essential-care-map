@@ -54,18 +54,27 @@ describe('임의 생성값 회귀 방지 (v1.0.19~v1.0.21 정정 사항)', () =>
 });
 
 describe('진료 서비스 운영 추정 규칙', () => {
-  it('분만은 권역 기관 또는 350병상 초과 지역 기관만 운영으로 추정한다', () => {
-    const 분만_운영 = 목록.filter((h) => 서비스_상태(h, 'delivery') === '운영');
-    expect(분만_운영.length).toBeGreaterThan(0);
-    for (const h of 분만_운영) {
-      const ok = 유형(h) === '권역' || (유형(h) === '지역' && h.의료자원.병상.총병상 > 350);
+  // 급성기 서비스별 '지역 기관' 운영 추정 병상 기준
+  const 급성기_기준: Record<string, number> = { delivery: 350, severe: 250, cardio_cerebro: 300 };
+
+  it.each(Object.entries(급성기_기준))('%s: 권역 기관 또는 기준 병상 초과 지역 기관만 운영으로 추정한다', (code, 기준) => {
+    const 운영 = 목록.filter((h) => 서비스_상태(h, code) === '운영');
+    expect(운영.length).toBeGreaterThan(0);
+    for (const h of 운영) {
+      const ok = 유형(h) === '권역' || (유형(h) === '지역' && h.의료자원.병상.총병상 > 기준);
       expect(ok, `${h.기관명}(${h.기관유형})`).toBe(true);
     }
   });
 
-  it('노인·정신·치과·한방·재활 병원은 분만 미운영으로 추정한다', () => {
+  it('노인·정신·치과·한방·재활 병원은 분만·중환자·심뇌혈관 미운영으로 추정한다', () => {
     for (const h of 목록.filter((h) => ['노인', '정신', '치과', '한방', '재활(소아)'].includes(유형(h)))) {
-      expect(서비스_상태(h, 'delivery'), h.기관명).toBe('미운영');
+      for (const code of Object.keys(급성기_기준)) expect(서비스_상태(h, code), `${h.기관명} ${code}`).toBe('미운영');
+    }
+  });
+
+  it('중환자 치료 미운영 추정 기관은 중환자실 규모도 0이다 (표시 일관성)', () => {
+    for (const h of 목록.filter((h) => 서비스_상태(h, 'severe') === '미운영' && ['노인', '정신', '치과', '한방', '재활(소아)'].includes(유형(h)))) {
+      expect(h.의료자원.중환자실.총병상, h.기관명).toBe(0);
     }
   });
 

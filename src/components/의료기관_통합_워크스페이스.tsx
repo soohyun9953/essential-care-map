@@ -274,12 +274,14 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
                           {h.기관명}
                         </h4>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                          종합병원 · {h.기관유형}
+                          {h.기관유형}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 shrink-0">
-                        <span>🟢</span>
-                        <span>{h.운영_상태}</span>
+                      <span
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0"
+                        title="실제 운영 상태는 연계되지 않습니다"
+                      >
+                        <span>운영 {h.운영_상태}</span>
                       </span>
                     </div>
 

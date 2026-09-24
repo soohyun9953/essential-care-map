@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.20',
-  fullLabel: '20260924 버전 1.0.20',
-  packageVersion: '20260924-v1.0.20',
+  semver: '1.0.21',
+  fullLabel: '20260924 버전 1.0.21',
+  packageVersion: '20260924-v1.0.21',
   updatedAt: '2026-09-24',
-  changelog: '기관 데이터센터 고정 품질지수·충원율·장비 가동 상태 표기 정정 및 추정치 명시, 전문의 수 표시 오류 수정',
+  changelog: '임의 생성 주소·홈페이지 URL·진료시간·운영상태 표기 제거 및 미제공/확인필요 명시',
 };

@@ -69,7 +69,8 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
   if (!is_open || !hospital) return null;
 
   const handle_copy_address = async () => {
-    await navigator.clipboard.writeText(hospital.주소);
+    // 상세 주소가 없으므로 지도 검색에 쓸 수 있도록 기관명과 함께 복사
+    await navigator.clipboard.writeText(`${hospital.기관명} ${hospital.주소}`);
     setIs_copied(true);
     setTimeout(() => setIs_copied(false), 2000);
   };
@@ -194,14 +195,18 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
                       <span className="text-slate-500">홈페이지:</span>
-                      <a
-                        href={hospital.홈페이지}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="font-medium text-slate-700 dark:text-slate-300 hover:underline truncate"
-                      >
-                        {hospital.홈페이지}
-                      </a>
+                      {hospital.홈페이지 ? (
+                        <a
+                          href={hospital.홈페이지}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-slate-700 dark:text-slate-300 hover:underline truncate"
+                        >
+                          {hospital.홈페이지}
+                        </a>
+                      ) : (
+                        <span className="text-slate-400">미제공</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -215,14 +220,14 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                       <MapPin className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                       <div className="space-y-1">
                         <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-                          {hospital.주소}
+                          {hospital.주소} <span className="text-[11px] font-normal text-slate-400">(상세 주소 미제공)</span>
                         </span>
                         <button
                           onClick={handle_copy_address}
                           className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
                         >
                           {is_copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                          <span>{is_copied ? '주소 복사됨' : '주소 복사하기'}</span>
+                          <span>{is_copied ? '복사됨' : '기관명·지역 복사하기'}</span>
                         </button>
                       </div>
                     </div>
@@ -450,18 +455,18 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
               <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    도로명 주소
+                    소재 지역
                   </span>
                   <button
                     onClick={handle_copy_address}
                     className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400"
                   >
                     {is_copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{is_copied ? '복사됨' : '주소 복사'}</span>
+                    <span>{is_copied ? '복사됨' : '기관명·지역 복사'}</span>
                   </button>
                 </div>
                 <p className="text-sm font-bold text-slate-900 dark:text-white">
-                  {hospital.주소}
+                  {hospital.주소} <span className="text-xs font-normal text-slate-400">(상세 주소 미제공 · 아래 지도 검색 이용)</span>
                 </p>
               </div>
 

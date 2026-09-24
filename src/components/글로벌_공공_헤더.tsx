@@ -10,6 +10,7 @@ import {
   Upload,
   Key,
   Database,
+  RefreshCw,
   Moon,
   Sun,
   BookOpen,
@@ -466,6 +467,22 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                     ) : (
                       <span className="text-[10px] text-slate-400">미등록</span>
                     )}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handle_workspace_change('medical_institution');
+                      set_is_admin_open(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+                      <span className="text-slate-700 dark:text-slate-200 font-medium">전국 데이터 전체 업데이트</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-1.5 py-0.5 rounded">
+                      45개소
+                    </span>
                   </button>
 
                   <button

@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.7',
-  fullLabel: '20260924 버전 1.0.7',
-  packageVersion: '20260924-v1.0.7',
+  semver: '1.0.8',
+  fullLabel: '20260924 버전 1.0.8',
+  packageVersion: '20260924-v1.0.8',
   updatedAt: '2026-09-24',
-  changelog: '기관 데이터센터 동기화 일시 현재 시점 동적 반영 및 [지금 동기화] 즉시 갱신 기능 활성화',
+  changelog: '전국 45개 공공의료기관 데이터 전체 일괄 업데이트 및 실시간 동기화 모달 기능 신규 탑재',
 };

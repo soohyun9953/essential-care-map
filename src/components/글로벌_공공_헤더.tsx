@@ -111,23 +111,18 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
         <div className="h-14 flex items-center justify-between gap-3">
           
-          {/* 1. 좌측: 브랜드 로고 & Essential Care Map 타이틀 */}
-          <div
-            onClick={() => handle_workspace_change('home')}
-            className="flex items-center space-x-2.5 cursor-pointer select-none shrink-0"
-          >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20">
+          {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 (정적 표시, 완벽한 수직 중앙 정렬) */}
+          <div className="flex items-center gap-2.5 select-none shrink-0 cursor-default">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0">
               <Activity className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-none">
-                  공공의료 의사결정 지원 플랫폼
-                </h1>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden sm:inline">
-                  20260923 버전 1.0.0
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-normal flex items-center">
+                공공의료 의사결정 지원 플랫폼
+              </h1>
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/60 text-[#0071e3] dark:text-[#2997ff] font-bold border border-blue-200/60 dark:border-blue-900 hidden sm:inline-flex items-center justify-center leading-none">
+                20260923 버전 1.0.0
+              </span>
             </div>
           </div>
 

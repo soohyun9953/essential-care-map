@@ -499,17 +499,21 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
             <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-slate-300">
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                데이터 신뢰성 검증 정보
+                데이터 출처 안내
               </span>
-              <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+              <span className="text-amber-600 dark:text-amber-400 font-bold">
                 상태: {hospital.데이터_신뢰성.상태}
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 pt-0.5 text-[11px]">
               <span>출처: {hospital.데이터_신뢰성.출처}</span>
-              <span>최종수집: {hospital.데이터_신뢰성.최종수집}</span>
-              <span>갱신주기: {hospital.데이터_신뢰성.갱신주기}</span>
+              <span>수집: {hospital.데이터_신뢰성.최종수집}</span>
+              <span>갱신: {hospital.데이터_신뢰성.갱신주기}</span>
             </div>
+            <p className="pt-0.5 text-[10.5px]">
+              기관명·총 병상·대표전화 등은 내장 데이터셋 값이며, 의료인력·장비·중환자실/수술실 규모 등은 기관 규모를 바탕으로 한 추정치입니다.
+              정확한 정보는 해당 기관에 직접 확인하세요.
+            </p>
           </div>
         </div>
 

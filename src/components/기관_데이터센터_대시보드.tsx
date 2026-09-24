@@ -384,20 +384,20 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="p-5 rounded-2xl bg-white dark:bg-[#12141a] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-blue-500" />
-            전산망 연계 주기 &amp; 프로토콜
+            데이터 출처 &amp; 연계 현황
           </h3>
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">연계 데이터 소스:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">원내 OCS/EMR 및 심평원</span>
+            <div className="flex justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <span className="text-slate-500 shrink-0">데이터 소스:</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200 text-right">플랫폼 내장 데이터셋 (2024년 기준)</span>
             </div>
-            <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">응급실 가용병상 갱신:</span>
-              <span className="font-bold text-blue-600">5분 주기 (실시간)</span>
+            <div className="flex justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <span className="text-slate-500 shrink-0">응급실 가용병상:</span>
+              <span className="font-bold text-amber-600 text-right">실시간 미연동 (API 연결 확인만 지원)</span>
             </div>
-            <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
-              <span className="text-slate-500">입원병상·인력 공시:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">일 1회 (자정 정산)</span>
+            <div className="flex justify-between gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
+              <span className="text-slate-500 shrink-0">입원병상·인력:</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200 text-right">자동 갱신 미지원 (수동 업데이트)</span>
             </div>
           </div>
         </div>

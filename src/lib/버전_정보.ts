@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.18',
-  fullLabel: '20260924 버전 1.0.18',
-  packageVersion: '20260924-v1.0.18',
+  semver: '1.0.19',
+  fullLabel: '20260924 버전 1.0.19',
+  packageVersion: '20260924-v1.0.19',
   updatedAt: '2026-09-24',
-  changelog: '의료기관 목록·상세 모달·기관 데이터센터의 추정 가용병상/가동률/응급실 상태를 실시간 값으로 표시하던 문제 정정',
+  changelog: '의료기관 상세·기관 데이터센터의 고정 출처/수집일/갱신주기 표기를 실제 데이터 상태(내장 데이터셋·자동 갱신 미지원)로 정정',
 };

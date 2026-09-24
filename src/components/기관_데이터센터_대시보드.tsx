@@ -271,19 +271,17 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         {/* 데이터 품질 상태 */}
         <div className="bg-white dark:bg-[#12141a] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-semibold">데이터 품질 지수</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full">
-              우수
+            <span className="font-semibold">데이터 품질 점검</span>
+            <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-full">
+              미지원
             </span>
           </div>
-          <div className="text-2xl font-black text-slate-900 dark:text-white">
-            정상 96%
+          <div className="text-xl font-black text-slate-400 dark:text-slate-500">
+            점검 미실시
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            <span className="text-amber-600 font-semibold">미갱신 2%</span>
-            <span>•</span>
-            <span className="text-rose-600 font-semibold">오류 의심 2%</span>
-          </div>
+          <p className="text-[11px] text-slate-400">
+            자동 품질 점검(미갱신·오류 탐지) 기능은 아직 제공되지 않습니다.
+          </p>
         </div>
 
         {/* 병상 가동률 */}
@@ -317,16 +315,15 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         {/* 의료인력 충원율 */}
         <div className="bg-white dark:bg-[#12141a] rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm space-y-2">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-semibold">의료인력 충원율</span>
-            <span className="text-purple-600 dark:text-purple-400 font-bold">
-              {selected_hospital.의료자원.의료인력.충원율}%
-            </span>
+            <span className="font-semibold">의료인력 (추정)</span>
+            <span className="text-slate-400 font-bold">충원율: 미연동</span>
           </div>
           <div className="text-2xl font-black text-purple-600 dark:text-purple-400">
-            전문의 {selected_hospital.의료자원.의료인력.전문의수}명
+            전문의 약 {selected_hospital.의료자원.의료인력.전문의수}명
           </div>
           <p className="text-[11px] text-slate-400">
-            전체의사 {selected_hospital.의료자원.의료인력.전체의사수}명 / 간호사 {selected_hospital.의료자원.의료인력.간호사수}명
+            전체의사 약 {selected_hospital.의료자원.의료인력.전체의사수}명 / 간호사 약 {selected_hospital.의료자원.의료인력.간호사수}명
+            <br />* 총 병상 수 기반 추정치이며 실제 인력 현황이 아닙니다.
           </p>
         </div>
       </div>
@@ -362,21 +359,24 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="p-5 rounded-2xl bg-white dark:bg-[#12141a] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            핵심 정밀 의료장비 상태
+            핵심 정밀 의료장비 (추정)
           </h3>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">전산화단층촬영(CT):</span>
-              <span className="font-bold text-emerald-600">{selected_hospital.의료자원.주요장비.CT ? '정상 가동' : '미보유'}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{selected_hospital.의료자원.주요장비.CT ? '보유 추정' : '미보유 추정'}</span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">자기공명영상(MRI):</span>
-              <span className="font-bold text-emerald-600">{selected_hospital.의료자원.주요장비.MRI ? '정상 가동' : '미보유'}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{selected_hospital.의료자원.주요장비.MRI ? '보유 추정' : '미보유 추정'}</span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">인공신장 혈액투석기:</span>
-              <span className="font-bold text-slate-800 dark:text-slate-200">{selected_hospital.의료자원.주요장비.혈액투석기}대 가동 중</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">
+                {selected_hospital.의료자원.주요장비.혈액투석기 > 0 ? `약 ${selected_hospital.의료자원.주요장비.혈액투석기}대 추정` : '미보유 추정'}
+              </span>
             </div>
+            <p className="text-[10px] text-slate-400">* 기관 유형·병상 규모 기반 추정이며, 실제 보유 및 가동 상태는 연계되지 않습니다.</p>
           </div>
         </div>
 
@@ -410,7 +410,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="p-5 rounded-3xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-3 animate-in fade-in duration-200">
           <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
             <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-              원천 수집 데이터 로그 및 필드 매핑 내역
+              데이터 필드 매핑 내역 (내장 데이터셋 기준)
             </h4>
             <span className="text-xs text-slate-400">기관 ID: {selected_hospital.id}</span>
           </div>
@@ -420,8 +420,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
             <div>• REGION_CODE: {selected_hospital.시도명} {selected_hospital.시군구명} ({selected_hospital.진료권명})</div>
             <div>• TOTAL_BEDS: {selected_hospital.의료자원.병상.총병상} | OCCUPIED: N/A | AVAILABLE: N/A (실시간 미연동)</div>
             <div>• ER_TYPE: {selected_hospital.의료자원.응급실.구분} | ER_CAPACITY: N/A | STATUS: N/A (실시간 미연동)</div>
-            <div>• DOCTORS_TOTAL: {selected_hospital.의료자원.의료인력.전체의사수} | SPECIALISTS: {selected_hospital.의료자원.의료인력.전체의사수}</div>
-            <div>• SYNC_TIMESTAMP: {sync_time}:00Z | ERROR_FLAG: 0</div>
+            <div>• DOCTORS_TOTAL: {selected_hospital.의료자원.의료인력.전체의사수} (EST) | SPECIALISTS: {selected_hospital.의료자원.의료인력.전문의수} (EST)</div>
+            <div>• LAST_API_CHECK: {sync_time ? `${sync_time} (KST)` : 'N/A'} | QUALITY_CHECK: N/A (미지원)</div>
           </div>
         </div>
       )}

@@ -481,7 +481,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                       <span className="text-slate-700 dark:text-slate-200 font-medium">전국 데이터 전체 업데이트</span>
                     </div>
                     <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-1.5 py-0.5 rounded">
-                      45개소
+                      214개소
                     </span>
                   </button>
 

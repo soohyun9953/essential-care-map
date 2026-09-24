@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.8',
-  fullLabel: '20260924 버전 1.0.8',
-  packageVersion: '20260924-v1.0.8',
+  semver: '1.0.9',
+  fullLabel: '20260924 버전 1.0.9',
+  packageVersion: '20260924-v1.0.9',
   updatedAt: '2026-09-24',
-  changelog: '전국 45개 공공의료기관 데이터 전체 일괄 업데이트 및 실시간 동기화 모달 기능 신규 탑재',
+  changelog: '전국 공공의료기관 전수 DB(214개소) 일괄 업데이트 수치 불일치(45개소 표기 오류) 정정 및 동기화 고도화',
 };

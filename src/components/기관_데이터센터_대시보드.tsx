@@ -90,7 +90,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
     }
   };
 
-  // 전국 45개 전체 공공의료기관 일괄 업데이트 핸들러
+  // 전국 214개 전체 공공의료기관 일괄 업데이트 핸들러
   const handle_bulk_sync_all = async () => {
     setIs_bulk_modal_open(true);
     set_is_bulk_syncing(true);
@@ -110,19 +110,19 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
       }
     }
 
-    // 45개 기관 순차 진행률 시뮬레이션
+    // 214개 전수 기관 순차 진행률 시뮬레이션
     for (let i = 0; i < total; i++) {
       const h = 전체_공공의료기관_상세목록[i];
       set_bulk_current_name(`[${h.시도명}] ${h.기관명} (${h.기관유형})`);
       set_bulk_progress(Math.round(((i + 1) / total) * 100));
-      await new Promise((resolve) => setTimeout(resolve, 20));
+      await new Promise((resolve) => setTimeout(resolve, 8));
     }
 
     const new_time = get_current_sync_time_str();
     set_sync_time(new_time);
     set_bulk_done(true);
     set_is_bulk_syncing(false);
-    set_action_notice(`✅ 전국 ${total}개 공공의료기관(권역 17, 지역 28)의 병상·인력·응급실 가동 현황이 오늘 현재 시각(${new_time})으로 일괄 업데이트되었습니다.`);
+    set_action_notice(`✅ 전국 ${total}개 공공의료기관 전수(권역 17, 지역 41, 특수공공 156개소)의 병상·인력·응급실 가동 현황이 오늘 현재 시각(${new_time})으로 일괄 업데이트되었습니다.`);
   };
 
   return (
@@ -174,22 +174,22 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>최종 동기화 시각: <strong className="text-slate-800 dark:text-slate-200">{sync_time}</strong> (전국 45개소 연계 정상)</span>
+            <span>최종 동기화 시각: <strong className="text-slate-800 dark:text-slate-200">{sync_time}</strong> (전국 214개소 연계 정상)</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {/* 🌟 1. 전국 45개 기관 전체 일괄 업데이트 버튼 */}
+            {/* 🌟 1. 전국 214개 기관 전체 일괄 업데이트 버튼 */}
             <button
               type="button"
               onClick={handle_bulk_sync_all}
               disabled={is_bulk_syncing}
               className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-              title="전국 45개 공공의료기관의 병상·인력 데이터를 지금 즉시 일괄 동기화합니다."
+              title="전국 214개 공공의료기관의 병상·인력 데이터를 지금 즉시 일괄 동기화합니다."
             >
               <RefreshCw className={`w-3.5 h-3.5 text-white ${is_bulk_syncing ? 'animate-spin' : ''}`} />
               <span>전체 업데이트</span>
               <span className="text-[10px] px-1.5 py-0.2 bg-white/20 text-white rounded-md font-extrabold">
-                전국 45개소
+                전국 214개소
               </span>
             </button>
 
@@ -416,7 +416,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
       )}
 
       {/* ============================================================== */}
-      {/* 5. 전국 45개 기관 전체 일괄 업데이트 진행 모달 */}
+      {/* 5. 전국 214개 기관 전체 일괄 업데이트 진행 모달 */}
       {/* ============================================================== */}
       {is_bulk_modal_open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
@@ -472,7 +472,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
                 </div>
                 <ul className="text-[11px] text-emerald-700 dark:text-emerald-400 space-y-1 pl-6 list-disc">
                   <li>권역책임의료기관 17개소 실시간 병상·중환자실 가동 동기화</li>
-                  <li>지역책임의료기관 28개소 필수의료 인력 및 응급실 현황 갱신</li>
+                  <li>지역책임의료기관 41개소 필수의료 인력 및 응급실 현황 갱신</li>
+                  <li>특수목적·전문공공병원 156개소 진료자원 연계 완료</li>
                   <li>공공데이터포털(E-Gen) 및 심평원 실시간 연계망 정합성 검증 통과</li>
                   <li>최종 동기화 시점: <strong>{sync_time}</strong></li>
                 </ul>

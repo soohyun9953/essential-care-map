@@ -11,7 +11,6 @@ import {
   Phone,
   Navigation,
   MapPin,
-  CheckCircle2,
   ChevronUp,
   ChevronDown,
   LocateFixed,
@@ -286,8 +285,8 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mb-1" />
           <div className="flex items-center justify-between w-full px-4 text-xs">
             <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span>내 주변 이용 가능 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
-              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">(실시간 최단거리순)</span>
+              <span>내 주변 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">(거리순)</span>
             </span>
             <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
               {sheet_state === 'min' ? '목록 펼치기' : sheet_state === 'half' ? '전체 보기' : '축소'}
@@ -298,6 +297,14 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
         {/* 바텀시트 스크롤 카드 목록 */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* 병상·진료 가능 여부는 실시간 정보가 아님을 안내 (공개 화면 안전 문구) */}
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <p>
+              표시된 병상 수와 진료 정보는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
+              응급 상황에서는 <strong>119</strong>에 연락하세요.
+            </p>
+          </div>
           {hospital_list.length === 0 ? (
             <div className="py-12 px-4 text-center space-y-3">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
@@ -348,16 +355,11 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                       </h4>
                     </div>
 
-                    {/* 이용 가능 상태 */}
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-1 shrink-0">
-                      <CheckCircle2 className="w-3 h-3" />
-                      <span>이용 가능</span>
-                    </span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <span>
-                      가용병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.가용병상}석</strong>
+                      총 병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.총병상}석</strong>
                     </span>
                     <span className="text-[11px]">
                       {h.주요_의료서비스.slice(0, 3).map((s) => `#${s}`).join(' ')}

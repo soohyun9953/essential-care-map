@@ -107,11 +107,9 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
                       <strong className="text-xs text-slate-900">{h.기관명}</strong>
                     </div>
                     <div className="text-[11px] text-slate-600">
-                      병상 <strong>{h.의료자원.병상.총병상}</strong>석 (가용 {h.의료자원.병상.가용병상}석)
+                      총 병상 <strong>{h.의료자원.병상.총병상}</strong>석 · {h.의료자원.응급실.구분}
                     </div>
-                    <div className="text-[10px] text-emerald-600 font-semibold">
-                      응급실: {h.의료자원.응급실.가용병상}석 가용 ({h.의료자원.응급실.상태})
-                    </div>
+                    <div className="text-[10px] text-slate-400">기준 데이터 (실시간 병상 현황 아님)</div>
                   </div>
                 </Tooltip>
               </CircleMarker>

@@ -1,7 +1,5 @@
 // 화면 캡처 및 클립보드 복사 등 사용자 보조 유틸리티 모듈
 
-import html2canvas from 'html2canvas';
-
 /**
  * 텍스트 클립보드 복사 함수 (navigator.clipboard API 활용)
  */
@@ -41,6 +39,8 @@ export async function export_element_as_png(element_id: string, filename: string
       return false;
     }
 
+    // html2canvas는 캡처 시점에만 로드 (초기 번들 경량화)
+    const { default: html2canvas } = await import('html2canvas');
     const canvas = await html2canvas(target_element, {
       scale: 2, // 고해상도 렌더링
       useCORS: true,

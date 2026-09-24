@@ -9,6 +9,7 @@
 // 5. [국민안심] 국민안심_서비스_뷰 (Mobile-First 5대 안심의료, 3단계 바텀시트)
 
 import React, { useState, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   시군구_원천_데이터,
   필수의료_진단_결과,
@@ -17,19 +18,45 @@ import {
 import { 필수의료_진단_엔진 } from '@/lib/필수의료_엔진';
 import { 전국_시군구_샘플_데이터 } from '@/lib/시군구_데이터셋';
 import { export_element_as_png } from '@/lib/유틸리티';
-import { 크로스탭_엑셀_처리기 } from '@/lib/크로스탭_엑셀_처리기';
 
 // 5대 Global Workspace 컴포넌트
+// 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
 import { 글로벌_공공_헤더, 워크스페이스_타입 } from '@/components/글로벌_공공_헤더';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
-import { 지역진단_통합_대시보드 } from '@/components/지역진단_통합_대시보드';
-import { 정책기획_통합_워크스페이스 } from '@/components/정책기획_통합_워크스페이스';
-import { 의료기관_통합_워크스페이스, 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
-import { AI분석_통합_워크스페이스 } from '@/components/AI분석_통합_워크스페이스';
-import { 국민안심_서비스_뷰 } from '@/components/국민안심_서비스_뷰';
+import type { 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
 
-// 공통 모달 레이어
-import { 파일_업로더_모달 } from '@/components/파일_업로더_모달';
+const 워크스페이스_로딩 = () => (
+  <div className="flex-1 flex items-center justify-center py-24 text-sm text-[#86868b]">
+    <div className="w-5 h-5 mr-2.5 rounded-full border-2 border-[#0071e3] border-t-transparent animate-spin" />
+    데이터를 불러오는 중입니다...
+  </div>
+);
+
+const 지역진단_통합_대시보드 = dynamic(
+  () => import('@/components/지역진단_통합_대시보드').then((m) => m.지역진단_통합_대시보드),
+  { loading: 워크스페이스_로딩 }
+);
+const 정책기획_통합_워크스페이스 = dynamic(
+  () => import('@/components/정책기획_통합_워크스페이스').then((m) => m.정책기획_통합_워크스페이스),
+  { loading: 워크스페이스_로딩 }
+);
+const 의료기관_통합_워크스페이스 = dynamic(
+  () => import('@/components/의료기관_통합_워크스페이스').then((m) => m.의료기관_통합_워크스페이스),
+  { loading: 워크스페이스_로딩 }
+);
+const AI분석_통합_워크스페이스 = dynamic(
+  () => import('@/components/AI분석_통합_워크스페이스').then((m) => m.AI분석_통합_워크스페이스),
+  { loading: 워크스페이스_로딩 }
+);
+const 국민안심_서비스_뷰 = dynamic(
+  () => import('@/components/국민안심_서비스_뷰').then((m) => m.국민안심_서비스_뷰),
+  { loading: 워크스페이스_로딩 }
+);
+
+// 공통 모달 레이어 (파일 업로더는 xlsx·papaparse를 사용하므로 지연 로딩)
+const 파일_업로더_모달 = dynamic(
+  () => import('@/components/파일_업로더_모달').then((m) => m.파일_업로더_모달)
+);
 import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰뷰_모달';
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
@@ -181,8 +208,10 @@ export default function Home() {
   };
 
   // 엑셀 패키지 다운로드 및 캡처
-  const handle_download_nmc_excel = () => {
+  const handle_download_nmc_excel = async () => {
     if (!selected_region) return;
+    // xlsx 라이브러리는 다운로드 시점에만 로드
+    const { 크로스탭_엑셀_처리기 } = await import('@/lib/크로스탭_엑셀_처리기');
     크로스탭_엑셀_처리기.download_nmc_standard_excel_package(selected_region);
   };
 
@@ -292,11 +321,13 @@ export default function Home() {
       {/* ============================================================== */}
 
       {/* 엑셀/CSV 데이터 업로더 모달 */}
-      <파일_업로더_모달
-        is_open={is_upload_modal_open}
-        on_close={() => set_is_upload_modal_open(false)}
-        on_data_loaded={(new_data) => set_raw_dataset(new_data)}
-      />
+      {is_upload_modal_open && (
+        <파일_업로더_모달
+          is_open={is_upload_modal_open}
+          on_close={() => set_is_upload_modal_open(false)}
+          on_data_loaded={(new_data) => set_raw_dataset(new_data)}
+        />
+      )}
 
       {/* 환각 제로 원문 대조 신뢰 뷰 모달 */}
       <원문대조_신뢰뷰_모달

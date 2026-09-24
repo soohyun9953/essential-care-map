@@ -5,6 +5,7 @@
 // 및 기존 5대 현장관리 모듈(경영위기, CP 라이브러리, 신포괄, CP변이 ROI, 퇴원돌봄) 100% 무손실 보존
 
 import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Building2,
   Search,
@@ -30,7 +31,12 @@ import {
 import { 의료기관_상세_정보_모달 } from './의료기관_상세_정보_모달';
 import { 기관_데이터센터_대시보드 } from './기관_데이터센터_대시보드';
 import { 경영위기_조기경보_대시보드 } from './경영위기_조기경보_대시보드';
-import 공공의료_CP_오더세트_라이브러리 from './공공의료_CP_오더세트_라이브러리';
+// 71개 CP 데이터셋을 쓰는 라이브러리 탭은 진입 시점에 지연 로딩
+const 공공의료_CP_오더세트_라이브러리 = dynamic(() => import('./공공의료_CP_오더세트_라이브러리'), {
+  loading: () => (
+    <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div>
+  ),
+});
 import 신포괄_정책가산_평가_시뮬레이터 from './신포괄_정책가산_평가_시뮬레이터';
 import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대시보드';
 import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';

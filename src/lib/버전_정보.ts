@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.11',
-  fullLabel: '20260924 버전 1.0.11',
-  packageVersion: '20260924-v1.0.11',
+  semver: '1.0.12',
+  fullLabel: '20260924 버전 1.0.12',
+  packageVersion: '20260924-v1.0.12',
   updatedAt: '2026-09-24',
-  changelog: 'API 키 기본 저장소를 sessionStorage로 전환(이 기기에 저장 선택 시에만 localStorage 보관) 및 키 보안 안내 문구 정정',
+  changelog: '워크스페이스·대용량 데이터셋 탭·xlsx·html2canvas 지연 로딩으로 초기 로딩 JS 873kB→118kB 경량화',
 };

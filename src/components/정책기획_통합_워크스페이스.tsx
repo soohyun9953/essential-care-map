@@ -4,6 +4,7 @@
 // Section 11 (AI 정책대안 분석) & Section 12 (사업계획서 자동생성) + 지역비교 및 2030수요예측 통합
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
   Sparkles,
   FileText,
@@ -28,8 +29,20 @@ import { 필수의료_진단_결과, 지역_평균_통계 } from '@/lib/필수�
 import { format_number_comma } from '@/lib/유틸리티';
 import { 일대일_비교_대시보드 } from './일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from './의료수요_추계_차트';
-import { 의료지표_비교차트 } from './의료지표_비교차트';
-import { 사업계획서_서술문_생성기 } from './사업계획서_서술문_생성기';
+
+// 대용량 데이터셋(주제도 지표·환자 유출입·지표정의 코퍼스)을 쓰는 탭은 진입 시점에 지연 로딩
+const 의료지표_비교차트 = dynamic(
+  () => import('./의료지표_비교차트').then((m) => m.의료지표_비교차트),
+  { loading: () => (
+    <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div>
+  ) }
+);
+const 사업계획서_서술문_생성기 = dynamic(
+  () => import('./사업계획서_서술문_생성기').then((m) => m.사업계획서_서술문_생성기),
+  { loading: () => (
+    <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div>
+  ) }
+);
 
 interface 정책기획_통합_워크스페이스_속성 {
   selected_region: 필수의료_진단_결과 | null;

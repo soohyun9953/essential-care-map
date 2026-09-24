@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.22',
-  fullLabel: '20260924 버전 1.0.22',
-  packageVersion: '20260924-v1.0.22',
+  semver: '1.0.23',
+  fullLabel: '20260924 버전 1.0.23',
+  packageVersion: '20260924-v1.0.23',
   updatedAt: '2026-09-24',
-  changelog: '국민안심 진료 필터가 추정 미운영 기관까지 포함하던 문제(분만 214개소) 수정 및 진료 서비스 운영 여부를 추정치로 명시',
+  changelog: '어디서도 사용되지 않는 컴포넌트 15개 및 엔진 1개 삭제 (약 7,100줄)',
 };

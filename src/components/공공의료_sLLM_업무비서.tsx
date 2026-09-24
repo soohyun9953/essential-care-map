@@ -225,10 +225,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const check_local_server_status = async () => {
     try {
       const res = await fetch('/api/llm/local-server');
-      if (res.ok) {
-        const data = await res.json();
-        set_local_server_status(data);
-      }
+      // 403(배포 환경 비활성)도 안내 메시지를 표시하기 위해 본문을 그대로 반영
+      const data = await res.json().catch(() => ({ is_running: false }));
+      set_local_server_status(data);
     } catch {
       set_local_server_status({ is_running: false });
     }
@@ -935,7 +934,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <span className="text-[10px] text-[#86868b] dark:text-slate-400">
                         {compare_result?.google_gemini.is_live
                           ? `✓ 가용 모델 자동 검증 완료 (성공: ${compare_result.google_gemini.success_model || 'Gemini'})`
-                          : '가용 모델 순차 자동 시도 (1.5 Flash ➔ 2.0 Flash ➔ 1.5 Pro)'}
+                          : '가용 모델 순차 자동 시도 (Flash Latest ➔ 2.5 Flash ➔ 2.5 Pro)'}
                       </span>
                     </div>
                   </div>
@@ -1040,7 +1039,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                         가용 모델 순차 검증 및 추론 중...
                       </span>
                       <span className="text-[11px] text-slate-400 dark:text-slate-500">
-                        (Gemini 1.5 Flash ➔ 2.0 Flash ➔ 1.5 Pro 순차 시도)
+                        (Gemini Flash ➔ 2.5 Flash ➔ 2.5 Pro 순차 시도)
                       </span>
                     </div>
                   ) : compare_result ? (

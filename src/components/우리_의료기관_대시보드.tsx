@@ -163,7 +163,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
       role: "ai",
       content: "안녕하세요! 국립중앙의료원 공공보건의료 정책 지침 RAG 및 Google Gemini / 로컬 sLLM 듀얼 엔진과 원내 DW 지표를 기반으로, 경영 개선 및 공공성 강화 방안을 실시간 자문해 드립니다. 아래 추천 질의를 클릭하시거나 현안을 입력해 주세요.",
       modelType: 'dual',
-      geminiModel: 'Google Gemini 1.5 Flash',
+      geminiModel: 'Google Gemini 2.5 Flash',
       localModel: 'Qwen2.5-0.5B-Instruct (On-Device)',
     }
   ]);
@@ -308,7 +308,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
         modelType: aiModelMode,
         geminiResponse: geminiResp,
         localResponse: localResp,
-        geminiModel: data.google_gemini?.model || 'Google Gemini 1.5 Flash',
+        geminiModel: data.google_gemini?.model || 'Google Gemini 2.5 Flash',
         localModel: data.local_sllm?.model || 'Qwen2.5-0.5B-Instruct (On-Device)',
         ragSources,
         elapsedMs
@@ -880,7 +880,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                 </button>
               </div>
               <span className="text-[11px] text-slate-500 ml-auto hidden sm:inline">
-                {aiModelMode === 'dual' && '클라우드 Gemini 1.5 Flash와 로컬 Qwen2.5를 동시 분석합니다.'}
+                {aiModelMode === 'dual' && '클라우드 Gemini 2.5 Flash와 로컬 Qwen2.5를 동시 분석합니다.'}
                 {aiModelMode === 'gemini' && '최신 보건의료 가이드라인 및 고도화된 정책 행정안을 제안합니다.'}
                 {aiModelMode === 'local' && '병원 내부 폐쇄망 On-Device 보안 추론으로 환자·경영정보를 보호합니다.'}
                 {aiModelMode === 'dw' && '병원 내 DW 원장 통계 수치만을 엄격히 적용하여 신속 진단합니다.'}
@@ -1077,7 +1077,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                               )}
                               {msg.modelType === 'gemini' && (
                                 <span className="px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 rounded border border-blue-200">
-                                  Google Gemini 1.5 Flash
+                                  Google Gemini 2.5 Flash
                                 </span>
                               )}
                               {msg.modelType === 'local' && (
@@ -1216,7 +1216,7 @@ export const OurHospitalDashboard: React.FC<MyHospitalDashboardProps> = ({
                         <Loader2 className="w-4 h-4 animate-spin text-purple-600" />
                         <span>
                           {aiModelMode === 'dual' && 'Google Gemini & On-Device sLLM 동시 추론 중...'}
-                          {aiModelMode === 'gemini' && 'Google Gemini 1.5 Flash 실시간 추론 중...'}
+                          {aiModelMode === 'gemini' && 'Google Gemini 2.5 Flash 실시간 추론 중...'}
                           {aiModelMode === 'local' && 'On-Device sLLM 로컬 추론 중...'}
                           {aiModelMode === 'dw' && '원내 DW 지표 분석 중...'}
                         </span>

@@ -132,7 +132,7 @@ export class 사업계획서_AI_엔진 {
 
     // API 호출 시도 (Google Gemini API)
     let generated_text = '';
-    let used_model = 'Google Gemini 1.5 Flash (지능형 RAG 실데이터 결합)';
+    let used_model = 'Google Gemini 2.5 Flash (지능형 RAG 실데이터 결합)';
 
     try {
       const api_res = await fetch('/api/llm/compare', {

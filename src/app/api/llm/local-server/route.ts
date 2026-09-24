@@ -1,11 +1,24 @@
 ﻿import { NextRequest, NextResponse } from 'next/server';
 import { spawn } from 'child_process';
 import path from 'path';
+import { 로컬_LLM_허용 } from '@/lib/서버_환경설정';
 
 export const dynamic = 'force-dynamic';
 
+const 비활성_응답 = () =>
+  NextResponse.json(
+    {
+      is_running: false,
+      disabled: true,
+      message: '로컬 sLLM 기능은 로컬 개발 환경에서만 사용할 수 있습니다. (LOCAL_LLM_ENABLED 미설정)',
+    },
+    { status: 403 }
+  );
+
 // 1. 로컬 sLLM 서버 헬스체크 (GET)
 export async function GET() {
+  if (!로컬_LLM_허용()) return 비활성_응답();
+
   try {
     const controller = new AbortController();
     const timeout_id = setTimeout(() => controller.abort(), 1200);
@@ -36,6 +49,8 @@ export async function GET() {
 
 // 2. 브라우저 버튼 클릭을 통한 로컬 sLLM 서버 시작/종료 (POST)
 export async function POST(req: NextRequest) {
+  if (!로컬_LLM_허용()) return 비활성_응답();
+
   try {
     const body = await req.json().catch(() => ({}));
     const action = body.action || 'start';
@@ -60,12 +75,11 @@ export async function POST(req: NextRequest) {
     if (action === 'start') {
       const script_path = path.join(process.cwd(), 'scripts', 'local_sllm_server.py');
 
-      // 윈도우 백그라운드 프로세스로 파이썬 sLLM 서버 구동
+      // 윈도우 백그라운드 프로세스로 파이썬 sLLM 서버 구동 (셸 해석 없이 직접 실행)
       const child = spawn('python', [script_path], {
         detached: true,
         stdio: 'ignore',
         cwd: process.cwd(),
-        shell: true,
       });
 
       child.unref();

@@ -71,7 +71,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               </h3>
               <p className="text-[11px] text-white/70">
-                실제 외부 LLM(Google Gemini 1.5 Flash) 실시간 호출 연동
+                실제 외부 LLM(Google Gemini 2.5 Flash) 실시간 호출 연동
               </p>
             </div>
           </div>
@@ -121,7 +121,7 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
               )}
             </div>
             <p className="text-[11px] text-[#86868b] dark:text-slate-400 leading-relaxed">
-              Google AI Studio에서 발급받은 무료 API 키를 입력하시면, 질문 시 구글의 최신 <strong>Gemini 1.5 Flash</strong> 모델이 실제 실시간으로 답변을 생성합니다.
+              Google AI Studio에서 발급받은 무료 API 키를 입력하시면, 질문 시 구글의 최신 <strong>Gemini 2.5 Flash</strong> 모델이 실제 실시간으로 답변을 생성합니다.
             </p>
           </div>
 

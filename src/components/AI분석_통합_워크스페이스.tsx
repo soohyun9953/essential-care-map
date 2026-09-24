@@ -178,7 +178,7 @@ export const AI분석_통합_워크스페이스: React.FC<AI분석_통합_워크
                 <span>분석 방식:</span>
               </span>
               <span className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-bold text-indigo-600 dark:text-indigo-400">
-                {analysis_method === 'cloud' && 'Cloud AI (Google Gemini 1.5 Pro RAG)'}
+                {analysis_method === 'cloud' && 'Cloud AI (Google Gemini 2.5 Pro RAG)'}
                 {analysis_method === 'local' && 'Local sLLM (원내 폐쇄망 온디바이스 Qwen2.5)'}
                 {analysis_method === 'compare' && '하이브리드 교차 검증 (Cloud vs Local)'}
               </span>
@@ -270,7 +270,7 @@ export const AI분석_통합_워크스페이스: React.FC<AI분석_통합_워크
                     <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900 space-y-1">
                       <strong className="text-blue-900 dark:text-blue-300 flex items-center gap-1">
                         <Globe className="w-3.5 h-3.5" />
-                        <span>Cloud AI (Gemini 1.5 Pro) 특성:</span>
+                        <span>Cloud AI (Gemini 2.5 Pro) 특성:</span>
                       </strong>
                       <p className="text-blue-800 dark:text-blue-200">
                         전국 지자체 벤치마크 사례와 중장기 고령화 추세 등 거시적 정책 방향성 및 다각도 타당성 논리를 정교하게 서술함.

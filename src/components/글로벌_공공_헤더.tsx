@@ -353,7 +353,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                         <span>Gemini AI 키 미연결 (시뮬레이션 모드)</span>
                       </div>
                       <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
-                        현재 API 키가 등록되지 않아 시뮬레이션 모드로 동작 중입니다. 구글 최신 Gemini 1.5 Flash 실제 호출을 위해 키를 연결해주세요.
+                        현재 API 키가 등록되지 않아 시뮬레이션 모드로 동작 중입니다. 구글 최신 Gemini 2.5 Flash 실제 호출을 위해 키를 연결해주세요.
                       </p>
                       <button
                         type="button"

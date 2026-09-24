@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { 로컬_LLM_허용, 서버_Gemini_키_허용 } from '@/lib/서버_환경설정';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,11 +37,12 @@ export async function POST(req: NextRequest) {
       mode = 'business_plan',
     } = body;
 
+    // 서버 환경변수 키는 ALLOW_SERVER_GEMINI_KEY=true 일 때만 대체 사용 (공개 API 키 도용 방지)
     const final_google_key =
       google_api_key?.trim() ||
-      process.env.GEMINI_API_KEY ||
-      process.env.GOOGLE_API_KEY ||
-      '';
+      (서버_Gemini_키_허용()
+        ? process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || ''
+        : '');
 
     // 모델별 독립된 RAG 컨텍스트 적용 (지정되지 않은 경우 기본 rag_context 사용)
     const effective_gemini_rag = gemini_rag_context !== undefined ? gemini_rag_context : rag_context;
@@ -96,7 +98,7 @@ ${effective_gemini_rag}
 
       if (!clean_key) {
         return {
-          model: 'Google Gemini 1.5 Flash (시뮬레이션)',
+          model: 'Google Gemini Flash (시뮬레이션)',
           is_live: false,
           elapsed_ms: 120,
           response: `[안내: 구글 API 키 미입력 상태]
@@ -118,12 +120,14 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
 
       for (const api_ver of ['v1beta', 'v1'] as const) {
         try {
-          const list_url = `https://generativelanguage.googleapis.com/${api_ver}/models?key=${clean_key}`;
-          const list_res = await fetch(list_url);
+          const list_url = `https://generativelanguage.googleapis.com/${api_ver}/models`;
+          const list_res = await fetch(list_url, { headers: { 'x-goog-api-key': clean_key } });
           if (list_res.ok) {
             const list_data = await list_res.json();
             const valid = (list_data.models || [])
               .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+              // 텍스트 응답용이 아닌 특수 목적 모델 제외
+              .filter((m: any) => !/(tts|image|embedding|audio|live|aqa|robotics|computer-use)/i.test(m.name))
               .map((m: any) => ({
                 id: m.name.replace(/^models\//, ''),
                 name: m.displayName || m.name.replace(/^models\//, ''),
@@ -142,15 +146,10 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
       // Step 2: ListModels 조회가 실패했거나 비어있는 경우 정적 후보군 정의 (v1beta 및 v1 교차)
       if (available_models.length === 0) {
         available_models = [
-          { id: 'gemini-1.5-flash-latest', name: 'Google Gemini 1.5 Flash Latest', api_ver: 'v1beta' },
-          { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash', api_ver: 'v1beta' },
-          { id: 'gemini-1.5-flash', name: 'Google Gemini 1.5 Flash (v1)', api_ver: 'v1' },
-          { id: 'gemini-2.0-flash-exp', name: 'Google Gemini 2.0 Flash Exp', api_ver: 'v1beta' },
-          { id: 'gemini-1.5-flash-8b', name: 'Google Gemini 1.5 Flash-8B', api_ver: 'v1beta' },
-          { id: 'gemini-1.5-pro-latest', name: 'Google Gemini 1.5 Pro Latest', api_ver: 'v1beta' },
-          { id: 'gemini-1.5-pro', name: 'Google Gemini 1.5 Pro', api_ver: 'v1beta' },
-          { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro', api_ver: 'v1' },
-          { id: 'gemini-pro', name: 'Google Gemini 1.0 Pro (v1beta)', api_ver: 'v1beta' },
+          { id: 'gemini-flash-latest', name: 'Google Gemini Flash (Latest)', api_ver: 'v1beta' },
+          { id: 'gemini-2.5-flash', name: 'Google Gemini 2.5 Flash', api_ver: 'v1beta' },
+          { id: 'gemini-2.5-flash-lite', name: 'Google Gemini 2.5 Flash-Lite', api_ver: 'v1beta' },
+          { id: 'gemini-2.5-pro', name: 'Google Gemini 2.5 Pro', api_ver: 'v1beta' },
         ];
       }
 
@@ -173,7 +172,8 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
         }
 
         try {
-          const url = `https://generativelanguage.googleapis.com/${candidate.api_ver}/models/${candidate.id}:generateContent?key=${clean_key}`;
+          const url = `https://generativelanguage.googleapis.com/${candidate.api_ver}/models/${candidate.id}:generateContent`;
+          const gemini_headers = { 'Content-Type': 'application/json', 'x-goog-api-key': clean_key };
           
           const genConfig: Record<string, any> = {
             temperature: 0.4,
@@ -187,7 +187,7 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
 
           let response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: gemini_headers,
             body: JSON.stringify({
               contents: [
                 {
@@ -206,7 +206,7 @@ Google Gemini API 키가 설정되지 않아 실제 클라우드 호출 대신 �
             delete genConfig.thinkingConfig;
             response = await fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: gemini_headers,
               body: JSON.stringify({
                 contents: [
                   {
@@ -294,8 +294,11 @@ ${failure_details}
     const fetch_local_sllm = async () => {
       const start_t = Date.now();
 
+      // 배포 환경에서는 127.0.0.1 호출이 항상 타임아웃되므로 1·2순위를 건너뛰고 3순위로 직행
+      const use_local_llm = 로컬_LLM_허용();
+
       // 1순위: 파이썬 로컬 sLLM 서버 (Qwen2.5-0.5B-Instruct, 포트 8000)
-      try {
+      if (use_local_llm) try {
         const controller = new AbortController();
         const timeout_id = setTimeout(() => controller.abort(), 20000); // 20초 타임아웃
 
@@ -333,7 +336,7 @@ ${failure_details}
       }
 
       // 2순위: 로컬 Ollama (11434)
-      try {
+      if (use_local_llm) try {
         const controller = new AbortController();
         const timeout_id = setTimeout(() => controller.abort(), 5000);
 

@@ -22,8 +22,9 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const sido = searchParams.get('sido') || '강원특별자치도';
     const sigungu = searchParams.get('sigungu') || '영월군';
+    // 인증키는 URL(접근 로그·브라우저 기록 노출)이 아닌 요청 헤더로만 수신
     const service_key =
-      searchParams.get('serviceKey')?.trim() ||
+      req.headers.get('x-data-go-kr-key')?.trim() ||
       process.env.DATA_GO_KR_API_KEY ||
       '';
 

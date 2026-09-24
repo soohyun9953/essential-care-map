@@ -115,13 +115,11 @@ export const 일반국민_공공병원_맞춤뷰: React.FC<일반국민_뷰_속�
   const fetch_emergency_data = async () => {
     set_is_refreshing(true);
     try {
-      const query_params = new URLSearchParams({
-        sido,
-        sigungu,
-        serviceKey: data_go_kr_api_key || '',
-      });
+      const query_params = new URLSearchParams({ sido, sigungu });
 
-      const res = await fetch(`/api/emergency/realtime?${query_params.toString()}`);
+      const res = await fetch(`/api/emergency/realtime?${query_params.toString()}`, {
+        headers: data_go_kr_api_key ? { 'x-data-go-kr-key': data_go_kr_api_key } : {},
+      });
       if (res.ok) {
         const data = await res.json();
         set_realtime_hospitals(data.all_hospitals || []);

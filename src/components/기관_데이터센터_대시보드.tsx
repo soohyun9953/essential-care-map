@@ -75,7 +75,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
     try {
       if (data_go_kr_api_key) {
         await fetch(
-          `/api/emergency/realtime?sido=${encodeURIComponent(selected_hospital.시도명)}&sigungu=${encodeURIComponent(selected_hospital.시군구명)}&serviceKey=${encodeURIComponent(data_go_kr_api_key)}`
+          `/api/emergency/realtime?sido=${encodeURIComponent(selected_hospital.시도명)}&sigungu=${encodeURIComponent(selected_hospital.시군구명)}`,
+          { headers: { 'x-data-go-kr-key': data_go_kr_api_key } }
         );
       }
       const new_time = get_current_sync_time_str();
@@ -103,7 +104,8 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
     if (data_go_kr_api_key) {
       try {
         await fetch(
-          `/api/emergency/realtime?sido=${encodeURIComponent('강원특별자치도')}&sigungu=${encodeURIComponent('원주시')}&serviceKey=${encodeURIComponent(data_go_kr_api_key)}`
+          `/api/emergency/realtime?sido=${encodeURIComponent('강원특별자치도')}&sigungu=${encodeURIComponent('원주시')}`,
+          { headers: { 'x-data-go-kr-key': data_go_kr_api_key } }
         );
       } catch {
         // fallback

@@ -22,6 +22,15 @@
 
 ## ⚙️ MCP 연동 설정 방법
 
+### 0. 사전 빌드 (최초 1회 및 소스 수정 시)
+`dist/`는 빌드 산출물이라 저장소에 포함되지 않습니다. 연동 전에 먼저 빌드하세요.
+
+```bash
+cd mcp-server
+npm install
+npm run build
+```
+
 ### 1. Claude Desktop 설정 (`claude_desktop_config.json`)
 파일 위치: `%APPDATA%\Claude\claude_desktop_config.json`
 

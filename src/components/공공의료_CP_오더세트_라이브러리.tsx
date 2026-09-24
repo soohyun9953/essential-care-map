@@ -147,7 +147,7 @@ export default function 공공의료_CP_오더세트_라이브러리() {
               <div className="text-2xl font-bold text-emerald-300 mt-1">
                 22<span className="text-sm font-normal text-slate-300 ml-1">개 갱신 / 38개 확대</span>
               </div>
-              <div className="text-[11px] text-emerald-200 mt-0.5">'14~'25년 임상최신화 완료</div>
+              <div className="text-[11px] text-emerald-200 mt-0.5">&rsquo;14~&rsquo;25년 임상최신화 완료</div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-3.5">

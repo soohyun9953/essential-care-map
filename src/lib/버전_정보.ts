@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.12',
-  fullLabel: '20260924 버전 1.0.12',
-  packageVersion: '20260924-v1.0.12',
+  semver: '1.0.13',
+  fullLabel: '20260924 버전 1.0.13',
+  packageVersion: '20260924-v1.0.13',
   updatedAt: '2026-09-24',
-  changelog: '워크스페이스·대용량 데이터셋 탭·xlsx·html2canvas 지연 로딩으로 초기 로딩 JS 873kB→118kB 경량화',
+  changelog: 'ESLint 설정 및 GitHub Actions CI 도입, 로컬 sLLM 실행 배치파일 경로 상대화, MCP 서버 빌드 산출물 git 추적 해제',
 };

@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 chcp 65001 > nul
 echo ========================================================
 echo   [국립중앙의료원 헬스맵] 노트북 로컬 sLLM 서버 시작
@@ -7,7 +7,8 @@ echo   - 포트: 8000
 echo ========================================================
 echo.
 
-cd /d "C:\Users\KITC\Desktop\헬스맵2"
+rem 이 배치 파일이 있는 폴더(프로젝트 루트) 기준으로 실행
+cd /d "%~dp0"
 python scripts/local_sllm_server.py
 
 pause

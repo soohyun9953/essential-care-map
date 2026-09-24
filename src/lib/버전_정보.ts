@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260924',
-  semver: '1.0.27',
-  fullLabel: '20260924 버전 1.0.27',
-  packageVersion: '20260924-v1.0.27',
+  semver: '1.0.28',
+  fullLabel: '20260924 버전 1.0.28',
+  packageVersion: '20260924-v1.0.28',
   updatedAt: '2026-09-24',
-  changelog: 'SheetJS 보안 버전(0.20.3) 전환, 사업계획서의 타 지역 고정 수치·영월 전용 표현 제거, 헤더 실시간 표기 정정',
+  changelog: '경영위기 조기경보 실제 기관명 익명화 및 예시 표기, CP ROI 보고서 추정치 명시, 퇴원 돌봄 매칭 예시 표기·미검증 연락처 제거, 실시간·실거리 표기 정정',
 };

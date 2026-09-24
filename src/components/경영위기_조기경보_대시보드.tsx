@@ -16,11 +16,12 @@ import {
 } from 'lucide-react';
 import { 지방의료원_경영지표 } from '@/lib/필수의료_타입';
 
+// 화면 구성 예시용 가상 데이터. 실제 기관의 경영지표가 아니므로 실제 기관명을 쓰지 않음
 const SAMPLE_HOSPITAL_METRICS: 지방의료원_경영지표[] = [
   {
     병원코드: 'H-GW-01',
-    병원명: '강원특별자치도 영월의료원',
-    중진료권명: '영월진료권',
+    병원명: '예시 A의료원',
+    중진료권명: '예시 진료권 A',
     병상수: 198,
     병상가동률: 64.2,
     표준진료지침_CP적용률: 78.5,
@@ -29,12 +30,12 @@ const SAMPLE_HOSPITAL_METRICS: 지방의료원_경영지표[] = [
     위기등급: '경고',
     조기경보메시지: '최근 3개월간 외래 환자수 18.4% 급감 및 필수의료 전문의 이탈 감지',
     AI권고사항:
-      '소아청소년과 당직 공백으로 인한 소아·가족 환자 원주 권역 유출 가속. 취약지 지역의사 파견 지원사업 즉시 연계 권고.',
+      '소아청소년과 당직 공백으로 인한 소아·가족 환자 인근 권역 유출 가속. 취약지 지역의사 파견 지원사업 즉시 연계 권고.',
   },
   {
     병원코드: 'H-GN-02',
-    병원명: '경상남도 거창적십자병원',
-    중진료권명: '거창권',
+    병원명: '예시 B의료원',
+    중진료권명: '예시 진료권 B',
     병상수: 120,
     병상가동률: 58.1,
     표준진료지침_CP적용률: 62.0,
@@ -46,8 +47,8 @@ const SAMPLE_HOSPITAL_METRICS: 지방의료원_경영지표[] = [
   },
   {
     병원코드: 'H-JN-03',
-    병원명: '전라남도 순천의료원',
-    중진료권명: '순천권',
+    병원명: '예시 C의료원',
+    중진료권명: '예시 진료권 C',
     병상수: 260,
     병상가동률: 82.4,
     표준진료지침_CP적용률: 91.2,
@@ -59,8 +60,8 @@ const SAMPLE_HOSPITAL_METRICS: 지방의료원_경영지표[] = [
   },
   {
     병원코드: 'H-CB-04',
-    병원명: '충청북도 제천명지병원 (공공연계)',
-    중진료권명: '제천권',
+    병원명: '예시 D의료원',
+    중진료권명: '예시 진료권 D',
     병상수: 205,
     병상가동률: 71.0,
     표준진료지침_CP적용률: 74.0,
@@ -115,7 +116,7 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
               </span>
             </div>
             <h3 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-              35개 지방의료원 성과평가 자동 스크리닝 &amp; 위기 조기감지
+              지방의료원 성과평가 스크리닝 &amp; 위기 조기감지 (예시 화면)
             </h3>
           </div>
         </div>
@@ -138,22 +139,27 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
         </div>
       </div>
 
-      {/* 조기경보 하이라이트 배너 (영월의료원 사례) */}
+      {/* 예시 데이터 안내 (실제 기관·환자 현황 아님) */}
+      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300">
+        <strong>예시 화면:</strong> 아래 기관과 경영지표는 화면 구성을 보여 주기 위한 가상 데이터입니다. 실제 지방의료원 경영지표 연계 및 자동 조기경보 기능은 아직 구현되지 않았습니다.
+      </div>
+
+      {/* 조기경보 하이라이트 배너 (예시 시나리오) */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 dark:from-rose-950/30 dark:via-amber-950/20 dark:to-orange-950/20 border border-[#ff3b30]/20 dark:border-rose-800/40 space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30] animate-ping" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#ff3b30]" />
             <span className="text-xs font-bold text-[#ff3b30] dark:text-rose-400 flex items-center gap-1">
               <AlertTriangle className="w-4 h-4" />
-              <span>실시간 AI 조기경보 트리거: 강원특별자치도 영월의료원</span>
+              <span>조기경보 예시 시나리오: 예시 A의료원</span>
             </span>
           </div>
-          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">감지일시: 2026-09-16 08:30</span>
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">가상 데이터</span>
         </div>
 
         <p className="text-xs text-slate-800 dark:text-slate-200 font-medium leading-relaxed">
           ⚠️ <strong>최근 3개월간 외래 환자 수 18.4% 급감 및 필수의료 전문의 결원 감지.</strong>
-          소아청소년과 1인 체계의 한계로 평일 야간 외래가 중단되면서, 소아 및 동반 가족 환자층이 원주세브란스로 연쇄 유출되고 있습니다.
+          소아청소년과 1인 체계의 한계로 평일 야간 외래가 중단되면서, 소아 및 동반 가족 환자층이 인근 권역 대형병원으로 연쇄 유출되는 상황을 가정한 예시입니다.
         </p>
 
         <div className="pt-2 border-t border-black/[0.05] dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
@@ -161,7 +167,7 @@ export const 경영위기_조기경보_대시보드: React.FC<경영위기_조�
             <Sparkles className="w-3.5 h-3.5" />
             <span>AI 맞춤 처방: 의료취약지 공공임상교수 파견 쿼터 즉시 배정 권고</span>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">국립중앙의료원 공공보건의료지원센터 자동 보고 완료</span>
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">자동 보고 기능 미구현</span>
         </div>
       </div>
 

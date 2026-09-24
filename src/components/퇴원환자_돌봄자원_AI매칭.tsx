@@ -61,7 +61,7 @@ const INITIAL_RECOMMENDED_RESOURCES: 돌봄_자원_추천항목[] = [
     지원내용: '전담 간호사 및 물리치료사 주 2회 가정 방문 재활운동, 혈압·혈당 모니터링',
     적합도점수: 98,
     추천사유: '뇌졸중 편마비 환자의 잔존기능 유지 및 재발 방지 위한 방문재활 적합도 최상',
-    담당자연락처: '033-370-2481',
+    담당자연락처: '연락처 미제공 (기관 대표번호 확인 필요)',
     연계상태: '미의뢰',
   },
   {
@@ -72,7 +72,7 @@ const INITIAL_RECOMMENDED_RESOURCES: 돌봄_자원_추천항목[] = [
     지원내용: '장기요양 3등급 예상, 요양보호사 일 3시간 방문요양(가사·신체활동 지원)',
     적합도점수: 95,
     추천사유: '독거노인 및 ADL 55점으로 일상 가사활동 전면 불가능 상태 조기 해소',
-    담당자연락처: '1577-1000 (영월운영센터)',
+    담당자연락처: '연락처 미제공 (기관 대표번호 확인 필요)',
     연계상태: '미의뢰',
   },
   {
@@ -83,7 +83,7 @@ const INITIAL_RECOMMENDED_RESOURCES: 돌봄_자원_추천항목[] = [
     지원내용: '주 5회 영양 도시락 직접 배달 및 생활관리사 방문 안전확인',
     적합도점수: 91,
     추천사유: '영양 불량 고위험군 및 고독사 예방을 위한 식생활 안전망 결합 필수',
-    담당자연락처: '033-374-5201',
+    담당자연락처: '연락처 미제공 (기관 대표번호 확인 필요)',
     연계상태: '미의뢰',
   },
 ];
@@ -131,7 +131,7 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
           </div>
         </div>
 
-        {/* 환자 선택 셀렉터 */}
+        {/* 환자 선택 셀렉터 (가상 환자) */}
         <div className="flex items-center space-x-2">
           <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">대상 환자:</span>
           <select
@@ -197,19 +197,24 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
             className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white transition shadow-apple-sm active:scale-95 disabled:opacity-60 cursor-pointer"
           >
             <Sparkles className={`w-3.5 h-3.5 ${is_matching ? 'animate-spin' : ''}`} />
-            <span>{is_matching ? '돌봄자원 AI 분석 중...' : '돌봄자원 AI 재매칭'}</span>
+            <span>{is_matching ? '불러오는 중...' : '예시 추천 다시 보기'}</span>
           </button>
         </div>
       </div>
 
-      {/* AI 추천 지역사회 돌봄자원 리스트 */}
+      {/* 예시 데이터 안내 (실제 기관·환자 현황 아님) */}
+      <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300">
+        <strong>예시 화면:</strong> 가상 환자와 예시 돌봄자원 목록입니다. 환자별 AI 매칭과 기관 전자연계는 아직 구현되지 않았으며, 추천 목록과 적합도는 고정된 예시값입니다.
+      </div>
+
+      {/* 예시 추천 지역사회 돌봄자원 리스트 */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-slate-900 dark:text-white">
-              AI 매칭 추천 돌봄자원 ({resources.length}개 기관 선별)
+              예시 추천 돌봄자원 ({resources.length}개 기관)
             </span>
-            <span className="text-[10px] text-slate-500 dark:text-slate-400">보건소·공단·지자체 복지망 실시간 매핑</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">고정 예시 목록 (실제 매칭 아님)</span>
           </div>
 
           <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
@@ -234,7 +239,7 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
                     {res.분류}
                   </span>
                   <div className="flex items-center space-x-1">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400">AI 적합도</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400">적합도(예시)</span>
                     <span className="text-xs font-bold text-[#af52de] dark:text-[#d48cf6]">{res.적합도점수}%</span>
                   </div>
                 </div>

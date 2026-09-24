@@ -136,14 +136,13 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
               <span>지금 필요한 공공의료기관 찾기</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                정밀 GIS 실거리순
+                직선거리순
               </span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              야간·휴일 응급실 및 소아·분만 진료가 가능한 가장 가까운 병원을 안내합니다. (기준: {user_location.lat === 37.5665 ? '서울시청 중심' : '현재 확인된 사용자 위치'})
+              응급실·소아·분만 진료가 가능할 것으로 추정되는 가까운 공공병원을 직선거리 기준으로 안내합니다. (기준: {user_location.lat === 37.5665 ? '서울시청 중심' : '현재 확인된 사용자 위치'})
             </p>
           </div>
 
@@ -314,7 +313,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs text-emerald-600 dark:text-emerald-400 font-extrabold flex items-center gap-1">
                           <MapPin className="w-3 h-3" />
-                          <span>약 {h.거리}km</span>
+                          <span>직선 약 {h.거리}km</span>
                         </span>
                         <span className="text-[10px] text-slate-400">
                           {h.시도명} {h.시군구명}

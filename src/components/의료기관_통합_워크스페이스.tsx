@@ -123,7 +123,6 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <Activity className="w-3.5 h-3.5" />
           <span>기관 데이터센터 (담당자 전용)</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
         </button>
 
         <button
@@ -135,7 +134,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           }`}
         >
           <AlertTriangle className="w-3.5 h-3.5" />
-          <span>지방의료원 경영위기 조기경보 (35개소)</span>
+          <span>지방의료원 경영위기 조기경보 (예시)</span>
         </button>
 
         <button
@@ -186,12 +185,14 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           <span>퇴원환자 돌봄자원 매칭</span>
         </button>
 
-        {/* 공공데이터포털 실시간 연계 상태 뱃지 */}
+        {/* 공공데이터포털 API 키 등록 상태 뱃지 (의료기관 수치는 내장 기준 데이터) */}
         <div className="ml-auto flex items-center gap-2">
           {data_go_kr_api_key ? (
-            <div className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>data.go.kr 실시간 연동 활성</span>
+            <div
+              className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs"
+              title="기관 데이터센터에서 공공데이터포털 응급실 API 연결을 확인할 수 있습니다. 의료기관 수치는 내장 기준 데이터입니다."
+            >
+              <span>data.go.kr API 키 등록됨</span>
             </div>
           ) : (
             <button
@@ -201,7 +202,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
               title="공공데이터포털 API 인증키 설정"
             >
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>실시간 연계 키 등록</span>
+              <span>공공데이터 API 키 등록</span>
             </button>
           )}
         </div>

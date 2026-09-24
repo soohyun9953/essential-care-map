@@ -137,7 +137,7 @@ export default function CP_변이분석_및_ROI_대시보드() {
                 NMC 가이드라인 67~78p & 심평원 별표3 연동
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                실증 ROI 분석 모델
+                ROI 시뮬레이션 모델 (기본값 기반)
               </span>
             </div>
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
@@ -145,7 +145,7 @@ export default function CP_변이분석_및_ROI_대시보드() {
               CP 변이(Variance) 원인 다차원 분석 & 재원일수·재정 ROI 대시보드
             </h1>
             <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400">
-              환자·의료진·시스템 3대 변이 이탈 사유 정밀 추적, 불필요 재원일수 단축에 따른 병상 회전율 및 연간 순수 재정 기여도 실시간 산출
+              환자·의료진·시스템 3대 변이 이탈 사유 분석 및 재원일수 단축에 따른 병상 회전율·연간 재정 기여도 시뮬레이션 (입력값과 기본 가정에 따른 추정치이며 실제 실적이 아님)
             </p>
           </div>
 

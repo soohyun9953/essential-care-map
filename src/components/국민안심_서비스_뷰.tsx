@@ -23,9 +23,13 @@ import {
   공공의료기관_상세_프로필,
   민간_분만기관_목록,
   민간_응급의료기관_목록,
+  민간_달빛어린이병원_목록,
+  달빛어린이병원_이름_포함,
+  기관명_정규화,
 } from '@/lib/의료서비스_검색_엔진';
 import { 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기관_데이터셋';
 import { 응급의료기관_출처 } from '@/lib/응급의료기관_데이터셋';
+import { 달빛어린이병원_출처 } from '@/lib/달빛어린이병원_데이터셋';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
 
 // 공공병원 외 공개 데이터 기관 (분만: 심평원 청구 실적 목록 / 응급: E-Gen 응급의료기관 목록)의 표시용 공통 형태
@@ -67,6 +71,28 @@ const 응급_외부기관: 외부_기관[] = 민간_응급의료기관_목록.ma
   근사: false,
   설명: 'E-Gen 응급의료기관 등록',
 }));
+
+const 달빛_외부기관: 외부_기관[] = 민간_달빛어린이병원_목록.map((h) => ({
+  id: h.id,
+  기관명: h.기관명,
+  종류: h.기관구분,
+  지역: h.주소.split(' ').slice(0, 2).join(' '),
+  주소: h.주소,
+  전화: h.대표전화,
+  위도: h.위도,
+  경도: h.경도,
+  근사: false,
+  설명: '달빛어린이병원 (소아 야간·휴일 진료)',
+}));
+
+// 야간·휴일: 24시간 응급실 + 달빛어린이병원. 두 목록에 모두 있는 기관은 응급 항목에 함께 표기하고 한 번만 표시
+const 응급_이름 = new Set(응급_외부기관.map((h) => 기관명_정규화(h.기관명)));
+const 야간_외부기관: 외부_기관[] = [
+  ...응급_외부기관.map((h) =>
+    달빛어린이병원_이름_포함(h.기관명) ? { ...h, 설명: `${h.설명} · 달빛어린이병원` } : h
+  ),
+  ...달빛_외부기관.filter((h) => !응급_이름.has(기관명_정규화(h.기관명))),
+];
 
 // Leaflet 지도 동적 로드 (SSR 오류 방지)
 const DecisionLeafletMap = dynamic(
@@ -176,9 +202,19 @@ export const 국민안심_서비스_뷰: React.FC = () => {
   const 외부_원본: 외부_기관[] =
     selected_service === 'delivery'
       ? 분만_외부기관
-      : selected_service === 'emergency' || selected_service === 'night'
+      : selected_service === 'emergency'
         ? 응급_외부기관
-        : [];
+        : selected_service === 'night'
+          ? 야간_외부기관
+          : selected_service === 'pediatric'
+            ? 달빛_외부기관
+            : [];
+  const 목록_명칭: Record<string, string> = {
+    delivery: '분만 가능 의료기관',
+    emergency: '응급의료기관',
+    night: '야간·휴일 진료 기관',
+    pediatric: '소아 진료 기관',
+  };
   const 민간_목록 = useMemo(() => {
     const query = search_text.trim().toLowerCase();
     return 외부_원본
@@ -362,7 +398,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
               {외부_원본.length > 0 ? (
                 <span>
-                  내 주변 {selected_service === 'delivery' ? '분만 가능 의료기관' : '응급의료기관'} <strong>{표시_목록.length}</strong>개소
+                  내 주변 {목록_명칭[selected_service]} <strong>{표시_목록.length}</strong>개소
                   <span className="font-normal text-slate-500"> (공공 {hospital_list.length} · 민간 {민간_목록.length})</span>
                 </span>
               ) : (
@@ -383,10 +419,17 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
-              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 응급실은 <strong>국립중앙의료원 E-Gen 응급의료기관 목록</strong>({응급의료기관_출처.수집일} 수집), 분만은 <strong>건강보험심사평가원 분만가능 의료기관 목록</strong>(2025.1~2026.4 청구 실적, 공공누리 제1유형), 소아 등은 <strong>기관 유형·규모로 추정</strong>해 표시합니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
+              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 응급실은 <strong>국립중앙의료원 E-Gen 응급의료기관 목록</strong>({응급의료기관_출처.수집일} 수집), 분만은 <strong>건강보험심사평가원 분만가능 의료기관 목록</strong>(2025.1~2026.4 청구 실적, 공공누리 제1유형), 소아 야간·휴일은 <strong>국립중앙의료원 달빛어린이병원 목록</strong>으로 표시하며, 공공병원의 소아과 운영 여부 등은 <strong>기관 유형·규모로 추정</strong>합니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
               응급 상황에서는 <strong>119</strong>에 연락하세요.
             </p>
           </div>
+          {(selected_service === 'pediatric' || selected_service === 'night') && (
+            <div className="p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 text-[11px] text-pink-900 dark:text-pink-200">
+              분홍색 표시 중 달빛어린이병원은 소아 야간·휴일 진료기관입니다(출처: {달빛어린이병원_출처.기관} {달빛어린이병원_출처.자료명}, {달빛어린이병원_출처.수집일} 수집).
+              최소 운영시간은 평일 18~23시, 토·일·공휴일 10~18시이며 기관별로 다를 수 있으니 방문 전 확인하세요.
+              {selected_service === 'pediatric' && ' 공공병원의 소아청소년과 운영 여부는 기관 유형 기반 추정입니다.'}
+            </div>
+          )}
           {(selected_service === 'emergency' || selected_service === 'night') && (
             <div className="p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 text-[11px] text-pink-900 dark:text-pink-200">
               분홍색 표시는 공공병원 외 응급의료기관입니다(출처: {응급의료기관_출처.기관} {응급의료기관_출처.자료명}, {응급의료기관_출처.수집일} 수집). 위치는 E-Gen 등록 좌표입니다.

@@ -51,7 +51,7 @@ describe('임의 생성값 회귀 방지 (v1.0.19~v1.0.21 정정 사항)', () =>
     for (const h of 목록) {
       for (const s of h.서비스_상세) {
         if (s.근거 === '청구실적') expect(s.비고).toContain('심평원');
-        else if (s.근거 === '지정현황') expect(s.비고).toContain('E-Gen');
+        else if (s.근거 === '지정현황') expect(s.비고).toMatch(/E-Gen|달빛어린이병원/);
         else expect(s.비고).toContain('추정');
       }
     }

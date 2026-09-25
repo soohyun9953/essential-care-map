@@ -76,14 +76,15 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
   };
 
   // 근거가 공개 데이터(심평원 청구실적·E-Gen 지정현황)이면 추정이 아니므로 표기를 구분
-  const render_status_badge = (status: 서비스_운영_상태, 근거?: '청구실적' | '지정현황' | '추정') => {
+  const render_status_badge = (status: 서비스_운영_상태, 근거?: '청구실적' | '지정현황' | '추정', 코드?: string) => {
     const 실적 = 근거 === '청구실적';
     const 지정 = 근거 === '지정현황';
+    const 지정_명칭 = 코드 === 'pediatric' ? '달빛어린이병원' : 'E-Gen 등록';
     if (status === '운영') {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-          <span>{실적 ? '운영 (청구 실적)' : 지정 ? '운영 (E-Gen 등록)' : '운영 추정'}</span>
+          <span>{실적 ? '운영 (청구 실적)' : 지정 ? `운영 (${지정_명칭})` : '운영 추정'}</span>
         </span>
       );
     } else if (status === '확인필요') {
@@ -266,7 +267,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
           {active_tab === 'services' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-slate-500 pb-1">
-                <span>9대 핵심 의료서비스 운영 여부 (응급실: E-Gen 응급의료기관 목록 · 분만: 심평원 분만 청구 실적 · 그 외: 기관 유형·규모 기반 추정 · 방문 전 기관 확인 필요)</span>
+                <span>9대 핵심 의료서비스 운영 여부 (응급실: E-Gen 응급의료기관 목록 · 분만: 심평원 분만 청구 실적 · 소아: 달빛어린이병원 지정 외 추정 · 그 외: 기관 유형·규모 기반 추정 · 방문 전 기관 확인 필요)</span>
                 <span className="text-[11px]">기준: {hospital.데이터_신뢰성.기준시점}</span>
               </div>
 
@@ -288,7 +289,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
                     </div>
 
                     <div className="shrink-0">
-                      {render_status_badge(svc.상태, svc.근거)}
+                      {render_status_badge(svc.상태, svc.근거, svc.코드)}
                     </div>
                   </div>
                 ))}

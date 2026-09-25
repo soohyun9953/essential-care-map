@@ -14,6 +14,7 @@ import { get_region_location, get_sgg_coordinates } from './시군구_경계_데
 import { get_public_hospital_coords } from './공공의료기관_좌표_데이터';
 import { 분만가능_의료기관_목록, 분만가능_의료기관, 분만가능_의료기관_출처 } from './분만가능_의료기관_데이터셋';
 import { 응급의료기관_목록, 응급의료기관, 응급의료기관_출처 } from './응급의료기관_데이터셋';
+import { 달빛어린이병원_목록, 달빛어린이병원, 달빛어린이병원_출처 } from './달빛어린이병원_데이터셋';
 
 // 기관명 비교용 정규화 (괄호 표기·공백·법인 명칭 제거)
 export function 기관명_정규화(name: string): string {
@@ -48,6 +49,23 @@ export const 민간_분만기관_목록: 분만가능_의료기관[] = 분만가
 
 // E-Gen 응급의료기관 중 내장 공공병원과 대응되지 않는 기관
 export const 민간_응급의료기관_목록: 응급의료기관[] = 응급의료기관_목록.filter(
+  (h) => !공공병원_정규화_이름.has(기관명_정규화(h.기관명))
+);
+
+// 국립중앙의료원 달빛어린이병원(소아 야간·휴일 진료기관) 목록. 같은 이름의 분원이 있으므로 공공병원 대응 시 이름이 유일할 때만 사용
+const 달빛_이름별 = new Map<string, 달빛어린이병원[]>();
+for (const h of 달빛어린이병원_목록) {
+  const key = 기관명_정규화(h.기관명);
+  달빛_이름별.set(key, [...(달빛_이름별.get(key) ?? []), h]);
+}
+export function 달빛어린이병원_조회(기관명: string): 달빛어린이병원 | undefined {
+  const 후보 = 달빛_이름별.get(기관명_정규화(기관명));
+  return 후보 && 후보.length === 1 ? 후보[0] : undefined;
+}
+export function 달빛어린이병원_이름_포함(기관명: string): boolean {
+  return 달빛_이름별.has(기관명_정규화(기관명));
+}
+export const 민간_달빛어린이병원_목록: 달빛어린이병원[] = 달빛어린이병원_목록.filter(
   (h) => !공공병원_정규화_이름.has(기관명_정규화(h.기관명))
 );
 
@@ -185,6 +203,7 @@ export interface 검색_필터_옵션 {
 function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
   return 전국_공공의료기관_목록.map((h, idx) => {
     const 응급_등록 = 응급의료기관_조회(h.기관명);
+    const 달빛_지정 = 달빛어린이병원_조회(h.기관명);
     // E-Gen에 등록된 기관은 공식 좌표를 우선 사용 (내장 좌표는 근사값인 경우가 있음)
     const [lat, lng] =
       응급_등록?.위도 != null && 응급_등록?.경도 != null
@@ -242,8 +261,12 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       {
         코드: 'pediatric',
         서비스명: '소아청소년과',
-        상태: is_regional || is_local ? '운영' : is_rehab ? '운영' : '미운영',
-        비고: 추정_비고,
+        // 달빛어린이병원 지정 기관은 지정 현황, 그 외는 기관 유형 기반 추정
+        상태: 달빛_지정 || is_regional || is_local || is_rehab ? '운영' : '미운영',
+        비고: 달빛_지정
+          ? `달빛어린이병원(소아 야간·휴일 진료기관) 지정 — ${달빛어린이병원_출처.기관} 목록 (${달빛어린이병원_출처.수집일} 수집) · 방문 전 확인 필요`
+          : 추정_비고,
+        근거: 달빛_지정 ? '지정현황' : '추정',
       },
       {
         코드: 'delivery',
@@ -315,7 +338,7 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       위도: lat,
       경도: lng,
       운영_상태: '확인필요', // 실제 운영 상태 연계 없음
-      주요_의료서비스: services,
+      주요_의료서비스: 달빛_지정 ? [...services, '달빛어린이병원'] : services,
       서비스_상세: service_details,
       의료자원: {
         병상: {

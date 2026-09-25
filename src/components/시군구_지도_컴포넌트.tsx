@@ -34,8 +34,17 @@ const MapCenterController: React.FC<{ target_lat?: number; target_lng?: number; 
 }) => {
   const map = useMap();
   useEffect(() => {
-    if (target_lat && target_lng) {
-      map.flyTo([target_lat, target_lng], zoom, { duration: 1.0 });
+    if (!Number.isFinite(target_lat) || !Number.isFinite(target_lng)) return;
+    // 지도 영역 크기가 0일 때 flyTo는 NaN 좌표 오류로 앱을 중단시키므로 크기가 있을 때만 애니메이션
+    try {
+      const size = map.getSize();
+      if (size.x > 0 && size.y > 0) {
+        map.flyTo([target_lat as number, target_lng as number], zoom, { duration: 1.0 });
+      } else {
+        map.setView([target_lat as number, target_lng as number], zoom, { animate: false });
+      }
+    } catch (err) {
+      console.warn('지도 이동 실패:', err);
     }
   }, [target_lat, target_lng, zoom, map]);
   return null;

@@ -21,7 +21,12 @@ import {
 import {
   전체_공공의료기관_상세목록,
   공공의료기관_상세_프로필,
+  민간_분만기관_목록,
 } from '@/lib/의료서비스_검색_엔진';
+import { 분만가능_의료기관, 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기관_데이터셋';
+import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
+
+const 민간_기관_ID = (h: 분만가능_의료기관) => `hira|${h.시도}|${h.시군구}|${h.기관명}`;
 
 // Leaflet 지도 동적 로드 (SSR 오류 방지)
 const DecisionLeafletMap = dynamic(
@@ -125,7 +130,54 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       .sort((a, b) => parseFloat(a.거리) - parseFloat(b.거리));
   }, [user_location, selected_service, search_text]);
 
-  const active_target = selected_hospital || hospital_list[0] || null;
+  // 분만 필터: 심평원 분만가능 목록의 민간 병·의원·조산원도 함께 표시 (공공병원과 대응되지 않는 기관)
+  const [selected_extra_id, setSelected_extra_id] = useState<string | null>(null);
+  const 민간_분만_목록 = useMemo(() => {
+    if (selected_service !== 'delivery') return [];
+    const query = search_text.trim().toLowerCase();
+    return 민간_분만기관_목록
+      .filter(
+        (h) =>
+          !query ||
+          h.기관명.toLowerCase().includes(query) ||
+          h.시군구.toLowerCase().includes(query) ||
+          h.시도.toLowerCase().includes(query) ||
+          h.주소.toLowerCase().includes(query)
+      )
+      .map((h) => ({
+        h,
+        id: 민간_기관_ID(h),
+        거리: h.위도 !== null && h.경도 !== null ? parseFloat(calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도)) : null,
+      }));
+  }, [user_location, selected_service, search_text]);
+
+  // 공공병원 + 민간 분만기관 통합 거리순 목록 (좌표 없는 기관은 뒤로)
+  type 표시_항목 =
+    | { kind: '공공'; id: string; 거리: number; h: (typeof hospital_list)[number] }
+    | { kind: '민간'; id: string; 거리: number | null; h: 분만가능_의료기관 };
+  const 표시_목록: 표시_항목[] = useMemo(() => {
+    const 공공: 표시_항목[] = hospital_list.map((h) => ({ kind: '공공', id: h.id, 거리: parseFloat(h.거리), h }));
+    const 민간: 표시_항목[] = 민간_분만_목록.map((m) => ({ kind: '민간', id: m.id, 거리: m.거리, h: m.h }));
+    return [...공공, ...민간].sort((a, b) => (a.거리 ?? Infinity) - (b.거리 ?? Infinity));
+  }, [hospital_list, 민간_분만_목록]);
+
+  const 보조_지점: 보조_지도_지점[] = useMemo(
+    () =>
+      민간_분만_목록
+        .filter((m) => m.h.위도 !== null && m.h.경도 !== null && m.h.좌표_정밀도)
+        .map((m) => ({
+          id: m.id,
+          기관명: m.h.기관명,
+          종별: m.h.종별,
+          위도: m.h.위도 as number,
+          경도: m.h.경도 as number,
+          좌표_정밀도: m.h.좌표_정밀도 as '주소' | '시군구',
+          설명: `분만 청구 실적 (심평원)${m.h.야간 ? ' · 야간' : ''}`,
+        })),
+    [민간_분만_목록]
+  );
+
+  const active_target = selected_extra_id ? selected_hospital : selected_hospital || hospital_list[0] || null;
 
   return (
     <div className="w-full h-[calc(100vh-4.5rem)] flex flex-col relative overflow-hidden bg-slate-100 dark:bg-[#0c0d10]">
@@ -199,6 +251,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                 onClick={() => {
                   setSelected_service(item.id as any);
                   setSelected_hospital(null);
+                  setSelected_extra_id(null);
                   if (sheet_state === 'min') {
                     set_sheet_state('half');
                   }
@@ -225,6 +278,14 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           active_hospital={active_target}
           on_select_hospital={(h) => {
             setSelected_hospital(h);
+            setSelected_extra_id(null);
+            set_sheet_state('half');
+          }}
+          extra_points={보조_지점}
+          active_extra_id={selected_extra_id}
+          on_select_extra={(p) => {
+            setSelected_extra_id(p.id);
+            setSelected_hospital(null);
             set_sheet_state('half');
           }}
         />
@@ -254,7 +315,14 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mb-1" />
           <div className="flex items-center justify-between w-full px-4 text-xs">
             <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              <span>내 주변 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
+              {selected_service === 'delivery' ? (
+                <span>
+                  내 주변 분만 가능 의료기관 <strong>{표시_목록.length}</strong>개소
+                  <span className="font-normal text-slate-500"> (공공 {hospital_list.length} · 민간 {민간_분만_목록.length})</span>
+                </span>
+              ) : (
+                <span>내 주변 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
+              )}
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-normal">(거리순)</span>
             </span>
             <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
@@ -274,7 +342,13 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               응급 상황에서는 <strong>119</strong>에 연락하세요.
             </p>
           </div>
-          {hospital_list.length === 0 ? (
+          {selected_service === 'delivery' && (
+            <div className="p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 text-[11px] text-pink-900 dark:text-pink-200">
+              분홍색 표시는 공공병원 외 분만 청구 실적이 있는 민간 병·의원·조산원입니다(출처: {분만가능_의료기관_출처.기관} {분만가능_의료기관_출처.자료명}).
+              위치는 주소를 좌표로 변환한 값이며({분만가능_의료기관_출처.좌표_출처}), 주소 변환에 실패한 기관은 <strong>시군구 중심 근사</strong>로 표시되어 실제 거리와 차이가 있을 수 있습니다.
+            </div>
+          )}
+          {표시_목록.length === 0 ? (
             <div className="py-12 px-4 text-center space-y-3">
               <AlertCircle className="w-8 h-8 text-amber-500 mx-auto" />
               <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
@@ -296,12 +370,79 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               </button>
             </div>
           ) : (
-            hospital_list.slice(0, sheet_state === 'full' ? 50 : 15).map((h) => {
-              const is_selected = active_target?.id === h.id;
+            표시_목록.slice(0, sheet_state === 'full' ? 80 : 15).map((item) => {
+              if (item.kind === '민간') {
+                const p = item.h;
+                const is_selected = selected_extra_id === item.id;
+                const 근사 = p.좌표_정밀도 === '시군구';
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setSelected_extra_id(item.id);
+                      setSelected_hospital(null);
+                    }}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2.5 ${
+                      is_selected
+                        ? 'border-pink-500 bg-pink-50/40 dark:bg-pink-950/20 shadow-sm ring-1 ring-pink-500/20'
+                        : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs text-pink-600 dark:text-pink-400 font-extrabold flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>
+                          {item.거리 === null ? '위치 미확인' : `직선 약 ${item.거리.toFixed(1)}km${근사 ? ' (시군구 중심 근사)' : ''}`}
+                        </span>
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        {p.시도} {p.시군구}
+                      </span>
+                    </div>
+                    <h4 className="text-base font-bold text-slate-900 dark:text-white">{p.기관명}</h4>
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <span>
+                        {p.종별} · 분만 청구 실적 (심평원){p.야간 ? ' · 야간 실적 있음' : ''}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300 shrink-0">민간</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 line-clamp-1">{p.주소}</p>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <a
+                        href={`tel:${p.전화번호}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="py-2 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-xs"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>전화 걸기 ({p.전화번호})</span>
+                      </a>
+                      <a
+                        href={
+                          !근사 && p.위도 !== null && p.경도 !== null
+                            ? `https://map.kakao.com/link/to/${encodeURIComponent(p.기관명)},${p.위도},${p.경도}`
+                            : `https://map.kakao.com/link/search/${encodeURIComponent(`${p.기관명} ${p.시군구}`)}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1.5"
+                      >
+                        <Navigation className="w-3.5 h-3.5 text-blue-600" />
+                        <span>{근사 ? '지도에서 검색' : '길찾기'}</span>
+                      </a>
+                    </div>
+                  </div>
+                );
+              }
+              const h = item.h;
+              const is_selected = !selected_extra_id && active_target?.id === h.id;
               return (
                 <div
                   key={h.id}
-                  onClick={() => setSelected_hospital(h)}
+                  onClick={() => {
+                    setSelected_hospital(h);
+                    setSelected_extra_id(null);
+                  }}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-2.5 ${
                     is_selected
                       ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm ring-1 ring-emerald-500/20'

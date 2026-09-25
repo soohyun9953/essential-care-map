@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260925',
-  semver: '1.0.35',
-  fullLabel: '20260925 버전 1.0.35',
-  packageVersion: '20260925-v1.0.35',
+  semver: '1.0.36',
+  fullLabel: '20260925 버전 1.0.36',
+  packageVersion: '20260925-v1.0.36',
   updatedAt: '2026-09-25',
   changelog: '국립중앙의료원 달빛어린이병원 114곳 연동: 국민안심 소아·야간/휴일 필터에 실제 소아 야간·휴일 진료기관 추가, 공공병원 지정 2곳 표시',
 };

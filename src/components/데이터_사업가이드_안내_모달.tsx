@@ -360,7 +360,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>1.0% 정책가산율:</strong> 의료의 질 영역(9.5%) 중 CP 운영 배점 최대 1.0% 가산.<br />
-                    • <strong>추가 재정 지원:</strong> 연간 신포괄 진료비 × (가산율 / 100) (연간 250억 병원 기준 <strong>연 2.5억 원 순증</strong>).<br />
+                    • <strong>추가 재정 지원:</strong> 연간 신포괄 진료비 × (가산율 / 100) (계산 예시: 연간 250억 원 × 1.0% = 연 2.5억 원, 가산율 기준은 원문 미확인).<br />
                     • <strong>K-DRG 정상군 관리:</strong> 기준 재원일수 초과 시 정액수가 삭감 및 비포괄 전환 Outlier 방지 체계.
                   </p>
                 </div>
@@ -379,7 +379,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>㉠ 개발 체계 (50점):</strong> 16개 공문서 점검 (300병상 초과 전담인력 1명, Branch CP 개발, CP위원회 회의록 등).<br />
                     • <strong>㉡ 적용 및 운영 (50점):</strong> 병상별 적용(20점) + 질환별 적용(10점, 70%↑/80%↑) + 관리율(5점, 85%↑) + 5대 모니터링(15점).<br />
-                    • <strong>신포괄 연계:</strong> 90점 이상 ➔ 1.0%, 80~89점 ➔ 0.8%, 70~79점 ➔ 0.6%, 60~69점 ➔ 0.4%, 60점 미만 ➔ 0.0%.
+                    • <strong>신포괄 연계:</strong> 90점 이상 ➔ 1.0%, 80~89점 ➔ 0.8%, 70~79점 ➔ 0.6%, 60~69점 ➔ 0.4%, 60점 미만 ➔ 0.0%.<br />
+                    <span className="text-amber-700 dark:text-amber-400">※ 배점 구조와 점수별 가산율은 공개 자료에서 원문을 확인하지 못함. 시뮬레이터 결과를 인용하기 전에 해당 연도 편람·지침으로 확인 필요.</span>
                   </p>
                 </div>
 
@@ -396,7 +397,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>변이(Variance) 규격:</strong> 환자/의료진/시스템 3대 영역 표준 분류 및 월별 피드백 체계.<br />
-                    • <strong>경영 개선 효과 (ROI):</strong> 불필요 재원일수 단축(-1.8일)에 따른 병상 회전율 증대 및 연간 순수 병원 재정 2.8억~4.5억 원 개선 산출.
+                    • <strong>경영 개선 효과 (ROI):</strong> 재원일수 단축에 따른 병상 회전율 증대 효과를 병원별 입력값으로 계산 (고정된 효과 수치 없음).
                   </p>
                 </div>
 
@@ -412,7 +413,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     「보건복지부 공모 표준 6대 개조식 사업계획서 서식」
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>6대 표준 목차:</strong> 추진 목적 및 법적 근거, 현황 및 결핍 진단, 세부 추진 계획, 소요 예산(국비 70% : 지방비 30%), 기대효과(ROI), 연차별 성과지표(KPI) 원클릭 서술문 자동 생성.
+                    • <strong>6대 표준 목차:</strong> 추진 목적 및 법적 근거, 현황 및 결핍 진단, 세부 추진 계획, 소요 예산(국비·지방비 비율은 해당 연도 공모 지침 확인), 기대효과(ROI), 연차별 성과지표(KPI) 원클릭 서술문 자동 생성.
                   </p>
                 </div>
               </div>
@@ -438,7 +439,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     연간 추가 수가 = 연간 신포괄 진료비 × (정책가산율 / 100)
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    예시: 연간 진료비 250억 원, 90점 이상(가산율 1.0%) 획득 시 <strong>연간 +2억 5,000만 원 순증</strong>
+                    계산 예시: 연간 진료비 250억 원 × 가산율 1.0% = <strong>연 2억 5,000만 원</strong> (가산율 표는 원문 미확인)
                   </p>
                 </div>
 
@@ -464,7 +465,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     총 재정효과 = 직접 진료비 절감액 + 병상회전 신규 진료수익 + Outlier 삭감 예방액
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    단축 병상에 신규 입원 환자 유치(마진율 22%)로 연간 2.8억~4.5억 원 개선
+                    결과는 병원별 입력값(재원일수 단축, 진료비, 마진율 등)에 따라 달라지며 고정 효과 수치는 없음
                   </p>
                 </div>
 

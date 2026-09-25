@@ -491,7 +491,7 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
 
               <div className="flex items-center justify-between text-2xs text-slate-400 px-2">
                 <span>작성 엔진: {ai_result.생성모델} (소요시간: {ai_result.소요시간_ms}ms)</span>
-                <span>보건복지부 / 국립중앙의료원 공모 심사 규격 완결형</span>
+                <span>초안 — 예산·목표치는 공모 지침 확인 후 직접 기재</span>
               </div>
             </div>
           ) : null}

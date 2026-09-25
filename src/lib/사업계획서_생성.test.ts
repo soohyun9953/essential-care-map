@@ -62,14 +62,43 @@ describe('사업계획서: 유출입 자료가 있는 지역', () => {
     expect(영월_유출입).toBeDefined();
   });
 
-  it('HWPX 공문서에 해당 지역의 실제 RI와 계산된 목표 증분을 쓴다', () => {
+  it('HWPX 공문서에 해당 지역의 실제 RI를 쓰고 목표는 직접 설정 칸으로 둔다', () => {
     const xml = build_proposal_section0_xml({
       region: 지역('영월군'),
       domain_info: 공모_분야_목록[0],
       patient_flow: 영월_유출입,
     });
     expect(xml).toContain(`현행 ${영월_유출입.ri}%`);
-    if (영월_유출입.ri < 40) expect(xml).toContain(`(+${(40 - 영월_유출입.ri).toFixed(1)}%p)`);
+    expect(xml).toContain('○○% (목표 직접 설정)');
     expect(xml).not.toContain('undefined');
+  });
+});
+
+// 근거 없이 넣던 예산·목표·장비 수치 (v1.0.37에서 제거)
+const 근거없는_수치 = ['12.5억', '18억', '총 9억', '50억', '15병상', 'CRRT', '10대', '45%', '35%', '45.0%', '20%p', '40분', '정선·평창', '2억 5,000만', '월 최대 500만원', '원주 권역', '35,000일', '45.2%', '1,400', '국비 70%'];
+
+describe('사업계획서: 근거 없는 수치를 넣지 않는다', () => {
+  const 대상 = 지역('존재하지않는군', { 응급_60분_미도달_인구비율: 10 });
+
+  it('텍스트 사업계획서 (모든 공모 분야)', async () => {
+    for (const d of 공모_분야_목록) {
+      const 결과 = await 사업계획서_AI_엔진.generate_plan({ target_region: 대상, sido_stat: 통계, national_stat: 통계, domain_type: d.id });
+      for (const v of 근거없는_수치) expect(결과.생성전문, `${d.id}: ${v}`).not.toContain(v);
+      // 응급 미도달 10%인 지역을 기준 초과로 서술하지 않음
+      expect(결과.생성전문).toContain('30% 미만');
+    }
+  });
+
+  it('HWPX 공문서', () => {
+    const xml = build_proposal_section0_xml({ region: 대상, domain_info: 공모_분야_목록[0], patient_flow: null });
+    for (const v of 근거없는_수치) expect(xml, v).not.toContain(v);
+    expect(xml).toContain('30% 미만');
+  });
+
+  it('분만 공모 예산은 확인된 지원 기준(시설·장비 10억, 운영비 연 5억, 외래 연 2억)을 쓴다', () => {
+    const 분만 = 공모_분야_목록.find((d) => d.id === 'delivery')!;
+    expect(분만.default_budget).toContain('10억원');
+    expect(분만.default_budget).toContain('연 5억원');
+    expect(분만.default_budget).toContain('연 2억원');
   });
 });

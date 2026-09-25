@@ -57,12 +57,9 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
   const top_inflow = patient_flow?.inflow_top.find((x) => !x.is_self) || patient_flow?.inflow_top[0];
   // 유출입 자료가 없으면 다른 지역 수치로 대체하지 않고 '자료 없음'으로 명시
   const ri_str = patient_flow ? `${patient_flow.ri}%` : '자료 없음';
-  const ri_목표_증분 = patient_flow && patient_flow.ri < 40 ? ` (+${(40 - patient_flow.ri).toFixed(1)}%p)` : '';
 
-  // 총 소요예산 (국비 70% + 지방비 30%)
-  const total_budget = domain_info.id === 'dialysis' ? 3500 : domain_info.id === 'emergency' ? 5000 : 4000;
-  const national_budget = Math.round(total_budget * 0.7);
-  const local_budget = total_budget - national_budget;
+  // 예산·국비 비율은 공모 지침마다 달라 플랫폼이 산출하지 않음 (직접 기재 칸으로 출력)
+  const 직접기재 = '○○ (직접 기재)';
 
   let xml = `<?xml version='1.0' encoding='UTF-8'?>
 <hs:sec xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section">
@@ -235,19 +232,19 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${format_number_comma(total_budget)}백만원 (100%)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${직접기재}</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="12260" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>국비 신청액 (70%)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>국비 신청액</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="9000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${format_number_comma(national_budget)}백만원</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${직접기재}</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="12260" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -257,13 +254,13 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
         <hp:tr>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>지방비 매칭액 (30%)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>지방비 매칭액</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="0" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="9000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${format_number_comma(local_budget)}백만원</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>${직접기재}</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="12260" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -275,7 +272,7 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>현행 ${ri_str} ➔ 40.0%${ri_목표_증분}</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>현행 ${ri_str} ➔ ○○% (목표 직접 설정)</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="12260" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -481,13 +478,13 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
     <hp:run charPrIDRef="1"><hp:t>  □ 국가 헬스맵 지표정의서 기준 핵심 지표 코드 [${domain_info.primary_indicator_code}] 매핑 결과:</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 응급의료 60분 이내 미도달 인구비율: ${region.응급_60분_미도달_인구비율.toFixed(1)}% (전국 기준 30%를 대폭 상회하여 중증환자 이송 지연 위험 상존)</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 응급의료 60분 이내 미도달 인구비율: ${region.응급_60분_미도달_인구비율.toFixed(1)}% (응급의료취약지 선정 기준 30% ${region.응급_60분_미도달_인구비율 >= 30 ? '이상' : '미만'}, 헬스맵 2024)</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 응급의료 자체충족률(RI): ${region.관내_응급_의료이용률.toFixed(1)}% / 인구수 ${format_number_comma(region.인구수)}명 기준 필수진료 취약지정</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 응급의료 자체충족률(RI): ${region.관내_응급_의료이용률.toFixed(1)}% / 인구수 ${format_number_comma(region.인구수)}명 (헬스맵 2024)</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ ${public_hospital ? public_hospital.기관명 : '공공병원'}은 현재 노후화 및 전문의료장비 부재로 인해 군민의 생명과 직결된 필수의료 수요를 적시에 감당하기 어려운 한계에 직면함.</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ ${public_hospital ? public_hospital.기관명 : '공공병원'}의 시설·장비·인력 현황과 한계를 기재 (직접 작성).</hp:t></hp:run>
   </hp:p>
 
   <!-- 빈 줄 -->
@@ -597,13 +594,13 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>국비(70%)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>국비</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="0"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>지방비(30%)</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>지방비</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="0"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -624,25 +621,25 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>1,400</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8520" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>980</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>420</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>350평 기준</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>규모 직접 기재</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="4" rowAddr="1"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -657,25 +654,25 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>1,200</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8520" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>840</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>360</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>전담 장비 10대</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>품목·수량 직접 기재</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="4" rowAddr="2"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -690,25 +687,25 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>900</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8520" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>630</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>270</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="3">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>의사/간호/전산망</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="1"><hp:t>인력·연계망 직접 기재</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="4" rowAddr="3"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -723,25 +720,25 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>${format_number_comma(total_budget)}</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="1" rowAddr="4"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8520" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>${format_number_comma(national_budget)}</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="2" rowAddr="4"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>${format_number_comma(local_budget)}</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>○○</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="3" rowAddr="4"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
           <hp:tc name="" header="0" hasMargin="0" protect="0" editable="0" dirty="1" borderFillIDRef="4">
             <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
-              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>국비 70% 매칭</hp:t></hp:run></hp:p>
+              <hp:p paraPrIDRef="21" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${get_next_p_id()}"><hp:run charPrIDRef="9"><hp:t>분담 비율은 공모 지침 확인</hp:t></hp:run></hp:p>
             </hp:subList>
             <hp:cellAddr colAddr="4" rowAddr="4"/><hp:cellSpan colSpan="1" rowSpan="1"/><hp:cellSz width="8000" height="2200"/><hp:cellMargin left="0" right="0" top="0" bottom="0"/>
           </hp:tc>
@@ -786,10 +783,10 @@ export function build_proposal_section0_xml(input: HWPX_사업계획서_입력):
     <hp:run charPrIDRef="1"><hp:t>  □ 정량적 기대효과 및 목표 지표 달성 계획</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 자체충족률(RI): 현행 ${ri_str} ➔ 사업 완료 시 40.0% 이상 달성 (원정진료 35,000일 감축)</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 관내 자체충족률(RI): 현행 ${ri_str} ➔ 사업 완료 시 ○○% 이상 (목표 직접 설정)</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="1"><hp:t>  ○ 필수 골든타임(60분) 초진 도달률: 45.2% ➔ 80.0% 이상으로 대폭 개선</hp:t></hp:run>
+    <hp:run charPrIDRef="1"><hp:t>  ○ 응급 60분 미도달 인구비율: 현행 ${region.응급_60분_미도달_인구비율.toFixed(1)}% ➔ ○○% (목표 직접 설정)</hp:t></hp:run>
   </hp:p>
   <hp:p id="${get_next_p_id()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="1"><hp:t>  □ 정성적 기대효과: 의료격차 해소를 통한 군민 거주안정성 증대 및 지방소멸 방어 효과</hp:t></hp:run>

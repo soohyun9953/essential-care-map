@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { 전체_공공의료기관_상세목록 as 목록, 의료서비스_검색_엔진, 분만가능_기관_조회 } from './의료서비스_검색_엔진';
+import { 전체_공공의료기관_상세목록 as 목록, 의료서비스_검색_엔진, 분만가능_기관_조회, 응급의료기관_조회 } from './의료서비스_검색_엔진';
 import { 분만가능_의료기관_목록, 분만가능_의료기관_출처 } from './분만가능_의료기관_데이터셋';
 import { 전국_공공의료기관_목록 } from './공공의료기관_데이터셋';
 
@@ -51,6 +51,7 @@ describe('임의 생성값 회귀 방지 (v1.0.19~v1.0.21 정정 사항)', () =>
     for (const h of 목록) {
       for (const s of h.서비스_상세) {
         if (s.근거 === '청구실적') expect(s.비고).toContain('심평원');
+        else if (s.근거 === '지정현황') expect(s.비고).toContain('E-Gen');
         else expect(s.비고).toContain('추정');
       }
     }
@@ -82,10 +83,17 @@ describe('진료 서비스 운영 추정 규칙', () => {
     }
   });
 
-  it('응급실 운영 추정은 권역·지역 기관에 한정된다', () => {
-    for (const h of 목록.filter((h) => 서비스_상태(h, 'emergency') === '운영')) {
-      expect(['권역', '지역']).toContain(유형(h));
+  it('응급실 운영 여부는 E-Gen 응급의료기관 목록 등재 여부와 일치하고, 응급실 구분은 E-Gen 분류를 쓴다', () => {
+    for (const h of 목록) {
+      const 등록 = 응급의료기관_조회(h.기관명);
+      const svc = h.서비스_상세.find((s) => s.코드 === 'emergency')!;
+      expect(svc.상태 === '운영', h.기관명).toBe(!!등록);
+      expect(svc.근거).toBe('지정현황');
+      expect(h.의료자원.응급실.구분, h.기관명).toBe(등록 ? 등록.분류 : '응급의료기관 미등재');
+      // 등록 기관은 E-Gen 공식 좌표 사용
+      if (등록?.위도 != null) expect([h.위도, h.경도]).toEqual([등록.위도, 등록.경도]);
     }
+    expect(목록.filter((h) => 서비스_상태(h, 'emergency') === '운영').length).toBe(78);
   });
 });
 

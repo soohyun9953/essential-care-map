@@ -13,6 +13,7 @@ import { 전국_공공의료기관_목록, 공공의료기관_정보 } from './�
 import { get_region_location, get_sgg_coordinates } from './시군구_경계_데이터';
 import { get_public_hospital_coords } from './공공의료기관_좌표_데이터';
 import { 분만가능_의료기관_목록, 분만가능_의료기관, 분만가능_의료기관_출처 } from './분만가능_의료기관_데이터셋';
+import { 응급의료기관_목록, 응급의료기관, 응급의료기관_출처 } from './응급의료기관_데이터셋';
 
 // 기관명 비교용 정규화 (괄호 표기·공백·법인 명칭 제거)
 export function 기관명_정규화(name: string): string {
@@ -28,9 +29,25 @@ export function 분만가능_기관_조회(기관명: string): 분만가능_의�
   return 분만가능_기관_색인.get(기관명_정규화(기관명));
 }
 
+// 국립중앙의료원 E-Gen 응급의료기관 목록 (정규화 기관명 → 기관). 같은 이름이 둘 이상이면 오대응 방지를 위해 대응하지 않음
+const 응급의료기관_색인 = new Map<string, 응급의료기관 | null>();
+for (const h of 응급의료기관_목록) {
+  const key = 기관명_정규화(h.기관명);
+  응급의료기관_색인.set(key, 응급의료기관_색인.has(key) ? null : h);
+}
+
+export function 응급의료기관_조회(기관명: string): 응급의료기관 | undefined {
+  return 응급의료기관_색인.get(기관명_정규화(기관명)) ?? undefined;
+}
+
 // 심평원 목록 중 내장 공공병원(214개소)과 대응되지 않는 기관 (민간 병·의원·조산원 등)
 const 공공병원_정규화_이름 = new Set(전국_공공의료기관_목록.map((h) => 기관명_정규화(h.기관명)));
 export const 민간_분만기관_목록: 분만가능_의료기관[] = 분만가능_의료기관_목록.filter(
+  (h) => !공공병원_정규화_이름.has(기관명_정규화(h.기관명))
+);
+
+// E-Gen 응급의료기관 중 내장 공공병원과 대응되지 않는 기관
+export const 민간_응급의료기관_목록: 응급의료기관[] = 응급의료기관_목록.filter(
   (h) => !공공병원_정규화_이름.has(기관명_정규화(h.기관명))
 );
 
@@ -71,7 +88,8 @@ export interface 개별_의료서비스_상태 {
   서비스명: string;
   상태: 서비스_운영_상태;
   비고: string;
-  근거?: '청구실적' | '추정'; // 청구실적: 심평원 공개 목록 기반 / 추정: 기관 유형·규모 기반
+  // 청구실적: 심평원 분만 청구 실적 목록 / 지정현황: E-Gen 응급의료기관 목록 / 추정: 기관 유형·규모 기반
+  근거?: '청구실적' | '지정현황' | '추정';
 }
 
 export interface 기관_의료자원_현황 {
@@ -166,7 +184,12 @@ export interface 검색_필터_옵션 {
 // =============================================================================
 function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
   return 전국_공공의료기관_목록.map((h, idx) => {
-    const [lat, lng] = get_public_hospital_coords(h.id, h.시군구명, h.시도명);
+    const 응급_등록 = 응급의료기관_조회(h.기관명);
+    // E-Gen에 등록된 기관은 공식 좌표를 우선 사용 (내장 좌표는 근사값인 경우가 있음)
+    const [lat, lng] =
+      응급_등록?.위도 != null && 응급_등록?.경도 != null
+        ? [응급_등록.위도, 응급_등록.경도]
+        : get_public_hospital_coords(h.id, h.시군구명, h.시도명);
 
     const is_regional = h.그룹 === '권역';
     const is_local = h.그룹 === '지역';
@@ -197,8 +220,12 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
       {
         코드: 'emergency',
         서비스명: '응급실 (24시간)',
-        상태: is_regional || is_local ? '운영' : is_senior || is_rehab ? '미운영' : '확인필요',
-        비고: 추정_비고,
+        // 국립중앙의료원 E-Gen 응급의료기관 목록 등재 여부로 판정
+        상태: 응급_등록 ? '운영' : '미운영',
+        비고: 응급_등록
+          ? `E-Gen 응급의료기관 목록 등재: ${응급_등록.분류} (${응급의료기관_출처.수집일} 수집) · 방문 전 확인 필요`
+          : `E-Gen 응급의료기관 목록 미등재 (${응급의료기관_출처.수집일} 수집 기준)`,
+        근거: '지정현황',
       },
       {
         코드: 'severe',
@@ -306,7 +333,7 @@ function generate_hospital_profiles(): 공공의료기관_상세_프로필[] {
           가동실: or_active,
         },
         응급실: {
-          구분: is_regional ? '권역응급의료센터' : is_local ? '지역응급의료기관' : '응급진료실',
+          구분: 응급_등록 ? 응급_등록.분류 : '응급의료기관 미등재',
           가용병상: er_avail,
           소아가용병상: Math.max(0, (idx % 3) - 1),
           상태: er_avail <= 2 ? '혼잡' : er_avail <= 4 ? '보통' : '여유',

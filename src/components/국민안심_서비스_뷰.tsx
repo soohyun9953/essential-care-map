@@ -22,11 +22,51 @@ import {
   전체_공공의료기관_상세목록,
   공공의료기관_상세_프로필,
   민간_분만기관_목록,
+  민간_응급의료기관_목록,
 } from '@/lib/의료서비스_검색_엔진';
-import { 분만가능_의료기관, 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기관_데이터셋';
+import { 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기관_데이터셋';
+import { 응급의료기관_출처 } from '@/lib/응급의료기관_데이터셋';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
 
-const 민간_기관_ID = (h: 분만가능_의료기관) => `hira|${h.시도}|${h.시군구}|${h.기관명}`;
+// 공공병원 외 공개 데이터 기관 (분만: 심평원 청구 실적 목록 / 응급: E-Gen 응급의료기관 목록)의 표시용 공통 형태
+interface 외부_기관 {
+  id: string;
+  기관명: string;
+  종류: string;
+  지역: string;
+  주소: string;
+  전화: string;
+  위도: number | null;
+  경도: number | null;
+  근사: boolean; // 시군구 중심 근사 좌표 여부
+  설명: string;
+}
+
+const 분만_외부기관: 외부_기관[] = 민간_분만기관_목록.map((h) => ({
+  id: `hira|${h.시도}|${h.시군구}|${h.기관명}`,
+  기관명: h.기관명,
+  종류: h.종별,
+  지역: `${h.시도} ${h.시군구}`,
+  주소: h.주소,
+  전화: h.전화번호,
+  위도: h.위도,
+  경도: h.경도,
+  근사: h.좌표_정밀도 === '시군구',
+  설명: `분만 청구 실적 (심평원)${h.야간 ? ' · 야간 실적 있음' : ''}`,
+}));
+
+const 응급_외부기관: 외부_기관[] = 민간_응급의료기관_목록.map((h) => ({
+  id: `egen|${h.hpid}`,
+  기관명: h.기관명,
+  종류: h.분류,
+  지역: h.주소.split(' ').slice(0, 2).join(' '),
+  주소: h.주소,
+  전화: h.응급실전화 || h.대표전화,
+  위도: h.위도,
+  경도: h.경도,
+  근사: false,
+  설명: 'E-Gen 응급의료기관 등록',
+}));
 
 // Leaflet 지도 동적 로드 (SSR 오류 방지)
 const DecisionLeafletMap = dynamic(
@@ -130,51 +170,56 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       .sort((a, b) => parseFloat(a.거리) - parseFloat(b.거리));
   }, [user_location, selected_service, search_text]);
 
-  // 분만 필터: 심평원 분만가능 목록의 민간 병·의원·조산원도 함께 표시 (공공병원과 대응되지 않는 기관)
+  // 분만·응급실·야간 필터: 공공병원과 대응되지 않는 공개 데이터 기관(민간 병·의원 등)도 함께 표시
+  //  - 분만: 심평원 분만가능 의료기관 목록 / 응급실·야간(24시간 응급실): E-Gen 응급의료기관 목록
   const [selected_extra_id, setSelected_extra_id] = useState<string | null>(null);
-  const 민간_분만_목록 = useMemo(() => {
-    if (selected_service !== 'delivery') return [];
+  const 외부_원본: 외부_기관[] =
+    selected_service === 'delivery'
+      ? 분만_외부기관
+      : selected_service === 'emergency' || selected_service === 'night'
+        ? 응급_외부기관
+        : [];
+  const 민간_목록 = useMemo(() => {
     const query = search_text.trim().toLowerCase();
-    return 민간_분만기관_목록
+    return 외부_원본
       .filter(
         (h) =>
           !query ||
           h.기관명.toLowerCase().includes(query) ||
-          h.시군구.toLowerCase().includes(query) ||
-          h.시도.toLowerCase().includes(query) ||
+          h.지역.toLowerCase().includes(query) ||
           h.주소.toLowerCase().includes(query)
       )
       .map((h) => ({
         h,
-        id: 민간_기관_ID(h),
         거리: h.위도 !== null && h.경도 !== null ? parseFloat(calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도)) : null,
       }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user_location, selected_service, search_text]);
 
-  // 공공병원 + 민간 분만기관 통합 거리순 목록 (좌표 없는 기관은 뒤로)
+  // 공공병원 + 민간 기관 통합 거리순 목록 (좌표 없는 기관은 뒤로)
   type 표시_항목 =
     | { kind: '공공'; id: string; 거리: number; h: (typeof hospital_list)[number] }
-    | { kind: '민간'; id: string; 거리: number | null; h: 분만가능_의료기관 };
+    | { kind: '민간'; id: string; 거리: number | null; h: 외부_기관 };
   const 표시_목록: 표시_항목[] = useMemo(() => {
     const 공공: 표시_항목[] = hospital_list.map((h) => ({ kind: '공공', id: h.id, 거리: parseFloat(h.거리), h }));
-    const 민간: 표시_항목[] = 민간_분만_목록.map((m) => ({ kind: '민간', id: m.id, 거리: m.거리, h: m.h }));
+    const 민간: 표시_항목[] = 민간_목록.map((m) => ({ kind: '민간', id: m.h.id, 거리: m.거리, h: m.h }));
     return [...공공, ...민간].sort((a, b) => (a.거리 ?? Infinity) - (b.거리 ?? Infinity));
-  }, [hospital_list, 민간_분만_목록]);
+  }, [hospital_list, 민간_목록]);
 
   const 보조_지점: 보조_지도_지점[] = useMemo(
     () =>
-      민간_분만_목록
-        .filter((m) => m.h.위도 !== null && m.h.경도 !== null && m.h.좌표_정밀도)
+      민간_목록
+        .filter((m) => m.h.위도 !== null && m.h.경도 !== null)
         .map((m) => ({
-          id: m.id,
+          id: m.h.id,
           기관명: m.h.기관명,
-          종별: m.h.종별,
+          종별: m.h.종류,
           위도: m.h.위도 as number,
           경도: m.h.경도 as number,
-          좌표_정밀도: m.h.좌표_정밀도 as '주소' | '시군구',
-          설명: `분만 청구 실적 (심평원)${m.h.야간 ? ' · 야간' : ''}`,
+          좌표_정밀도: m.h.근사 ? '시군구' : '주소',
+          설명: m.h.설명,
         })),
-    [민간_분만_목록]
+    [민간_목록]
   );
 
   const active_target = selected_extra_id ? selected_hospital : selected_hospital || hospital_list[0] || null;
@@ -315,10 +360,10 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="w-10 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mb-1" />
           <div className="flex items-center justify-between w-full px-4 text-xs">
             <span className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-              {selected_service === 'delivery' ? (
+              {외부_원본.length > 0 ? (
                 <span>
-                  내 주변 분만 가능 의료기관 <strong>{표시_목록.length}</strong>개소
-                  <span className="font-normal text-slate-500"> (공공 {hospital_list.length} · 민간 {민간_분만_목록.length})</span>
+                  내 주변 {selected_service === 'delivery' ? '분만 가능 의료기관' : '응급의료기관'} <strong>{표시_목록.length}</strong>개소
+                  <span className="font-normal text-slate-500"> (공공 {hospital_list.length} · 민간 {민간_목록.length})</span>
                 </span>
               ) : (
                 <span>내 주변 공공의료기관 <strong>{hospital_list.length}</strong>개소</span>
@@ -338,10 +383,16 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-300">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <p>
-              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 분만은 <strong>건강보험심사평가원 분만가능 의료기관 목록</strong>(2025.1~2026.4 청구 실적, 공공누리 제1유형)으로, 응급실·소아 등은 <strong>기관 유형·규모로 추정</strong>해 표시합니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
+              병상 수는 <strong>실시간 현황이 아닌 기준 데이터</strong>입니다. 응급실은 <strong>국립중앙의료원 E-Gen 응급의료기관 목록</strong>({응급의료기관_출처.수집일} 수집), 분만은 <strong>건강보험심사평가원 분만가능 의료기관 목록</strong>(2025.1~2026.4 청구 실적, 공공누리 제1유형), 소아 등은 <strong>기관 유형·규모로 추정</strong>해 표시합니다. 방문 전 반드시 전화로 진료 가능 여부를 확인하세요.
               응급 상황에서는 <strong>119</strong>에 연락하세요.
             </p>
           </div>
+          {(selected_service === 'emergency' || selected_service === 'night') && (
+            <div className="p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 text-[11px] text-pink-900 dark:text-pink-200">
+              분홍색 표시는 공공병원 외 응급의료기관입니다(출처: {응급의료기관_출처.기관} {응급의료기관_출처.자료명}, {응급의료기관_출처.수집일} 수집). 위치는 E-Gen 등록 좌표입니다.
+              응급실 가동 상황은 실시간으로 달라지므로 방문 전 응급실에 전화로 확인하세요.
+            </div>
+          )}
           {selected_service === 'delivery' && (
             <div className="p-3 rounded-xl bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900/50 text-[11px] text-pink-900 dark:text-pink-200">
               분홍색 표시는 공공병원 외 분만 청구 실적이 있는 민간 병·의원·조산원입니다(출처: {분만가능_의료기관_출처.기관} {분만가능_의료기관_출처.자료명}).
@@ -374,7 +425,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               if (item.kind === '민간') {
                 const p = item.h;
                 const is_selected = selected_extra_id === item.id;
-                const 근사 = p.좌표_정밀도 === '시군구';
+                const 근사 = p.근사;
                 return (
                   <div
                     key={item.id}
@@ -395,32 +446,30 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                           {item.거리 === null ? '위치 미확인' : `직선 약 ${item.거리.toFixed(1)}km${근사 ? ' (시군구 중심 근사)' : ''}`}
                         </span>
                       </span>
-                      <span className="text-[10px] text-slate-400">
-                        {p.시도} {p.시군구}
-                      </span>
+                      <span className="text-[10px] text-slate-400">{p.지역}</span>
                     </div>
                     <h4 className="text-base font-bold text-slate-900 dark:text-white">{p.기관명}</h4>
                     <div className="flex items-center justify-between gap-2 text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
                       <span>
-                        {p.종별} · 분만 청구 실적 (심평원){p.야간 ? ' · 야간 실적 있음' : ''}
+                        {p.종류} · {p.설명}
                       </span>
                       <span className="text-[10px] px-1.5 py-0.5 rounded bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300 shrink-0">민간</span>
                     </div>
                     <p className="text-[11px] text-slate-400 line-clamp-1">{p.주소}</p>
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <a
-                        href={`tel:${p.전화번호}`}
+                        href={`tel:${p.전화}`}
                         onClick={(e) => e.stopPropagation()}
                         className="py-2 px-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1.5 shadow-xs"
                       >
                         <Phone className="w-3.5 h-3.5" />
-                        <span>전화 걸기 ({p.전화번호})</span>
+                        <span>전화 걸기 ({p.전화})</span>
                       </a>
                       <a
                         href={
                           !근사 && p.위도 !== null && p.경도 !== null
                             ? `https://map.kakao.com/link/to/${encodeURIComponent(p.기관명)},${p.위도},${p.경도}`
-                            : `https://map.kakao.com/link/search/${encodeURIComponent(`${p.기관명} ${p.시군구}`)}`
+                            : `https://map.kakao.com/link/search/${encodeURIComponent(`${p.기관명} ${p.지역}`)}`
                         }
                         target="_blank"
                         rel="noopener noreferrer"

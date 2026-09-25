@@ -158,7 +158,7 @@ export const AI분석_통합_워크스페이스: React.FC<AI분석_통합_워크
                 <span>근거 데이터:</span>
               </span>
               <span className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                226개 시군구 취약지 DB + 5대 법정 지침 코퍼스
+                250개 시군구 진단 DB(헬스맵 2024) + 5대 법정 지침 코퍼스
               </span>
 
               <span className="text-slate-300">|</span>

@@ -235,7 +235,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            전국 226개 시·군·구 및 70개 중진료권 데이터가 매월 1회 정기 검증됩니다.
+            시·군·구 진단 지표는 헬스맵 주제도 2024년 값(250개 시·군·구)이며 자동으로 갱신되지 않습니다.
           </p>
         </div>
         {on_open_guide_modal && (

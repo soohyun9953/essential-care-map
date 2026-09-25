@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { 필수의료_진단_엔진 } from './필수의료_엔진';
+import { 필수의료_진단_엔진, 사업계획서_문안_생성기 } from './필수의료_엔진';
 import { 시군구_원천_데이터 } from './필수의료_타입';
 
 // 모든 분야가 기준을 충족하는(정상) 기본 지역
@@ -114,5 +114,39 @@ describe('필수의료_진단_엔진.calculate_region_statistics', () => {
 
     const 전국 = 필수의료_진단_엔진.calculate_region_statistics(list);
     expect(전국.지역수).toBe(3);
+  });
+});
+
+describe('필수의료_진단_엔진 - 소아 지표 자료 없음(null)', () => {
+  const 소아_없음 = (overrides: Partial<시군구_원천_데이터> = {}) =>
+    정상_지역({ 소아_병상_공급비율: null, 소아_야간휴일_접근성지수: null, ...overrides });
+
+  it('소아 분야는 판정에서 제외되고 근거에 자료 없음이 표기된다', () => {
+    const r = 필수의료_진단_엔진.diagnose_region(소아_없음());
+    expect(r.소아_판정_가능).toBe(false);
+    expect(r.소아취약지역_여부).toBe(false);
+    expect(r.소아_판정근거).toContain('자료 없음');
+    expect(r.종합_취약도_점수).toBe(0);
+  });
+
+  it('종합 점수는 응급·분만 가중치(0.4·0.35)로 재정규화된다', () => {
+    // 응급 점수 = 100*0.7 + 0*0.3 = 70, 분만 점수 0 → 70*0.4/0.75 = 37.3
+    const r = 필수의료_진단_엔진.diagnose_region(소아_없음({ 응급_60분_미도달_인구비율: 100 }));
+    expect(r.종합_취약도_점수).toBe(37.3);
+  });
+
+  it('통계의 소아 평균은 자료가 있는 지역만으로 계산하고, 없으면 null', () => {
+    const 없음 = 필수의료_진단_엔진.diagnose_region(소아_없음());
+    const 있음 = 필수의료_진단_엔진.diagnose_region(정상_지역({ 소아_병상_공급비율: 50 }));
+    expect(필수의료_진단_엔진.calculate_region_statistics([없음]).평균_소아_병상_공급비율).toBeNull();
+    expect(필수의료_진단_엔진.calculate_region_statistics([없음, 있음]).평균_소아_병상_공급비율).toBe(50);
+  });
+
+  it('사업계획서 서술에 소아 수치 대신 자료 없음이 들어간다', () => {
+    const r = 필수의료_진단_엔진.diagnose_region(소아_없음({ 응급_60분_미도달_인구비율: 100 }));
+    const s = 필수의료_진단_엔진.calculate_region_statistics([r]);
+    const n = 사업계획서_문안_생성기.generate_narrative(r, s, s);
+    expect(n.법정기준_충족현황).toContain('【자료 없음】');
+    expect(JSON.stringify(n)).not.toContain('null');
   });
 });

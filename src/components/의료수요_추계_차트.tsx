@@ -168,6 +168,11 @@ export const 의료수요_추계_차트: React.FC<의료수요_추계_차트_속
       </div>
 
       {/* 3. 하단: 이용량 대비 공급량 (RI / CI / 의료공급지수) 분석 모듈 */}
+      {!supply_demand_ratio && (
+        <p className="pt-4 border-t border-black/[0.05] text-[11px] text-[#86868b]">
+          의료공급지수: 자료 없음 (공급 계수로 쓰는 소아 병상 공급비율 실데이터 미확보)
+        </p>
+      )}
       {supply_demand_ratio && (
         <div className="pt-4 border-t border-black/[0.05] space-y-3">
           <div className="flex items-center justify-between">

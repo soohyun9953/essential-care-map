@@ -146,13 +146,13 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
           {active_tab === 'datasets' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-900/40 text-xs text-blue-950 dark:text-blue-200 leading-relaxed">
-                💡 <strong>데이터 출처 안내:</strong> 데이터셋마다 출처와 성격이 다릅니다. 환자 유출입(데이터셋 3)은 원천 엑셀 자료에서 추출한 값이고, 공공의료기관 목록·총 병상은 내장 데이터셋(2024년 기준)입니다.
+                💡 <strong>데이터 출처 안내:</strong> 데이터셋마다 출처와 성격이 다릅니다. 시군구 취약지 진단(데이터셋 1)은 헬스맵 주제도 지표 2024년 값(소아 지표는 자료 없음)이고, 환자 유출입(데이터셋 3)은 원천 엑셀 자료에서 추출한 값이고, 공공의료기관 목록·총 병상은 내장 데이터셋(2024년 기준)입니다.
                 응급실 운영 여부는 국립중앙의료원 E-Gen 「전국 응급의료기관 목록」(2026-09-25 수집, 528개소)을, 분만 가능 여부는 건강보험심사평가원 「분만가능 의료기관 목록」(2025.1~2026.4 청구 실적, 공공누리 제1유형)을, 소아 야간·휴일 진료는 국립중앙의료원 「달빛어린이병원 목록」(2026-09-25 수집, 114곳)을 사용합니다.
                 그 밖의 의료기관별 인력·장비·진료 서비스 운영 여부는 기관 유형·규모 기반 <strong>추정치</strong>이며, 시뮬레이터·대시보드의 일부 수치는 <strong>예시 기본값</strong>입니다. 실시간 연계는 공공데이터포털 응급실 API(선택)만 지원합니다.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 1) 시군구 필수의료 DB (내장 144개 시군구) */}
+                {/* 1) 시군구 필수의료 DB (헬스맵 2024, 250개 시군구) */}
                 <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
@@ -166,13 +166,13 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    시군구 필수의료 지표 데이터셋 (내장 144개 시군구)
+                    시군구 필수의료 지표 데이터셋 (헬스맵 2024년, 250개 시군구)
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>인구수</li>
-                    <li>응급의료: 60분 미도달율(%), 관내 응급 의료이용률(RI, %)</li>
-                    <li>분만취약: 관내 분만율(%), 산부인과 60분 미도달율(%)</li>
-                    <li>소아청소년: 필요 병상 대비 공급비율(%), 야간·휴일 접근성 지수</li>
+                    <li>응급의료: 권역응급 60분 취약인구율(BBB01), 응급의료기관 관내이용률(RI, CBB04)</li>
+                    <li>분만: 분만기관 60분 취약인구율(BBD01), 분만 관내이용률(RI, CBD01)</li>
+                    <li>소아청소년: 실데이터 미확보로 <strong>자료 없음</strong> (판정 제외)</li>
                     <li>종합 취약도 등급(정상/관찰/취약/심각 4단계) 자동 산정</li>
                   </ul>
                 </div>

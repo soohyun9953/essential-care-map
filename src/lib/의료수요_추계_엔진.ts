@@ -87,7 +87,9 @@ export class 의료수요_추계_엔진 {
   /**
    * 지역의 입원 의료이용량 대비 의료제공량(CI, RI, 의료공급지수) 분석 산출 함수
    */
-  public static calculate_supply_demand_ratio(region: 필수의료_진단_결과): 이용량_대비_공급량_지표 {
+  public static calculate_supply_demand_ratio(region: 필수의료_진단_결과): 이용량_대비_공급량_지표 | null {
+    // 공급 계수로 쓰는 소아 병상 공급비율이 없으면 산출하지 않음
+    if (region.소아_병상_공급비율 === null) return null;
     const pop = region.인구수;
     // 인구당 평균 입원의료이용량 (약 2.8일/인)
     const total_usage = Math.round(pop * 2.85);

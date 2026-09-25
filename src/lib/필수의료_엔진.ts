@@ -85,11 +85,15 @@ export class 필수의료_진단_엔진 {
       delivery_reason = `관내 분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 기준치 미달`;
     }
 
-    // 3. 소아·중증진료 취약지 판정: 병상 공급 비율 < 60%
-    const is_pediatric_vulnerable = raw_data.소아_병상_공급비율 < 60;
-    let pediatric_reason = '기준 충족 (정상)';
+    // 3. 소아·중증진료 취약지 판정: 병상 공급 비율 < 60% (플랫폼 기준)
+    //    소아 지표 실데이터가 없으면(null) 소아 분야는 판정·점수에서 제외
+    const 소아_병상 = raw_data.소아_병상_공급비율;
+    const 소아_접근 = raw_data.소아_야간휴일_접근성지수;
+    const 소아_판정_가능 = 소아_병상 !== null && 소아_병상 !== undefined;
+    const is_pediatric_vulnerable = 소아_판정_가능 && (소아_병상 as number) < 60;
+    let pediatric_reason = 소아_판정_가능 ? '기준 충족 (정상)' : '자료 없음 (소아 지표 실데이터 미확보로 판정 제외)';
     if (is_pediatric_vulnerable) {
-      pediatric_reason = `기준 병상 대비 공급 비율(${raw_data.소아_병상_공급비율.toFixed(1)}% < 60%) 심각 미달`;
+      pediatric_reason = `기준 병상 대비 공급 비율(${(소아_병상 as number).toFixed(1)}% < 60%) 심각 미달`;
     }
 
     // 4. 취약분야 개수 산정
@@ -101,8 +105,15 @@ export class 필수의료_진단_엔진 {
     // 5. 종합 취약도 점수 계산 (0~100점, 높을수록 취약)
     const emergency_score = Math.min(100, Math.max(0, raw_data.응급_60분_미도달_인구비율 * 0.7 + (100 - raw_data.관내_응급_의료이용률) * 0.3));
     const delivery_score = Math.min(100, Math.max(0, raw_data.분만_60분_미도달_인구비율 * 0.6 + (100 - raw_data.관내_분만율) * 0.4));
-    const pediatric_score = Math.min(100, Math.max(0, (100 - raw_data.소아_병상_공급비율) * 0.7 + (100 - raw_data.소아_야간휴일_접근성지수) * 0.3));
-    const total_vulnerability_score = Math.round((emergency_score * 0.4 + delivery_score * 0.35 + pediatric_score * 0.25) * 10) / 10;
+    // 소아 자료가 없으면 응급·분만 가중치(0.4 : 0.35)만으로 재정규화
+    const total_vulnerability_score = 소아_판정_가능
+      ? Math.round(
+          (emergency_score * 0.4 +
+            delivery_score * 0.35 +
+            Math.min(100, Math.max(0, (100 - (소아_병상 as number)) * 0.7 + (100 - (소아_접근 ?? 0)) * 0.3)) * 0.25) *
+            10
+        ) / 10
+      : Math.round(((emergency_score * 0.4 + delivery_score * 0.35) / 0.75) * 10) / 10;
 
     // 6. 종합 취약도 4단계 등급 결정
     let final_grade: 취약도_등급 = '정상';
@@ -133,6 +144,7 @@ export class 필수의료_진단_엔진 {
       응급취약지역_여부: is_emergency_vulnerable,
       분만취약지역_여부: is_delivery_vulnerable,
       소아취약지역_여부: is_pediatric_vulnerable,
+      소아_판정_가능,
 
       취약분야_수: vulnerable_count,
       종합_취약도_등급: final_grade,
@@ -172,8 +184,8 @@ export class 필수의료_진단_엔진 {
         평균_관내_응급_의료이용률: 0,
         평균_분만_60분_미도달_인구비율: 0,
         평균_관내_분만율: 0,
-        평균_소아_병상_공급비율: 0,
-        평균_소아_야간휴일_접근성지수: 0,
+        평균_소아_병상_공급비율: null,
+        평균_소아_야간휴일_접근성지수: null,
         응급취약지역_비율: 0,
         분만취약지역_비율: 0,
         소아취약지역_비율: 0,
@@ -185,8 +197,9 @@ export class 필수의료_진단_엔진 {
     const sum_emergency_ri = filtered_list.reduce((acc, cur) => acc + cur.관내_응급_의료이용률, 0);
     const sum_delivery_unreach = filtered_list.reduce((acc, cur) => acc + cur.분만_60분_미도달_인구비율, 0);
     const sum_delivery_rate = filtered_list.reduce((acc, cur) => acc + cur.관내_분만율, 0);
-    const sum_pediatric_bed = filtered_list.reduce((acc, cur) => acc + cur.소아_병상_공급비율, 0);
-    const sum_pediatric_access = filtered_list.reduce((acc, cur) => acc + cur.소아_야간휴일_접근성지수, 0);
+    // 소아 지표는 자료가 있는 지역만 평균 (없으면 null)
+    const 소아_자료 = filtered_list.filter((cur) => cur.소아_판정_가능);
+    const 평균 = (vals: number[]) => (vals.length ? Number((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1)) : null);
 
     const emergency_vulnerable_count = filtered_list.filter((item) => item.응급취약지역_여부).length;
     const delivery_vulnerable_count = filtered_list.filter((item) => item.분만취약지역_여부).length;
@@ -200,11 +213,11 @@ export class 필수의료_진단_엔진 {
       평균_관내_응급_의료이용률: Number((sum_emergency_ri / total_count).toFixed(1)),
       평균_분만_60분_미도달_인구비율: Number((sum_delivery_unreach / total_count).toFixed(1)),
       평균_관내_분만율: Number((sum_delivery_rate / total_count).toFixed(1)),
-      평균_소아_병상_공급비율: Number((sum_pediatric_bed / total_count).toFixed(1)),
-      평균_소아_야간휴일_접근성지수: Number((sum_pediatric_access / total_count).toFixed(1)),
+      평균_소아_병상_공급비율: 평균(소아_자료.map((c) => c.소아_병상_공급비율 as number)),
+      평균_소아_야간휴일_접근성지수: 평균(소아_자료.map((c) => (c.소아_야간휴일_접근성지수 ?? 0) as number)),
       응급취약지역_비율: Number(((emergency_vulnerable_count / total_count) * 100).toFixed(1)),
       분만취약지역_비율: Number(((delivery_vulnerable_count / total_count) * 100).toFixed(1)),
-      소아취약지역_비율: Number(((pediatric_vulnerable_count / total_count) * 100).toFixed(1)),
+      소아취약지역_비율: 소아_자료.length ? Number(((pediatric_vulnerable_count / 소아_자료.length) * 100).toFixed(1)) : 0,
     };
   }
 }
@@ -247,16 +260,20 @@ export class 사업계획서_문안_생성기 {
   ○ (3대 필수의료 취약 영역)
     - 응급의료: ${target_region.응급취약지역_여부 ? '【취약】 ' + target_region.응급_판정근거 : '【적정】 법정 기준 충족'}
     - 분만·모자: ${target_region.분만취약지역_여부 ? '【취약】 ' + target_region.분만_판정근거 : '【적정】 법정 기준 충족'}
-    - 소아·중증: ${target_region.소아취약지역_여부 ? '【취약】 ' + target_region.소아_판정근거 : '【적정】 법정 기준 충족'}`;
+    - 소아·중증: ${!target_region.소아_판정_가능 ? '【자료 없음】 소아 지표 실데이터 미확보로 판정 제외' : target_region.소아취약지역_여부 ? '【취약】 ' + target_region.소아_판정근거 : '【적정】 법정 기준 충족'}`;
 
     // 3. 모자·소아 인프라 결핍
     const delivery_reach_gap = (target_region.분만_60분_미도달_인구비율 - national_stat.평균_분만_60분_미도달_인구비율).toFixed(1);
-    const pediatric_bed_ratio = sido_stat.평균_소아_병상_공급비율 > 0
-      ? Math.round((target_region.소아_병상_공급비율 / sido_stat.평균_소아_병상_공급비율) * 100)
-      : 100;
+    const 소아_병상 = target_region.소아_병상_공급비율;
+    const 소아_야간 = target_region.소아_야간휴일_접근성지수;
+    const 시도_소아_병상 = sido_stat.평균_소아_병상_공급비율;
+    const pediatric_text =
+      소아_병상 === null || 소아_야간 === null
+        ? '  ○ (소아 야간·휴일 진료) 소아 병상 공급비율·야간휴일 접근성 지표는 실데이터를 확보하지 못해 본 진단에서 제외함 (자료 없음).'
+        : `  ○ (소아 야간·휴일 진료 공백) 기준 병상 대비 소아 병상 공급 비율이 ${소아_병상.toFixed(1)}% (시·도 평균 대비 ${시도_소아_병상 ? Math.round((소아_병상 / 시도_소아_병상) * 100) : 100}%), 야간/휴일 진료 접근성 지수가 ${소아_야간.toFixed(1)}점에 그쳐 심야 소아 응급 진료체계의 전면적인 공공 인프라 보강이 불가피함.`;
 
     const maternal_child_text = `  ○ (모자·분만 인프라 붕괴 위기) 관내 분만실 60분 내 미도달 인구 비율이 ${target_region.분만_60분_미도달_인구비율.toFixed(1)}%로 전국 평균 대비 +${delivery_reach_gap}%p 격차를 보이며, 관내 자체 분만율은 ${target_region.관내_분만율.toFixed(1)}%에 불과하여 원정 출산에 따른 산모·신생아 안전사고 위험 가중.
-  ○ (소아 야간·휴일 진료 공백) 기준 병상 대비 소아 병상 공급 비율이 ${target_region.소아_병상_공급비율.toFixed(1)}% (시·도 평균 대비 ${pediatric_bed_ratio}%), 야간/휴일 진료 접근성 지수가 ${target_region.소아_야간휴일_접근성지수.toFixed(1)}점에 그쳐 심야 소아 응급 진료체계의 전면적인 공공 인프라 보강이 불가피함.`;
+${pediatric_text}`;
 
     // 4. 종합 건의 및 사업 추진 당위성
     const conclusion_text = `  ○ (공공보건의료 지원체계 구축 당위성) 상기 분석 결과, ${full_region_name}은 3대 필수의료 영역 중 ${target_region.취약분야_수}개 분야에서 기준치를 심각하게 미달하는 취약지로 공식 진단됨.

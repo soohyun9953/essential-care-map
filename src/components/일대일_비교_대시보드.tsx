@@ -359,12 +359,12 @@ export const 일대일_비교_대시보드: React.FC<일대일_비교_대시보�
             <div className="bg-[#f5f5f7] p-3.5 rounded-2.5xl border border-black/[0.03]">
               <span className="text-[#86868b] text-[11px]">소아 병상 공급비율</span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-sm font-bold text-[#0071e3]">{selected_region.소아_병상_공급비율}%</span>
+                <span className="text-sm font-bold text-[#0071e3]">{selected_region.소아_병상_공급비율 === null ? '자료 없음' : `${selected_region.소아_병상_공급비율}%`}</span>
                 <span className="text-xs text-[#86868b]">vs</span>
-                <span className="text-sm font-bold text-[#ff9500]">{region_comparison.지역B.소아_병상_공급비율}%</span>
+                <span className="text-sm font-bold text-[#ff9500]">{region_comparison.지역B.소아_병상_공급비율 === null ? '자료 없음' : `${region_comparison.지역B.소아_병상_공급비율}%`}</span>
               </div>
               <div className="text-[10px] text-[#86868b] mt-1 pt-1 border-t border-black/[0.04]">
-                격차: {region_comparison.소아_병상_격차 > 0 ? `+${region_comparison.소아_병상_격차}%p` : `${region_comparison.소아_병상_격차}%p`}
+                격차: {region_comparison.소아_병상_격차 === null ? '산출 불가 (자료 없음)' : region_comparison.소아_병상_격차 > 0 ? `+${region_comparison.소아_병상_격차}%p` : `${region_comparison.소아_병상_격차}%p`}
               </div>
             </div>
           </div>

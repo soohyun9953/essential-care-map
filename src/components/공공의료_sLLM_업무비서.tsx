@@ -367,9 +367,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           google_api_key: google_api_key,
           region_name: region_name,
           region_stats: {
-            emergency_rate: selected_region?.응급_60분_미도달_인구비율 ?? 68.2,
-            ri_rate: selected_region?.관내_응급_의료이용률 ?? 19.8,
-            maternity_rate: selected_region?.관내_분만율 ?? 15.2,
+            emergency_rate: selected_region?.응급_60분_미도달_인구비율 ?? 99.2,
+            ri_rate: selected_region?.관내_응급_의료이용률 ?? 31.2,
+            maternity_rate: selected_region?.관내_분만율 ?? 6.4,
             vulnerability_grade: selected_region?.종합_취약도_등급 ?? '심각',
           },
           rag_context: gemini_rag_text,
@@ -526,13 +526,13 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           </div>
           <div className="flex items-center space-x-2 text-[11px] text-slate-600 dark:text-slate-400 flex-wrap">
             <span className="bg-white dark:bg-[#252528] px-2.5 py-1 rounded-lg border border-slate-200/80 dark:border-white/[0.08] shadow-2xs text-slate-700 dark:text-slate-200">
-              응급 60분 미도달: <strong className="text-red-600 dark:text-red-400">{selected_region?.응급_60분_미도달_인구비율 ?? 68.2}%</strong>
+              응급 60분 미도달: <strong className="text-red-600 dark:text-red-400">{selected_region?.응급_60분_미도달_인구비율 ?? 99.2}%</strong>
             </span>
             <span className="bg-white dark:bg-[#252528] px-2.5 py-1 rounded-lg border border-slate-200/80 dark:border-white/[0.08] shadow-2xs text-slate-700 dark:text-slate-200">
-              관내 RI(자체충족): <strong className="text-amber-600 dark:text-amber-400">{selected_region?.관내_응급_의료이용률 ?? 19.8}%</strong>
+              관내 RI(자체충족): <strong className="text-amber-600 dark:text-amber-400">{selected_region?.관내_응급_의료이용률 ?? 31.2}%</strong>
             </span>
             <span className="bg-white dark:bg-[#252528] px-2.5 py-1 rounded-lg border border-slate-200/80 dark:border-white/[0.08] shadow-2xs text-slate-700 dark:text-slate-200">
-              관내 분만율: <strong className="text-indigo-600 dark:text-indigo-400">{selected_region?.관내_분만율 ?? 15.2}%</strong>
+              관내 분만율: <strong className="text-indigo-600 dark:text-indigo-400">{selected_region?.관내_분만율 ?? 6.4}%</strong>
             </span>
             <span className="text-slate-400 dark:text-slate-600">|</span>
             <span className="text-slate-600 dark:text-slate-300">🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>

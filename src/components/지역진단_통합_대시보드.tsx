@@ -30,6 +30,7 @@ import {
 } from '@/lib/필수의료_타입';
 import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { format_number_comma } from '@/lib/유틸리티';
+import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { 지도_래퍼 } from './지도_래퍼';
 
 interface 지역진단_통합_대시보드_속성 {
@@ -91,6 +92,10 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   }, [diagnosed_list, selected_region]);
 
   const active_region = selected_region || diagnosed_list[0] || null;
+  const region_resources = useMemo(
+    () => (active_region ? 지역_의료자원_집계(active_region.시도명, active_region.시군구명, active_region.시군구코드) : null),
+    [active_region]
+  );
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
@@ -112,7 +117,8 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               </h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 관내 인구: <strong>{format_number_comma(active_region.인구수)}</strong>명 • 
-                법정 취약 분야 <strong>{active_region.취약분야_수}</strong>/3개 판정
+                법정 취약 분야 <strong>{active_region.취약분야_수}</strong>/{active_region.소아_판정_가능 ? 3 : 2}개 판정
+                {!active_region.소아_판정_가능 && <span className="text-slate-400"> (소아 자료 없음)</span>}
               </p>
             </div>
 
@@ -121,8 +127,10 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               {/* 종합 취약도 */}
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
                 <span className="text-[11px] font-semibold text-slate-500">종합 취약도</span>
-                <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-red-600 dark:text-red-400">
-                  <span>🔴</span>
+                <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
+                  { 심각: 'text-red-600 dark:text-red-400', 취약: 'text-orange-600 dark:text-orange-400', 관찰: 'text-amber-600 dark:text-amber-400', 정상: 'text-emerald-600 dark:text-emerald-400' }[active_region.종합_취약도_등급]
+                }`}>
+                  <span>{{ 심각: '🔴', 취약: '🟠', 관찰: '🟡', 정상: '🟢' }[active_region.종합_취약도_등급]}</span>
                   <span>{active_region.종합_취약도_등급}</span>
                 </span>
               </div>
@@ -152,20 +160,28 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               {/* 소아 */}
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
                 <span className="text-[11px] font-semibold text-slate-500">소아 진료</span>
-                <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
-                  active_region.소아취약지역_여부 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
-                }`}>
-                  <span>{active_region.소아취약지역_여부 ? '🟠' : '🟢'}</span>
-                  <span>{active_region.소아취약지역_여부 ? '주의' : '양호'}</span>
-                </span>
+                {active_region.소아_판정_가능 ? (
+                  <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
+                    active_region.소아취약지역_여부 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
+                  }`}>
+                    <span>{active_region.소아취약지역_여부 ? '🟠' : '🟢'}</span>
+                    <span>{active_region.소아취약지역_여부 ? '주의' : '양호'}</span>
+                  </span>
+                ) : (
+                  <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-slate-400">
+                    <span>⚪</span>
+                    <span>자료 없음</span>
+                  </span>
+                )}
               </div>
 
               {/* 의료인력 */}
               <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
                 <span className="text-[11px] font-semibold text-slate-500">의료 인력</span>
-                <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-amber-600 dark:text-amber-400">
-                  <span>🟠</span>
-                  <span>부족</span>
+                {/* 시군구 단위 의료인력 실데이터가 없어 판정하지 않음 */}
+                <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-slate-400">
+                  <span>⚪</span>
+                  <span>자료 없음</span>
                 </span>
               </div>
             </div>
@@ -184,7 +200,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Filter className="w-3.5 h-3.5 text-blue-600" />
-                <span>226개 시·군·구 취약지 목록</span>
+                <span>시·군·구 취약지 목록 (헬스맵 2024)</span>
               </span>
               <span className="text-[11px] text-slate-400 font-semibold">
                 총 {filtered_regions.length}개소
@@ -330,7 +346,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                 </li>
                 <li className="flex justify-between">
                   <span>소아 야간휴일 접근성지수:</span>
-                  <strong className="text-amber-600">{active_region.소아_야간휴일_접근성지수}점</strong>
+                  <strong className="text-amber-600">{active_region.소아_야간휴일_접근성지수 === null ? '자료 없음' : `${active_region.소아_야간휴일_접근성지수}점`}</strong>
                 </li>
               </ul>
             </div>
@@ -343,42 +359,61 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               </div>
               <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
                 <p>
-                  <strong>① 응급 골든타임 취약:</strong> 관내 응급의료센터 부재로 고위험 중증환자의 타 시도 유출률이 높음.
+                  <strong>① 응급:</strong> {active_region.응급_판정근거}
                 </p>
                 <p>
-                  <strong>② 분만실 공급 결핍:</strong> 관내 분만 산부인과 부재로 60분 내 분만실 접근이 불가능한 가임기 여성이 과반 이상.
+                  <strong>② 분만:</strong> {active_region.분만_판정근거}
                 </p>
                 <p>
-                  <strong>③ 소아 야간 진료 공백:</strong> 야간 및 휴일 달빛어린이병원 미운영으로 심야 소아 진료 공백 발생.
+                  <strong>③ 소아:</strong> {active_region.소아_판정근거}
                 </p>
               </div>
             </div>
 
             {/* ③ 의료자원 현황 */}
+            {region_resources && (
             <div className="p-5 rounded-3xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
                 <span className="text-xs font-bold text-slate-900 dark:text-white">③ 보유 의료자원</span>
-                <span className="text-[10px] font-semibold text-slate-400">공공/민간 합산</span>
+                <span className="text-[10px] font-semibold text-slate-400">기관 목록 집계</span>
               </div>
               <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5">
-                <li className="flex justify-between">
-                  <span>총 입원 병상수:</span>
-                  <strong>{Math.round(active_region.인구수 * 0.008)}병상</strong>
+                <li className="flex justify-between gap-2">
+                  <span className="shrink-0">공공의료기관:</span>
+                  <strong className="text-right">
+                    {region_resources.공공의료기관_수 > 0
+                      ? `${region_resources.공공의료기관_수}곳 · ${format_number_comma(region_resources.공공의료기관_병상)}병상`
+                      : '없음'}
+                  </strong>
                 </li>
-                <li className="flex justify-between">
-                  <span>중환자실(ICU) 병상:</span>
-                  <strong className="text-amber-600">8병상 (가용 2석)</strong>
+                <li className="flex justify-between gap-2">
+                  <span className="shrink-0">응급의료기관:</span>
+                  <strong className={`text-right ${region_resources.응급의료기관.length === 0 ? 'text-red-600' : ''}`}>
+                    {region_resources.응급의료기관.length > 0
+                      ? `${region_resources.응급의료기관.length}곳 (${Array.from(new Set(region_resources.응급의료기관.map((h) => h.분류))).join(', ')})`
+                      : '없음'}
+                  </strong>
                 </li>
-                <li className="flex justify-between">
-                  <span>응급실 운영 형태:</span>
-                  <strong>지역응급의료기관 (24시간)</strong>
+                <li className="flex justify-between gap-2">
+                  <span className="shrink-0">분만 가능 기관:</span>
+                  <strong className={`text-right ${region_resources.분만기관_수 === 0 ? 'text-red-600' : ''}`}>
+                    {region_resources.분만기관_수 > 0
+                      ? `${region_resources.분만기관_수}곳 (야간 ${region_resources.야간분만기관_수}곳)`
+                      : '없음'}
+                  </strong>
                 </li>
-                <li className="flex justify-between">
-                  <span>분만실 / 소아 입원실:</span>
-                  <strong className="text-red-600">분만실 없음 / 소아 4병상</strong>
+                <li className="flex justify-between gap-2">
+                  <span className="shrink-0">달빛어린이병원:</span>
+                  <strong className="text-right">
+                    {region_resources.달빛어린이병원_수 > 0 ? `${region_resources.달빛어린이병원_수}곳` : '없음'}
+                  </strong>
                 </li>
               </ul>
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                출처: 공공의료기관 데이터셋, E-Gen 응급의료기관 목록, 심평원 분만가능 의료기관 목록(청구 실적), 국립중앙의료원 달빛어린이병원 목록. 2026년 행정구역 개편 지역(인천 중·동·서구 등)은 새 구역이 겹쳐 집계될 수 있습니다. 중환자실·소아 병상은 시군구 단위 자료가 없어 표시하지 않습니다.
+              </p>
             </div>
+            )}
 
             {/* ④ 유사 지역 비교 */}
             <div className="p-5 rounded-3xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">

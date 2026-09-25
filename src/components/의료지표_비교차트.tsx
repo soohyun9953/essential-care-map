@@ -79,6 +79,7 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
     return { v2019, v2024, diff };
   }, [time_series_chart_data]);
 
+  const 소아_자료_있음 = selected_region.소아_병상_공급비율 !== null;
   const radar_data = [
     {
       subject: '응급 도달성',
@@ -116,7 +117,7 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
       시도평균: sido_stat.평균_소아_야간휴일_접근성지수,
       전국평균: national_stat.평균_소아_야간휴일_접근성지수,
     },
-  ];
+  ].filter((d) => 소아_자료_있음 || !d.subject.startsWith('소아'));
 
   const bar_data = [
     {
@@ -155,7 +156,7 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
       시도평균: sido_stat.평균_소아_야간휴일_접근성지수,
       전국평균: national_stat.평균_소아_야간휴일_접근성지수,
     },
-  ];
+  ].filter((d) => 소아_자료_있음 || !d.name.startsWith('소아'));
 
   // 하단 요약 지표 데이터
   const summary_items = [
@@ -197,8 +198,8 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
     },
     {
       label: '소아 병상공급',
-      value: selected_region.소아_병상_공급비율.toFixed(1),
-      sido: sido_stat.평균_소아_병상_공급비율.toFixed(1),
+      value: selected_region.소아_병상_공급비율?.toFixed(1) ?? '자료 없음',
+      sido: sido_stat.평균_소아_병상_공급비율?.toFixed(1) ?? '자료 없음',
       unit: '%',
       color: '#ff3b30',
       bg: 'bg-[#ff3b30]/[0.05]',
@@ -206,8 +207,8 @@ export const 의료지표_비교차트: React.FC<의료지표_비교차트_속�
     },
     {
       label: '소아 야간휴일',
-      value: selected_region.소아_야간휴일_접근성지수.toFixed(1),
-      sido: sido_stat.평균_소아_야간휴일_접근성지수.toFixed(1),
+      value: selected_region.소아_야간휴일_접근성지수?.toFixed(1) ?? '자료 없음',
+      sido: sido_stat.평균_소아_야간휴일_접근성지수?.toFixed(1) ?? '자료 없음',
       unit: '',
       color: '#5e5ce6',
       bg: 'bg-[#5e5ce6]/[0.05]',

@@ -80,7 +80,7 @@ const SIX_MAIN_CATEGORIES: 사이드바_대메뉴[] = [
         id: 'gis_map',
         label: 'GIS 헬스맵 & 취약지 DB',
         icon: MapPin,
-        desc: '중진료권 지도 & 226개 시군구 진단',
+        desc: '중진료권 지도 & 250개 시군구 진단',
       },
       {
         id: 'diagnosis_metrics',
@@ -558,7 +558,7 @@ export const 메인_사이드바_네비게이션: React.FC<메인_사이드바_�
             <button
               onClick={on_load_sample_data}
               className="p-2 rounded-xl bg-white border border-black/[0.06] hover:bg-slate-100 text-slate-600 transition"
-              title="샘플 데이터 초기화"
+              title="기본 데이터(헬스맵 2024)로 초기화"
             >
               <RefreshCw className="w-4 h-4" />
             </button>

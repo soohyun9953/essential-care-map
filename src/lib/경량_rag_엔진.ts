@@ -140,9 +140,9 @@ export class 경량_RAG_엔진 {
     const top_score = retrieved_chunks[0]?.유사도_점수 || 0;
 
     const region_name = region ? `${region.시도명} ${region.시군구명}` : '강원특별자치도 영월군';
-    const emergency_rate = region?.응급_60분_미도달_인구비율 ?? 68.2;
-    const ri_rate = region?.관내_응급_의료이용률 ?? 19.8;
-    const maternity_rate = region?.관내_분만율 ?? 15.2;
+    const emergency_rate = region?.응급_60분_미도달_인구비율 ?? 99.2;
+    const ri_rate = region?.관내_응급_의료이용률 ?? 31.2;
+    const maternity_rate = region?.관내_분만율 ?? 6.4;
 
     // 검색된 실제 근거 조항들을 조합하여 답변 생성
     const primary_source = top_chunk

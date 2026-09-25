@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       query,
       google_api_key,
       region_name = '강원특별자치도 영월군',
-      region_stats = { emergency_rate: 68.2, ri_rate: 19.8, maternity_rate: 15.2, vulnerability_grade: '심각' },
+      region_stats = { emergency_rate: 99.2, ri_rate: 31.2, maternity_rate: 6.4, vulnerability_grade: '심각' },
       rag_context = '',
       gemini_rag_context,
       local_rag_context,

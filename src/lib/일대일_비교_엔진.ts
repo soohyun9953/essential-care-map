@@ -264,7 +264,7 @@ export interface 지역_비교_결과 {
   응급_미도달_격차: number;
   응급_RI_격차: number;
   분만_미도달_격차: number;
-  소아_병상_격차: number;
+  소아_병상_격차: number | null; // 두 지역 중 하나라도 자료가 없으면 null
   종합_비교_시사점: string;
 }
 
@@ -317,7 +317,10 @@ export class 일대일_비교_엔진 {
     const emg_unreach_diff = Math.round((region_a.응급_60분_미도달_인구비율 - region_b.응급_60분_미도달_인구비율) * 10) / 10;
     const emg_ri_diff = Math.round((region_a.관내_응급_의료이용률 - region_b.관내_응급_의료이용률) * 10) / 10;
     const deliv_unreach_diff = Math.round((region_a.분만_60분_미도달_인구비율 - region_b.분만_60분_미도달_인구비율) * 10) / 10;
-    const ped_diff = Math.round((region_a.소아_병상_공급비율 - region_b.소아_병상_공급비율) * 10) / 10;
+    const ped_diff =
+      region_a.소아_병상_공급비율 === null || region_b.소아_병상_공급비율 === null
+        ? null
+        : Math.round((region_a.소아_병상_공급비율 - region_b.소아_병상_공급비율) * 10) / 10;
 
     let insight_text = '';
     if (region_a.종합_취약도_점수 > region_b.종합_취약도_점수) {

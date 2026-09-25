@@ -591,9 +591,11 @@ export class 중진료권_매퍼 {
       const avg_delivery_rate = count > 0
         ? matched_regions.reduce((acc, cur) => acc + cur.관내_분만율, 0) / count
         : 0;
-      const avg_pediatric_supply = count > 0
-        ? matched_regions.reduce((acc, cur) => acc + cur.소아_병상_공급비율, 0) / count
-        : 0;
+      // 소아 지표는 자료가 있는 시군구만 평균 (없으면 null)
+      const 소아_자료 = matched_regions.filter((r) => typeof r.소아_병상_공급비율 === 'number');
+      const avg_pediatric_supply = 소아_자료.length > 0
+        ? 소아_자료.reduce((acc, cur) => acc + cur.소아_병상_공급비율, 0) / 소아_자료.length
+        : null;
       const avg_score = count > 0
         ? matched_regions.reduce((acc, cur) => acc + cur.종합_취약도_점수, 0) / count
         : 0;

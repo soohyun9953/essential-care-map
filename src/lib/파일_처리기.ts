@@ -175,19 +175,20 @@ export class 파일_처리기 {
       );
 
       // 소아중증 지표 매핑
-      const pediatric_bed = Number(
+      // 소아 지표 열이 없거나 빈 값이면 임의 기본값 대신 null (진단에서 제외)
+      const 선택_숫자 = (v: unknown): number | null =>
+        v === undefined || v === null || String(v).trim() === '' || isNaN(Number(v)) ? null : Number(v);
+      const pediatric_bed = 선택_숫자(
         row['소아_병상_공급비율'] ??
         row['소아병상공급비율'] ??
         row['소아병상비율'] ??
-        row['pediatric_bed'] ??
-        80
+        row['pediatric_bed']
       );
-      const pediatric_access = Number(
+      const pediatric_access = 선택_숫자(
         row['소아_야간휴일_접근성지수'] ??
         row['소아야간휴일접근성'] ??
         row['야간휴일접근성'] ??
-        row['pediatric_access'] ??
-        70
+        row['pediatric_access']
       );
 
       result_list.push({

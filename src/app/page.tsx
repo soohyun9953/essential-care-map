@@ -16,7 +16,7 @@ import {
   지역_평균_통계,
 } from '@/lib/필수의료_타입';
 import { 필수의료_진단_엔진 } from '@/lib/필수의료_엔진';
-import { 전국_시군구_샘플_데이터 } from '@/lib/시군구_데이터셋';
+import { 전국_시군구_진단_데이터 } from '@/lib/시군구_데이터셋';
 import { export_element_as_png } from '@/lib/유틸리티';
 
 // 5대 Global Workspace 컴포넌트
@@ -72,7 +72,7 @@ export default function Home() {
   const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
 
   // 전역 데이터셋 및 선택된 지역
-  const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_샘플_데이터);
+  const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_진단_데이터);
   const [diagnosed_list, set_diagnosed_list] = useState<필수의료_진단_결과[]>([]);
   const [selected_region, set_selected_region] = useState<필수의료_진단_결과 | null>(null);
 

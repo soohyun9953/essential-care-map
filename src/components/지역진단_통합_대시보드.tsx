@@ -100,8 +100,63 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
       {/* ============================================================== */}
+      {/* 0. Journey 진행 배너 (현재: 01 지역 진단)                          */}
+      {/* ============================================================== */}
+      <div className="bg-white dark:bg-[#15161b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* 좌측: 현재 단계 표시 */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5">
+            <div className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
+              01
+            </div>
+            <div>
+              <div className="text-xs font-black text-blue-700 dark:text-blue-400">지역 진단 (현재 단계)</div>
+              <div className="text-[10px] text-slate-500 leading-tight">필수의료 취약도 분석 및 GIS 시각화</div>
+            </div>
+          </div>
+          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
+            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 flex items-center justify-center text-[10px] font-black">02</div>
+            <div className="text-[10px] font-semibold">지역 비교</div>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-1 text-slate-300">
+            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
+            <div className="text-[10px] font-semibold text-slate-400">수요 예측</div>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
+          <div className="hidden sm:flex items-center gap-1 text-slate-300">
+            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
+            <div className="text-[10px] font-semibold text-slate-400">AI 정책기획</div>
+          </div>
+        </div>
+
+        {/* 우측: 다음 단계 CTA */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-[10px] text-slate-400 hidden sm:block">진단 후 다음 단계:</span>
+          <button
+            type="button"
+            onClick={() => on_navigate_policy('compare')}
+            className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer border border-indigo-200 dark:border-indigo-800"
+          >
+            <span>02 지역 비교</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+          <button
+            type="button"
+            onClick={() => on_navigate_policy('policy_ai')}
+            className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800"
+          >
+            <span>04 AI 정책기획</span>
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {/* ============================================================== */}
       {/* 1. 상단 핵심 종합 진단 바 (Section 6) */}
       {/* ============================================================== */}
+
       {active_region && (
         <div className="bg-white dark:bg-[#15161b] rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

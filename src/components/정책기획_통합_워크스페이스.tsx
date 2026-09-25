@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRight,
+  ChevronRight,
   Download,
   Copy,
   Sliders,
@@ -25,6 +26,7 @@ import {
   Edit3,
   Users,
 } from 'lucide-react';
+
 import { 필수의료_진단_결과, 지역_평균_통계 } from '@/lib/필수의료_타입';
 import { format_number_comma } from '@/lib/유틸리티';
 import { 일대일_비교_대시보드 } from './일대일_비교_대시보드';
@@ -98,11 +100,104 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       ]
     : [];
 
+  // Journey 배너: 현재 탭에 따른 단계 번호 매핑
+  const tab_to_step: Record<string, { step: string; title: string }> = {
+    compare:   { step: '02', title: '지역 비교' },
+    forecast:  { step: '03', title: '수요 예측' },
+    policy_ai: { step: '04', title: 'AI 정책기획' },
+    report:    { step: '05', title: '사업계획서' },
+  };
+  const current_step = tab_to_step[active_tab] ?? { step: '04', title: 'AI 정책기획' };
+
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
       {/* ============================================================== */}
+      {/* 0. Journey 진행 배너 (현재 단계 동적 표시)                         */}
+      {/* ============================================================== */}
+      <div className="bg-white dark:bg-[#15161b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* 좌측: 단계 흐름 */}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* 01 지역진단 (완료) */}
+          <div className="flex items-center gap-1.5 text-slate-400">
+            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">✓</div>
+            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">01 지역진단</span>
+          </div>
+          <ChevronRight className="w-3 h-3 text-slate-300 hidden sm:block shrink-0" />
+
+          {/* 현재 활성 탭에 따른 현재 단계 */}
+          <div className="flex items-center gap-1.5">
+            <div className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
+              {current_step.step}
+            </div>
+            <div>
+              <div className="text-xs font-black text-blue-700 dark:text-blue-400">{current_step.title} (현재 단계)</div>
+              <div className="text-[10px] text-slate-500 leading-tight">
+                {active_tab === 'compare' && '유사 지역과 의료 인프라 격차 비교'}
+                {active_tab === 'forecast' && '2030년 의료수요 변화 예측'}
+                {active_tab === 'policy_ai' && 'AI 기반 정책대안 3개 도출'}
+                {active_tab === 'report' && '표준 사업계획서 자동 생성'}
+              </div>
+            </div>
+          </div>
+
+          {/* 다음 단계들 (회색) */}
+          {active_tab !== 'report' && (
+            <>
+              <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block shrink-0" />
+              {active_tab === 'compare' && (
+                <div className="hidden sm:flex items-center gap-1 text-slate-400">
+                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
+                  <span className="text-[10px] font-semibold">수요 예측</span>
+                </div>
+              )}
+              {(active_tab === 'compare' || active_tab === 'forecast') && (
+                <div className="hidden sm:flex items-center gap-1 text-slate-400">
+                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
+                  <span className="text-[10px] font-semibold">AI 정책기획</span>
+                </div>
+              )}
+              {/* 05 사업계획서 - 항상 표시 (상위 조건에서 이미 report 제외) */}
+              <div className="hidden sm:flex items-center gap-1 text-slate-400">
+                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">05</div>
+                <span className="text-[10px] font-semibold">사업계획서</span>
+              </div>
+
+            </>
+          )}
+        </div>
+
+        {/* 우측: 다음 단계 CTA */}
+        <div className="flex items-center gap-2 shrink-0">
+          {active_tab === 'compare' && (
+            <button type="button" onClick={() => setActive_tab('forecast')}
+              className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-bold text-xs hover:bg-amber-100 transition flex items-center gap-1 cursor-pointer border border-amber-200 dark:border-amber-800">
+              <span>03 수요 예측</span><ArrowRight className="w-3 h-3" />
+            </button>
+          )}
+          {active_tab === 'forecast' && (
+            <button type="button" onClick={() => setActive_tab('policy_ai')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800">
+              <span>04 AI 정책기획</span><ArrowRight className="w-3 h-3" />
+            </button>
+          )}
+          {active_tab === 'policy_ai' && (
+            <button type="button" onClick={() => setActive_tab('report')}
+              className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold text-xs hover:bg-purple-100 transition flex items-center gap-1 cursor-pointer border border-purple-200 dark:border-purple-800">
+              <span>05 사업계획서</span><ArrowRight className="w-3 h-3" />
+            </button>
+          )}
+          {active_tab === 'report' && (
+            <span className="px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
+              <span>✓ Journey 완료</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ============================================================== */}
       {/* 1. 상단 워크스페이스 서브탭 네비게이션 */}
       {/* ============================================================== */}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-1.5 flex-wrap">
           <button

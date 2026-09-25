@@ -61,6 +61,8 @@ import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰�
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
+import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
+
 import { API키_불러오기 } from '@/lib/API키_저장소';
 
 export default function Home() {
@@ -82,7 +84,9 @@ export default function Home() {
   const [is_upload_modal_open, set_is_upload_modal_open] = useState(false);
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
   const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
+  const [is_admin_dashboard_open, set_is_admin_dashboard_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
+
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
 
   // 테마 상태
@@ -233,6 +237,7 @@ export default function Home() {
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
         on_open_grounding_modal={() => set_is_grounding_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
+        on_open_admin_dashboard={() => set_is_admin_dashboard_open(true)}
         on_download_nmc_excel={handle_download_nmc_excel}
         on_export_capture={handle_export_report_png}
         is_dark_mode={is_dark_mode}
@@ -354,6 +359,18 @@ export default function Home() {
         is_open={is_guide_modal_open}
         on_close={() => set_is_guide_modal_open(false)}
         on_navigate={handle_guide_navigate}
+      />
+
+      {/* 관리자 전용 통제센터 (데이터·품질·보안 통합 관리) 모달 */}
+      <관리자_통합_모달
+        is_open={is_admin_dashboard_open}
+        on_close={() => set_is_admin_dashboard_open(false)}
+        is_gemini_connected={!!google_api_key}
+        gemini_key_count={google_api_key ? 1 : 0}
+        data_go_kr_key_registered={!!data_go_kr_api_key}
+        on_open_gemini_modal={() => set_is_key_modal_open(true)}
+        on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
+        on_open_guide_modal={() => set_is_guide_modal_open(true)}
       />
     </main>
   );

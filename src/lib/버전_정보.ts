@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260926',
-  semver: '1.1.2',
-  fullLabel: '20260926 버전 1.1.2',
-  packageVersion: '20260926-v1.1.2',
+  semver: '1.1.3',
+  fullLabel: '20260926 버전 1.1.3',
+  packageVersion: '20260926-v1.1.3',
   updatedAt: '2026-09-26',
-  changelog: 'P2 UI/UX 전면 개선: Section 9 GIS Layer 7대 체크박스 패널, Section 10 취약요인 상세원인 인터랙션, Section 11/15 Journey 하단 연결 CTA, Section 12 & 13 1:1 지역비교 대시보드 및 주요격차 자동분석, Section 14 2030 의료수요 증감률 차트, Section 16~18 3단 AI 정책기획 Workspace',
+  changelog: 'P3 UI/UX 전면 개선 완료: Section 19 사업계획서 12대 필수 항목 검토·편집 폼 및 액션 바, Section 20 5대 KPI 산출기준 툴팁 및 데이터 기준 배너, Section 21 & 22 관리자 전용 통제센터 모달(데이터/AI/품질/보안 통합 관리), P1~P3 공공의료 정책 의사결정 지원 플랫폼 완성',
 };

@@ -53,7 +53,9 @@ interface 글로벌_공공_헤더_속성 {
   on_open_upload_modal: () => void;
   on_open_grounding_modal: () => void;
   on_open_guide_modal?: () => void;
+  on_open_admin_dashboard?: () => void;
   on_download_nmc_excel?: () => void;
+
   on_export_capture?: () => void;
   google_key_registered?: boolean;
   google_api_key_registered?: boolean;
@@ -77,6 +79,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   on_open_upload_modal,
   on_open_grounding_modal,
   on_open_guide_modal,
+  on_open_admin_dashboard,
   on_download_nmc_excel,
   on_export_capture,
   google_key_registered,
@@ -341,6 +344,21 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                     </div>
                   </div>
 
+                  {/* Section 22 표준: 관리자 대시보드 통합 모달 트리거 */}
+                  <button
+                    onClick={() => {
+                      on_open_admin_dashboard?.();
+                      set_is_admin_open(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 text-left transition mb-1.5 shadow-xs cursor-pointer font-bold"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <ShieldCheck className="w-3.5 h-3.5 text-blue-400 dark:text-blue-600" />
+                      <span>관리자 통합 대시보드</span>
+                    </div>
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-600 text-white dark:bg-blue-600">통제센터</span>
+                  </button>
+
                   <button
                     onClick={() => {
                       on_open_guide_modal?.();
@@ -348,6 +366,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                     }}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-blue-50/60 dark:bg-blue-950/40 hover:bg-blue-100/60 dark:hover:bg-blue-900/40 text-left transition mb-1 border border-blue-200/50 dark:border-blue-900/50"
                   >
+
                     <div className="flex items-center space-x-2">
                       <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                       <span className="text-blue-900 dark:text-blue-200 font-bold">데이터·사업가이드 총람</span>

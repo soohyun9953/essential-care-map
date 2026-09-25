@@ -22,7 +22,9 @@ import {
   ExternalLink,
   ChevronRight,
   Filter,
+  Info,
 } from 'lucide-react';
+
 import {
   필수의료_진단_결과,
   지도_시각화_모드,
@@ -57,6 +59,10 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
 
   // Section 10: '왜?' 취약요인 클릭 시 상세 분석 팝오버 상태
   const [selected_factor, setSelected_factor] = useState<'응급' | '분만' | '소아' | null>(null);
+
+  // Section 20: KPI 산출 기준 ⓘ 팝오버 상태
+  const [active_kpi_tooltip, setActive_kpi_tooltip] = useState<string | null>(null);
+
 
 
   // 시도 목록 추출
@@ -181,44 +187,102 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               </p>
             </div>
 
-            {/* 4대 분야별 취약도 신호등 캡슐 바 (Section 6) */}
+            {/* 4대 분야별 취약도 신호등 캡슐 바 (Section 6 & Section 20 KPI ⓘ 툴팁 지원) */}
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
               {/* 종합 취약도 */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-                <span className="text-[11px] font-semibold text-slate-500">종합 취약도</span>
+              <div className="relative p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">종합 취약도</span>
+                  <button
+                    type="button"
+                    onClick={() => setActive_kpi_tooltip(active_kpi_tooltip === '종합' ? null : '종합')}
+                    className="text-slate-400 hover:text-blue-600 cursor-pointer p-0.5"
+                    title="산출 기준 보기"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </div>
                 <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
                   { 심각: 'text-red-600 dark:text-red-400', 취약: 'text-orange-600 dark:text-orange-400', 관찰: 'text-amber-600 dark:text-amber-400', 정상: 'text-emerald-600 dark:text-emerald-400' }[active_region.종합_취약도_등급]
                 }`}>
                   <span>{{ 심각: '🔴', 취약: '🟠', 관찰: '🟡', 정상: '🟢' }[active_region.종합_취약도_등급]}</span>
                   <span>{active_region.종합_취약도_등급}</span>
                 </span>
+                {active_kpi_tooltip === '종합' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
+                    <p className="font-bold text-amber-300">■ 종합 취약도 산출 기준</p>
+                    <p className="text-slate-300 leading-tight">응급·분만·소아 3대 법정 분야 중 2개 이상 취약 시 &apos;심각&apos;, 1개 취약 시 &apos;주의/취약&apos; 판정.</p>
+                  </div>
+                )}
               </div>
 
               {/* 응급 */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-                <span className="text-[11px] font-semibold text-slate-500">응급 의료</span>
+              <div className="relative p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">응급 의료</span>
+                  <button
+                    type="button"
+                    onClick={() => setActive_kpi_tooltip(active_kpi_tooltip === '응급' ? null : '응급')}
+                    className="text-slate-400 hover:text-blue-600 cursor-pointer p-0.5"
+                    title="산출 기준 보기"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </div>
                 <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
                   active_region.응급취약지역_여부 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
                 }`}>
                   <span>{active_region.응급취약지역_여부 ? '🔴' : '🟢'}</span>
                   <span>{active_region.응급취약지역_여부 ? '취약' : '양호'}</span>
                 </span>
+                {active_kpi_tooltip === '응급' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
+                    <p className="font-bold text-red-300">■ 응급의료 취약지 기준</p>
+                    <p className="text-slate-300 leading-tight">권역응급센터 60분 미도달 인구비율 30% 이상 및 관내 응급이용률(RI) 30% 미만.</p>
+                  </div>
+                )}
               </div>
 
               {/* 분만 */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-                <span className="text-[11px] font-semibold text-slate-500">분만 인프라</span>
+              <div className="relative p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">분만 인프라</span>
+                  <button
+                    type="button"
+                    onClick={() => setActive_kpi_tooltip(active_kpi_tooltip === '분만' ? null : '분만')}
+                    className="text-slate-400 hover:text-blue-600 cursor-pointer p-0.5"
+                    title="산출 기준 보기"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </div>
                 <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
                   active_region.분만취약지역_여부 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
                 }`}>
                   <span>{active_region.분만취약지역_여부 ? '🔴' : '🟢'}</span>
                   <span>{active_region.분만취약지역_여부 ? '취약' : '양호'}</span>
                 </span>
+                {active_kpi_tooltip === '분만' && (
+                  <div className="absolute top-full left-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
+                    <p className="font-bold text-orange-300">■ 분만취약지 고시 기준</p>
+                    <p className="text-slate-300 leading-tight">분만산부인과 60분 미도달 인구비율 30% 이상 및 관내분만율 30% 미만.</p>
+                  </div>
+                )}
               </div>
 
               {/* 소아 */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-                <span className="text-[11px] font-semibold text-slate-500">소아 진료</span>
+              <div className="relative p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">소아 진료</span>
+                  <button
+                    type="button"
+                    onClick={() => setActive_kpi_tooltip(active_kpi_tooltip === '소아' ? null : '소아')}
+                    className="text-slate-400 hover:text-blue-600 cursor-pointer p-0.5"
+                    title="산출 기준 보기"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </div>
                 {active_region.소아_판정_가능 ? (
                   <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
                     active_region.소아취약지역_여부 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
@@ -232,21 +296,53 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                     <span>자료 없음</span>
                   </span>
                 )}
+                {active_kpi_tooltip === '소아' && (
+                  <div className="absolute top-full right-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
+                    <p className="font-bold text-amber-300">■ 소아 진료 취약 기준</p>
+                    <p className="text-slate-300 leading-tight">소아청소년과 야간·휴일 진료기관 접근성지표 및 달빛어린이병원 접근도 기준.</p>
+                  </div>
+                )}
               </div>
 
               {/* 의료인력 */}
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
-                <span className="text-[11px] font-semibold text-slate-500">의료 인력</span>
-                {/* 시군구 단위 의료인력 실데이터가 없어 판정하지 않음 */}
+              <div className="relative p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-slate-500">의료 인력</span>
+                  <button
+                    type="button"
+                    onClick={() => setActive_kpi_tooltip(active_kpi_tooltip === '인력' ? null : '인력')}
+                    className="text-slate-400 hover:text-blue-600 cursor-pointer p-0.5"
+                    title="산출 기준 보기"
+                  >
+                    <Info className="w-3 h-3" />
+                  </button>
+                </div>
                 <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-slate-400">
                   <span>⚪</span>
                   <span>자료 없음</span>
                 </span>
+                {active_kpi_tooltip === '인력' && (
+                  <div className="absolute top-full right-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
+                    <p className="font-bold text-slate-300">■ 의료인력 기준</p>
+                    <p className="text-slate-300 leading-tight">시·군·구 단위 활동의사수 및 전문의 수 (지자체별 공식 통계 확보 시 제공).</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
+
+          {/* Section 20 표준: 데이터 기준 공식 명시 배너 */}
+          <div className="p-3.5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-blue-900 dark:text-blue-300">
+            <div className="flex items-center gap-2">
+              <Info className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="font-bold">데이터 기준 고지:</span>
+              <span>기준년도 <strong>2024년</strong> • 대상 <strong>전국 250개 시·군·구</strong> • 출처 <strong>공공보건의료통계 / 헬스맵 2024</strong></span>
+            </div>
+            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">최종 갱신: 2026-09-26 (v1.1.2)</span>
+          </div>
         </div>
       )}
+
 
       {/* ============================================================== */}
       {/* 2. 35:65 양방향 진단 지도 및 시군구 목록 패널 (Section 7, 8, 9) */}

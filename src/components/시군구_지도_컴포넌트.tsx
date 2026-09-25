@@ -126,28 +126,53 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
     ? get_region_location(selected_region.시군구명, selected_region.시도명)
     : null;
 
+  // Section 9 표준 GIS 멀티 레이어 체크박스 토글 상태
+  const [active_gis_layers, set_active_gis_layers] = useState<{
+    hospitals: boolean;       // 의료기관
+    emergency: boolean;       // 응급의료기관
+    delivery: boolean;        // 분만기관
+    pediatric: boolean;       // 소아의료기관
+    vulnerable_zone: boolean; // 의료취약지역
+    population: boolean;      // 인구
+    accessibility: boolean;   // 접근성
+  }>({
+    hospitals: true,
+    emergency: true,
+    delivery: false,
+    pediatric: false,
+    vulnerable_zone: true,
+    population: false,
+    accessibility: false,
+  });
+
+  const [is_layer_panel_open, set_is_layer_panel_open] = useState(false);
+
+  const toggle_layer = (key: keyof typeof active_gis_layers) => {
+    set_active_gis_layers((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <div className="relative w-full h-full min-h-[580px] bg-[#eef0f3] rounded-3xl overflow-hidden border border-black/[0.05] shadow-apple-card flex flex-col">
       {/* 애플 스타일 플로팅 컨트롤러 (지역 단위 및 시각화 모드) */}
-      <div className="absolute top-4 left-4 z-[400] flex flex-wrap items-center gap-2">
+      <div className="absolute top-4 left-4 z-[400] flex flex-wrap items-center gap-2 max-w-[calc(100%-2rem)]">
         {/* 단위 스위처: 시군구 vs 중진료권 */}
-        <div className="bg-white/90 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1">
+        <div className="bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1">
           <button
             onClick={() => on_change_region_unit('시군구')}
-            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
               region_unit === '시군구'
-                ? 'bg-[#0071e3] text-white shadow-apple-sm'
-                : 'text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'bg-blue-600 text-white shadow-apple-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             시·군·구 (250)
           </button>
           <button
             onClick={() => on_change_region_unit('중진료권')}
-            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 ${
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer ${
               region_unit === '중진료권'
-                ? 'bg-[#0071e3] text-white shadow-apple-sm'
-                : 'text-[#86868b] hover:text-[#1d1d1f]'
+                ? 'bg-blue-600 text-white shadow-apple-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             중진료권 (70)
@@ -155,15 +180,15 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
         </div>
 
         {/* 7대 지표 레이어 스위처 (Section 7) */}
-        <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] flex items-center space-x-1 flex-wrap">
+        <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1 flex-wrap">
           {([
             { id: '종합취약도', label: '취약도' },
             { id: '응급의료', label: '응급' },
             { id: '분만모자', label: '분만' },
             { id: '소아중증', label: '소아' },
-            { id: '의료인력', label: '의료인력' },
+            { id: '의료인력', label: '인력' },
             { id: '병상인프라', label: '병상' },
-            { id: '공공의료기관', label: '공공의료기관' },
+            { id: '공공의료기관', label: '공공병원' },
           ] as { id: 지도_시각화_모드; label: string }[]).map((mode) => (
             <button
               key={mode.id}
@@ -179,17 +204,74 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
           ))}
         </div>
 
+        {/* Section 9 표준: GIS Layer On/Off 체크박스 패널 트리거 */}
+        <div className="relative">
+          <button
+            onClick={() => set_is_layer_panel_open(!is_layer_panel_open)}
+            className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-apple-glass border border-black/[0.06] dark:border-slate-800 ${
+              is_layer_panel_open
+                ? 'bg-blue-600 text-white'
+                : 'bg-white/95 dark:bg-[#15161b]/95 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <span>GIS Layer 설정</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300">
+              {Object.values(active_gis_layers).filter(Boolean).length}
+            </span>
+          </button>
+
+          {/* Layer 체크박스 드롭다운 (Section 9) */}
+          {is_layer_panel_open && (
+            <div className="absolute top-full left-0 mt-2 w-56 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 text-xs space-y-2 z-[500] animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
+                <span className="font-bold text-slate-900 dark:text-white">GIS 레이어 On/Off</span>
+                <span className="text-[10px] text-slate-400">즉시 지도 반영</span>
+              </div>
+              <div className="space-y-1.5">
+                {[
+                  { key: 'hospitals', label: '의료기관', desc: '공공병원 및 주요병원' },
+                  { key: 'emergency', label: '응급의료기관', desc: '권역·지역응급센터' },
+                  { key: 'delivery', label: '분만기관', desc: '분만실 보유 기관' },
+                  { key: 'pediatric', label: '소아의료기관', desc: '달빛어린이병원 등' },
+                  { key: 'vulnerable_zone', label: '의료취약지역', desc: '법정 취약지 색상' },
+                  { key: 'population', label: '인구 밀도', desc: '인구 규모 표시' },
+                  { key: 'accessibility', label: '접근성 (골든타임)', desc: '60분 미도달 영역' },
+                ].map(({ key, label, desc }) => {
+                  const isChecked = active_gis_layers[key as keyof typeof active_gis_layers];
+                  return (
+                    <label
+                      key={key}
+                      className="flex items-start gap-2 p-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => toggle_layer(key as keyof typeof active_gis_layers)}
+                        className="mt-0.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <div className="leading-tight">
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{label}</div>
+                        <div className="text-[10px] text-slate-400">{desc}</div>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* 환자 이동선(Flow Arc) 레이어 토글 스위치 */}
         <button
           onClick={() => set_show_flow_arcs(!show_flow_arcs)}
-          className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 ${
+          className={`px-3 py-1 text-xs font-semibold rounded-full transition-all duration-200 flex items-center gap-1.5 cursor-pointer ${
             show_flow_arcs
               ? 'bg-rose-500 text-white shadow-apple-sm'
-              : 'bg-white/90 backdrop-blur-xl text-[#86868b] hover:text-[#1d1d1f] border border-black/[0.06]'
+              : 'bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 border border-black/[0.06] dark:border-slate-800'
           }`}
           title="선택된 지자체의 환자 유출입 공간 네트워크 곡선(Arc) 표시"
         >
-          <span>환자 이동선(Arc)</span>
+          <span>환자 이동선</span>
           <span
             className={`w-1.5 h-1.5 rounded-full ${
               show_flow_arcs ? 'bg-white animate-pulse' : 'bg-slate-300'
@@ -197,6 +279,7 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
           />
         </button>
       </div>
+
 
       {/* React-Leaflet 지도 컨테이너 */}
       <div className="flex-1 w-full h-full relative" id="gis-map-canvas-container">

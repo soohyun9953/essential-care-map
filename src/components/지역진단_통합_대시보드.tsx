@@ -55,6 +55,10 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   const [filter_grade, set_filter_grade] = useState<string>('전체');
   const [filter_sido, set_filter_sido] = useState<string>('전체');
 
+  // Section 10: '왜?' 취약요인 클릭 시 상세 분석 팝오버 상태
+  const [selected_factor, setSelected_factor] = useState<'응급' | '분만' | '소아' | null>(null);
+
+
   // 시도 목록 추출
   const sido_list = useMemo(() => {
     const set = new Set(diagnosed_list.map((d) => d.시도명));
@@ -406,22 +410,86 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               </ul>
             </div>
 
-            {/* ② 취약 원인 */}
+            {/* ② Section 10 표준: 주요 취약요인 ("왜?" 분석 - 클릭 시 상세분석) */}
             <div className="p-5 rounded-3xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">② 취약 원인 분석</span>
-                <span className="text-[10px] font-semibold text-slate-400">법정 판정 근거</span>
+                <div>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white">② 주요 취약요인 (&apos;왜?&apos; 분석)</span>
+                  <span className="text-[10px] text-slate-400 block">항목을 클릭하면 원인 상세 분석이 펼쳐집니다</span>
+                </div>
+                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-full">
+                  3대 요인
+                </span>
               </div>
-              <div className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 leading-relaxed">
-                <p>
-                  <strong>① 응급:</strong> {active_region.응급_판정근거}
-                </p>
-                <p>
-                  <strong>② 분만:</strong> {active_region.분만_판정근거}
-                </p>
-                <p>
-                  <strong>③ 소아:</strong> {active_region.소아_판정근거}
-                </p>
+              <div className="space-y-2">
+                {[
+                  {
+                    id: '응급' as const,
+                    rank: '①',
+                    title: '응급의료 접근성',
+                    summary: '응급의료기관까지 평균 이동시간 및 60분 미도달율 높음',
+                    detail: active_region.응급_판정근거,
+                    metric: `60분 미도달 ${active_region.응급_60분_미도달_인구비율}%, 관내이용률 ${active_region.관내_응급_의료이용률}%`,
+                    isWeak: active_region.응급취약지역_여부,
+                  },
+                  {
+                    id: '분만' as const,
+                    rank: '②',
+                    title: '분만 의료공백',
+                    summary: '분만 가능 의료기관 부족으로 산모 관외유출 심화',
+                    detail: active_region.분만_판정근거,
+                    metric: `60분 미도달 ${active_region.분만_60분_미도달_인구비율}%, 관내분만율 ${active_region.관내_분만율}%`,
+                    isWeak: active_region.분만취약지역_여부,
+                  },
+                  {
+                    id: '소아' as const,
+                    rank: '③',
+                    title: '소아 및 전문인력',
+                    summary: '지역 내 야간·휴일 소아진료 및 전문의 공급 부족',
+                    detail: active_region.소아_판정근거,
+                    metric: active_region.소아_야간휴일_접근성지수 !== null ? `접근성지수 ${active_region.소아_야간휴일_접근성지수}점` : '자료 없음 (소아 실데이터 미확보)',
+                    isWeak: active_region.소아취약지역_여부,
+                  },
+                ].map((factor) => {
+                  const isOpened = selected_factor === factor.id;
+                  return (
+                    <div
+                      key={factor.id}
+                      onClick={() => setSelected_factor(isOpened ? null : factor.id)}
+                      className={`p-2.5 rounded-2xl border transition-all cursor-pointer ${
+                        isOpened
+                          ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/30 ring-1 ring-blue-500/20'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-blue-700 dark:text-blue-400 text-xs">{factor.rank}</span>
+                          <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{factor.title}</span>
+                          {factor.isWeak && (
+                            <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300">취약</span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-blue-600 font-semibold">{isOpened ? '접기 ▲' : '상세 ▼'}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 pl-4 leading-tight">
+                        {factor.summary}
+                      </div>
+
+                      {/* 클릭 시 상세 분석 펼침 */}
+                      {isOpened && (
+                        <div className="mt-2.5 pt-2 border-t border-blue-200/50 dark:border-blue-900/50 pl-4 space-y-1 text-[11px] text-slate-700 dark:text-slate-300 animate-in fade-in">
+                          <div className="font-semibold text-blue-900 dark:text-blue-300">
+                            • 주요 지표: <span className="font-normal text-slate-600 dark:text-slate-400">{factor.metric}</span>
+                          </div>
+                          <div>
+                            • 판정 근거: <span className="text-slate-600 dark:text-slate-400">{factor.detail}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -568,8 +636,34 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
               </div>
             </div>
           </div>
+
+          {/* ============================================================== */}
+          {/* Section 11 표준: 지역 진단 ➔ 지역 비교 연결 대형 CTA 배너           */}
+          {/* ============================================================== */}
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#15161b] border-2 border-indigo-200 dark:border-indigo-900/60 shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="space-y-1 text-center sm:text-left">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 text-xs font-bold">
+                <span>다음 단계 Journey · 02 지역 비교</span>
+              </div>
+              <h4 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                {active_region.시군구명}의 취약 원인을 유사 지자체와 1:1로 정밀 비교하시겠습니까?
+              </h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                동일 취약 등급 및 인구 규모의 유사 권역과 인프라 격차 및 의료인력·병상 공급을 대조 분석합니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => on_navigate_policy('compare')}
+              className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md transition active:scale-95 cursor-pointer flex items-center gap-2 shrink-0"
+            >
+              <span>유사 지역과 비교하기</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 };
+

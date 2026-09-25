@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260926',
-  semver: '1.1.1',
-  fullLabel: '20260926 버전 1.1.1',
-  packageVersion: '20260926-v1.1.1',
+  semver: '1.1.2',
+  fullLabel: '20260926 버전 1.1.2',
+  packageVersion: '20260926-v1.1.2',
   updatedAt: '2026-09-26',
-  changelog: 'UI/UX 전면 개선: 5단계 정책 Journey Stepper, 홈 Hero 및 미리보기 카드, 지역진단·정책기획 Journey 배너(다음 단계 CTA), 헤더 API 상태 관리자 전용 이동, 네비게이션 단계 번호 표시',
+  changelog: 'P2 UI/UX 전면 개선: Section 9 GIS Layer 7대 체크박스 패널, Section 10 취약요인 상세원인 인터랙션, Section 11/15 Journey 하단 연결 CTA, Section 12 & 13 1:1 지역비교 대시보드 및 주요격차 자동분석, Section 14 2030 의료수요 증감률 차트, Section 16~18 3단 AI 정책기획 Workspace',
 };

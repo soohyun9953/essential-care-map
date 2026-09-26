@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260926',
-  semver: '1.1.3',
-  fullLabel: '20260926 버전 1.1.3',
-  packageVersion: '20260926-v1.1.3',
+  semver: '1.1.4',
+  fullLabel: '20260926 버전 1.1.4',
+  packageVersion: '20260926-v1.1.4',
   updatedAt: '2026-09-26',
-  changelog: 'P3 UI/UX 전면 개선 완료: Section 19 사업계획서 12대 필수 항목 검토·편집 폼 및 액션 바, Section 20 5대 KPI 산출기준 툴팁 및 데이터 기준 배너, Section 21 & 22 관리자 전용 통제센터 모달(데이터/AI/품질/보안 통합 관리), P1~P3 공공의료 정책 의사결정 지원 플랫폼 완성',
+  changelog: '데이터 사업가이드 정합성 완료: 가이드 안내 모달과 실제 프로그램 취급 데이터(250개 시군구, 228개 유출입, 214개 공공병원, 12대 항목 사업계획서, 5대 핵심 산식, 7대 정부 지침) 100% 동기화',
 };

@@ -159,7 +159,7 @@ export default function Home() {
       return;
     }
 
-    // 226개 시군구 매칭
+    // 250개 시군구 매칭
     const matched = diagnosed_list.find(
       (item) => item.시군구명.includes(trimmed) || item.시도명.includes(trimmed)
     );

@@ -62,6 +62,8 @@ import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_�
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
+import { IspProvider, PersonaInfo } from '@/context/ISP_컨텍스트';
+import { ISP_과제_드로어 } from '@/components/ISP_과제_드로어';
 
 import { API키_불러오기 } from '@/lib/API키_저장소';
 
@@ -226,9 +228,20 @@ export default function Home() {
     await export_element_as_png('main-workspace-content', filename);
   };
 
+  // 페르소나 변경 시 추천 워크스페이스 및 서브탭 딥링크 핸들러
+  const handle_persona_change = (personaInfo: PersonaInfo) => {
+    set_current_workspace(personaInfo.focusWorkspace);
+    if (personaInfo.focusWorkspace === 'policy_planning' && personaInfo.focusSubtab) {
+      set_policy_subtab(personaInfo.focusSubtab as any);
+    } else if (personaInfo.focusWorkspace === 'medical_institution' && personaInfo.focusSubtab) {
+      set_medical_subtab(personaInfo.focusSubtab as any);
+    }
+  };
+
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
-      {/* 1. 최상단 글로벌 공공 헤더 (5대 워크스페이스 통합 네비게이션) */}
+    <IspProvider onPersonaChange={handle_persona_change}>
+      <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
+        {/* 1. 최상단 글로벌 공공 헤더 (5대 워크스페이스 통합 네비게이션) */}
       <글로벌_공공_헤더
         active_workspace={current_workspace}
         on_change_workspace={(ws) => set_current_workspace(ws)}
@@ -372,6 +385,10 @@ export default function Home() {
         on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
       />
+
+      {/* ISP 개선과제 우측 슬라이딩 드로어 (과제 3.8 / 3.4 / 3.3 / 3.10 상세) */}
+      <ISP_과제_드로어 />
     </main>
+  </IspProvider>
   );
 }

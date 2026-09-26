@@ -32,6 +32,8 @@ import { format_number_comma } from '@/lib/유틸리티';
 import { 일대일_비교_대시보드 } from './일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from './의료수요_추계_차트';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
+import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 // 대용량 데이터셋(주제도 지표·환자 유출입·지표정의 코퍼스)을 쓰는 탭은 진입 시점에 지연 로딩
 const 의료지표_비교차트 = dynamic(
@@ -232,63 +234,70 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       {/* ============================================================== */}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
-        <div className="flex items-center gap-1.5 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setActive_tab('policy_ai')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'policy_ai'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>정책대안 검토 (3대 유형)</span>
+            <span>04 정책대안 검토</span>
+            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
           </button>
 
           <button
             onClick={() => setActive_tab('report')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'report'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>사업계획서 자동생성</span>
+            <span>05 12대 항목 사업계획서</span>
+            <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
           </button>
 
           <button
             onClick={() => setActive_tab('compare')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'compare'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <GitCompare className="w-3.5 h-3.5" />
-            <span>유사 지자체 1:1 비교</span>
+            <span>02 1:1 지역 비교</span>
+            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
           </button>
 
           <button
             onClick={() => setActive_tab('forecast')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'forecast'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>2030 의료수요 추계</span>
+            <span>03 2030 수요추계</span>
+            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 px-2">
+        <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0">
           <span>분석 대상:</span>
           <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
             {selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '지역 미선택'}
           </span>
         </div>
       </div>
+
+      {/* As-Is vs To-Be 활성 탭별 비교 배너 */}
+      <AsIs_비교_배너 target={active_tab === 'report' ? 'report' : active_tab === 'compare' ? 'diagnosis' : 'general'} />
 
       {/* ============================================================== */}
       {/* 2. TAB 1: AI 정책기획 Workspace (Section 16, 17, 18 3단 구조)      */}

@@ -21,6 +21,8 @@ import {
   Building2,
 } from 'lucide-react';
 import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
+import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 interface 공공의료_결정지도_홈_속성 {
   on_search_region: (region_name: string) => void;
@@ -45,6 +47,8 @@ const JOURNEY_STEPS = [
     workspace: 'regional_diagnosis' as const,
     sub: undefined,
     color: 'blue',
+    taskId: '3.8',
+    taskLabel: '과제 3.8 헬스맵 고도화',
   },
   {
     step: '02',
@@ -53,6 +57,8 @@ const JOURNEY_STEPS = [
     workspace: 'policy_planning' as const,
     sub: 'compare',
     color: 'indigo',
+    taskId: '3.8',
+    taskLabel: '과제 3.8 헬스맵 고도화',
   },
   {
     step: '03',
@@ -61,6 +67,8 @@ const JOURNEY_STEPS = [
     workspace: 'policy_planning' as const,
     sub: 'forecast',
     color: 'amber',
+    taskId: '3.8',
+    taskLabel: '과제 3.8 AI 의사결정',
   },
   {
     step: '04',
@@ -69,6 +77,8 @@ const JOURNEY_STEPS = [
     workspace: 'policy_planning' as const,
     sub: 'policy_ai',
     color: 'emerald',
+    taskId: '3.8',
+    taskLabel: '과제 3.8 AI 의사결정',
   },
   {
     step: '05',
@@ -77,6 +87,8 @@ const JOURNEY_STEPS = [
     workspace: 'policy_planning' as const,
     sub: 'report',
     color: 'purple',
+    taskId: '3.4',
+    taskLabel: '과제 3.4 기능보강 PMS',
   },
 ];
 
@@ -207,6 +219,9 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* 2. 정책분석 Journey Stepper (5단계 연결 흐름)                         */}
       {/* ================================================================== */}
       <div className="space-y-4">
+        {/* As-Is vs To-Be 인텔리전스 비교 배너 */}
+        <AsIs_비교_배너 target="general" />
+
         <div className="flex items-center gap-2 px-1">
           <div className="w-1 h-5 rounded-full bg-blue-700" />
           <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책분석 Journey · 5단계 의사결정 흐름</span>
@@ -227,14 +242,19 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   key={step.step}
                   type="button"
                   onClick={() => { set_active_step(idx); handle_step_click(step); }}
-                  className={`flex flex-col items-center gap-3 p-4 rounded-2xl border bg-white dark:bg-[#15161b] transition-all cursor-pointer group
+                  className={`flex flex-col items-center gap-2.5 p-3.5 sm:p-4 rounded-2xl border bg-white dark:bg-[#15161b] transition-all cursor-pointer group text-center
                     ${isActive
                       ? `border-${step.color}-400 shadow-lg ring-2 ${colors.ring}/30`
                       : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
                     }`}
                 >
+                  {/* 상단 ISP 개선과제 태그 뱃지 */}
+                  <div className="w-full flex justify-center">
+                    <ISP_과제_뱃지 taskId={step.taskId} customLabel={step.taskLabel} />
+                  </div>
+
                   {/* 단계 번호 원 */}
-                  <div className={`w-11 h-11 rounded-full flex items-center justify-center font-black text-base border-2 transition-all
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all
                     ${isActive
                       ? `${colors.bg} text-white border-transparent shadow-md`
                       : `bg-slate-50 dark:bg-slate-900 ${colors.text} border-slate-200 dark:border-slate-700 group-hover:${colors.bg} group-hover:text-white group-hover:border-transparent`
@@ -243,7 +263,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   </div>
 
                   {/* 단계 제목 */}
-                  <div className="text-center space-y-1">
+                  <div className="space-y-1">
                     <div className={`text-sm font-bold ${isActive ? colors.text : 'text-slate-800 dark:text-slate-200'}`}>
                       {step.title}
                     </div>
@@ -356,15 +376,16 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                     01 지역 진단
                   </span>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
+                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">필수의료 현황 진단</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   응급·분만·소아 취약도와 GIS 레이어로 관내 의료자원을 확인합니다.
                 </p>
               </div>
-              <div className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center gap-1 group-hover:underline">
+              <div className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between group-hover:underline">
                 <span>진단 대시보드 열기</span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
 
@@ -378,15 +399,16 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
                     02 지역 비교
                   </span>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
+                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">유사 지자체 1:1 비교</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   인근 권역 및 동일 규모 지자체와 필수의료 인프라 격차를 비교합니다.
                 </p>
               </div>
-              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center gap-1 group-hover:underline">
+              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center justify-between group-hover:underline">
                 <span>비교 분석 시작</span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
 
@@ -400,15 +422,16 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                     03 수요 예측
                   </span>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
+                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">2030 의료수요 변화</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   인구 고령화와 질환별 의료이용 추세를 반영한 중장기 수요를 예측합니다.
                 </p>
               </div>
-              <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 group-hover:underline">
+              <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between group-hover:underline">
                 <span>수요 추계 확인</span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
 
@@ -422,15 +445,16 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                     04 AI 정책기획
                   </span>
-                  <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
+                  <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">정책대안 및 사업계획서</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                   진단 데이터를 근거로 3대 정책대안과 표준 사업계획서를 자동 완성합니다.
                 </p>
               </div>
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 group-hover:underline">
+              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center justify-between group-hover:underline">
                 <span>정책대안 도출</span>
+                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
               </div>
             </div>
           </div>

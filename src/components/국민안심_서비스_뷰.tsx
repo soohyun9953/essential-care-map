@@ -31,6 +31,8 @@ import { 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기�
 import { 응급의료기관_출처 } from '@/lib/응급의료기관_데이터셋';
 import { 달빛어린이병원_출처 } from '@/lib/달빛어린이병원_데이터셋';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
+import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 // 공공병원 외 공개 데이터 기관 (분만: 심평원 청구 실적 목록 / 응급: E-Gen 응급의료기관 목록)의 표시용 공통 형태
 interface 외부_기관 {
@@ -266,13 +268,17 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       {/* 1. 상단: 국민 친화적 빠른 탐색 바 (Section 18) */}
       {/* ============================================================== */}
       <div className="p-4 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-20 space-y-3 shrink-0">
+        {/* As-Is vs To-Be 국민안심 응급·분만 비교 배너 */}
+        <AsIs_비교_배너 target="citizen" />
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
               <span>지금 필요한 공공의료기관 찾기</span>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                 직선거리순
               </span>
+              <ISP_과제_뱃지 taskId="3.10" customLabel="과제 3.10 모자·응급 실시간 전원" />
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
               응급실·소아·분만 진료가 가능할 것으로 추정되는 가까운 공공병원을 직선거리 기준으로 안내합니다. (기준: {user_location.lat === 37.5665 ? '서울시청 중심' : '현재 확인된 사용자 위치'})

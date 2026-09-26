@@ -16,8 +16,11 @@ import {
   BookOpen,
   AlertCircle,
   CheckCircle2,
+  Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
+import { useIsp, PERSONA_LIST, PersonaType } from '@/context/ISP_컨텍스트';
 
 export type 워크스페이스_타입 =
   | 'home'
@@ -90,9 +93,14 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   vulnerable_region_count = 82,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
+  const [is_persona_open, set_is_persona_open] = useState(false);
   const [is_hovering_medical, set_is_hovering_medical] = useState(false);
   const admin_ref = useRef<HTMLDivElement>(null);
+  const persona_ref = useRef<HTMLDivElement>(null);
   const medical_ref = useRef<HTMLDivElement>(null);
+
+  // ISP 컨텍스트 연동 (Before/After 토글, 페르소나)
+  const { ispViewMode, setIspViewMode, toggleIspViewMode, persona, setPersona, currentPersonaInfo } = useIsp();
 
   // Gemini API 키 등록 현황 및 멀티 키 카운트
   const raw_gemini_keys = (google_api_key || '')
@@ -113,10 +121,23 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     }
   };
 
+  // 페르소나 변경 시 해당 역할의 핵심 워크스페이스로 자동 연계
+  const handle_select_persona = (pId: PersonaType) => {
+    setPersona(pId);
+    set_is_persona_open(false);
+    const target = PERSONA_LIST.find((p) => p.id === pId);
+    if (target) {
+      handle_workspace_change(target.focusWorkspace);
+    }
+  };
+
   useEffect(() => {
     const handle_click_outside = (e: MouseEvent) => {
       if (admin_ref.current && !admin_ref.current.contains(e.target as Node)) {
         set_is_admin_open(false);
+      }
+      if (persona_ref.current && !persona_ref.current.contains(e.target as Node)) {
+        set_is_persona_open(false);
       }
       if (medical_ref.current && !medical_ref.current.contains(e.target as Node)) {
         set_is_hovering_medical(false);
@@ -263,8 +284,87 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </button>
           </nav>
 
-          {/* 3. 우측: 데이터·사업가이드 안내 / 테마 / 관리자 (API 상태는 관리자 드롭다운에서만 표시) */}
+          {/* 3. 우측: ISP 비교 토글 / 페르소나 셀렉터 / 데이터·사업가이드 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
+            {/* ISP 비교 토글 스위치 (As-Is vs To-Be) */}
+            <div className="hidden md:flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setIspViewMode('as_is')}
+                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
+                  ispViewMode === 'as_is'
+                    ? 'bg-rose-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="과거 수기 행정 및 파편화 분석 비효율 모드"
+              >
+                과거 수작업 (As-Is)
+              </button>
+              <button
+                type="button"
+                onClick={() => setIspViewMode('to_be')}
+                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
+                  ispViewMode === 'to_be'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+                title="AI 기반 자동화 및 원스톱 정책 의사결정 모드"
+              >
+                <span>AI 플랫폼 (To-Be)</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+              </button>
+            </div>
+
+            {/* 페르소나(역할별 뷰) 선택 드롭다운 */}
+            <div className="relative" ref={persona_ref}>
+              <button
+                type="button"
+                onClick={() => set_is_persona_open(!is_persona_open)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition border bg-slate-50 dark:bg-slate-850 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-200 dark:border-slate-700 cursor-pointer shadow-2xs"
+                title="사용자 역할별 맞춤형 관점 전환"
+              >
+                <span className="text-sm">{currentPersonaInfo.icon}</span>
+                <span className="hidden xl:inline">{currentPersonaInfo.label}</span>
+                <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${is_persona_open ? 'rotate-180' : ''}`} />
+              </button>
+
+              {is_persona_open && (
+                <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 p-2 text-xs z-50 animate-in fade-in zoom-in-95">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
+                    <span className="font-bold text-slate-900 dark:text-white block">고객 역할별(Persona) 맞춤형 뷰</span>
+                    <span className="text-[10px] text-slate-400">선택한 역할의 최우선 의사결정 과제로 자동 이동</span>
+                  </div>
+
+                  <div className="space-y-1">
+                    {PERSONA_LIST.map((p) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handle_select_persona(p.id)}
+                        className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition cursor-pointer ${
+                          persona === p.id
+                            ? 'bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <span className="text-lg shrink-0 mt-0.5">{p.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-slate-900 dark:text-white">{p.label}</span>
+                            {persona === p.id && (
+                              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/80 px-1.5 py-0.5 rounded">선택됨</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{p.subtitle}</p>
+                          <p className="text-[10px] text-blue-600 dark:text-blue-400 mt-0.5 font-medium">{p.keyMetric}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* 데이터 & 사업가이드 팝업 안내 버튼 */}
             <button
               type="button"
@@ -475,6 +575,49 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               )}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* 2줄 헤더: 페르소나 및 ISP 모드 상태 인디케이터 띠 */}
+      <div
+        className={`px-4 sm:px-6 py-1.5 border-t text-xs transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 ${
+          ispViewMode === 'as_is'
+            ? 'bg-rose-100/90 dark:bg-rose-950/70 border-rose-300 dark:border-rose-900 text-rose-950 dark:text-rose-200'
+            : 'bg-slate-50/90 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+        }`}
+      >
+        <div className="flex items-center gap-2 overflow-hidden flex-wrap">
+          <span className="font-black flex items-center gap-1 shrink-0 text-blue-700 dark:text-blue-400">
+            <span>{currentPersonaInfo.icon}</span>
+            <span>[{currentPersonaInfo.label} 관점]</span>
+          </span>
+          <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">|</span>
+          <span className="truncate">
+            {ispViewMode === 'as_is' ? (
+              <span className="font-extrabold text-rose-800 dark:text-rose-200">
+                ⚠️ [과거 수작업 As-Is 모드] 345쪽 지침서 수기 대조 (2주 소요) · 기획서 작성 3주 · 신포괄 정책가산 누락 비효율 시뮬레이션 중
+              </span>
+            ) : (
+              <span className="font-medium">{currentPersonaInfo.description}</span>
+            )}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto text-[11px]">
+          <span className="font-semibold text-slate-500 dark:text-slate-400 hidden md:inline">
+            중점 지표: <strong className="text-slate-900 dark:text-white">{currentPersonaInfo.keyMetric}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={toggleIspViewMode}
+            className={`font-black underline underline-offset-2 cursor-pointer transition ${
+              ispViewMode === 'as_is'
+                ? 'text-rose-700 dark:text-rose-300 hover:text-rose-900'
+                : 'text-blue-600 dark:text-blue-400 hover:text-blue-800'
+            }`}
+          >
+            {ispViewMode === 'as_is' ? 'To-Be AI 플랫폼 복귀 ➔' : 'As-Is 수작업 비교 ➔'}
+          </button>
         </div>
       </div>
     </header>

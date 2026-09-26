@@ -40,6 +40,8 @@ const 공공의료_CP_오더세트_라이브러리 = dynamic(() => import('./공
 import 신포괄_정책가산_평가_시뮬레이터 from './신포괄_정책가산_평가_시뮬레이터';
 import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대시보드';
 import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';
+import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 export type 의료기관_서브탭_타입 =
   | 'hospitals'
@@ -147,6 +149,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <Layers className="w-3.5 h-3.5" />
           <span>71개 표준진료지침(CP) 라이브러리</span>
+          <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
         </button>
 
         <button
@@ -159,6 +162,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <ShieldCheck className="w-3.5 h-3.5" />
           <span>신포괄 정책가산(1.0%) 계산기</span>
+          <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
         </button>
 
         <button
@@ -171,6 +175,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <TrendingUp className="w-3.5 h-3.5" />
           <span>CP 변이 분석 &amp; ROI</span>
+          <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
         </button>
 
         <button
@@ -207,6 +212,9 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           )}
         </div>
       </div>
+
+      {/* As-Is vs To-Be 공공병원 & CP 시뮬레이터 비교 배너 */}
+      <AsIs_비교_배너 target="simulator" />
 
       {/* ============================================================== */}
       {/* 2. SUBTAB 1: 공공의료기관 탐색 (Section 14 & 15 표준 Card) */}

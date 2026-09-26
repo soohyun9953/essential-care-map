@@ -34,6 +34,8 @@ import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { format_number_comma } from '@/lib/유틸리티';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { 지도_래퍼 } from './지도_래퍼';
+import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 interface 지역진단_통합_대시보드_속성 {
   diagnosed_list: 필수의료_진단_결과[];
@@ -112,55 +114,64 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
       {/* ============================================================== */}
       {/* 0. Journey 진행 배너 (현재: 01 지역 진단)                          */}
       {/* ============================================================== */}
-      <div className="bg-white dark:bg-[#15161b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* 좌측: 현재 단계 표시 */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
-              01
+      {/* Journey 상단 배너 (Section 11 연계) */}
+      <div className="space-y-3">
+        <div className="bg-white dark:bg-[#15161b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          {/* 좌측: 현재 단계 표시 & ISP 과제 뱃지 */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
+                01
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-blue-700 dark:text-blue-400">지역 진단 (현재 단계)</span>
+                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
+                </div>
+                <div className="text-[10px] text-slate-500 leading-tight">필수의료 취약도 분석 및 GIS 시각화</div>
+              </div>
             </div>
-            <div>
-              <div className="text-xs font-black text-blue-700 dark:text-blue-400">지역 진단 (현재 단계)</div>
-              <div className="text-[10px] text-slate-500 leading-tight">필수의료 취약도 분석 및 GIS 시각화</div>
+            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
+              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 flex items-center justify-center text-[10px] font-black">02</div>
+              <div className="text-[10px] font-semibold">지역 비교</div>
+            </div>
+            <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-1 text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
+              <div className="text-[10px] font-semibold text-slate-400">수요 예측</div>
+            </div>
+            <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-1 text-slate-300">
+              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
+              <div className="text-[10px] font-semibold text-slate-400">AI 정책기획</div>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block" />
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
-            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 flex items-center justify-center text-[10px] font-black">02</div>
-            <div className="text-[10px] font-semibold">지역 비교</div>
-          </div>
-          <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
-          <div className="hidden sm:flex items-center gap-1 text-slate-300">
-            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
-            <div className="text-[10px] font-semibold text-slate-400">수요 예측</div>
-          </div>
-          <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
-          <div className="hidden sm:flex items-center gap-1 text-slate-300">
-            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
-            <div className="text-[10px] font-semibold text-slate-400">AI 정책기획</div>
+
+          {/* 우측: 다음 단계 CTA */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[10px] text-slate-400 hidden sm:block">진단 후 다음 단계:</span>
+            <button
+              type="button"
+              onClick={() => on_navigate_policy('compare')}
+              className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer border border-indigo-200 dark:border-indigo-800"
+            >
+              <span>02 지역 비교</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
+            <button
+              type="button"
+              onClick={() => on_navigate_policy('policy_ai')}
+              className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800"
+            >
+              <span>04 AI 정책기획</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
 
-        {/* 우측: 다음 단계 CTA */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[10px] text-slate-400 hidden sm:block">진단 후 다음 단계:</span>
-          <button
-            type="button"
-            onClick={() => on_navigate_policy('compare')}
-            className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer border border-indigo-200 dark:border-indigo-800"
-          >
-            <span>02 지역 비교</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
-          <button
-            type="button"
-            onClick={() => on_navigate_policy('policy_ai')}
-            className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800"
-          >
-            <span>04 AI 정책기획</span>
-            <ArrowRight className="w-3 h-3" />
-          </button>
-        </div>
+        {/* As-Is vs To-Be 지역진단 비교 배너 */}
+        <AsIs_비교_배너 target="diagnosis" />
       </div>
 
       {/* ============================================================== */}

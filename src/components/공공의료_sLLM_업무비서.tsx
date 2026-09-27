@@ -135,7 +135,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [qa_compare_result, set_qa_compare_result] = useState<LLM_비교_결과 | null>(null);
   const compare_result = active_feature_tab === 'business_plan' ? business_compare_result : qa_compare_result;
 
-  const [is_comparing, set_is_comparing] = useState(false);
+  const [is_gemini_running, set_is_gemini_running] = useState(false);
+  const [is_local_running, set_is_local_running] = useState(false);
+  const is_comparing = is_gemini_running || is_local_running;
   const [copied_side, set_copied_side] = useState<'gemini' | 'local' | null>(null);
   const [show_compare_rag, set_show_compare_rag] = useState(false);
 
@@ -396,26 +398,18 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     }, 400);
   };
 
-  // 1:1 비교 실행 핸들러 (외부 Gemini vs 로컬 sLLM)
-  const handle_execute_compare = async () => {
+  // 1) Google Gemini만 단독 실행
+  const handle_execute_gemini = async () => {
     const prompt_to_run = current_prompt;
+    if (!prompt_to_run.trim()) return;
     save_prompt_if_new(prompt_to_run, active_feature_tab);
-    set_is_comparing(true);
+    set_is_gemini_running(true);
     try {
-      // 1. 먼저 RAG를 통해 지자체 DW 및 법령 청크 추출 (선택된 RAG 건수 중 최대값 이상 검색)
-      const max_top_k = Math.max(gemini_rag_count, local_rag_count, 8);
-      const local_rag = 경량_RAG_엔진.execute_rag(prompt_to_run, selected_region || null, max_top_k);
+      const local_rag = 경량_RAG_엔진.execute_rag(prompt_to_run, selected_region || null, gemini_rag_count);
       set_rag_result(local_rag);
 
-      // 모델별 독립된 RAG 청크 슬라이스 (선택한 개수만큼 전달)
       const gemini_chunks = local_rag.검색된_청크목록.slice(0, gemini_rag_count);
-      const local_chunks = local_rag.검색된_청크목록.slice(0, local_rag_count);
-
       const gemini_rag_text = gemini_chunks
-        .map((c, i) => `[근거 ${i + 1}] ${c.청크.문서명} (${c.청크.조항_페이지}):\n${c.청크.본문}`)
-        .join('\n\n');
-
-      const local_rag_text = local_chunks
         .map((c, i) => `[근거 ${i + 1}] ${c.청크.문서명} (${c.청크.조항_페이지}):\n${c.청크.본문}`)
         .join('\n\n');
 
@@ -423,7 +417,6 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         ? `${selected_region.시도명} ${selected_region.시군구명}`
         : '강원특별자치도 영월군';
 
-      // 2. /api/llm/compare 엔드포인트로 병렬 요청 (모델별 선택된 수와 내용 각각 전달 + mode 파라미터 전달)
       const res = await fetch('/api/llm/compare', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -439,73 +432,152 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           },
           rag_context: gemini_rag_text,
           gemini_rag_context: gemini_rag_text,
-          local_rag_context: local_rag_text,
           gemini_chunks_count: gemini_rag_count,
-          local_chunks_count: local_rag_count,
-          local_model: selected_local_model,
           mode: active_feature_tab,
         }),
       });
 
       if (res.ok) {
-        let json = await res.json();
-
-        // 3. 브라우저 직통(Client-side Direct) 온디바이스 로컬 sLLM 호출 검증
-        // (배포된 웹사이트에서도 사용자의 로컬 8000번 포트가 켜져 있으면 100% 직통으로 실제 3B / 0.5B 모델이 추론 수행)
-        if (!json.local_sllm?.is_live) {
-          try {
-            const local_prompt =
-              active_feature_tab === 'general_qa'
-                ? `질문: ${prompt_to_run}\n지역: ${region_name}\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 참고하여 질문에 대해 핵심 요지와 근거를 알기 쉽게 답변하세요.\n답변:`
-                : `질문: ${prompt_to_run}\n지역: ${region_name} (응급미도달: ${selected_region?.응급_60분_미도달_인구비율 ?? 99.2}%, 자체충족률: ${selected_region?.관내_응급_의료이용률 ?? 31.2}%)\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 근거로 격조 있는 개조식 보고서를 작성하세요.`;
-
-            const direct_local_res = await fetch('http://127.0.0.1:8000/generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                prompt: local_prompt,
-                model: selected_local_model,
-                max_new_tokens: 280,
-              }),
-              signal: AbortSignal.timeout(90000), // 3B CPU 연산 대기
-            });
-
-            if (direct_local_res.ok) {
-              const direct_json = await direct_local_res.json();
-              if (direct_json.response && direct_json.response.trim().length > 0) {
-                const actual_model = direct_json.model || selected_local_model;
-                const model_display = actual_model.includes('3B')
-                  ? 'Qwen 2.5 3B (고성능 로컬 On-Device)'
-                  : 'Qwen 2.5 0.5B (초경량 로컬 On-Device)';
-                json = {
-                  ...json,
-                  local_sllm: {
-                    model: `${model_display} 실시간 구동`,
-                    response: direct_json.response.trim(),
-                    elapsed_ms: direct_json.elapsed_ms || 0,
-                    is_live: true,
-                    security: '원내 폐쇄망 100% 자립 (데이터 외부 유출 0%)',
-                    cost: '무제한 무료 (자체 로컬 하드웨어 연산)',
-                  },
-                };
-              }
-            }
-          } catch {
-            // 직통 연결 불가 시 (로컬 서버 미기동)
-          }
-        }
-
+        const json = await res.json();
+        const updater = (prev: LLM_비교_결과 | null): LLM_비교_결과 => ({
+          google_gemini: json.google_gemini,
+          local_sllm: prev?.local_sllm || {
+            model: `로컬 sLLM (${selected_local_model.includes('3B') ? 'Qwen 2.5 3B' : 'Qwen 2.5 0.5B'})`,
+            response: '[우측 상단의 "로컬 sLLM 요청" 버튼을 누르시면 온디바이스 AI 분석이 시작됩니다]',
+            elapsed_ms: 0,
+            is_live: false,
+            security: '원내 폐쇄망 100% 자립 (데이터 외부 유출 0%)',
+            cost: '무제한 무료',
+          },
+        });
         if (active_feature_tab === 'business_plan') {
-          set_business_compare_result(json);
+          set_business_compare_result(updater);
         } else {
-          set_qa_compare_result(json);
+          set_qa_compare_result(updater);
         }
       }
     } catch (err) {
-      console.error('LLM Compare error:', err);
+      console.error('Gemini 실행 오류:', err);
     } finally {
-      set_is_comparing(false);
+      set_is_gemini_running(false);
     }
+  };
+
+  // 2) 로컬 sLLM(선택된 모델)만 단독 실행
+  const handle_execute_local = async () => {
+    const prompt_to_run = current_prompt;
+    if (!prompt_to_run.trim()) return;
+    save_prompt_if_new(prompt_to_run, active_feature_tab);
+    set_is_local_running(true);
+    try {
+      const local_rag = 경량_RAG_엔진.execute_rag(prompt_to_run, selected_region || null, local_rag_count);
+      set_rag_result(local_rag);
+
+      const local_chunks = local_rag.검색된_청크목록.slice(0, local_rag_count);
+      const local_rag_text = local_chunks
+        .map((c, i) => `[근거 ${i + 1}] ${c.청크.문서명} (${c.청크.조항_페이지}):\n${c.청크.본문}`)
+        .join('\n\n');
+
+      const region_name = selected_region
+        ? `${selected_region.시도명} ${selected_region.시군구명}`
+        : '강원특별자치도 영월군';
+
+      const local_prompt =
+        active_feature_tab === 'general_qa'
+          ? `질문: ${prompt_to_run}\n지역: ${region_name}\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 참고하여 질문에 대해 핵심 요지와 근거를 알기 쉽게 답변하세요.\n답변:`
+          : `질문: ${prompt_to_run}\n지역: ${region_name} (응급미도달: ${selected_region?.응급_60분_미도달_인구비율 ?? 99.2}%, 자체충족률: ${selected_region?.관내_응급_의료이용률 ?? 31.2}%)\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 근거로 격조 있는 개조식 보고서를 작성하세요.`;
+
+      let local_sllm_result = null;
+
+      // 1순위: 브라우저 직통 8000번 포트 호출
+      try {
+        const direct_local_res = await fetch('http://127.0.0.1:8000/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: local_prompt,
+            model: selected_local_model,
+            max_new_tokens: 280,
+          }),
+          signal: AbortSignal.timeout(90000),
+        });
+
+        if (direct_local_res.ok) {
+          const direct_json = await direct_local_res.json();
+          if (direct_json.response && direct_json.response.trim().length > 0) {
+            const actual_model = direct_json.model || selected_local_model;
+            const model_display = actual_model.includes('3B')
+              ? 'Qwen 2.5 3B (고성능 로컬 On-Device)'
+              : 'Qwen 2.5 0.5B (초경량 로컬 On-Device)';
+            local_sllm_result = {
+              model: `${model_display} 실시간 구동`,
+              response: direct_json.response.trim(),
+              elapsed_ms: direct_json.elapsed_ms || 0,
+              is_live: true,
+              security: '원내 폐쇄망 100% 자립 (데이터 외부 유출 0%)',
+              cost: '무제한 무료 (자체 로컬 하드웨어 연산)',
+            };
+          }
+        }
+      } catch {
+        // 브라우저 직통 연결 불가 시 프록시 폴백
+      }
+
+      // 2순위: Next.js API 라우트 프록시
+      if (!local_sllm_result) {
+        const res = await fetch('/api/llm/compare', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: prompt_to_run,
+            region_name: region_name,
+            region_stats: {
+              emergency_rate: selected_region?.응급_60분_미도달_인구비율 ?? 99.2,
+              ri_rate: selected_region?.관내_응급_의료이용률 ?? 31.2,
+              maternity_rate: selected_region?.관내_분만율 ?? 6.4,
+              vulnerability_grade: selected_region?.종합_취약도_등급 ?? '심각',
+            },
+            rag_context: local_rag_text,
+            local_rag_context: local_rag_text,
+            local_chunks_count: local_rag_count,
+            local_model: selected_local_model,
+            mode: active_feature_tab,
+          }),
+        });
+        if (res.ok) {
+          const json = await res.json();
+          local_sllm_result = json.local_sllm;
+        }
+      }
+
+      if (local_sllm_result) {
+        const updater = (prev: LLM_비교_결과 | null): LLM_비교_결과 => ({
+          google_gemini: prev?.google_gemini || {
+            model: 'Google Gemini (클라우드 대기)',
+            response: '[좌측 상단의 "Gemini 요청" 버튼을 누르시면 클라우드 AI 분석이 시작됩니다]',
+            elapsed_ms: 0,
+            is_live: false,
+            security: '외부 클라우드 전송',
+            cost: '종량제 과금',
+          },
+          local_sllm: local_sllm_result,
+        });
+        if (active_feature_tab === 'business_plan') {
+          set_business_compare_result(updater);
+        } else {
+          set_qa_compare_result(updater);
+        }
+      }
+    } catch (err) {
+      console.error('로컬 sLLM 실행 오류:', err);
+    } finally {
+      set_is_local_running(false);
+    }
+  };
+
+  // 3) 1:1 동시 비교 실행 핸들러 (병렬 실행)
+  const handle_execute_compare = async () => {
+    await Promise.all([handle_execute_gemini(), handle_execute_local()]);
   };
 
   const handle_copy_text = async (text: string, side: 'gemini' | 'local') => {
@@ -971,7 +1043,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 ? '사업계획서 작성 주제 또는 분석하고자 하는 공공보건 지침을 입력하세요...'
                 : '공공보건의료 지침, 법령 요건, 보조금 규정 등 궁금한 점을 자유롭게 질문하세요...'
             }
-            className="zone-input-box w-full pl-4 pr-56 py-3.5 text-xs sm:text-sm rounded-2xl transition relative z-10 bg-transparent"
+            className="zone-input-box w-full pl-4 pr-56 sm:pr-64 py-3.5 text-xs sm:text-sm rounded-2xl transition relative z-10 bg-transparent"
           />
 
           {/* 인라인 Tab 자동완성 칩 */}
@@ -983,7 +1055,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 set_current_prompt(sllm_current_suggestion);
                 set_workflow_step(0);
               }}
-              className="absolute right-40 z-20 hidden md:flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-slate-600 hover:text-indigo-700 dark:text-slate-300 dark:hover:text-indigo-200 rounded-lg border border-slate-200 dark:border-slate-700 transition shadow-2xs select-none cursor-pointer"
+              className="absolute right-44 sm:right-52 z-20 hidden md:flex items-center gap-1 px-2 py-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-slate-600 hover:text-indigo-700 dark:text-slate-300 dark:hover:text-indigo-200 rounded-lg border border-slate-200 dark:border-slate-700 transition shadow-2xs select-none cursor-pointer"
               title="클릭하거나 Tab 키를 누르면 자동 입력됩니다"
             >
               <span className="font-mono bg-white dark:bg-slate-900 px-1 rounded text-indigo-600 dark:text-indigo-400">Tab ↹</span>
@@ -995,6 +1067,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             onClick={active_view_tab === 'compare' ? handle_execute_compare : handle_execute_workflow}
             disabled={is_running || is_comparing || !current_prompt.trim()}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 z-20 inline-flex items-center space-x-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-60 cursor-pointer"
+            title={active_view_tab === 'compare' ? '두 모델을 동시에 병렬 실행합니다 (아래에서 개별 실행 가능)' : 'RAG 3단계 실행'}
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>
@@ -1002,14 +1075,73 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                 ? is_comparing
                   ? '듀얼 추론 중...'
                   : active_feature_tab === 'business_plan'
-                  ? '📋 1:1 사업계획서 비교'
-                  : '💬 1:1 질의응답 비교'
+                  ? '⚖️ 1:1 동시 비교'
+                  : '⚖️ 1:1 동시 비교'
                 : is_running
                 ? '생성 중...'
                 : 'RAG 실행'}
             </span>
           </button>
         </div>
+
+        {/* 1:1 비교 모드 전용: 모델별 개별 요청 & 동시 비교 선택 바 */}
+        {active_view_tab === 'compare' && (
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1 px-1 bg-slate-50/70 dark:bg-[#1f1f23] p-2.5 rounded-2xl border border-slate-200/80 dark:border-white/[0.06]">
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+              <span className="zone-badge-select">⚡ 모델별 개별 요청</span>
+              <span className="text-[11px] hidden sm:inline">원하는 AI 모델만 단독 실행하거나 1:1로 동시 비교할 수 있습니다:</span>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Gemini 단독 실행 */}
+              <button
+                type="button"
+                onClick={handle_execute_gemini}
+                disabled={is_gemini_running || !current_prompt.trim()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 hover:bg-blue-100 text-[#0071e3] border border-blue-200 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 dark:text-[#2997ff] dark:border-blue-800 transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs"
+                title="Google Gemini 클라우드 API만 단독으로 요청합니다"
+              >
+                {is_gemini_running ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Globe className="w-3.5 h-3.5 text-[#0071e3] dark:text-[#2997ff]" />
+                )}
+                <span>🌐 Gemini만 요청</span>
+              </button>
+
+              {/* 로컬 sLLM 단독 실행 */}
+              <button
+                type="button"
+                onClick={handle_execute_local}
+                disabled={is_local_running || !current_prompt.trim()}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-[#15803d] border border-emerald-200 dark:bg-emerald-950/50 dark:hover:bg-emerald-900/50 dark:text-[#4ade80] dark:border-emerald-800 transition active:scale-95 disabled:opacity-50 cursor-pointer shadow-2xs"
+                title={`로컬 온디바이스 sLLM (${selected_local_model.includes('3B') ? 'Qwen 3B' : 'Qwen 0.5B'})만 단독으로 요청합니다`}
+              >
+                {is_local_running ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Laptop className="w-3.5 h-3.5 text-[#15803d] dark:text-[#4ade80]" />
+                )}
+                <span>💻 로컬 sLLM만 요청 ({selected_local_model.includes('3B') ? '3B' : '0.5B'})</span>
+              </button>
+
+              {/* 1:1 동시 비교 */}
+              <button
+                type="button"
+                onClick={handle_execute_compare}
+                disabled={is_comparing || !current_prompt.trim()}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                title="두 모델을 동시에 실행하여 결과를 비교합니다"
+              >
+                {is_comparing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                )}
+                <span>⚖️ 1:1 동시 비교</span>
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ========================================================= */}
@@ -1056,15 +1188,38 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </div>
                   </div>
 
-                  {compare_result && (
+                  <div className="flex items-center gap-1.5">
+                    {/* Gemini 단독 요청 버튼 */}
                     <button
-                      onClick={() => handle_copy_text(compare_result.google_gemini.response, 'gemini')}
-                      className="p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 transition"
-                      title="답변 복사"
+                      type="button"
+                      onClick={handle_execute_gemini}
+                      disabled={is_gemini_running || !current_prompt.trim()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-[#0071e3] hover:bg-[#0077ed] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                      title="Google Gemini 클라우드 API만 단독 요청하여 결과를 갱신합니다"
                     >
-                      {copied_side === 'gemini' ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      {is_gemini_running ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>Gemini 분석 중...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>Gemini 요청</span>
+                        </>
+                      )}
                     </button>
-                  )}
+
+                    {compare_result && (
+                      <button
+                        onClick={() => handle_copy_text(compare_result.google_gemini.response, 'gemini')}
+                        className="p-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 transition"
+                        title="답변 복사"
+                      >
+                        {copied_side === 'gemini' ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Gemini 전용 RAG 주입 건수 선택기 & 전달 내용 보기 */}
@@ -1147,11 +1302,11 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
                 {/* 본문 */}
                 <div className="mt-3">
-                  {is_comparing ? (
+                  {is_gemini_running ? (
                     <div className="py-12 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 space-y-2">
                       <div className="w-6 h-6 border-2 border-[#0071e3] border-t-transparent rounded-full animate-spin" />
                       <span className="text-xs font-semibold text-slate-600 dark:text-slate-300">
-                        가용 모델 순차 검증 및 추론 중...
+                        Gemini 순차 검증 및 분석 진행 중...
                       </span>
                       <span className="text-[11px] text-slate-400 dark:text-slate-500">
                         (Gemini Flash ➔ 2.5 Flash ➔ 2.5 Pro 순차 시도)
@@ -1218,10 +1373,31 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {/* 로컬 sLLM 단독 요청 버튼 */}
+                    <button
+                      type="button"
+                      onClick={handle_execute_local}
+                      disabled={is_local_running || !current_prompt.trim()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-bold bg-[#34c759] hover:bg-[#28a745] text-white shadow-apple-sm transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                      title="선택된 로컬 온디바이스 sLLM 모델로만 단독 분석을 요청합니다"
+                    >
+                      {is_local_running ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <span>로컬 추론 중...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-3 h-3 fill-current" />
+                          <span>로컬 sLLM 요청</span>
+                        </>
+                      )}
+                    </button>
+
                     {local_server_status?.is_running ? (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700">
+                      <span className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        8000포트 ({local_server_status.model?.includes('3B') ? '3B 가동' : '0.5B 가동'})
+                        8000포트 ({local_server_status.model?.includes('3B') ? '3B' : '0.5B'})
                       </span>
                     ) : (
                       <button
@@ -1233,12 +1409,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                         {is_starting_server ? (
                           <>
                             <Loader2 className="w-3 h-3 animate-spin" />
-                            <span>실행 중...</span>
+                            <span>기동 중...</span>
                           </>
                         ) : (
                           <>
                             <Power className="w-3 h-3" />
-                            <span>서버 원클릭 실행</span>
+                            <span>서버 기동</span>
                           </>
                         )}
                       </button>
@@ -1373,10 +1549,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
 
                 {/* 본문 */}
                 <div className="mt-3">
-                  {is_comparing ? (
+                  {is_local_running ? (
                     <div className="py-12 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 space-y-2">
                       <div className="w-6 h-6 border-2 border-[#34c759] border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs text-slate-600 dark:text-slate-300">노트북 로컬 sLLM 엔진 추론 중...</span>
+                      <span className="text-xs text-slate-600 dark:text-slate-300">
+                        노트북 로컬 sLLM ({selected_local_model.includes('3B') ? '3B 고성능' : '0.5B 초경량'}) 엔진 추론 중...
+                      </span>
                     </div>
                   ) : compare_result ? (
                     <div className="zone-info-box border-l-4 border-l-[#34c759] rounded-xl p-3 bg-white dark:bg-[#121214]">
@@ -1399,7 +1577,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <Laptop className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                       <p className="text-center text-slate-500 dark:text-slate-400 max-w-xs">
                         {local_server_status?.is_running
-                          ? `로컬 온디바이스 엔진(8000번 포트)이 정상 가동 중입니다. 상단의 [${active_feature_tab === 'business_plan' ? '1:1 사업계획서 비교' : '1:1 질의응답 비교'}] 버튼을 눌러보세요.`
+                          ? `로컬 온디바이스 엔진(8000번 포트)이 정상 가동 중입니다. 상단의 [로컬 sLLM 요청] 또는 [1:1 동시 비교] 버튼을 눌러보세요.`
                           : '노트북 로컬 sLLM 서버가 대기 중입니다. 아래 버튼을 눌러 터미널 없이 바로 실행할 수 있습니다.'}
                       </p>
                       {!local_server_status?.is_running && (

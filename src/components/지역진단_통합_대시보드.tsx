@@ -54,9 +54,9 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
   const [region_unit, set_region_unit] = useState<지역_구분_단위>('시군구');
 
-  // 좌측 목록 필터 상태
+  // 좌측 목록 필터 상태 (초기값: '심각' 등급 우선 표시)
   const [search_query, set_search_query] = useState('');
-  const [filter_grade, set_filter_grade] = useState<string>('전체');
+  const [filter_grade, set_filter_grade] = useState<string>('심각');
   const [filter_sido, set_filter_sido] = useState<string>('전체');
 
   // Section 10: '왜?' 취약요인 클릭 시 상세 분석 팝오버 상태

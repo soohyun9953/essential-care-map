@@ -213,39 +213,66 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     }
   };
 
-  // 로컬 sLLM 서버 구동 상태
+  // 로컬 sLLM 서버 구동 상태 및 모델 선택
   const [local_server_status, set_local_server_status] = useState<{
     is_running: boolean;
     model?: string;
     device?: string;
     message?: string;
+    available_models?: Array<{ id: string; name: string; size: string }>;
   } | null>(null);
+  const [selected_local_model, set_selected_local_model] = useState<string>('Qwen/Qwen2.5-3B-Instruct');
   const [is_starting_server, set_is_starting_server] = useState(false);
+  const [is_switching_model, set_is_switching_model] = useState(false);
 
   // 로컬 sLLM 서버 상태 헬스체크
   const check_local_server_status = async () => {
     try {
       const res = await fetch('/api/llm/local-server');
-      // 403(배포 환경 비활성)도 안내 메시지를 표시하기 위해 본문을 그대로 반영
       const data = await res.json().catch(() => ({ is_running: false }));
       set_local_server_status(data);
+      if (data.is_running && data.model) {
+        set_selected_local_model(data.model);
+      }
     } catch {
       set_local_server_status({ is_running: false });
     }
   };
 
-  // 로컬 sLLM 서버 브라우저 원클릭 가동
+  // 로컬 모델 동적 전환 핸들러
+  const handle_change_local_model = async (model_id: string) => {
+    set_selected_local_model(model_id);
+    if (local_server_status?.is_running) {
+      set_is_switching_model(true);
+      try {
+        const res = await fetch('/api/llm/local-server', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'switch', model: model_id }),
+        });
+        const data = await res.json();
+        if (data.is_running) {
+          set_local_server_status((prev) => prev ? { ...prev, model: model_id } : null);
+        }
+      } catch (err) {
+        console.error('로컬 모델 전환 오류:', err);
+      } finally {
+        set_is_switching_model(false);
+      }
+    }
+  };
+
+  // 로컬 sLLM 서버 브라우저 원클릭 가동 (선택된 모델로 시작)
   const handle_start_local_server = async () => {
     set_is_starting_server(true);
     try {
       const res = await fetch('/api/llm/local-server', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'start' }),
+        body: JSON.stringify({ action: 'start', model: selected_local_model }),
       });
       const data = await res.json();
       set_local_server_status(data);
-      // 백그라운드 구동 안정화를 위해 2초 후 갱신
       setTimeout(check_local_server_status, 2000);
       setTimeout(check_local_server_status, 5000);
     } catch (err) {
@@ -377,6 +404,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
           local_rag_context: local_rag_text,
           gemini_chunks_count: gemini_rag_count,
           local_chunks_count: local_rag_count,
+          local_model: selected_local_model,
           mode: active_feature_tab,
         }),
       });
@@ -537,7 +565,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             <span className="text-slate-400 dark:text-slate-600">|</span>
             <span className="text-slate-600 dark:text-slate-300">🌐 외부망: {google_api_key ? 'Gemini API 연동' : 'Gemini 시뮬레이션'}</span>
             <span className="text-slate-400 dark:text-slate-600">•</span>
-            <span className="text-slate-600 dark:text-slate-300">💻 온디바이스: Qwen2.5-0.5B (폐쇄망)</span>
+            <span className="text-slate-600 dark:text-slate-300">
+              💻 온디바이스: {selected_local_model.includes('3B') ? 'Qwen 2.5 3B (고성능)' : 'Qwen 2.5 0.5B (초경량)'} (폐쇄망)
+            </span>
           </div>
         </div>
 
@@ -1090,7 +1120,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="zone-badge-result">📊 AI 생성 결과</span>
-                        <span className="text-xs font-bold text-[#1d1d1f] dark:text-white">Qwen2.5-0.5B-Instruct</span>
+                        <span className="text-xs font-bold text-[#1d1d1f] dark:text-white">
+                          {compare_result?.local_sllm.model || (selected_local_model.includes('3B') ? 'Qwen 2.5 3B (고성능)' : 'Qwen 2.5 0.5B (초경량)')}
+                        </span>
                         <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#34c759]/15 text-[#248a3d] dark:bg-[#34c759]/25 dark:text-[#30d158]">
                           노트북 On-Device sLLM
                         </span>
@@ -1105,7 +1137,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     {local_server_status?.is_running ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-700">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                        8000포트 가동 중
+                        8000포트 ({local_server_status.model?.includes('3B') ? '3B 가동' : '0.5B 가동'})
                       </span>
                     ) : (
                       <button
@@ -1137,6 +1169,57 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                         {copied_side === 'local' ? <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-4 h-4" />}
                       </button>
                     )}
+                  </div>
+                </div>
+
+                {/* 로컬 sLLM 모델 선택기 칩 */}
+                <div className="mt-3 p-3 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/50 space-y-2 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-950 dark:text-emerald-200 flex-wrap">
+                      <span className="zone-badge-select">🧠 로컬 모델 선택</span>
+                      <Laptop className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                      <div className="flex items-center gap-1 bg-white dark:bg-[#252528] p-0.5 rounded-lg border border-emerald-200 dark:border-emerald-900/60 shadow-xs">
+                        <button
+                          type="button"
+                          onClick={() => handle_change_local_model('Qwen/Qwen2.5-3B-Instruct')}
+                          disabled={is_switching_model}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 cursor-pointer ${
+                            selected_local_model.includes('3B')
+                              ? 'bg-[#34c759] text-white shadow-xs'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          <span>🎯 Qwen 2.5 3B (고성능 추천 ⭐)</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handle_change_local_model('Qwen/Qwen2.5-0.5B-Instruct')}
+                          disabled={is_switching_model}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition flex items-center gap-1 cursor-pointer ${
+                            selected_local_model.includes('0.5B')
+                              ? 'bg-[#34c759] text-white shadow-xs'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                          }`}
+                        >
+                          <span>⚡ 0.5B (초경량 초고속)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {is_switching_model && (
+                      <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1 animate-pulse">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>모델 가중치 로드 중...</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-emerald-800 dark:text-emerald-300 flex items-center justify-between">
+                    <span>
+                      {selected_local_model.includes('3B')
+                        ? '💡 30억 파라미터: 복지부 지침 세부 조항 정확 인용, 완성형 개조식 보고서 작성 특화'
+                        : '💡 5억 파라미터: 저사양 CPU 초고속 연산 (1~2초), 핵심 요점 위주 생성'}
+                    </span>
+                    <span className="text-slate-400">RAM 점유: {selected_local_model.includes('3B') ? '약 4.8GB' : '약 1.2GB'}</span>
                   </div>
                 </div>
 

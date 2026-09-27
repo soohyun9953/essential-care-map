@@ -18,6 +18,7 @@ interface CompareRequestBody {
   local_rag_context?: string;
   gemini_chunks_count?: number;
   local_chunks_count?: number;
+  local_model?: string;
   mode?: 'business_plan' | 'general_qa';
 }
 
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
       local_rag_context,
       gemini_chunks_count,
       local_chunks_count,
+      local_model = 'Qwen/Qwen2.5-3B-Instruct',
       mode = 'business_plan',
     } = body;
 
@@ -334,22 +336,23 @@ ${failure_details}
       // 배포 환경에서는 127.0.0.1 호출이 항상 타임아웃되므로 1·2순위를 건너뛰고 3순위로 직행
       const use_local_llm = 로컬_LLM_허용();
 
-      // 1순위: 파이썬 로컬 sLLM 서버 (Qwen2.5-0.5B-Instruct, 포트 8000)
+      // 1순위: 파이썬 로컬 sLLM 서버 (Qwen2.5 멀티 모델 지원, 포트 8000)
       if (use_local_llm) try {
         const controller = new AbortController();
-        const timeout_id = setTimeout(() => controller.abort(), 20000); // 20초 타임아웃
+        const timeout_id = setTimeout(() => controller.abort(), 35000); // 3B 로드 및 생성 고려 35초
 
         const prompt_text =
           mode === 'general_qa'
-            ? `질문: ${query}\n지역: ${region_name}\n근거 지침:\n${effective_local_rag.slice(0, 350)}\n위 지침을 참고하여 질문에 대해 핵심 요지와 근거를 알기 쉽게 답변하세요.\n답변:`
-            : `질문: ${query}\n지역: ${region_name} (응급미도달: ${region_stats.emergency_rate}%, 자체충족률: ${region_stats.ri_rate}%)\n근거 지침:\n${effective_local_rag.slice(0, 350)}`;
+            ? `질문: ${query}\n지역: ${region_name}\n근거 지침:\n${effective_local_rag.slice(0, 450)}\n위 지침을 참고하여 질문에 대해 핵심 요지와 근거를 알기 쉽게 답변하세요.\n답변:`
+            : `질문: ${query}\n지역: ${region_name} (응급미도달: ${region_stats.emergency_rate}%, 자체충족률: ${region_stats.ri_rate}%)\n근거 지침:\n${effective_local_rag.slice(0, 450)}\n위 지침을 근거로 개조식 보고서를 작성하세요.`;
 
         const res = await fetch('http://127.0.0.1:8000/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: prompt_text,
-            max_new_tokens: 180,
+            model: local_model,
+            max_new_tokens: 280,
           }),
           signal: controller.signal,
         });
@@ -358,8 +361,15 @@ ${failure_details}
         if (res.ok) {
           const json = await res.json();
           if (json.response && json.response.trim().length > 0) {
+            const actual_model = json.model || local_model;
+            const model_display = actual_model.includes('3B')
+              ? 'Qwen 2.5 3B (고성능 On-Device)'
+              : actual_model.includes('1.5B')
+              ? 'Qwen 2.5 1.5B (균형 On-Device)'
+              : 'Qwen 2.5 0.5B (초경량 On-Device)';
             return {
-              model: 'Qwen/Qwen2.5-0.5B-Instruct (노트북 On-Device 실시간)',
+              model: `${model_display} 실시간`,
+              model_id: actual_model,
               is_live: true,
               elapsed_ms: json.elapsed_ms || (Date.now() - start_t),
               response: json.response.trim(),

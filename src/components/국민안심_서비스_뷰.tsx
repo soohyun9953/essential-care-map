@@ -567,7 +567,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
                   <div className="flex items-center justify-between text-xs text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <span>
-                      총 병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.총병상}석</strong>
+                      총 병상: <strong className="text-slate-900 dark:text-white">{h.의료자원.병상.총병상}병상</strong>
                     </span>
                     <span className="text-[11px]">
                       {h.주요_의료서비스.slice(0, 3).map((s) => `#${s}`).join(' ')}

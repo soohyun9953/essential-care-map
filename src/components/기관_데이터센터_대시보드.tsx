@@ -364,10 +364,10 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
             </span>
           </div>
           <div className="text-2xl font-black text-blue-600 dark:text-blue-400">
-            총 {selected_hospital.의료자원.병상.총병상}석
+            총 {selected_hospital.의료자원.병상.총병상}병상
           </div>
           <p className="text-[11px] text-slate-500 dark:text-slate-400">
-            가용 {selected_hospital.의료자원.병상.가용병상}석 <span className="text-slate-400">(사용 {selected_hospital.의료자원.병상.사용병상}석)</span>
+            가용 {selected_hospital.의료자원.병상.가용병상}병상 <span className="text-slate-400">(사용 {selected_hospital.의료자원.병상.사용병상}병상)</span>
           </p>
         </div>
 
@@ -393,10 +393,10 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
           </div>
           <div className="text-[11px] flex items-center gap-3 pt-0.5">
             <span className="text-slate-700 dark:text-slate-300">
-              응급 가용: <strong className="text-rose-600 dark:text-rose-400 text-xs font-black">{realtime_beds.er_available}석</strong>
+              응급 가용: <strong className="text-rose-600 dark:text-rose-400 text-xs font-black">{realtime_beds.er_available}병상</strong>
             </span>
             <span className="text-slate-700 dark:text-slate-300">
-              소아 가용: <strong className="text-indigo-600 dark:text-indigo-400 text-xs font-black">{realtime_beds.pediatric_available}석</strong>
+              소아 가용: <strong className="text-indigo-600 dark:text-indigo-400 text-xs font-black">{realtime_beds.pediatric_available}병상</strong>
             </span>
           </div>
         </div>
@@ -431,12 +431,12 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">중환자실 병상 (추정):</span>
               <span className="font-bold text-slate-800 dark:text-slate-200">
-                {selected_hospital.의료자원.중환자실.총병상 > 0 ? `약 ${selected_hospital.의료자원.중환자실.총병상}석` : '미보유 추정'}
+                {selected_hospital.의료자원.중환자실.총병상 > 0 ? `약 ${selected_hospital.의료자원.중환자실.총병상}병상` : '미보유 추정'}
               </span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">가용 중환자실:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">약 {realtime_beds.icu_available}석 가용</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">약 {realtime_beds.icu_available}병상 가용</span>
             </div>
             <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900">
               <span className="text-slate-500">정규 수술실 (추정):</span>

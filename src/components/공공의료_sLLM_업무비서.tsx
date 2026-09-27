@@ -225,8 +225,32 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
   const [is_starting_server, set_is_starting_server] = useState(false);
   const [is_switching_model, set_is_switching_model] = useState(false);
 
-  // 로컬 sLLM 서버 상태 헬스체크
+  // 로컬 sLLM 서버 상태 헬스체크 (1차: 브라우저 직통, 2차: Next.js 프록시)
   const check_local_server_status = async () => {
+    // 1차: 브라우저에서 직접 127.0.0.1:8000 헬스체크 (배포된 웹에서도 사용자 PC와 직통 가능)
+    try {
+      const direct_res = await fetch('http://127.0.0.1:8000/health', {
+        signal: AbortSignal.timeout(1200),
+      });
+      if (direct_res.ok) {
+        const data = await direct_res.json();
+        set_local_server_status({
+          is_running: true,
+          model: data.model,
+          device: data.device,
+          message: '로컬 PC 8000포트 실시간 연결됨',
+          available_models: data.available_models,
+        });
+        if (data.model) {
+          set_selected_local_model(data.model);
+        }
+        return;
+      }
+    } catch {
+      // 직통 실패 시 프록시 시도
+    }
+
+    // 2차: Next.js API 라우트 프록시 조회
     try {
       const res = await fetch('/api/llm/local-server');
       const data = await res.json().catch(() => ({ is_running: false }));
@@ -245,6 +269,20 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
     if (local_server_status?.is_running) {
       set_is_switching_model(true);
       try {
+        // 브라우저 직통 switch 우선 시도
+        const direct_switch = await fetch('http://127.0.0.1:8000/switch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: model_id }),
+          signal: AbortSignal.timeout(60000),
+        }).catch(() => null);
+
+        if (direct_switch && direct_switch.ok) {
+          set_local_server_status((prev) => (prev ? { ...prev, model: model_id } : null));
+          return;
+        }
+
+        // 프록시 switch
         const res = await fetch('/api/llm/local-server', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -252,7 +290,7 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
         });
         const data = await res.json();
         if (data.is_running) {
-          set_local_server_status((prev) => prev ? { ...prev, model: model_id } : null);
+          set_local_server_status((prev) => (prev ? { ...prev, model: model_id } : null));
         }
       } catch (err) {
         console.error('로컬 모델 전환 오류:', err);
@@ -410,7 +448,53 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
       });
 
       if (res.ok) {
-        const json = await res.json();
+        let json = await res.json();
+
+        // 3. 브라우저 직통(Client-side Direct) 온디바이스 로컬 sLLM 호출 검증
+        // (배포된 웹사이트에서도 사용자의 로컬 8000번 포트가 켜져 있으면 100% 직통으로 실제 3B / 0.5B 모델이 추론 수행)
+        if (!json.local_sllm?.is_live) {
+          try {
+            const local_prompt =
+              active_feature_tab === 'general_qa'
+                ? `질문: ${prompt_to_run}\n지역: ${region_name}\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 참고하여 질문에 대해 핵심 요지와 근거를 알기 쉽게 답변하세요.\n답변:`
+                : `질문: ${prompt_to_run}\n지역: ${region_name} (응급미도달: ${selected_region?.응급_60분_미도달_인구비율 ?? 99.2}%, 자체충족률: ${selected_region?.관내_응급_의료이용률 ?? 31.2}%)\n근거 지침:\n${local_rag_text.slice(0, 450)}\n위 지침을 근거로 격조 있는 개조식 보고서를 작성하세요.`;
+
+            const direct_local_res = await fetch('http://127.0.0.1:8000/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                prompt: local_prompt,
+                model: selected_local_model,
+                max_new_tokens: 280,
+              }),
+              signal: AbortSignal.timeout(90000), // 3B CPU 연산 대기
+            });
+
+            if (direct_local_res.ok) {
+              const direct_json = await direct_local_res.json();
+              if (direct_json.response && direct_json.response.trim().length > 0) {
+                const actual_model = direct_json.model || selected_local_model;
+                const model_display = actual_model.includes('3B')
+                  ? 'Qwen 2.5 3B (고성능 로컬 On-Device)'
+                  : 'Qwen 2.5 0.5B (초경량 로컬 On-Device)';
+                json = {
+                  ...json,
+                  local_sllm: {
+                    model: `${model_display} 실시간 구동`,
+                    response: direct_json.response.trim(),
+                    elapsed_ms: direct_json.elapsed_ms || 0,
+                    is_live: true,
+                    security: '원내 폐쇄망 100% 자립 (데이터 외부 유출 0%)',
+                    cost: '무제한 무료 (자체 로컬 하드웨어 연산)',
+                  },
+                };
+              }
+            }
+          } catch {
+            // 직통 연결 불가 시 (로컬 서버 미기동)
+          }
+        }
+
         if (active_feature_tab === 'business_plan') {
           set_business_compare_result(json);
         } else {

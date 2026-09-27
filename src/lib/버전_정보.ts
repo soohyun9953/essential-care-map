@@ -3,9 +3,9 @@
 
 export const PLATFORM_VERSION = {
   date: '20260927',
-  semver: '1.2.1',
-  fullLabel: '20260927 버전 1.2.1',
-  packageVersion: '20260927-v1.2.1',
+  semver: '1.3.0',
+  fullLabel: '20260927 버전 1.3.0',
+  packageVersion: '20260927-v1.3.0',
   updatedAt: '2026-09-27',
-  changelog: '고객 무설정(Zero-Configuration) 검증 환경 구축: ① Google Gemini AI 및 공공데이터포털(E-Gen) API 기본 탑재 상태 자동 동기화, ② 키 미입력 시에도 지능형 정책 RAG 기반 완성형 보고서/답변 즉시 생성, ③ 시스템 상태(/api/system/status) 연동 및 헤더·관리자·sLLM 안내 UI 최적화',
+  changelog: '듀얼 AI 스튜디오 모델별 개별 요청 및 고성능 Qwen 2.5 3B 로컬 sLLM 지원: ① Google Gemini 클라우드 및 온디바이스 로컬 sLLM 독립 요청 분리, ② Qwen 2.5 3B(고성능) / 0.5B(초경량) 실시간 동적 전환 및 CPU 최적화(bfloat16), ③ 모델별 카드 헤더 및 퀵 액션 바 단독 실행 버튼 배치, ④ 로컬 8000포트 브라우저 직통 및 프록시 폴백 체계 완비',
 };

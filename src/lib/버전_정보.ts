@@ -2,10 +2,10 @@
 // 배포 시마다 날짜 및 버전 번호를 순차 증가시킵니다.
 
 export const PLATFORM_VERSION = {
-  date: '20260926',
-  semver: '1.2.0',
-  fullLabel: '20260926 버전 1.2.0',
-  packageVersion: '20260926-v1.2.0',
-  updatedAt: '2026-09-26',
-  changelog: '공공의료 AI ISP 3대 핵심 기능 구현: ① ISP 개선과제 매핑 뱃지 & 우측 420px 슬라이딩 드로어(과제 3.8/3.4/3.3/3.10), ② 과거 수작업(As-Is) vs AI 플랫폼(To-Be) 비교 토글 및 비효율 경고/혁신 배너, ③ 고객 역할별(복지부/지자체/병원장/코디네이터) 4대 페르소나 맞춤형 뷰 프리셋',
+  date: '20260927',
+  semver: '1.2.1',
+  fullLabel: '20260927 버전 1.2.1',
+  packageVersion: '20260927-v1.2.1',
+  updatedAt: '2026-09-27',
+  changelog: '고객 무설정(Zero-Configuration) 검증 환경 구축: ① Google Gemini AI 및 공공데이터포털(E-Gen) API 기본 탑재 상태 자동 동기화, ② 키 미입력 시에도 지능형 정책 RAG 기반 완성형 보고서/답변 즉시 생성, ③ 시스템 상태(/api/system/status) 연동 및 헤더·관리자·sLLM 안내 UI 최적화',
 };

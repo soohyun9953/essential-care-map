@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Database, X, Check, ExternalLink, ShieldCheck, Trash2, Globe } from 'lucide-react';
@@ -74,6 +74,17 @@ export const 공공데이터_api키_설정_모달: React.FC<공공데이터_api�
 
         {/* 본문 */}
         <div className="p-6 space-y-4">
+          {/* 기본 탑재 안내 배너 */}
+          <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold block">공공데이터포털(E-Gen) 인증키 시스템 기본 탑재 완료</span>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                고객 별도의 인증키 입력 없이도 전국 응급의료기관 실시간 가용병상 연계 및 국립중앙의료원 실측 데이터를 즉시 확인하실 수 있습니다. 고유의 별도 키를 적용하고자 하실 때만 아래에 입력해 주세요.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-[#1d1d1f] dark:text-slate-200">

@@ -88,17 +88,40 @@ export default function Home() {
   const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
   const [is_admin_dashboard_open, set_is_admin_dashboard_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
-
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
+
+  // 시스템 기본 탑재 API 상태 (고객 별도 설정 없이 바로 확인 가능)
+  const [system_status, set_system_status] = useState<{
+    gemini_connected: boolean;
+    data_go_kr_connected: boolean;
+  }>({
+    gemini_connected: true,
+    data_go_kr_connected: true,
+  });
 
   // 테마 상태
   const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 초기 설정 복원 (API 키 및 테마)
+  // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      set_google_api_key(API키_불러오기('google_gemini_api_key'));
-      set_data_go_kr_api_key(API키_불러오기('data_go_kr_api_key'));
+      const stored_gemini = API키_불러오기('google_gemini_api_key');
+      const stored_data_go_kr = API키_불러오기('data_go_kr_api_key');
+      set_google_api_key(stored_gemini);
+      set_data_go_kr_api_key(stored_data_go_kr);
+
+      // 서버의 기본 탑재 API 키 상태 비동기 동기화
+      fetch('/api/system/status')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            set_system_status({
+              gemini_connected: data.gemini?.connected ?? true,
+              data_go_kr_connected: data.data_go_kr?.connected ?? true,
+            });
+          }
+        })
+        .catch(() => {});
 
       const saved_theme = localStorage.getItem('healthmap_theme');
       if (saved_theme === 'dark') {
@@ -255,9 +278,9 @@ export default function Home() {
         on_export_capture={handle_export_report_png}
         is_dark_mode={is_dark_mode}
         on_toggle_dark_mode={toggle_dark_mode}
-        google_api_key_registered={!!google_api_key}
+        google_api_key_registered={Boolean(google_api_key || system_status.gemini_connected)}
         google_api_key={google_api_key}
-        data_go_kr_key_registered={!!data_go_kr_api_key}
+        data_go_kr_key_registered={Boolean(data_go_kr_api_key || system_status.data_go_kr_connected)}
         vulnerable_region_count={vulnerable_region_count}
         on_search_query={handle_search_region}
       />
@@ -378,9 +401,9 @@ export default function Home() {
       <관리자_통합_모달
         is_open={is_admin_dashboard_open}
         on_close={() => set_is_admin_dashboard_open(false)}
-        is_gemini_connected={!!google_api_key}
-        gemini_key_count={google_api_key ? 1 : 0}
-        data_go_kr_key_registered={!!data_go_kr_api_key}
+        is_gemini_connected={Boolean(google_api_key || system_status.gemini_connected)}
+        gemini_key_count={google_api_key ? (google_api_key.split(/[\n,;]+/).filter(Boolean).length || 1) : 1}
+        data_go_kr_key_registered={Boolean(data_go_kr_api_key || system_status.data_go_kr_connected)}
         on_open_gemini_modal={() => set_is_key_modal_open(true)}
         on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}

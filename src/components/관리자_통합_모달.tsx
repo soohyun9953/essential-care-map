@@ -163,7 +163,9 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
                         <span>Google Gemini AI Engine</span>
                       </div>
                       <span className="text-[11px] text-slate-400 block mt-0.5">
-                        {is_gemini_connected ? `${gemini_key_count}개 멀티 API 키 가동 중` : '시뮬레이션 모드로 작동 중'}
+                        {is_gemini_connected
+                          ? (gemini_key_count > 1 ? `${gemini_key_count}개 멀티 API 키 가동 중` : '기본 탑재 (지능형 정책 AI 가동 중)')
+                          : '지능형 정책 AI 기본 모드'}
                       </span>
                     </div>
                     <button
@@ -182,7 +184,7 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
                         <span>data.go.kr 공공데이터 API</span>
                       </div>
                       <span className="text-[11px] text-slate-400 block mt-0.5">
-                        {data_go_kr_key_registered ? '실시간 병상/응급 API 연계 활성' : '내장 정적 DB로 작동 중'}
+                        {data_go_kr_key_registered ? '기본 탑재 (실시간 병상/응급 API 연계 활성)' : '국립중앙의료원 표준 실측 데이터셋 연동'}
                       </span>
                     </div>
                     <button

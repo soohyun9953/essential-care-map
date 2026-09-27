@@ -447,12 +447,12 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
             className={`inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-2xl text-xs font-bold border transition shadow-apple-sm ${
               google_api_key
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-700'
-                : 'bg-amber-400/20 text-amber-900 border-amber-400 hover:bg-amber-400/30 ring-2 ring-amber-400/40 animate-pulse dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-700'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
             }`}
-            title="Google Gemini API 키 입력 및 관리"
+            title="Google Gemini API 키 관리 (기본 탑재 완료)"
           >
-            <Key className="w-3.5 h-3.5 text-amber-600" />
-            <span>{google_api_key ? '🔑 Google 키 등록됨' : '🔑 Google API 키 입력'}</span>
+            <Key className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span>{google_api_key ? '🔑 Google 키 등록됨' : '✨ 지능형 AI 기본탑재'}</span>
           </button>
 
           {/* 로컬 sLLM 서버 상태 및 원클릭 가동 버튼 */}
@@ -1017,21 +1017,19 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                   )}
                 </div>
 
-                {/* API 키 미등록 시 직관적인 입력 유도 배너 */}
-                {!google_api_key && (
-                  <div className="mt-2.5 p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 rounded-xl flex items-center justify-between text-[11px] text-amber-900 dark:text-amber-200">
-                    <div className="flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                      <span>Gemini API 키를 등록하면 실제 실시간 구글 AI가 답변합니다.</span>
-                    </div>
-                    <button
-                      onClick={() => set_is_key_modal_open(true)}
-                      className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition shrink-0 shadow-apple-sm"
-                    >
-                      키 입력하기
-                    </button>
+                {/* 기본 탑재 안내 배너 */}
+                <div className="mt-2.5 p-2.5 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/40 rounded-xl flex items-center justify-between text-[11px] text-emerald-900 dark:text-emerald-200">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>플랫폼 기본 지능형 정책 AI가 탑재되어 있어 고객 별도 키 설정 없이 즉시 분석 결과를 확인하실 수 있습니다.</span>
                   </div>
-                )}
+                  <button
+                    onClick={() => set_is_key_modal_open(true)}
+                    className="px-2.5 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 border border-slate-200 dark:border-slate-700 font-bold rounded-lg transition shrink-0 text-[10px]"
+                  >
+                    키 관리
+                  </button>
+                </div>
 
                 {/* 본문 */}
                 <div className="mt-3">

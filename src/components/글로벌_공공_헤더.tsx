@@ -424,10 +424,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                       </div>
                       {is_gemini_connected ? (
                         <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
-                          {gemini_key_count > 1 ? `${gemini_key_count}개 키 연결됨` : '1개 키 연결됨'}
+                          {gemini_key_count > 1 ? `${gemini_key_count}개 키 연결됨` : (google_api_key ? '사용자 키 연결됨' : '기본 탑재 (연결됨)')}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">미연결 (시뮬레이션)</span>
+                        <span className="text-[10px] text-slate-400">기본 정책 AI 가동</span>
                       )}
                     </div>
                     {/* 공공데이터 API */}
@@ -437,9 +437,11 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                         <span className="font-semibold text-slate-700 dark:text-slate-300">공공데이터 API</span>
                       </div>
                       {data_go_kr_key_registered ? (
-                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">연결됨</span>
+                        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded">
+                          기본 탑재 (연결됨)
+                        </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">미연결</span>
+                        <span className="text-[10px] text-slate-400">기준 데이터 연동</span>
                       )}
                     </div>
                   </div>

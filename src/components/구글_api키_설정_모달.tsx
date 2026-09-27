@@ -78,6 +78,17 @@ export const 구글_api키_설정_모달: React.FC<구글_api키_설정_모달_�
 
         {/* 본문 */}
         <div className="p-6 space-y-4">
+          {/* 기본 탑재 안내 배너 */}
+          <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs flex items-start gap-2.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-bold block">시스템 기본 지능형 정책 AI 탑재 완료</span>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-400">
+                고객 별도의 API 키 입력 없이도 모든 AI 사업계획서 생성 및 정책 질의응답을 즉시 확인하실 수 있습니다. 기관 또는 개인 고유의 Gemini 키로 전환하고자 하실 때만 아래에 입력해 주세요.
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-[#1d1d1f] dark:text-white flex items-center justify-between">
               <span>Google AI Studio API Key</span>

@@ -18,6 +18,8 @@ import {
   CheckCircle2,
   Sparkles,
   AlertTriangle,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { useIsp, PERSONA_LIST, PersonaType } from '@/context/ISP_컨텍스트';
@@ -66,6 +68,8 @@ interface 글로벌_공공_헤더_속성 {
   data_go_kr_key_registered?: boolean;
   on_search_query?: (query: string) => void;
   vulnerable_region_count?: number;
+  is_authenticated?: boolean;
+  on_open_auth_modal?: () => void;
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
@@ -91,6 +95,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   data_go_kr_key_registered,
   on_search_query,
   vulnerable_region_count = 82,
+  is_authenticated = false,
+  on_open_auth_modal,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_persona_open, set_is_persona_open] = useState(false);
@@ -576,6 +582,35 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
+
+            {/* 4. 우측 상단 보안 로그인 아이콘 버튼 (일반인 접근 차단 및 패스워드 인증) */}
+            <button
+              type="button"
+              onClick={on_open_auth_modal}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm hover:shadow-md transition active:scale-95 cursor-pointer ${
+                is_authenticated
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
+                  : 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-300 dark:ring-amber-700 animate-pulse'
+              }`}
+              title={
+                is_authenticated
+                  ? '공공보건의료 인가자 보안 인증 완료 (클릭 시 상태 확인 및 로그아웃)'
+                  : '일반인 접근 제한 중: 클릭하여 보안 패스워드를 입력하세요'
+              }
+            >
+              {is_authenticated ? (
+                <>
+                  <Unlock className="w-3.5 h-3.5 text-emerald-100" />
+                  <span className="hidden sm:inline">인증완료</span>
+                  <span className="sm:hidden inline">인증</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-amber-100 fill-current" />
+                  <span>로그인</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>

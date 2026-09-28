@@ -62,10 +62,13 @@ import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_�
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
+import { 보안_로그인_모달 } from '@/components/보안_로그인_모달';
 import { IspProvider, PersonaInfo } from '@/context/ISP_컨텍스트';
 import { ISP_과제_드로어 } from '@/components/ISP_과제_드로어';
+import { Lock, Unlock, ShieldAlert } from 'lucide-react';
 
 import { API키_불러오기 } from '@/lib/API키_저장소';
+import { get_site_auth_status, set_site_auth_status } from '@/lib/보안_인증_저장소';
 
 export default function Home() {
   // 5대 Global Workspace 상태 (기본: 'home')
@@ -102,9 +105,22 @@ export default function Home() {
   // 테마 상태
   const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화)
+  // 사이트 보안 로그인 및 인가 상태 (일반인 접근 차단)
+  const [is_authenticated, set_is_authenticated] = useState<boolean>(false);
+  const [is_auth_modal_open, set_is_auth_modal_open] = useState<boolean>(false);
+  const [is_auth_initialized, set_is_auth_initialized] = useState<boolean>(false);
+
+  // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화 + 보안 인증 상태 확인)
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // 보안 로그인 인증 여부 확인
+      const is_auth = get_site_auth_status();
+      set_is_authenticated(is_auth);
+      if (!is_auth) {
+        set_is_auth_modal_open(true);
+      }
+      set_is_auth_initialized(true);
+
       const stored_gemini = API키_불러오기('google_gemini_api_key');
       const stored_data_go_kr = API키_불러오기('data_go_kr_api_key');
       set_google_api_key(stored_gemini);
@@ -283,10 +299,19 @@ export default function Home() {
         data_go_kr_key_registered={Boolean(data_go_kr_api_key || system_status.data_go_kr_connected)}
         vulnerable_region_count={vulnerable_region_count}
         on_search_query={handle_search_region}
+        is_authenticated={is_authenticated}
+        on_open_auth_modal={() => set_is_auth_modal_open(true)}
       />
 
       {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
-      <div id="main-workspace-content" className="flex-1 flex flex-col min-w-0">
+      <div
+        id="main-workspace-content"
+        className={`flex-1 flex flex-col min-w-0 relative ${
+          is_auth_initialized && !is_authenticated
+            ? 'filter blur-md select-none pointer-events-none'
+            : ''
+        }`}
+      >
         {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
         {current_workspace === 'home' && (
           <div className="flex-1 w-full overflow-y-auto">
@@ -357,6 +382,41 @@ export default function Home() {
         )}
       </div>
 
+      {/* 2-1. 비인가자 화면 차단 및 보안 게이트 오버레이 (미인증 시 표시) */}
+      {is_auth_initialized && !is_authenticated && (
+        <div className="fixed inset-0 top-14 z-40 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white dark:bg-[#18181b] rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/[0.1] shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95">
+            <div className="w-14 h-14 mx-auto rounded-3xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center ring-8 ring-amber-500/5">
+              <Lock className="w-7 h-7" />
+            </div>
+            <div className="space-y-1">
+              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 tracking-wider uppercase">
+                국립중앙의료원 공공보건의료지원센터
+              </span>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                인가자 전용 보안 시스템
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                본 시스템은 국가 필수의료 취약지 진단 및 공문서 작성을 위한 업무 플랫폼으로, 일반인의 무단 접근을 방지하고 있습니다.
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 font-medium">
+              우측 상단의 <strong className="text-amber-700 dark:text-amber-300 font-bold">[🔒 로그인]</strong> 아이콘을 누르거나 아래 버튼을 클릭하여 보안 패스워드를 입력해주세요.
+            </div>
+
+            <button
+              type="button"
+              onClick={() => set_is_auth_modal_open(true)}
+              className="w-full py-3.5 px-5 rounded-2xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-bold shadow-apple-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Unlock className="w-4 h-4" />
+              <span>보안 패스워드 입력하고 입장하기</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ============================================================== */}
       {/* 전역 공통 팝업 모달 레이어 */}
       {/* ============================================================== */}
@@ -407,6 +467,21 @@ export default function Home() {
         on_open_gemini_modal={() => set_is_key_modal_open(true)}
         on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
+      />
+
+      {/* 보안 로그인 및 인가 패스워드 검증 모달 */}
+      <보안_로그인_모달
+        isOpen={is_auth_modal_open}
+        onClose={() => set_is_auth_modal_open(false)}
+        isAuthenticated={is_authenticated}
+        onAuthSuccess={() => {
+          set_is_authenticated(true);
+          set_is_auth_modal_open(false);
+        }}
+        onLogout={() => {
+          set_is_authenticated(false);
+          set_is_auth_modal_open(true);
+        }}
       />
 
       {/* ISP 개선과제 우측 슬라이딩 드로어 (과제 3.8 / 3.4 / 3.3 / 3.10 상세) */}

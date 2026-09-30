@@ -31,6 +31,7 @@ import {
 } from '@/lib/지역거점_공공병원_공시검증_데이터셋';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { 회계_공시_사전검증_시뮬레이터 } from './회계_공시_사전검증_시뮬레이터';
+import { 개인정보_수정공시_시뮬레이터 } from './개인정보_수정공시_시뮬레이터';
 
 export const 지역거점_공공병원_공시검증_대시보드: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'hospitals' | 'formulas' | 'pii_process'>('hospitals');
@@ -434,6 +435,9 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
       {/* [탭 3] 수시공시 개인정보(PII) 점검 및 수정공시 프로세스 */}
       {activeTab === 'pii_process' && (
         <div className="space-y-6">
+          {/* 실시간 개인정보(PII) 비식별화 및 수정공시 사유서 시뮬레이터 */}
+          <개인정보_수정공시_시뮬레이터 />
+
           {/* 개인정보 유출 검출 배너 */}
           <div className="p-6 rounded-3xl bg-amber-500/10 border-2 border-amber-500/30 text-amber-950 dark:text-amber-200 space-y-3">
             <div className="flex items-center gap-2">

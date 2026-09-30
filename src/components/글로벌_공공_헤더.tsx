@@ -20,6 +20,7 @@ import {
   AlertTriangle,
   Lock,
   Unlock,
+  Compass,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { useIsp, PERSONA_LIST, PersonaType } from '@/context/ISP_컨텍스트';
@@ -70,6 +71,7 @@ interface 글로벌_공공_헤더_속성 {
   vulnerable_region_count?: number;
   is_authenticated?: boolean;
   on_open_auth_modal?: () => void;
+  on_open_review_guide_modal?: () => void;
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
@@ -97,6 +99,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   vulnerable_region_count = 82,
   is_authenticated = false,
   on_open_auth_modal,
+  on_open_review_guide_modal,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_persona_open, set_is_persona_open] = useState(false);
@@ -582,6 +585,18 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
+
+            {/* 3-2. 담당자별 집중 검토 가이드 버튼 (고객 프로토타입 검토 안내) */}
+            <button
+              type="button"
+              onClick={on_open_review_guide_modal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs transition active:scale-95 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xs hover:shadow-md ring-2 ring-blue-300 dark:ring-blue-800"
+              title="고객 검토 안내: 각 시스템 담당자별 집중 확인 메뉴 및 가이드"
+            >
+              <Compass className="w-3.5 h-3.5 text-blue-100" />
+              <span className="hidden sm:inline">담당자별 검토 가이드</span>
+              <span className="sm:hidden inline">검토 가이드</span>
+            </button>
 
             {/* 4. 우측 상단 보안 로그인 아이콘 버튼 (일반인 접근 차단 및 패스워드 인증) */}
             <button

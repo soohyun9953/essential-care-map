@@ -63,6 +63,7 @@ import { 공공데이터_api키_설정_모달 } from '@/components/공공데이�
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
 import { 보안_로그인_모달 } from '@/components/보안_로그인_모달';
+import { 담당자별_검토_가이드_모달 } from '@/components/담당자별_검토_가이드_모달';
 import { IspProvider, PersonaInfo } from '@/context/ISP_컨텍스트';
 import { ISP_과제_드로어 } from '@/components/ISP_과제_드로어';
 import { Lock, Unlock, ShieldAlert } from 'lucide-react';
@@ -90,6 +91,7 @@ export default function Home() {
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
   const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
   const [is_admin_dashboard_open, set_is_admin_dashboard_open] = useState(false);
+  const [is_review_guide_open, set_is_review_guide_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
 
@@ -252,6 +254,21 @@ export default function Home() {
     }
   };
 
+  // 고객 검토 가이드 모달에서 메뉴 이동 시 네비게이션
+  const handle_review_guide_navigate = (
+    workspace: 워크스페이스_타입,
+    subFeature?: string
+  ) => {
+    if (workspace === 'medical_institution' && subFeature) {
+      set_medical_subtab(subFeature as any);
+    } else if (workspace === 'policy_planning' && subFeature) {
+      if (['compare', 'forecast', 'policy_ai', 'report'].includes(subFeature)) {
+        set_policy_subtab(subFeature as any);
+      }
+    }
+    set_current_workspace(workspace);
+  };
+
   // 엑셀 패키지 다운로드 및 캡처
   const handle_download_nmc_excel = async () => {
     if (!selected_region) return;
@@ -301,6 +318,7 @@ export default function Home() {
         on_search_query={handle_search_region}
         is_authenticated={is_authenticated}
         on_open_auth_modal={() => set_is_auth_modal_open(true)}
+        on_open_review_guide_modal={() => set_is_review_guide_open(true)}
       />
 
       {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
@@ -482,6 +500,13 @@ export default function Home() {
           set_is_authenticated(false);
           set_is_auth_modal_open(true);
         }}
+      />
+
+      {/* 고객 프로토타입 검토를 위한 시스템 담당자별 집중 검토 가이드 모달 */}
+      <담당자별_검토_가이드_모달
+        isOpen={is_review_guide_open}
+        onClose={() => set_is_review_guide_open(false)}
+        onNavigate={handle_review_guide_navigate}
       />
 
       {/* ISP 개선과제 우측 슬라이딩 드로어 (과제 3.8 / 3.4 / 3.3 / 3.10 상세) */}

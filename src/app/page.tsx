@@ -235,7 +235,7 @@ export default function Home() {
   // 안내 모달에서 메뉴 네비게이션
   const handle_guide_navigate = (menu_id: string) => {
     set_is_guide_modal_open(false);
-    if (['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care'].includes(menu_id)) {
+    if (['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care', 'aa_disclosure'].includes(menu_id)) {
       set_medical_subtab(menu_id as 의료기관_서브탭_타입);
       set_current_workspace('medical_institution');
     } else if (['report_generator', 'compare_1to1', 'demand_forecast'].includes(menu_id)) {

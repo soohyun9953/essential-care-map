@@ -40,11 +40,13 @@ const 공공의료_CP_오더세트_라이브러리 = dynamic(() => import('./공
 import 신포괄_정책가산_평가_시뮬레이터 from './신포괄_정책가산_평가_시뮬레이터';
 import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대시보드';
 import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';
+import { 지역거점_공공병원_공시검증_대시보드 } from './지역거점_공공병원_공시검증_대시보드';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 export type 의료기관_서브탭_타입 =
   | 'hospitals'
+  | 'aa_disclosure'
   | 'datacenter'
   | 'crisis'
   | 'cp_library'
@@ -113,6 +115,19 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <Building2 className="w-3.5 h-3.5" />
           <span>공공의료기관 탐색 (214개소)</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('aa_disclosure')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'aa_disclosure'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Building2 className="w-3.5 h-3.5 text-blue-400" />
+          <span>41개 공공병원 알리미 공시검증</span>
+          <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 알리미" />
         </button>
 
         <button
@@ -410,6 +425,13 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
       {/* ============================================================== */}
       {active_subtab === 'discharge_care' && (
         <퇴원환자_돌봄자원_AI매칭 />
+      )}
+
+      {/* ============================================================== */}
+      {/* 9. SUBTAB 8: 41개 지역거점 공공병원 알리미 통합공시 & 품질검증 (과제 3.8) */}
+      {/* ============================================================== */}
+      {active_subtab === 'aa_disclosure' && (
+        <지역거점_공공병원_공시검증_대시보드 />
       )}
     </div>
   );

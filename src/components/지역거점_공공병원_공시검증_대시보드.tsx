@@ -30,6 +30,7 @@ import {
   공공병원_공시검증_기관_데이터,
 } from '@/lib/지역거점_공공병원_공시검증_데이터셋';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { 회계_공시_사전검증_시뮬레이터 } from './회계_공시_사전검증_시뮬레이터';
 
 export const 지역거점_공공병원_공시검증_대시보드: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'hospitals' | 'formulas' | 'pii_process'>('hospitals');
@@ -354,6 +355,9 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
       {/* [탭 2] 14대 회계 산출식 & 통계적 이상치 분석 */}
       {activeTab === 'formulas' && (
         <div className="space-y-6">
+          {/* 실시간 AI 회계·공시 사전검증 시뮬레이터 위젯 */}
+          <회계_공시_사전검증_시뮬레이터 />
+
           {/* 영역별 오류 비중 개요 */}
           <div className="bg-white dark:bg-[#15161b] p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
             <div className="flex items-center justify-between">

@@ -175,14 +175,15 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
               <Activity className="w-4 h-4 text-white" />
             </div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-normal flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+            <div className="flex flex-col justify-center">
+              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 공공의료 의사결정 지원 플랫폼
               </h1>
-              {/* 1. 좌측 버전 폰트 사이즈 확대 적용 (text-xs sm:text-[13px] font-bold) */}
-              <span className="text-xs sm:text-[13px] px-2.5 py-0.5 rounded-md bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800 shadow-2xs hidden sm:inline-flex items-center justify-center leading-none">
-                {PLATFORM_VERSION.fullLabel}
-              </span>
+              <div className="flex items-center mt-0.5">
+                <span className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight">
+                  {PLATFORM_VERSION.fullLabel}
+                </span>
+              </div>
             </div>
           </button>
 
@@ -389,7 +390,48 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               </span>
             </button>
 
-            {/* 라이트/다크 테마 토글 */}
+            {/* 3-2. 담당자별 집중 검토 가이드 버튼 (고객 프로토타입 검토 안내) */}
+            <button
+              type="button"
+              onClick={on_open_review_guide_modal}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs transition active:scale-95 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xs hover:shadow-md ring-2 ring-blue-300 dark:ring-blue-800"
+              title="고객 검토 안내: 각 시스템 담당자별 집중 확인 메뉴 및 가이드"
+            >
+              <Compass className="w-3.5 h-3.5 text-blue-100" />
+              <span className="hidden sm:inline">담당자별 검토 가이드</span>
+              <span className="sm:hidden inline">검토 가이드</span>
+            </button>
+
+            {/* 4. 보안 로그인 아이콘 버튼 (일반인 접근 차단 및 패스워드 인증) */}
+            <button
+              type="button"
+              onClick={on_open_auth_modal}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm hover:shadow-md transition active:scale-95 cursor-pointer ${
+                is_authenticated
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
+                  : 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-300 dark:ring-amber-700 animate-pulse'
+              }`}
+              title={
+                is_authenticated
+                  ? '공공보건의료 인가자 보안 인증 완료 (클릭 시 상태 확인 및 로그아웃)'
+                  : '일반인 접근 제한 중: 클릭하여 보안 패스워드를 입력하세요'
+              }
+            >
+              {is_authenticated ? (
+                <>
+                  <Unlock className="w-3.5 h-3.5 text-emerald-100" />
+                  <span className="hidden sm:inline">인증완료</span>
+                  <span className="sm:hidden inline">인증</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-amber-100 fill-current" />
+                  <span>로그인</span>
+                </>
+              )}
+            </button>
+
+            {/* 5. 블랙/화이트 화면 변경 (라이트/다크 테마 토글) */}
             <button
               onClick={on_toggle_dark_mode}
               className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
@@ -398,7 +440,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               {is_dark_mode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* 관리자 & 데이터 설정 드롭다운 */}
+            {/* 6. 관리자 & 데이터 설정 드롭다운 (가장 우측) */}
             <div className="relative" ref={admin_ref}>
               <button
                 type="button"
@@ -585,47 +627,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
-
-            {/* 3-2. 담당자별 집중 검토 가이드 버튼 (고객 프로토타입 검토 안내) */}
-            <button
-              type="button"
-              onClick={on_open_review_guide_modal}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-xs transition active:scale-95 cursor-pointer bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-xs hover:shadow-md ring-2 ring-blue-300 dark:ring-blue-800"
-              title="고객 검토 안내: 각 시스템 담당자별 집중 확인 메뉴 및 가이드"
-            >
-              <Compass className="w-3.5 h-3.5 text-blue-100" />
-              <span className="hidden sm:inline">담당자별 검토 가이드</span>
-              <span className="sm:hidden inline">검토 가이드</span>
-            </button>
-
-            {/* 4. 우측 상단 보안 로그인 아이콘 버튼 (일반인 접근 차단 및 패스워드 인증) */}
-            <button
-              type="button"
-              onClick={on_open_auth_modal}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm hover:shadow-md transition active:scale-95 cursor-pointer ${
-                is_authenticated
-                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-500/20'
-                  : 'bg-amber-500 hover:bg-amber-600 text-white ring-2 ring-amber-300 dark:ring-amber-700 animate-pulse'
-              }`}
-              title={
-                is_authenticated
-                  ? '공공보건의료 인가자 보안 인증 완료 (클릭 시 상태 확인 및 로그아웃)'
-                  : '일반인 접근 제한 중: 클릭하여 보안 패스워드를 입력하세요'
-              }
-            >
-              {is_authenticated ? (
-                <>
-                  <Unlock className="w-3.5 h-3.5 text-emerald-100" />
-                  <span className="hidden sm:inline">인증완료</span>
-                  <span className="sm:hidden inline">인증</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="w-3.5 h-3.5 text-amber-100 fill-current" />
-                  <span>로그인</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
       </div>

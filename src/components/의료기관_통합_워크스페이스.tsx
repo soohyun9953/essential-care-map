@@ -43,6 +43,7 @@ import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_
 import { 지역거점_공공병원_공시검증_대시보드 } from './지역거점_공공병원_공시검증_대시보드';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
+import { 의료기관_질의응답_모달 } from './의료기관_질의응답_모달';
 
 export type 의료기관_서브탭_타입 =
   | 'hospitals'
@@ -76,6 +77,15 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
 
   // 상세 모달 대상 기관
   const [detail_modal_hospital, set_detail_modal_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
+
+  // 의료기관 데이터 자연어 AI 질의응답 모달 상태
+  const [is_qa_modal_open, setIs_qa_modal_open] = useState(false);
+  const [qa_initial_query, setQa_initial_query] = useState('병상수가 가장 많은 공공병원 Top10 보여줘.');
+
+  const handle_open_qa_modal = (query?: string) => {
+    if (query) setQa_initial_query(query);
+    setIs_qa_modal_open(true);
+  };
 
   // 시도 목록
   const sido_list = useMemo(() => {
@@ -271,7 +281,17 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
                 <option value="특수공공">특수공공병원</option>
               </select>
 
-              <span className="text-xs text-slate-400 font-semibold whitespace-nowrap pl-2">
+              <button
+                type="button"
+                onClick={() => handle_open_qa_modal('병상수가 가장 많은 공공병원 Top10 보여줘.')}
+                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-teal-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                title="병상수, 전문의 인력, 필수의료 가동 등 자연어로 공공의료기관 전수 질의"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>의료기관 AI 질의응답</span>
+              </button>
+
+              <span className="text-xs text-slate-400 font-semibold whitespace-nowrap pl-1">
                 총 {filtered_hospitals.length}개소
               </span>
             </div>
@@ -433,6 +453,17 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
       {active_subtab === 'aa_disclosure' && (
         <지역거점_공공병원_공시검증_대시보드 />
       )}
+
+      {/* 의료기관 데이터 자연어 AI 질의응답 모달 */}
+      <의료기관_질의응답_모달
+        is_open={is_qa_modal_open}
+        on_close={() => setIs_qa_modal_open(false)}
+        initial_query={qa_initial_query}
+        on_select_hospital={(h) => {
+          setIs_qa_modal_open(false);
+          set_detail_modal_hospital(h);
+        }}
+      />
     </div>
   );
 };

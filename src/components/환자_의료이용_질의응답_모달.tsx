@@ -210,7 +210,7 @@ export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이�
 
           {/* 질의 분석 결과 영역 */}
           {result && (
-            <div className="space-y-5 animate-in fade-in duration-300">
+            <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300">
               {/* 1. AI 종합 분석 브리핑 카드 */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-blue-50/80 via-indigo-50/40 to-white dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900 border border-blue-100 dark:border-blue-900/60 shadow-xs space-y-3">
                 <div className="flex items-center justify-between gap-3">

@@ -412,10 +412,23 @@ export function get_all_sgg_flow_stats(): 시군구_유출입_순위_통계[] {
 // ----------------------------------------------------------------------
 // 6. 자연어 질의 분석 & 응답 엔진 (Q&A Generator)
 // ----------------------------------------------------------------------
+function parse_query_limit(query: string, default_val: number = 10, max_val: number = 70): number {
+  const match = query.match(/(?:top|상위|하위)\s*(\d+)/i) || 
+                query.match(/(\d+)\s*(?:개|곳|개소|지역|권역|위)/i);
+  if (match && match[1]) {
+    const val = parseInt(match[1], 10);
+    if (!isNaN(val) && val > 0) {
+      return Math.min(val, max_val);
+    }
+  }
+  return default_val;
+}
+
 export function analyze_patient_flow_query(user_query: string): 질의_응답_결과 {
   const q = user_query.trim().toLowerCase();
+  const limit = parse_query_limit(user_query, 10, 70);
 
-  // 1. [핵심 질문] 중진료권별 유출 Top 10 및 유출 인구수
+  // 1. [핵심 질문] 중진료권별 유출 Top N 및 유출 인구수
   if (
     (q.includes('중진료권') || q.includes('권역')) &&
     (q.includes('유출') || q.includes('빠져') || q.includes('관외'))
@@ -424,21 +437,21 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     // 유출률 기준 정렬 (또는 유출 인구 기준)
     const sorted = [...all_mids]
       .sort((a, b) => b.유출률 - a.유출률)
-      .slice(0, 10)
+      .slice(0, limit)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
     const top1 = sorted[0];
     const top3_names = sorted.slice(0, 3).map((d) => `${d.중진료권명}(${d.유출률}%)`).join(', ');
-    const total_outflow_pop_top10 = sorted.reduce((sum, d) => sum + d.유출_추정인구수, 0);
+    const total_outflow_pop = sorted.reduce((sum, d) => sum + d.유출_추정인구수, 0);
 
     return {
       query: user_query,
       category: '중진료권_유출',
-      title: '전국 70개 중진료권별 환자 유출률 Top 10 및 추정 유출 인구수',
-      summary: `전국 70개 중진료권 전수 분석 결과, 환자 관외 유출률 1위는 **${top1.중진료권명}**(${top1.유출률}%, 추정 유출 인구 ${format_number_comma(top1.유출_추정인구수)}명)이며, 상위 3개 권역은 **${top3_names}** 순입니다. 상위 10개 취약 권역의 총 유출 인구는 약 **${format_number_comma(total_outflow_pop_top10)}명**에 달합니다.`,
+      title: `전국 70개 중진료권별 환자 유출률 Top ${sorted.length} 및 추정 유출 인구수`,
+      summary: `전국 70개 중진료권 전수 분석 결과, 환자 관외 유출률 1위는 **${top1.중진료권명}**(${top1.유출률}%, 추정 유출 인구 ${format_number_comma(top1.유출_추정인구수)}명)이며, 상위 3개 권역은 **${top3_names}** 순입니다. 상위 ${sorted.length}개 취약 권역의 총 유출 인구는 약 **${format_number_comma(total_outflow_pop)}명**에 달합니다.`,
       insights: [
         `🚨 **최고 취약 권역**: ${top1.중진료권명}(${top1.시도명})은 전체 의료이용의 ${top1.유출률}%가 관외로 유출되며, 주로 [${top1.주요_유출_목적지.join(', ')}]으로 환자가 유출되고 있습니다.`,
-        `👥 **인구 유출 규모**: 상위 10대 권역 거주민 약 ${format_number_comma(total_outflow_pop_top10)}명이 자체 권역 내에서 필수의료를 해결하지 못하고 타 지역으로 원정 진료를 떠납니다.`,
+        `👥 **인구 유출 규모**: 상위 ${sorted.length}대 권역 거주민 약 ${format_number_comma(total_outflow_pop)}명이 자체 권역 내에서 필수의료를 해결하지 못하고 타 지역으로 원정 진료를 떠납니다.`,
         `💡 **정책적 시사점**: 강원(영월·속초), 경북(영주·상주), 전북(남원·진안) 등 군 단위 연계 중진료권의 필수의료 역량 강화(지역책임의료기관 확충)가 시급합니다.`,
       ],
       data_type: '중진료권',
@@ -476,7 +489,7 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     };
   }
 
-  // 2. 중진료권별 유입 Top 10
+  // 2. 중진료권별 유입 Top N
   if (
     (q.includes('중진료권') || q.includes('권역')) &&
     (q.includes('유입') || q.includes('흡수') || q.includes('들어'))
@@ -484,7 +497,7 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     const all_mids = get_all_mid_zones_flow_stats();
     const sorted = [...all_mids]
       .sort((a, b) => b.관외_유입_재원일수 - a.관외_유입_재원일수)
-      .slice(0, 10)
+      .slice(0, limit)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
     const top1 = sorted[0];
@@ -492,7 +505,7 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     return {
       query: user_query,
       category: '중진료권_유입',
-      title: '전국 70개 중진료권별 타지역 환자 유입량 Top 10',
+      title: `전국 70개 중진료권별 타지역 환자 유입량 Top ${sorted.length}`,
       summary: `타지역 환자가 가장 많이 유입되는 중진료권 1위는 **${top1.중진료권명}**(${top1.시도명})으로, 관외 유입 재원일수가 **${format_number_comma(top1.관외_유입_재원일수)}일**에 달합니다. 수도권 상급종합병원 밀집 권역과 지방 대도시 중추 권역으로 환자 쏠림이 뚜렷합니다.`,
       insights: [
         `🏥 **의료자원 블랙홀 권역**: 상위 유입 권역은 우수한 상급종합병원 및 필수의료 전문 인프라가 집중되어 전국 및 인접 권역 환자를 대거 흡수하고 있습니다.`,
@@ -529,9 +542,10 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
   if (q.includes('시도') || q.includes('시·도') || q.includes('광역시') || q.includes('도별')) {
     const all_sidos = get_all_sido_flow_stats();
     const is_inflow = q.includes('유입');
+    const sido_limit = Math.min(limit, 17);
     const sorted = [...all_sidos]
       .sort((a, b) => (is_inflow ? b.관외_유입_재원일수 - a.관외_유입_재원일수 : b.유출률 - a.유출률))
-      .slice(0, 10)
+      .slice(0, sido_limit)
       .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
     const top1 = sorted[0];
@@ -539,7 +553,7 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     return {
       query: user_query,
       category: '시도_유출입',
-      title: is_inflow ? '전국 17개 시·도별 타지역 환자 유입량 순위' : '전국 17개 시·도별 환자 관외 유출률 및 유출 인구수 순위',
+      title: is_inflow ? `전국 17개 시·도별 타지역 환자 유입량 순위 Top ${sorted.length}` : `전국 17개 시·도별 환자 관외 유출률 및 유출 인구수 Top ${sorted.length}`,
       summary: is_inflow
         ? `전국 17개 시·도 중 타지역 환자 유입 1위는 **${top1.시도명}**이며, 연간 **${format_number_comma(top1.관외_유입_재원일수)}일**의 관외 환자 진료가 발생했습니다.`
         : `전국 17개 시·도 중 환자 관외 유출률 1위는 **${top1.시도명}**(${top1.유출률}%, 추정 유출 인구 ${format_number_comma(top1.유출_추정인구수)}명)입니다.`,
@@ -577,8 +591,8 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
   if (matched_sgg_key) {
     const sgg_data = 환자_유출입_2024_데이터[matched_sgg_key];
     const pop = SGG_POP_MAP[matched_sgg_key] || 0;
-    const top_outflows = (sgg_data.outflow_top || []).filter((d) => !d.is_self).slice(0, 5);
-    const top_inflows = (sgg_data.inflow_top || []).filter((d) => !d.is_self).slice(0, 5);
+    const top_outflows = (sgg_data.outflow_top || []).filter((d) => !d.is_self).slice(0, Math.min(limit, 10));
+    const top_inflows = (sgg_data.inflow_top || []).filter((d) => !d.is_self).slice(0, Math.min(limit, 10));
 
     return {
       query: user_query,
@@ -622,11 +636,11 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
     };
   }
 
-  // 5. 시군구별 유출 순위 Top 10 (기본 폴백)
+  // 5. 시군구별 유출 순위 Top N (기본 폴백)
   const all_sggs = get_all_sgg_flow_stats();
   const sorted = [...all_sggs]
     .sort((a, b) => b.유출률 - a.유출률)
-    .slice(0, 10)
+    .slice(0, limit)
     .map((item, idx) => ({ ...item, rank: idx + 1 }));
 
   const top1 = sorted[0];
@@ -634,10 +648,10 @@ export function analyze_patient_flow_query(user_query: string): 질의_응답_�
   return {
     query: user_query,
     category: '시군구_유출입',
-    title: '전국 228개 시·군·구별 환자 관외 유출률 Top 10',
+    title: `전국 228개 시·군·구별 환자 관외 유출률 Top ${sorted.length}`,
     summary: `전국 시·군·구 중 관외 유출률 1위 지자체는 **${top1.시도명} ${top1.시군구명}**(${top1.유출률}%, 추정 유출 인구 ${format_number_comma(top1.유출_추정인구수)}명)입니다.`,
     insights: [
-      `🚨 **자체 필수의료 인프라 부재**: 상위 10개 지자체는 자체 종합병원이나 필수과목(응급, 분만, 소아) 부재로 환자의 80% 이상이 인근 대도시로 유출되고 있습니다.`,
+      `🚨 **자체 필수의료 인프라 부재**: 상위 ${sorted.length}개 지자체는 자체 종합병원이나 필수과목(응급, 분만, 소아) 부재로 환자의 80% 이상이 인근 대도시로 유출되고 있습니다.`,
       `💡 **지역거점 공공병원 확충 필요**: 공공의료 취약지 파견 및 지역책임의료기관과의 전원 이송 네트워크 구축이 필수적입니다.`,
     ],
     data_type: '시군구',

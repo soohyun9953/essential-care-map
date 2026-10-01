@@ -27,18 +27,31 @@ export interface 의료기관_질의_응답_결과 {
   hospitals: 공공의료기관_상세_프로필[];
 }
 
+function parse_query_limit(query: string, default_val: number = 10, max_val: number = 100): number {
+  const match = query.match(/(?:top|상위|하위)\s*(\d+)/i) || 
+                query.match(/(\d+)\s*(?:개|곳|개소|기관|병원|위)/i);
+  if (match && match[1]) {
+    const val = parseInt(match[1], 10);
+    if (!isNaN(val) && val > 0) {
+      return Math.min(val, max_val);
+    }
+  }
+  return default_val;
+}
+
 export function analyze_hospital_query(user_query: string): 의료기관_질의_응답_결과 {
   const q = user_query.trim().toLowerCase();
+  const limit = parse_query_limit(user_query, 10, 100);
   const all_hospitals = 전체_공공의료기관_상세목록;
 
-  // 1. [병상 규모 순위] 병상수가 가장 많은 / 큰 공공병원 Top 10
+  // 1. [병상 규모 순위] 병상수가 가장 많은 / 큰 공공병원 Top N
   if (
     (q.includes('병상') || q.includes('규모') || q.includes('크기') || q.includes('큰')) &&
     (q.includes('많은') || q.includes('top') || q.includes('순위') || q.includes('상위') || q.includes('가장'))
   ) {
     const sorted = [...all_hospitals]
       .sort((a, b) => b.의료자원.병상.총병상 - a.의료자원.병상.총병상)
-      .slice(0, 10);
+      .slice(0, limit);
 
     const top1 = sorted[0];
     const avg_beds = Math.round(all_hospitals.reduce((acc, h) => acc + h.의료자원.병상.총병상, 0) / all_hospitals.length);
@@ -46,11 +59,11 @@ export function analyze_hospital_query(user_query: string): 의료기관_질의_
     return {
       query: user_query,
       category: '병상규모_순위',
-      title: '전국 공공의료기관 허가병상수 Top 10 및 자원 현황',
-      summary: `전국 214개 공공의료기관 중 병상수 1위는 **${top1.기관명}**(${format_number_comma(top1.의료자원.병상.총병상)}병상)이며, ${sorted.slice(0, 3).map((h) => `${h.기관명}(${format_number_comma(h.의료자원.병상.총병상)}병상)`).join(', ')} 순입니다. 전국 공공의료기관의 평균 허가병상수는 약 **${avg_beds}병상**입니다.`,
+      title: `전국 공공의료기관 허가병상수 Top ${sorted.length} 및 자원 현황`,
+      summary: `전국 214개 공공의료기관 중 병상수 1위는 **${top1.기관명}**(${format_number_comma(top1.의료자원.병상.총병상)}병상)이며, ${sorted.slice(0, 3).map((h) => `${h.기관명}(${format_number_comma(h.의료자원.병상.총병상)}병상)`).join(', ')} 순입니다. 상위 ${sorted.length}개 기관의 평균 허가병상수는 약 **${Math.round(sorted.reduce((acc, h) => acc + h.의료자원.병상.총병상, 0) / sorted.length)}병상**입니다.`,
       insights: [
         `🏥 **최대 규모 권역책임기관**: ${top1.기관명}(${top1.시도명})은 ${format_number_comma(top1.의료자원.병상.총병상)}병상 규모로, 중환자실 ${top1.의료자원.중환자실.총병상}병상과 전문의 ${top1.의료자원.의료인력.전문의수}명을 가동하고 있습니다.`,
-        `📊 **상위 10개 기관 집중도**: 상위 10개 대형 공공병원이 전국 공공병상 전체의 약 30%를 담당하고 있으며 주로 국립대병원 및 수도권 특수목적 공공병원입니다.`,
+        `📊 **상위 집중도**: 상위 ${sorted.length}개 대형 공공병원이 전국 공공병상 전체의 약 ${Math.round((sorted.reduce((acc, h) => acc + h.의료자원.병상.총병상, 0) / all_hospitals.reduce((acc, h) => acc + h.의료자원.병상.총병상, 0)) * 100)}%를 담당하고 있습니다.`,
         `💡 **지역 완결성 과제**: 중소 규모(200~300병상) 지방의료원의 필수의료 병상 가동 역량 확충이 필수적입니다.`,
       ],
       total_count: sorted.length,

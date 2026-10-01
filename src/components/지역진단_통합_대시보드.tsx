@@ -36,6 +36,8 @@ import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { 지도_래퍼 } from './지도_래퍼';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
+import { 환자_유출입_상세분석_카드 } from './환자_유출입_상세분석_카드';
+import { 환자_의료이용_질의응답_모달 } from './환자_의료이용_질의응답_모달';
 
 interface 지역진단_통합_대시보드_속성 {
   diagnosed_list: 필수의료_진단_결과[];
@@ -64,6 +66,17 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
 
   // Section 20: KPI 산출 기준 ⓘ 팝오버 상태
   const [active_kpi_tooltip, setActive_kpi_tooltip] = useState<string | null>(null);
+
+  // 환자 의료이용 및 유출입 AI 데이터 질의응답 모달 상태
+  const [is_qa_modal_open, setIs_qa_modal_open] = useState(false);
+  const [qa_initial_query, setQa_initial_query] = useState('중진료권별 유출 Top10과 유출 인구수 보여줘.');
+
+  const handle_open_qa_modal = (query?: string) => {
+    if (query) {
+      setQa_initial_query(query);
+    }
+    setIs_qa_modal_open(true);
+  };
 
 
 
@@ -148,8 +161,17 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             </div>
           </div>
 
-          {/* 우측: 다음 단계 CTA */}
+          {/* 우측: 다음 단계 CTA & 의료이용 AI 질의응답 */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => handle_open_qa_modal('중진료권별 유출 Top10과 유출 인구수 보여줘.')}
+              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs hover:from-blue-700 hover:to-indigo-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow"
+              title="중진료권/시도/시군구 환자 유출입 실데이터 자연어 질의응답"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>환자 유출입 AI Q&A</span>
+            </button>
             <span className="text-[10px] text-slate-400 hidden sm:block">진단 후 다음 단계:</span>
             <button
               type="button"
@@ -645,10 +667,19 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             </div>
             )}
 
-            {/* ④ 유사 지역 비교 */}
+            {/* ④ 환자 의료이용 유출입 네트워크 분석 (시도 / 중진료권 / 시군구 Top 5) */}
+            <div className="col-span-1 md:col-span-2 lg:col-span-3">
+              <환자_유출입_상세분석_카드
+                sgg_name={active_region.시군구명}
+                sido_name={active_region.시도명}
+                on_open_qa_modal={handle_open_qa_modal}
+              />
+            </div>
+
+            {/* ⑤ 유사 지역 비교 */}
             <div className="p-5 rounded-3xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                <span className="text-xs font-bold text-slate-900 dark:text-white">④ 유사 지자체 비교</span>
+                <span className="text-xs font-bold text-slate-900 dark:text-white">⑤ 유사 지자체 비교</span>
                 <span className="text-[10px] font-semibold text-blue-600">동급 취약권역</span>
               </div>
               <div className="space-y-2">
@@ -770,6 +801,14 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
           </div>
         </div>
       )}
+
+      {/* 환자 의료이용 및 유출입 AI 데이터 질의응답 모달 */}
+      <환자_의료이용_질의응답_모달
+        is_open={is_qa_modal_open}
+        on_close={() => setIs_qa_modal_open(false)}
+        initial_query={qa_initial_query}
+        selected_sgg_name={active_region?.시군구명}
+      />
     </div>
   );
 };

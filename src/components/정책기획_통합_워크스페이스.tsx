@@ -25,7 +25,10 @@ import {
   Target,
   Edit3,
   Users,
+  Cpu,
 } from 'lucide-react';
+
+import { AI_분석_패널 } from '@/components/ai/AI_분석_패널';
 
 import { 필수의료_진단_결과, 지역_평균_통계 } from '@/lib/필수의료_타입';
 import { format_number_comma } from '@/lib/유틸리티';
@@ -67,6 +70,9 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   initial_tab = 'policy_ai',
 }) => {
   const [active_tab, setActive_tab] = useState<'policy_ai' | 'report' | 'compare' | 'forecast'>(initial_tab);
+
+  // AI 분석 패널 모달 상태
+  const [is_ai_panel_open, set_is_ai_panel_open] = useState(false);
 
   // Section 11: 선택된 정책대안 (Option A / Option B / Option C)
   const [selected_option, setSelected_option] = useState<'A' | 'B' | 'C'>('A');
@@ -318,11 +324,33 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 {selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '지역 미선택'} 필수의료 정책대안 검토 &amp; 선택
               </h2>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              <span>진단 수치: 실데이터 기준 • 대안: 정책 표준 Option</span>
+            <div className="flex items-center gap-2 flex-wrap shrink-0">
+              {/* [AI 분석 실행] 버튼 — AI 분석 프로세스 시각화 패널 열기 */}
+              <button
+                type="button"
+                onClick={() => set_is_ai_panel_open(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition active:scale-95 shadow-sm cursor-pointer"
+              >
+                <Cpu className="w-3.5 h-3.5" />
+                <span>AI 분석 실행</span>
+              </button>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <span>진단 수치: 실데이터 기준 • 대안: 정책 표준 Option</span>
+              </div>
             </div>
           </div>
+
+          {/* AI 분석 프로세스 시각화 모달 */}
+          <AI_분석_패널
+            is_open={is_ai_panel_open}
+            on_close={() => set_is_ai_panel_open(false)}
+            region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군'}
+            initial_query={selected_region
+              ? `${selected_region.시군구명}의 응급의료 취약 원인과 개선방안을 분석해줘.`
+              : '영월군의 응급의료 취약 원인과 개선방안을 분석해줘.'
+            }
+          />
 
           {/* Section 16 표준: 3단 컬럼 정책분석 Workspace (좌측 / 중앙 / 우측) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">

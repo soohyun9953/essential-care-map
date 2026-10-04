@@ -560,6 +560,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   const [current_step_idx, set_current_step_idx] = useState(-1);
   const [done_steps, set_done_steps] = useState<Set<number>>(new Set());
   const [expanded_steps, set_expanded_steps] = useState<Set<number>>(new Set());
+  const [pipeline_all_done, set_pipeline_all_done] = useState(false); // 파이프라인 전체 완료 여부
   const [show_rag_detail, set_show_rag_detail] = useState(false);
   const [show_arch, set_show_arch] = useState(false);
   const timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -582,15 +583,15 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
     set_current_step_idx(0);
     set_done_steps(new Set());
     set_expanded_steps(new Set([0]));
-
-    let idx = 0;
+    set_pipeline_all_done(false);
 
     const run_next = (step_index: number) => {
       if (step_index >= STEPS.length) {
         set_current_step_idx(STEPS.length);
-        // 완료 후 결과 화면으로 전환
+        // 완료 시: 자동으로 결과 화면 전환 대신 모든 단계를 펼쳐서 보여줌
         timer_ref.current = setTimeout(() => {
-          set_phase('result');
+          set_expanded_steps(new Set(STEPS.map((_, i) => i)));
+          set_pipeline_all_done(true);
         }, 400);
         return;
       }
@@ -616,6 +617,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
     set_current_step_idx(-1);
     set_done_steps(new Set());
     set_expanded_steps(new Set());
+    set_pipeline_all_done(false);
     set_show_arch(false);
   };
 
@@ -840,19 +842,64 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
 
         </div>
 
-        {/* ─── 하단 푸터 (파이프라인 실행 중 진행률 표시) ─── */}
+        {/* ─── 하단 푸터 (파이프라인 실행 중 진행률 / 완료 후 CTA) ─── */}
         {phase === 'pipeline' && (
           <div className="shrink-0 px-5 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-            <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
-              <span>진행 상황</span>
-              <span>{done_steps.size} / {STEPS.length} 단계 완료</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-500"
-                style={{ width: `${(done_steps.size / STEPS.length) * 100}%` }}
-              />
-            </div>
+            {!pipeline_all_done ? (
+              <>
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+                  <span>진행 상황</span>
+                  <span>{done_steps.size} / {STEPS.length} 단계 완료</span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 rounded-full transition-all duration-500"
+                    style={{ width: `${(done_steps.size / STEPS.length) * 100}%` }}
+                  />
+                </div>
+              </>
+            ) : (
+              /* 파이프라인 완료 상태: 단계별 결과 확인 + 최종 결과 이동 버튼 */
+              <div className="space-y-2.5">
+                {/* 완료 진행 바 */}
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                  <span className="text-emerald-600 font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    분석 완료 — 단계별 결과를 확인하세요
+                  </span>
+                  <span className="text-emerald-600 font-bold">{STEPS.length} / {STEPS.length} 단계 완료</span>
+                </div>
+                <div className="w-full h-1.5 bg-emerald-100 dark:bg-emerald-900/50 rounded-full overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-full" />
+                </div>
+                {/* 버튼 그룹 */}
+                <div className="flex items-center gap-2">
+                  {/* 모두 접기 / 펼치기 토글 */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (expanded_steps.size === STEPS.length) {
+                        set_expanded_steps(new Set());
+                      } else {
+                        set_expanded_steps(new Set(STEPS.map((_, i) => i)));
+                      }
+                    }}
+                    className="flex-1 py-2 rounded-xl bg-white dark:bg-slate-800 text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer border border-slate-200 dark:border-slate-700"
+                  >
+                    {expanded_steps.size === STEPS.length ? '모두 접기 ▲' : '모두 펼치기 ▼'}
+                  </button>
+                  {/* 최종 결과 보기 */}
+                  <button
+                    type="button"
+                    onClick={() => set_phase('result')}
+                    className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-black text-white transition active:scale-95 cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                    최종 결과 보기
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

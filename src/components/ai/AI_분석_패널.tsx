@@ -699,11 +699,17 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
               {/* 전체 파이프라인 미리보기 */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">AI 분석 과정 (8단계)</div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="space-y-1.5">
                   {STEPS.map((step) => (
-                    <span key={step.id} className="text-[10px] font-semibold text-slate-500 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-                      {step.아이콘} {step.번호}. {step.제목}
-                    </span>
+                    <div key={step.id} className="flex items-center gap-2">
+                      <span className="text-[10px] font-semibold text-slate-500 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700 shrink-0">
+                        {step.아이콘} {step.번호}. {step.제목}
+                      </span>
+                      <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${step.실행_주체.색상_클래스}`}>
+                        <span>{step.실행_주체.아이콘}</span>
+                        <span>{step.실행_주체.이름}</span>
+                      </span>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -771,9 +777,9 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                          <span className="text-xs font-bold">{step.번호}</span>}
                       </div>
 
-                      {/* 제목 */}
+                      {/* 제목 + 실행 주체 */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`text-xs font-black ${
                             is_running ? 'text-blue-700 dark:text-blue-300' :
                             is_done ? 'text-emerald-700 dark:text-emerald-300' :
@@ -781,6 +787,22 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                           }`}>
                             {step.아이콘} {step.번호}. {step.제목}
                           </span>
+
+                          {/* ── 실행 주체 뱃지 ── */}
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border transition-all ${
+                            is_running
+                              ? `${step.실행_주체.색상_클래스} animate-pulse`
+                              : is_done
+                                ? step.실행_주체.색상_클래스
+                                : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700'
+                          }`}>
+                            <span>{step.실행_주체.아이콘}</span>
+                            <span>{step.실행_주체.이름}</span>
+                            {(is_running || is_done) && (
+                              <span className="opacity-60">· {step.실행_주체.영문}</span>
+                            )}
+                          </span>
+
                           {is_running && (
                             <span className="text-[10px] font-bold text-blue-600 bg-blue-100 dark:bg-blue-950/50 px-1.5 py-0.5 rounded-full animate-pulse">
                               처리 중...

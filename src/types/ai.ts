@@ -4,6 +4,18 @@
 /** AI 파이프라인 단계 상태 */
 export type 파이프라인_단계_상태 = 'waiting' | 'running' | 'done' | 'error';
 
+/** 실행 주체 카테고리 */
+export type 실행_주체_유형 = 'user' | 'nlp' | 'data_db' | 'rag_engine' | 'analysis' | 'llm' | 'validator' | 'policy_gen';
+
+/** 실행 주체 정보 */
+export interface 실행_주체 {
+  유형: 실행_주체_유형;
+  이름: string;       // 고객 표시용 한국어 명칭
+  영문: string;       // 시스템 내부 영문명 (괄호 표기용)
+  아이콘: string;     // 이모지 아이콘
+  색상_클래스: string; // Tailwind 색상 클래스
+}
+
 /** 개별 파이프라인 단계 */
 export interface 파이프라인_단계 {
   id: string;
@@ -13,6 +25,7 @@ export interface 파이프라인_단계 {
   처리_시간_ms: number;  // Mock 처리 시간 (밀리초)
   상태: 파이프라인_단계_상태;
   아이콘: string;        // 이모지 아이콘
+  실행_주체: 실행_주체;  // 이 단계를 실행하는 시스템/모듈
 }
 
 /** 데이터 소스 카드 */

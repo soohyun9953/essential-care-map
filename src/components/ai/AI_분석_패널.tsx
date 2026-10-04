@@ -699,6 +699,21 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
               {/* 전체 파이프라인 미리보기 */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">AI 분석 과정 (8단계)</div>
+
+                {/* 색상 범례: 구축 주체 기준 */}
+                <div className="flex flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 font-semibold self-center">구축 주체:</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800">
+                    🔵 개발사 구현
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800">
+                    🟢 인프라·DB 구축
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800">
+                    🟠 외부 AI API
+                  </span>
+                </div>
+
                 <div className="space-y-1.5">
                   {STEPS.map((step) => (
                     <div key={step.id} className="flex items-center gap-2">

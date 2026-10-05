@@ -389,7 +389,6 @@ export default function Home() {
         {current_workspace === 'policy_planning' && (
           <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <정책기획_통합_워크스페이스
-              key={policy_subtab}
               initial_tab={policy_subtab}
               on_change_tab={(tab) => set_policy_subtab(tab)}
               selected_region={selected_region}

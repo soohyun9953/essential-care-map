@@ -9,7 +9,7 @@
 // 4) 12대 항목 사업계획서 자동 작성 애니메이션 & AI vs 담당자 역할 구분
 // 5) AI 활용 7대 데이터 및 기술구조 보기 연동
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Sparkles,
@@ -188,20 +188,66 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   const region_name = selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군';
   const region_short = selected_region ? selected_region.시군구명 : '영월군';
 
-  const [proposal_form, setProposal_form] = useState({
-    사업명: `2026년 ${region_short} 필수의료 취약지 인프라 확충 및 책임의료 연계 강화 사업`,
-    추진배경: `초고령사회 진입 및 지리적 원격성으로 인한 60분 골든타임 미도달 인구 과다(54.2%), 자체 해결능력 부족으로 관외 유출 심각 (2024 헬스맵)`,
-    현황및문제점: `권역응급 60분 미도달율 54.2%, 관내 응급의료 이용률(RI) 42.1%, 분만취약지 A등급(도달불가 76.8%), 야간 소아 진료기관 0개소`,
-    사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 24시간 안전 분만·소아 안심 응급협진망 구축',
-    추진전략: '1. 권역 거점병원(원주세브란스)-지역응급실 순환진료망 구축, 2. 24시간 원격 심뇌혈관 협진 핫라인, 3. 달빛어린이병원 야간진료 지원',
-    세부사업: '1) 영월의료원 응급실 24시간 전문의 당직보강, 2) 외래 산부인과 상시 진료 개설, 3) 닥터헬기 인계점 정비 및 소아 야간가산',
-    추진체계: '지자체 보건소 - 지역거점 공공병원(영월의료원) - 권역책임의료기관(원주세브란스) 협의체 구성',
-    추진일정: '2026.01 ~ 2028.12 (총 3개년 다년도 계속사업)',
-    예산: '국비 70% (17.5억원) / 지방비 30% (7.5억원) 매칭 (총 25억원 규모)',
-    성과지표: '권역응급 60분 미도달율 15%p 감축, 관내 응급이용률(RI) 65% 달성, 소아 야간진료 만족도 85% 이상',
-    기대효과: '지역 내 필수의료 골든타임 확보를 통한 예방가능 외상 사망률 30% 감소 및 원정 진료비 지출 40억원 절감',
-    사후관리: '분기별 지자체-책임의료기관 성과평가위원회 개최, 환자 이송·전원 통계 상시 모니터링 및 만족도 조사',
-  });
+  // Option별 특화 사업계획 내용 생성 함수
+  const get_proposal_by_option = useCallback(
+    (option_id: 'A' | 'B' | 'C') => {
+      if (option_id === 'A') {
+        return {
+          사업명: `2026년 ${region_short} 응급의료 인프라 및 골든타임 강화 사업`,
+          추진배경: `초고령사회 진입 및 지리적 원격성으로 인한 60분 골든타임 미도달 인구 과다(54.2%), 자체 해결능력 부족으로 관외 유출 심각(57.9%) (2024 헬스맵)`,
+          현황및문제점: `관내 응급기관 1개소 전담의 결원, 중증 심뇌혈관 질환 이송시간 62분 소요, 권역센터 직통 전원 프로토콜 부재`,
+          사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 60분 내 적정 치료율 제고',
+          추진전략: '1. 영월의료원 응급실 시설·장비 승격, 2. 응급의학과 전문의 순환 당직제, 3. 원격 심뇌혈관 협진망',
+          세부사업: '1) 응급실 중환자 모니터링 시스템 구축, 2) 심뇌혈관 전문의 핫라인, 3) 119 구급대 직접 이송 프로토콜',
+          추진체계: '영월군 보건소 - 영월의료원 - 원주세브란스기독병원 협력 체계',
+          추진일정: '2026.01 ~ 2028.12 (총 3개년 계속사업)',
+          예산: '국비 70% (17.5억원) / 지방비 30% (7.5억원) 매칭 (총 25억원 규모)',
+          성과지표: '권역응급 60분 미도달율 18%p 감축, 관내 응급이용률(RI) 65% 달성',
+          기대효과: '골든타임 내 초동처치율 85% 확보 및 예방가능 외상 사망률 30% 감소',
+          사후관리: '매월 응급환자 이송 골든타임 통계 모니터링 및 권역센터 협진 질관리',
+        };
+      } else if (option_id === 'B') {
+        return {
+          사업명: `2026년 ${region_short} 인근 3차 권역 연계 Fast-Track 광역 전원 핫라인 구축 사업`,
+          추진배경: `자체 고난도 수술실 유지 한계 극복을 위해 인근 상급종합병원과의 신속 전원 연계 절실 (2024 헬스맵)`,
+          현황및문제점: `원주세브란스까지 육상이동 평균 68분, 전원 지연 및 응급실 재이송 리스크 상존, 닥터헬기 인계점 운용 저조`,
+          사업목표: '골든타임 내 초동처치율 90% 달성 및 3차 상급병원 전원 지연시간 25분 단축',
+          추진전략: '1. 3차 대학병원 직통 핫라인 개설, 2. 닥터헬기 인계점 확대, 3. 초동처치 보건지소 네트워크',
+          세부사업: '1) 스마트 구급차 실시간 원격 심전도 전송기 보급, 2) 닥터헬기 인계점 4개소 보강, 3) 회송 재활망 구축',
+          추진체계: '지자체 - 강원도 소방본부 - 권역응급의료센터 - 지역병원 4자 협약',
+          추진일정: '2026.03 ~ 2027.12 (총 2개년 사업)',
+          예산: '국비 70% (12.6억원) / 도비 15% (2.7억원) / 군비 15% (2.7억원) (총 18억원)',
+          성과지표: '중증환자 전원 소요시간 25분 단축, 닥터헬기 출동 성공률 95% 이상',
+          기대효과: '전원 거부 0건 달성 및 중증 외상환자의 골든타임 내 최종 치료 성공률 제고',
+          사후관리: '분기별 전원 환자 추적조사 및 핫라인 연결 가동률 분기별 점검',
+        };
+      } else {
+        return {
+          사업명: `2026년 ${region_short} 분만 취약지 해소 및 소아 야간진료 모자안심망 구축 사업`,
+          추진배경: `분만취약지 A등급 고시 지역으로 원정출산 88.6%, 야간 소아 진료 공백으로 정주여건 악화 (2024 헬스맵)`,
+          현황및문제점: `분만 60분 미도달율 76.8%, 관내 분만율 11.4%, 야간 소아 발열 시 50km 이상 심야 원정 진료`,
+          사업목표: '24시간 소아 야간 진료망 확보 및 안전 분만 외래 상시 운영',
+          추진전략: '1. 영월의료원 외래 산부인과 개설, 2. 달빛어린이병원 야간진료 지원, 3. 공공임상교수 매칭',
+          세부사업: '1) 산부인과 전문의 2인 채용 보조, 2) 평일 야간 23시 소아 진료실 운영, 3) 안심분만 이송지원',
+          추진체계: '보건소 - 영월의료원 - 국립중앙의료원(공공임상교수제) 연계 협력',
+          추진일정: '2026.01 ~ 2028.12 (총 3개년 계속사업)',
+          예산: '국비 50% (22.5억원) / 지방비 50% (22.5억원) 매칭 (총 45억원 규모)',
+          성과지표: '산전 진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상 확보',
+          기대효과: '아이 낳고 키우기 좋은 환경 조성 및 임산부·영유아 응급상황 안전망 확보',
+          사후관리: '지역 산모·학부모 모니터링단 운영 및 야간 진료 일지 일일 점검',
+        };
+      }
+    },
+    [region_short]
+  );
+
+  const [proposal_form, setProposal_form] = useState(() => get_proposal_by_option('A'));
+
+  // 정책대안 선택 및 사업계획서 폼 실시간 동기화 핸들러
+  const handle_select_option = (option_id: 'A' | 'B' | 'C') => {
+    setSelected_option(option_id);
+    setProposal_form(get_proposal_by_option(option_id));
+  };
 
   // 사업계획서 자동 작성 애니메이션 상태
   const [is_generating_proposal, setIs_generating_proposal] = useState(false);
@@ -211,55 +257,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
   // 정책대안에서 「사업계획 만들기」 클릭 시 실행되는 핸들러 (요구사항 7번)
   const handle_create_proposal_from_option = (option_id: 'A' | 'B' | 'C') => {
-    setSelected_option(option_id);
-
-    // Option별 특화 사업계획 내용 반영
-    if (option_id === 'A') {
-      setProposal_form({
-        사업명: `2026년 ${region_short} 응급의료 인프라 및 골든타임 강화 사업`,
-        추진배경: `응급의료 60분 미도달율 54.2%로 골든타임 초과, 응급환자 관외 유출 심각(57.9%)`,
-        현황및문제점: `관내 응급기관 1개소 전담의 결원, 중증 심뇌혈관 질환 이송시간 62분 소요`,
-        사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 60분 내 적정 치료율 제고',
-        추진전략: '1. 영월의료원 응급실 시설·장비 승격, 2. 응급의학과 전문의 순환 당직제, 3. 원격 심뇌혈관 협진망',
-        세부사업: '1) 응급실 중환자 모니터링 시스템 구축, 2) 심뇌혈관 전문의 핫라인, 3) 119 구급대 직접 이송 프로토콜',
-        추진체계: '영월군 보건소 - 영월의료원 - 원주세브란스기독병원 협력 체계',
-        추진일정: '2026.01 ~ 2028.12 (3개년)',
-        예산: '국비 70% / 지방비 30% (총 25억원)',
-        성과지표: '관내 응급이용률(RI) 65% 달성, 60분 미도달율 18%p 감축',
-        기대효과: '골든타임 내 초동처치율 85% 확보 및 예방가능 사망률 대폭 감소',
-        사후관리: '매월 응급환자 이송 골든타임 통계 모니터링 및 권역센터 협진 질관리',
-      });
-    } else if (option_id === 'B') {
-      setProposal_form({
-        사업명: `2026년 ${region_short} 인근 3차 권역 연계 Fast-Track 광역 전원 핫라인 구축 사업`,
-        추진배경: `자체 고난도 수술실 유지 한계 극복을 위해 인근 상급종합병원과의 신속 전원 연계 절실`,
-        현황및문제점: `원주세브란스까지 육상이동 평균 68분, 전원 지연 및 응급실 재이송 리스크 상존`,
-        사업목표: '골든타임 내 초동처치율 90% 달성 및 3차 상급병원 전원 지연시간 25분 단축',
-        추진전략: '1. 3차 대학병원 직통 핫라인 개설, 2. 닥터헬기 인계점 확대, 3. 초동처치 보건지소 네트워크',
-        세부사업: '1) 스마트 구급차 실시간 원격 심전도 전송기 보급, 2) 닥터헬기 인계점 4개소 보강, 3) 회송 재활망',
-        추진체계: '지자체 - 강원도 소방본부 - 권역응급의료센터 - 지역병원 4자 협약',
-        추진일정: '2026.03 ~ 2027.12 (2개년)',
-        예산: '국비 70% / 도비 15% / 군비 15% (총 18억원)',
-        성과지표: '중증환자 전원 소요시간 25분 단축, 닥터헬기 출동 성공률 95% 이상',
-        기대효과: '전원 거부 0건 달성 및 중증 외상환자의 골든타임 내 최종 치료 성공률 제고',
-        사후관리: '분기별 전원 환자 추적조사 및 핫라인 연결 가동률 분기별 점검',
-      });
-    } else {
-      setProposal_form({
-        사업명: `2026년 ${region_short} 분만 취약지 해소 및 소아 야간진료 모자안심망 구축 사업`,
-        추진배경: `분만취약지 A등급 고시 지역으로 원정출산 88.6%, 야간 소아 진료 공백으로 정주여건 악화`,
-        현황및문제점: `분만 60분 미도달율 76.8%, 관내 분만율 11.4%, 야간 소아 발열 시 50km 이상 원정 진료`,
-        사업목표: '24시간 소아 야간 진료망 확보 및 안전 분만 외래 상시 운영',
-        추진전략: '1. 영월의료원 외래 산부인과 개설, 2. 달빛어린이병원 야간진료 지원, 3. 공공임상교수 매칭',
-        세부사업: '1) 산부인과 전문의 2인 채용 보조, 2) 평일 야간 23시 소아 진료실 운영, 3) 안심분만 이송지원',
-        추진체계: '보건소 - 영월의료원 - 국립중앙의료원(공공임상교수제) 연계',
-        추진일정: '2026.01 ~ 2028.12 (3개년)',
-        예산: '국비 50% / 지방비 50% (연간 15억원 x 3년 = 총 45억원)',
-        성과지표: '산전 진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상',
-        기대효과: '아이 낳고 키우기 좋은 환경 조성 및 임산부·영유아 응급상황 안전망 확보',
-        사후관리: '지역 산모·학부모 모니터링단 운영 및 야간 진료 일지 일일 점검',
-      });
-    }
+    handle_select_option(option_id);
 
     // 사업계획서 탭으로 전환
     handle_tab_change('report');
@@ -810,7 +808,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 01 (A) */}
                 <div
-                  onClick={() => setSelected_option('A')}
+                  onClick={() => handle_select_option('A')}
                   className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'A'
                       ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20'
@@ -836,7 +834,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelected_option('A');
+                          handle_select_option('A');
                         }}
                         className="text-xs font-bold text-slate-500 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
                       >
@@ -892,7 +890,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelected_option('A');
+                        handle_select_option('A');
                       }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
@@ -917,7 +915,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 02 (B) */}
                 <div
-                  onClick={() => setSelected_option('B')}
+                  onClick={() => handle_select_option('B')}
                   className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'B'
                       ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/30 shadow-md ring-2 ring-indigo-500/20'
@@ -942,7 +940,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelected_option('B');
+                          handle_select_option('B');
                         }}
                         className="text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
                       >
@@ -993,7 +991,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelected_option('B');
+                        handle_select_option('B');
                       }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
@@ -1016,7 +1014,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 03 (C) */}
                 <div
-                  onClick={() => setSelected_option('C')}
+                  onClick={() => handle_select_option('C')}
                   className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'C'
                       ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-md ring-2 ring-emerald-500/20'
@@ -1041,7 +1039,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelected_option('C');
+                          handle_select_option('C');
                         }}
                         className="text-xs font-bold text-slate-500 hover:text-emerald-600 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
                       >
@@ -1092,7 +1090,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelected_option('C');
+                        handle_select_option('C');
                       }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
@@ -1335,13 +1333,40 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             {/* 상단 툴바 */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
                     보건복지부 법정 12대 항목 양식
                   </span>
-                  <span className="text-xs text-slate-400">
-                    기반 대안: <strong className="text-blue-600">Option {selected_option}</strong>
-                  </span>
+
+                  {/* 기반 대안 전환 세그먼트 버튼 (Option A / Option B / Option C) */}
+                  <div className="inline-flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span className="text-[11px] font-bold text-slate-500 pl-2 pr-1">기반 대안:</span>
+                    {(['A', 'B', 'C'] as const).map((opt) => {
+                      const is_active = selected_option === opt;
+                      const active_color =
+                        opt === 'A'
+                          ? 'bg-blue-600 text-white shadow-2xs'
+                          : opt === 'B'
+                          ? 'bg-indigo-600 text-white shadow-2xs'
+                          : 'bg-emerald-600 text-white shadow-2xs';
+
+                      return (
+                        <button
+                          key={opt}
+                          type="button"
+                          onClick={() => handle_select_option(opt)}
+                          className={`px-2.5 py-0.5 rounded-lg text-xs font-black transition cursor-pointer flex items-center gap-1 ${
+                            is_active
+                              ? active_color
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                          }`}
+                        >
+                          <span>Option {opt}</span>
+                          {is_active && <Check className="w-3 h-3 stroke-[3]" />}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-indigo-600" />

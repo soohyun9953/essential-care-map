@@ -420,7 +420,7 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
               : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
           }`}
         >
-          🚀 AI 심층 사업계획서 (RAG 고도화)
+          🚀 AI 심층 사업계획서 (AI 언어 모델+RAG 활용)
         </button>
         <button
           onClick={() => set_active_tab('quick_template')}

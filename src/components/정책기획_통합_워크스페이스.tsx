@@ -810,13 +810,14 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 01 (A) */}
                 <div
-                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                  onClick={() => setSelected_option('A')}
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'A'
                       ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-blue-400 hover:shadow-sm'
                   }`}
                 >
-                  {/* 대안명 & 우선순위 */}
+                  {/* 대안명 & 우선순위 & 선택 버튼 */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded-md">
@@ -826,10 +827,21 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         우선순위 1위 (최우선 추천)
                       </span>
                     </div>
-                    {selected_option === 'A' && (
-                      <span className="text-[11px] font-bold text-blue-600 flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" /> 선택됨
+                    {selected_option === 'A' ? (
+                      <span className="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/60 px-2.5 py-1 rounded-xl flex items-center gap-1 shadow-2xs">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" /> 선택됨
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected_option('A');
+                        }}
+                        className="text-xs font-bold text-slate-500 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>선택하기</span>
+                      </button>
                     )}
                   </div>
 
@@ -864,7 +876,8 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     {/* 1. 「판단 근거」 버튼 */}
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setReasoning_target_option('A');
                         setIs_reasoning_modal_open(true);
                       }}
@@ -877,9 +890,9 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     {/* 2. 「상세 분석」 버튼 */}
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelected_option('A');
-                        // 우측 열에 반영
                       }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
@@ -890,7 +903,10 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     {/* 3. 「사업계획 만들기」 버튼 */}
                     <button
                       type="button"
-                      onClick={() => handle_create_proposal_from_option('A')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handle_create_proposal_from_option('A');
+                      }}
                       className="ml-auto px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                     >
                       <span>사업계획 만들기</span>
@@ -901,10 +917,11 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 02 (B) */}
                 <div
-                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                  onClick={() => setSelected_option('B')}
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'B'
                       ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/30 shadow-md ring-2 ring-indigo-500/20'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-indigo-400 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -916,10 +933,21 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         우선순위 2위 (광역 연계형)
                       </span>
                     </div>
-                    {selected_option === 'B' && (
-                      <span className="text-[11px] font-bold text-indigo-600 flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" /> 선택됨
+                    {selected_option === 'B' ? (
+                      <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/60 px-2.5 py-1 rounded-xl flex items-center gap-1 shadow-2xs">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" /> 선택됨
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected_option('B');
+                        }}
+                        className="text-xs font-bold text-slate-500 hover:text-indigo-600 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>선택하기</span>
+                      </button>
                     )}
                   </div>
 
@@ -951,7 +979,8 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setReasoning_target_option('B');
                         setIs_reasoning_modal_open(true);
                       }}
@@ -962,7 +991,10 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelected_option('B')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelected_option('B');
+                      }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
                       <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
@@ -970,7 +1002,10 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </button>
                     <button
                       type="button"
-                      onClick={() => handle_create_proposal_from_option('B')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handle_create_proposal_from_option('B');
+                      }}
                       className="ml-auto px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                     >
                       <span>사업계획 만들기</span>
@@ -981,10 +1016,11 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 {/* Option 03 (C) */}
                 <div
-                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                  onClick={() => setSelected_option('C')}
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 cursor-pointer ${
                     selected_option === 'C'
                       ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-md ring-2 ring-emerald-500/20'
-                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-emerald-400 hover:shadow-sm'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
@@ -996,10 +1032,21 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         우선순위 3위 (모자·소아 특화)
                       </span>
                     </div>
-                    {selected_option === 'C' && (
-                      <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5" /> 선택됨
+                    {selected_option === 'C' ? (
+                      <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2.5 py-1 rounded-xl flex items-center gap-1 shadow-2xs">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" /> 선택됨
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelected_option('C');
+                        }}
+                        className="text-xs font-bold text-slate-500 hover:text-emerald-600 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/50 px-2.5 py-1 rounded-xl border border-slate-200 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                      >
+                        <span>선택하기</span>
+                      </button>
                     )}
                   </div>
 
@@ -1031,7 +1078,8 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   <div className="flex items-center gap-2 pt-1 flex-wrap">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setReasoning_target_option('C');
                         setIs_reasoning_modal_open(true);
                       }}
@@ -1042,7 +1090,10 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSelected_option('C')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelected_option('C');
+                      }}
                       className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
                     >
                       <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
@@ -1050,7 +1101,10 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </button>
                     <button
                       type="button"
-                      onClick={() => handle_create_proposal_from_option('C')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handle_create_proposal_from_option('C');
+                      }}
                       className="ml-auto px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                     >
                       <span>사업계획 만들기</span>

@@ -63,6 +63,7 @@ import { AsIs_비교_배너 } from './AsIs_비교_배너';
 import { AI_활용_데이터_모달 } from './ai/AI_활용_데이터_모달';
 import { AI_판단_근거_모달, 정책_근거_데이터_맵 } from './ai/AI_판단_근거_모달';
 import { AI_기술구조_모달 } from './ai/AI_기술구조_모달';
+import { AI_분석_패널 } from './ai/AI_분석_패널';
 
 // 대용량 지연 로딩 컴포넌트
 const 의료지표_비교차트 = dynamic(
@@ -169,12 +170,13 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   }, []);
 
   // ==============================================================
-  // 2. 모달 상태 (활용 데이터 / 판단 근거 / 기술구조 / 상세 분석)
+  // 2. 모달 상태 (활용 데이터 / 판단 근거 / 기술구조 / 상세 분석 / 8단계 AI 파이프라인)
   // ==============================================================
   const [is_utilized_data_open, setIs_utilized_data_open] = useState(false);
   const [is_reasoning_modal_open, setIs_reasoning_modal_open] = useState(false);
   const [reasoning_target_option, setReasoning_target_option] = useState<'A' | 'B' | 'C'>('A');
   const [is_architecture_modal_open, setIs_architecture_modal_open] = useState(false);
+  const [is_ai_pipeline_open, setIs_ai_pipeline_open] = useState(false); // 8단계 AI 분석 프로세스 시각화 모달
   const [active_detail_section, setActive_detail_section] = useState<string | null>(null);
 
   // 선택된 정책대안 (Option A / Option B / Option C)
@@ -373,7 +375,17 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0">
+        <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0 flex-wrap">
+          {/* AI 8단계 분석 프로세스 시각화 버튼 (팝업 모달) */}
+          <button
+            type="button"
+            onClick={() => setIs_ai_pipeline_open(true)}
+            className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI 분석 실행 (8단계 시각화)</span>
+          </button>
+
           {/* AI가 어떻게 작동하나요? 버튼 (요구사항 9번) */}
           <button
             type="button"
@@ -381,7 +393,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-xs hover:bg-purple-100 border border-purple-200 dark:border-purple-800 transition flex items-center gap-1.5 cursor-pointer"
           >
             <Cpu className="w-3.5 h-3.5" />
-            <span>AI가 어떻게 작동하나요?</span>
+            <span>AI 작동원리</span>
           </button>
 
           <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400">
@@ -418,22 +430,32 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             </div>
 
             <div className="flex items-center gap-2 flex-wrap shrink-0">
-              {/* 「AI 분석 실행」 버튼 (사용자 요구사항 2번) */}
+              {/* 「AI 분석 실행 (8단계 시각화)」 버튼 — 질문 입력, 8단계 파이프라인 애니메이션, 실행주체 뱃지 모달 */}
+              <button
+                type="button"
+                onClick={() => setIs_ai_pipeline_open(true)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-black transition shadow-sm cursor-pointer"
+              >
+                <Cpu className="w-4 h-4 text-white" />
+                <span>AI 분석 실행 (8단계 시각화)</span>
+              </button>
+
+              {/* 「인라인 분석 재실행」 버튼 */}
               <button
                 type="button"
                 onClick={handle_run_ai_analysis}
                 disabled={is_ai_analyzing}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-black transition shadow-sm cursor-pointer disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 disabled:opacity-50"
               >
                 {is_ai_analyzing ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>AI 파이프라인 분석 진행 중...</span>
+                    <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    <span>인라인 분석 진행 중...</span>
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-4 h-4" />
-                    <span>AI 분석 재실행</span>
+                    <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
+                    <span>워크스페이스 재분석</span>
                   </>
                 )}
               </button>
@@ -452,8 +474,8 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
           {/* AI 분석 5단계 애니메이션 상태 바 (사용자 요구사항 2번) */}
           <div className="bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-blue-600" />
                   <span>AI 분석 5단계 파이프라인 진행 상태</span>
@@ -471,15 +493,26 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {is_ai_analyzing && (
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={handle_skip_ai_analysis}
-                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline cursor-pointer"
+                  onClick={() => setIs_ai_pipeline_open(true)}
+                  className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition flex items-center gap-1 cursor-pointer"
                 >
-                  결과 바로 보기 (Skip)
+                  <Cpu className="w-3.5 h-3.5" />
+                  <span>8단계 파이프라인 시각화 팝업 열기 →</span>
                 </button>
-              )}
+
+                {is_ai_analyzing && (
+                  <button
+                    type="button"
+                    onClick={handle_skip_ai_analysis}
+                    className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline cursor-pointer"
+                  >
+                    Skip
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* 5단계 프로그레스 바 카드 그리드 */}
@@ -539,16 +572,26 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             {/* [1열 - 좌측 (3 cols)]: 「AI 분석 과정」                       */}
             {/* ------------------------------------------------------------ */}
             <div className="lg:col-span-3 bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
-              <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block mb-1">
-                  Step 01 · 5단계 분석 과정
-                </span>
-                <h3 className="text-base font-black text-slate-900 dark:text-white">
-                  AI 분석 과정
-                </h3>
-                <span className="text-xs text-slate-500">
-                  각 과정을 클릭하여 상세 분석 로그를 확인하세요.
-                </span>
+              <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block mb-1">
+                    Step 01 · 5단계 분석 과정
+                  </span>
+                  <h3 className="text-base font-black text-slate-900 dark:text-white">
+                    AI 분석 과정
+                  </h3>
+                  <span className="text-xs text-slate-500">
+                    각 과정을 클릭하여 상세 분석 로그를 확인하세요.
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIs_ai_pipeline_open(true)}
+                  className="px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition shrink-0 cursor-pointer"
+                  title="8단계 파이프라인 시각화 모달 열기"
+                >
+                  8단계 시각화 팝업
+                </button>
               </div>
 
               {/* 5개 과정 아코디언/인터랙티브 리스트 */}
@@ -1629,6 +1672,18 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       <AI_기술구조_모달
         is_open={is_architecture_modal_open}
         on_close={() => setIs_architecture_modal_open(false)}
+      />
+
+      {/* 4. AI 8단계 전체 분석 프로세스 시각화 모달 (질문입력, 순차 파이프라인 애니메이션, 실행주체 뱃지, RAG상세, 최종결과) */}
+      <AI_분석_패널
+        is_open={is_ai_pipeline_open}
+        on_close={() => setIs_ai_pipeline_open(false)}
+        region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군'}
+        initial_query={
+          selected_region
+            ? `${selected_region.시군구명}의 응급의료 취약 원인과 개선방안을 분석해줘.`
+            : '영월군의 응급의료 취약 원인과 개선방안을 분석해줘.'
+        }
       />
     </div>
   );

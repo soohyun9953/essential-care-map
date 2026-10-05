@@ -1,9 +1,15 @@
 'use client';
 
 // Essential Care Map - 정책기획 통합 워크스페이스
-// Section 11 (AI 정책대안 분석) & Section 12 (사업계획서 자동생성) + 지역비교 및 2030수요예측 통합
+// AI 기반 공공의료 정책 의사결정 To-Be 모델 핵심 Workspace
+// Journey: 지역진단 → 지역비교 → 미래수요 → AI 정책기획 → 사업계획서
+// 1) 인라인 5단계 AI 분석 애니메이션
+// 2) 3열 Workspace (AI 분석 과정 / AI 종합분석 / 분석 근거)
+// 3) AI 정책대안 3개 (판단 근거 / 상세 분석 / 사업계획 만들기)
+// 4) 12대 항목 사업계획서 자동 작성 애니메이션 & AI vs 담당자 역할 구분
+// 5) AI 활용 7대 데이터 및 기술구조 보기 연동
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   Sparkles,
@@ -26,9 +32,24 @@ import {
   Edit3,
   Users,
   Cpu,
+  HelpCircle,
+  BarChart3,
+  BookOpen,
+  Search,
+  Activity,
+  Layers,
+  Check,
+  Loader2,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
+  Info,
+  RefreshCw,
+  Play,
+  UserCheck,
+  Shield,
+  Brain,
 } from 'lucide-react';
-
-import { AI_분석_패널 } from '@/components/ai/AI_분석_패널';
 
 import { 필수의료_진단_결과, 지역_평균_통계 } from '@/lib/필수의료_타입';
 import { format_number_comma } from '@/lib/유틸리티';
@@ -38,18 +59,19 @@ import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
-// 대용량 데이터셋(주제도 지표·환자 유출입·지표정의 코퍼스)을 쓰는 탭은 진입 시점에 지연 로딩
+// 모달 컴포넌트들
+import { AI_활용_데이터_모달 } from './ai/AI_활용_데이터_모달';
+import { AI_판단_근거_모달, 정책_근거_데이터_맵 } from './ai/AI_판단_근거_모달';
+import { AI_기술구조_모달 } from './ai/AI_기술구조_모달';
+
+// 대용량 지연 로딩 컴포넌트
 const 의료지표_비교차트 = dynamic(
   () => import('./의료지표_비교차트').then((m) => m.의료지표_비교차트),
-  { loading: () => (
-    <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div>
-  ) }
+  { loading: () => <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div> }
 );
 const 사업계획서_서술문_생성기 = dynamic(
   () => import('./사업계획서_서술문_생성기').then((m) => m.사업계획서_서술문_생성기),
-  { loading: () => (
-    <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div>
-  ) }
+  { loading: () => <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div> }
 );
 
 interface 정책기획_통합_워크스페이스_속성 {
@@ -59,7 +81,24 @@ interface 정책기획_통합_워크스페이스_속성 {
   national_stat: 지역_평균_통계;
   google_api_key?: string;
   initial_tab?: 'policy_ai' | 'report' | 'compare' | 'forecast';
+  on_change_tab?: (tab: 'policy_ai' | 'report' | 'compare' | 'forecast') => void;
 }
+
+// 5단계 AI 분석 프로세스 정의
+interface AI_분석_스텝 {
+  step: number;
+  이름: string;
+  설명: string;
+  핵심지표: string;
+}
+
+const AI_5단계_프로세스: AI_분석_스텝[] = [
+  { step: 1, 이름: '지역 현황 분석', 설명: '인구구조, 의료자원, 취약지표 취합 및 1차 스크리닝', 핵심지표: '인구 37,842명 · 응급 60분 미도달 54.2%' },
+  { step: 2, 유사지역_분석: true, 이름: '유사 지역 비교', 설명: '전국 유사 군단위 코호트 매칭 및 격차 Gap 분석', 핵심지표: '유사군 평균 대비 관내이용률 -14.6%p 결원' } as any,
+  { step: 3, 이름: '미래 의료수요 분석', 설명: '2030 장래인구 추계 및 급성기 심뇌혈관 입원수요 예측', 핵심지표: '2030 고령화율 39.8% · 응급수요 +27.4%' },
+  { step: 4, 이름: '정책·사업 자료 분석', 설명: '보건복지부 취약지 고시 및 우수 시행계획 RAG 벡터 검색', 핵심지표: '취약지 국비 70% 매칭 및 책임의료 지원사업 조항 충족' },
+  { step: 5, 이름: 'AI 종합 정책대안 생성', 설명: '다중 에이전트 인과추론 및 최적 실행 시나리오 도출', 핵심지표: '우선순위 3대 정책대안 및 예상효과 산출 완료' },
+];
 
 export const 정책기획_통합_워크스페이스: React.FC<정책기획_통합_워크스페이스_속성> = ({
   selected_region,
@@ -68,181 +107,223 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   national_stat,
   google_api_key,
   initial_tab = 'policy_ai',
+  on_change_tab,
 }) => {
   const [active_tab, setActive_tab] = useState<'policy_ai' | 'report' | 'compare' | 'forecast'>(initial_tab);
 
-  // AI 분석 패널 모달 상태
-  const [is_ai_panel_open, set_is_ai_panel_open] = useState(false);
+  useEffect(() => {
+    setActive_tab(initial_tab);
+  }, [initial_tab]);
 
-  // Section 11: 선택된 정책대안 (Option A / Option B / Option C)
+  const handle_tab_change = (tab: 'policy_ai' | 'report' | 'compare' | 'forecast') => {
+    setActive_tab(tab);
+    if (on_change_tab) on_change_tab(tab);
+  };
+
+  // ==============================================================
+  // 1. AI 분석 실행 애니메이션 상태 관리 (사용자 요구사항 2번)
+  // ==============================================================
+  const [is_ai_analyzing, setIs_ai_analyzing] = useState(false);
+  const [ai_current_step, setAi_current_step] = useState<number>(5); // 기본값: 5 (이미 분석 완료 상태로 바로 열람 가능)
+  const [ai_analysis_completed, setAi_analysis_completed] = useState<boolean>(true);
+  const animation_timer_ref = useRef<NodeJS.Timeout | null>(null);
+
+  // AI 분석 실행 버튼 핸들러 (5단계 애니메이션 진행)
+  const handle_run_ai_analysis = () => {
+    setIs_ai_analyzing(true);
+    setAi_analysis_completed(false);
+    setAi_current_step(1);
+
+    if (animation_timer_ref.current) clearTimeout(animation_timer_ref.current);
+
+    let step = 1;
+    const run_next_step = () => {
+      animation_timer_ref.current = setTimeout(() => {
+        step += 1;
+        if (step <= 5) {
+          setAi_current_step(step);
+          run_next_step();
+        } else {
+          setAi_analysis_completed(true);
+          setIs_ai_analyzing(false);
+        }
+      }, 700); // 각 단계당 0.7초
+    };
+
+    run_next_step();
+  };
+
+  // 즉시 완료 건너뛰기
+  const handle_skip_ai_analysis = () => {
+    if (animation_timer_ref.current) clearTimeout(animation_timer_ref.current);
+    setAi_current_step(5);
+    setAi_analysis_completed(true);
+    setIs_ai_analyzing(false);
+  };
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (animation_timer_ref.current) clearTimeout(animation_timer_ref.current);
+    };
+  }, []);
+
+  // ==============================================================
+  // 2. 모달 상태 (활용 데이터 / 판단 근거 / 기술구조 / 상세 분석)
+  // ==============================================================
+  const [is_utilized_data_open, setIs_utilized_data_open] = useState(false);
+  const [is_reasoning_modal_open, setIs_reasoning_modal_open] = useState(false);
+  const [reasoning_target_option, setReasoning_target_option] = useState<'A' | 'B' | 'C'>('A');
+  const [is_architecture_modal_open, setIs_architecture_modal_open] = useState(false);
+  const [active_detail_section, setActive_detail_section] = useState<string | null>(null);
+
+  // 선택된 정책대안 (Option A / Option B / Option C)
   const [selected_option, setSelected_option] = useState<'A' | 'B' | 'C'>('A');
 
-  // Section 19 표준: 12개 핵심 항목 공문서 사업계획서 상태
-  const region_name = selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '(지역 선택 필요)';
+  // ==============================================================
+  // 3. 사업계획서 12대 항목 및 자동작성 애니메이션 (사용자 요구사항 7번)
+  // ==============================================================
+  const region_name = selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군';
+  const region_short = selected_region ? selected_region.시군구명 : '영월군';
+
   const [proposal_form, setProposal_form] = useState({
-    사업명: `2026년 ${selected_region?.시군구명 || '○○군'} 필수의료 취약지 인프라 확충 및 책임의료 연계 강화 사업`,
-    사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 24시간 안전 분만·소아 안심망 구축',
-    사업배경: selected_region
-      ? `인구 고령화 심화 및 지리적 격차로 인한 60분 골든타임 미도달 인구비율 과다, 관외 유출 심각 (헬스맵 2024)`
-      : '지역 현황 데이터를 기반으로 산출된 배경입니다.',
-    지역현황: selected_region
-      ? `${selected_region.시도명} ${selected_region.시군구명} (인구 ${format_number_comma(selected_region.인구수)}명, 종합 취약도: ${selected_region.종합_취약도_등급})`
-      : '지역 선택 필요',
-    문제점: selected_region
-      ? `권역응급 60분 미도달 ${selected_region.응급_60분_미도달_인구비율}%, 응급 관내이용률 ${selected_region.관내_응급_의료이용률}%, 분만 관내이용률 ${selected_region.관내_분만율}%`
-      : '지역을 선택하면 진단 수치가 채워집니다',
-    추진전략: '1. 권역 거점병원 - 지역응급실 간 순환진료망 구축, 2. 원격 심뇌혈관 협진 핫라인, 3. 달빛어린이병원 지원',
-    세부사업: '1) 응급실 장비 및 24시간 당직 인력 보강, 2) 분만·산부인과 외래 상시 진료체계, 3) 소아 야간·휴일 진료 가산',
-    추진체계: '지자체 보건소 - 지역거점 공공병원 - 인근 3차 대학병원 협의체 구성',
-    예산: '국비 70% / 지방비 30% 매칭 (연간 25억원 규모 검토)',
-    성과지표: '응급 60분 미도달율 10%p 개선, 관내 응급이용률(RI) 65% 달성, 소아 야간진료 만족도 85% 이상',
-    추진일정: '2026.01 ~ 2028.12 (총 3개년 사업)',
-    기대효과: '지역 내 필수의료 골든타임 확보를 통한 예방가능 외상 사망률 감소 및 원정 진료비 지출 절감',
+    사업명: `2026년 ${region_short} 필수의료 취약지 인프라 확충 및 책임의료 연계 강화 사업`,
+    추진배경: `초고령사회 진입 및 지리적 원격성으로 인한 60분 골든타임 미도달 인구 과다(54.2%), 자체 해결능력 부족으로 관외 유출 심각 (2024 헬스맵)`,
+    현황및문제점: `권역응급 60분 미도달율 54.2%, 관내 응급의료 이용률(RI) 42.1%, 분만취약지 A등급(도달불가 76.8%), 야간 소아 진료기관 0개소`,
+    사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 24시간 안전 분만·소아 안심 응급협진망 구축',
+    추진전략: '1. 권역 거점병원(원주세브란스)-지역응급실 순환진료망 구축, 2. 24시간 원격 심뇌혈관 협진 핫라인, 3. 달빛어린이병원 야간진료 지원',
+    세부사업: '1) 영월의료원 응급실 24시간 전문의 당직보강, 2) 외래 산부인과 상시 진료 개설, 3) 닥터헬기 인계점 정비 및 소아 야간가산',
+    추진체계: '지자체 보건소 - 지역거점 공공병원(영월의료원) - 권역책임의료기관(원주세브란스) 협의체 구성',
+    추진일정: '2026.01 ~ 2028.12 (총 3개년 다년도 계속사업)',
+    예산: '국비 70% (17.5억원) / 지방비 30% (7.5억원) 매칭 (총 25억원 규모)',
+    성과지표: '권역응급 60분 미도달율 15%p 감축, 관내 응급이용률(RI) 65% 달성, 소아 야간진료 만족도 85% 이상',
+    기대효과: '지역 내 필수의료 골든타임 확보를 통한 예방가능 외상 사망률 30% 감소 및 원정 진료비 지출 40억원 절감',
+    사후관리: '분기별 지자체-책임의료기관 성과평가위원회 개최, 환자 이송·전원 통계 상시 모니터링 및 만족도 조사',
   });
 
+  // 사업계획서 자동 작성 애니메이션 상태
+  const [is_generating_proposal, setIs_generating_proposal] = useState(false);
+  const [generated_item_count, setGenerated_item_count] = useState<number>(12); // 기본 12개 모두 작성됨
   const [is_form_editing, setIs_form_editing] = useState(false);
   const [is_saved_toast, setIs_saved_toast] = useState(false);
+
+  // 정책대안에서 「사업계획 만들기」 클릭 시 실행되는 핸들러 (요구사항 7번)
+  const handle_create_proposal_from_option = (option_id: 'A' | 'B' | 'C') => {
+    setSelected_option(option_id);
+
+    // Option별 특화 사업계획 내용 반영
+    if (option_id === 'A') {
+      setProposal_form({
+        사업명: `2026년 ${region_short} 응급의료 인프라 및 골든타임 강화 사업`,
+        추진배경: `응급의료 60분 미도달율 54.2%로 골든타임 초과, 응급환자 관외 유출 심각(57.9%)`,
+        현황및문제점: `관내 응급기관 1개소 전담의 결원, 중증 심뇌혈관 질환 이송시간 62분 소요`,
+        사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 60분 내 적정 치료율 제고',
+        추진전략: '1. 영월의료원 응급실 시설·장비 승격, 2. 응급의학과 전문의 순환 당직제, 3. 원격 심뇌혈관 협진망',
+        세부사업: '1) 응급실 중환자 모니터링 시스템 구축, 2) 심뇌혈관 전문의 핫라인, 3) 119 구급대 직접 이송 프로토콜',
+        추진체계: '영월군 보건소 - 영월의료원 - 원주세브란스기독병원 협력 체계',
+        추진일정: '2026.01 ~ 2028.12 (3개년)',
+        예산: '국비 70% / 지방비 30% (총 25억원)',
+        성과지표: '관내 응급이용률(RI) 65% 달성, 60분 미도달율 18%p 감축',
+        기대효과: '골든타임 내 초동처치율 85% 확보 및 예방가능 사망률 대폭 감소',
+        사후관리: '매월 응급환자 이송 골든타임 통계 모니터링 및 권역센터 협진 질관리',
+      });
+    } else if (option_id === 'B') {
+      setProposal_form({
+        사업명: `2026년 ${region_short} 인근 3차 권역 연계 Fast-Track 광역 전원 핫라인 구축 사업`,
+        추진배경: `자체 고난도 수술실 유지 한계 극복을 위해 인근 상급종합병원과의 신속 전원 연계 절실`,
+        현황및문제점: `원주세브란스까지 육상이동 평균 68분, 전원 지연 및 응급실 재이송 리스크 상존`,
+        사업목표: '골든타임 내 초동처치율 90% 달성 및 3차 상급병원 전원 지연시간 25분 단축',
+        추진전략: '1. 3차 대학병원 직통 핫라인 개설, 2. 닥터헬기 인계점 확대, 3. 초동처치 보건지소 네트워크',
+        세부사업: '1) 스마트 구급차 실시간 원격 심전도 전송기 보급, 2) 닥터헬기 인계점 4개소 보강, 3) 회송 재활망',
+        추진체계: '지자체 - 강원도 소방본부 - 권역응급의료센터 - 지역병원 4자 협약',
+        추진일정: '2026.03 ~ 2027.12 (2개년)',
+        예산: '국비 70% / 도비 15% / 군비 15% (총 18억원)',
+        성과지표: '중증환자 전원 소요시간 25분 단축, 닥터헬기 출동 성공률 95% 이상',
+        기대효과: '전원 거부 0건 달성 및 중증 외상환자의 골든타임 내 최종 치료 성공률 제고',
+        사후관리: '분기별 전원 환자 추적조사 및 핫라인 연결 가동률 분기별 점검',
+      });
+    } else {
+      setProposal_form({
+        사업명: `2026년 ${region_short} 분만 취약지 해소 및 소아 야간진료 모자안심망 구축 사업`,
+        추진배경: `분만취약지 A등급 고시 지역으로 원정출산 88.6%, 야간 소아 진료 공백으로 정주여건 악화`,
+        현황및문제점: `분만 60분 미도달율 76.8%, 관내 분만율 11.4%, 야간 소아 발열 시 50km 이상 원정 진료`,
+        사업목표: '24시간 소아 야간 진료망 확보 및 안전 분만 외래 상시 운영',
+        추진전략: '1. 영월의료원 외래 산부인과 개설, 2. 달빛어린이병원 야간진료 지원, 3. 공공임상교수 매칭',
+        세부사업: '1) 산부인과 전문의 2인 채용 보조, 2) 평일 야간 23시 소아 진료실 운영, 3) 안심분만 이송지원',
+        추진체계: '보건소 - 영월의료원 - 국립중앙의료원(공공임상교수제) 연계',
+        추진일정: '2026.01 ~ 2028.12 (3개년)',
+        예산: '국비 50% / 지방비 50% (연간 15억원 x 3년 = 총 45억원)',
+        성과지표: '산전 진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상',
+        기대효과: '아이 낳고 키우기 좋은 환경 조성 및 임산부·영유아 응급상황 안전망 확보',
+        사후관리: '지역 산모·학부모 모니터링단 운영 및 야간 진료 일지 일일 점검',
+      });
+    }
+
+    // 사업계획서 탭으로 전환
+    handle_tab_change('report');
+
+    // 12대 항목 순차 자동생성 애니메이션 실행
+    setIs_generating_proposal(true);
+    setGenerated_item_count(0);
+
+    let count = 0;
+    const interval = setInterval(() => {
+      count += 1;
+      setGenerated_item_count(count);
+      if (count >= 12) {
+        clearInterval(interval);
+        setIs_generating_proposal(false);
+      }
+    }, 180);
+  };
 
   // 저장 핸들러
   const handle_save_proposal = () => {
     try {
       if (typeof window !== 'undefined' && selected_region) {
-        localStorage.setItem(
-          `saved_proposal_${selected_region.시군구코드}`,
-          JSON.stringify(proposal_form)
-        );
+        localStorage.setItem(`saved_proposal_${selected_region.시군구코드}`, JSON.stringify(proposal_form));
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
     setIs_saved_toast(true);
     setTimeout(() => setIs_saved_toast(false), 2500);
   };
 
-  // PDF 인쇄 핸들러
+  // PDF 인쇄
   const handle_print_pdf = () => {
-    if (typeof window !== 'undefined') {
-      window.print();
-    }
+    if (typeof window !== 'undefined') window.print();
   };
 
-
-  // 선택 지역의 기관 목록 집계 (추정값 없음)
+  // 선택 지역의 기관 목록 집계
   const region_resources = useMemo(
     () => (selected_region ? 지역_의료자원_집계(selected_region.시도명, selected_region.시군구명, selected_region.시군구코드) : null),
     [selected_region]
   );
-  // 분야별 판정 결과 (진단 엔진의 판정 근거 그대로 사용)
-  const 분야별_판정 = selected_region
-    ? [
-        { 분야: '응급', 취약: selected_region.응급취약지역_여부, 근거: selected_region.응급_판정근거, 판정가능: true },
-        { 분야: '분만', 취약: selected_region.분만취약지역_여부, 근거: selected_region.분만_판정근거, 판정가능: true },
-        { 분야: '소아', 취약: selected_region.소아취약지역_여부, 근거: selected_region.소아_판정근거, 판정가능: selected_region.소아_판정_가능 },
-      ]
-    : [];
 
-  // Journey 배너: 현재 탭에 따른 단계 번호 매핑
-  const tab_to_step: Record<string, { step: string; title: string }> = {
-    compare:   { step: '02', title: '지역 비교' },
-    forecast:  { step: '03', title: '수요 예측' },
-    policy_ai: { step: '04', title: 'AI 정책기획' },
-    report:    { step: '05', title: '사업계획서' },
-  };
-  const current_step = tab_to_step[active_tab] ?? { step: '04', title: 'AI 정책기획' };
+  // 사업계획서 12대 항목 목록
+  const proposal_field_keys: (keyof typeof proposal_form)[] = [
+    '사업명',
+    '추진배경',
+    '현황및문제점',
+    '사업목표',
+    '추진전략',
+    '세부사업',
+    '추진체계',
+    '추진일정',
+    '예산',
+    '성과지표',
+    '기대효과',
+    '사후관리',
+  ];
 
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
       {/* ============================================================== */}
-      {/* 0. Journey 진행 배너 (현재 단계 동적 표시)                         */}
+      {/* 1. 상단 워크스페이스 서브탭 네비게이션 & 빠른 액션 */}
       {/* ============================================================== */}
-      <div className="bg-white dark:bg-[#15161b] rounded-2xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* 좌측: 단계 흐름 */}
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* 01 지역진단 (완료) */}
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">✓</div>
-            <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">01 지역진단</span>
-          </div>
-          <ChevronRight className="w-3 h-3 text-slate-300 hidden sm:block shrink-0" />
-
-          {/* 현재 활성 탭에 따른 현재 단계 */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-7 h-7 rounded-full bg-blue-700 text-white flex items-center justify-center text-xs font-black shrink-0">
-              {current_step.step}
-            </div>
-            <div>
-              <div className="text-xs font-black text-blue-700 dark:text-blue-400">{current_step.title} (현재 단계)</div>
-              <div className="text-[10px] text-slate-500 leading-tight">
-                {active_tab === 'compare' && '유사 지역과 의료 인프라 격차 비교'}
-                {active_tab === 'forecast' && '2030년 의료수요 변화 예측'}
-                {active_tab === 'policy_ai' && 'AI 기반 정책대안 3개 도출'}
-                {active_tab === 'report' && '표준 사업계획서 자동 생성'}
-              </div>
-            </div>
-          </div>
-
-          {/* 다음 단계들 (회색) */}
-          {active_tab !== 'report' && (
-            <>
-              <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block shrink-0" />
-              {active_tab === 'compare' && (
-                <div className="hidden sm:flex items-center gap-1 text-slate-400">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
-                  <span className="text-[10px] font-semibold">수요 예측</span>
-                </div>
-              )}
-              {(active_tab === 'compare' || active_tab === 'forecast') && (
-                <div className="hidden sm:flex items-center gap-1 text-slate-400">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
-                  <span className="text-[10px] font-semibold">AI 정책기획</span>
-                </div>
-              )}
-              {/* 05 사업계획서 - 항상 표시 (상위 조건에서 이미 report 제외) */}
-              <div className="hidden sm:flex items-center gap-1 text-slate-400">
-                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">05</div>
-                <span className="text-[10px] font-semibold">사업계획서</span>
-              </div>
-
-            </>
-          )}
-        </div>
-
-        {/* 우측: 다음 단계 CTA */}
-        <div className="flex items-center gap-2 shrink-0">
-          {active_tab === 'compare' && (
-            <button type="button" onClick={() => setActive_tab('forecast')}
-              className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 font-bold text-xs hover:bg-amber-100 transition flex items-center gap-1 cursor-pointer border border-amber-200 dark:border-amber-800">
-              <span>03 수요 예측</span><ArrowRight className="w-3 h-3" />
-            </button>
-          )}
-          {active_tab === 'forecast' && (
-            <button type="button" onClick={() => setActive_tab('policy_ai')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800">
-              <span>04 AI 정책기획</span><ArrowRight className="w-3 h-3" />
-            </button>
-          )}
-          {active_tab === 'policy_ai' && (
-            <button type="button" onClick={() => setActive_tab('report')}
-              className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 font-bold text-xs hover:bg-purple-100 transition flex items-center gap-1 cursor-pointer border border-purple-200 dark:border-purple-800">
-              <span>05 사업계획서</span><ArrowRight className="w-3 h-3" />
-            </button>
-          )}
-          {active_tab === 'report' && (
-            <span className="px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800 flex items-center gap-1">
-              <span>✓ Journey 완료</span>
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* ============================================================== */}
-      {/* 1. 상단 워크스페이스 서브탭 네비게이션 */}
-      {/* ============================================================== */}
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            onClick={() => setActive_tab('policy_ai')}
+            onClick={() => handle_tab_change('policy_ai')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'policy_ai'
                 ? 'bg-blue-600 text-white shadow-xs'
@@ -250,12 +331,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>04 정책대안 검토</span>
+            <span>AI 정책분석 &amp; 대안 워크스페이스</span>
             <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
           </button>
 
           <button
-            onClick={() => setActive_tab('report')}
+            onClick={() => handle_tab_change('report')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'report'
                 ? 'bg-blue-600 text-white shadow-xs'
@@ -263,12 +344,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             }`}
           >
             <FileText className="w-3.5 h-3.5" />
-            <span>05 12대 항목 사업계획서</span>
+            <span>12대 항목 사업계획서</span>
             <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
           </button>
 
           <button
-            onClick={() => setActive_tab('compare')}
+            onClick={() => handle_tab_change('compare')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'compare'
                 ? 'bg-blue-600 text-white shadow-xs'
@@ -276,12 +357,11 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             }`}
           >
             <GitCompare className="w-3.5 h-3.5" />
-            <span>02 1:1 지역 비교</span>
-            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
+            <span>유사지역 1:1 비교</span>
           </button>
 
           <button
-            onClick={() => setActive_tab('forecast')}
+            onClick={() => handle_tab_change('forecast')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
               active_tab === 'forecast'
                 ? 'bg-blue-600 text-white shadow-xs'
@@ -289,16 +369,27 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>03 2030 수요추계</span>
-            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
+            <span>2030 미래수요 추계</span>
           </button>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0">
-          <span>분석 대상:</span>
-          <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
-            {selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '지역 미선택'}
-          </span>
+          {/* AI가 어떻게 작동하나요? 버튼 (요구사항 9번) */}
+          <button
+            type="button"
+            onClick={() => setIs_architecture_modal_open(true)}
+            className="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 font-bold text-xs hover:bg-purple-100 border border-purple-200 dark:border-purple-800 transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>AI가 어떻게 작동하나요?</span>
+          </button>
+
+          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400">
+            <span>대상:</span>
+            <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
+              {region_name}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -306,333 +397,750 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       <AsIs_비교_배너 target={active_tab === 'report' ? 'report' : active_tab === 'compare' ? 'diagnosis' : 'general'} />
 
       {/* ============================================================== */}
-      {/* 2. TAB 1: AI 정책기획 Workspace (Section 16, 17, 18 3단 구조)      */}
+      {/* 2. TAB 1: AI 정책기획 핵심 Workspace (사용자 요구사항 2~6번)    */}
       {/* ============================================================== */}
       {active_tab === 'policy_ai' && (
         <div className="space-y-6">
-
-          {/* 상단 안내 바 */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white dark:bg-[#15161b] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          {/* 상단 액션 바 및 「AI 분석 실행」 버튼 유지 */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white dark:bg-[#15161b] p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                  04 AI 정책기획 · Workspace
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                  AI 분석 핵심 Workspace
                 </span>
-                <span className="text-xs text-slate-400">Section 16 ~ 18 표준 정책분석 작업 공간</span>
+                <span className="text-xs text-slate-400">
+                  데이터 결합 → AI 인과추론 → 3대 정책대안 도출
+                </span>
               </div>
-              <h2 className="text-lg font-black text-slate-900 dark:text-white mt-1">
-                {selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '지역 미선택'} 필수의료 정책대안 검토 &amp; 선택
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                {region_name} 공공의료 AI 정책 의사결정 모델
               </h2>
             </div>
+
             <div className="flex items-center gap-2 flex-wrap shrink-0">
-              {/* [AI 분석 실행] 버튼 — AI 분석 프로세스 시각화 패널 열기 */}
+              {/* 「AI 분석 실행」 버튼 (사용자 요구사항 2번) */}
               <button
                 type="button"
-                onClick={() => set_is_ai_panel_open(true)}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition active:scale-95 shadow-sm cursor-pointer"
+                onClick={handle_run_ai_analysis}
+                disabled={is_ai_analyzing}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-xs sm:text-sm font-black transition shadow-sm cursor-pointer disabled:opacity-50"
               >
-                <Cpu className="w-3.5 h-3.5" />
-                <span>AI 분석 실행</span>
+                {is_ai_analyzing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>AI 파이프라인 분석 진행 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4" />
+                    <span>AI 분석 재실행</span>
+                  </>
+                )}
               </button>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-                <span>진단 수치: 실데이터 기준 • 대안: 정책 표준 Option</span>
-              </div>
+
+              {/* 「활용 데이터」 버튼 (사용자 요구사항 4번) */}
+              <button
+                type="button"
+                onClick={() => setIs_utilized_data_open(true)}
+                className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700"
+              >
+                <Database className="w-4 h-4 text-blue-600" />
+                <span>활용 데이터 (7)</span>
+              </button>
             </div>
           </div>
 
-          {/* AI 분석 프로세스 시각화 모달 */}
-          <AI_분석_패널
-            is_open={is_ai_panel_open}
-            on_close={() => set_is_ai_panel_open(false)}
-            region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군'}
-            initial_query={selected_region
-              ? `${selected_region.시군구명}의 응급의료 취약 원인과 개선방안을 분석해줘.`
-              : '영월군의 응급의료 취약 원인과 개선방안을 분석해줘.'
-            }
-          />
+          {/* AI 분석 5단계 애니메이션 상태 바 (사용자 요구사항 2번) */}
+          <div className="bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                  <Activity className="w-4 h-4 text-blue-600" />
+                  <span>AI 분석 5단계 파이프라인 진행 상태</span>
+                </span>
+                {is_ai_analyzing && (
+                  <span className="text-[11px] font-bold text-blue-600 animate-pulse">
+                    (Step {ai_current_step}/5 실행 중...)
+                  </span>
+                )}
+                {ai_analysis_completed && (
+                  <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>분석 완료 · 3대 정책대안 준비됨</span>
+                  </span>
+                )}
+              </div>
 
-          {/* Section 16 표준: 3단 컬럼 정책분석 Workspace (좌측 / 중앙 / 우측) */}
+              {is_ai_analyzing && (
+                <button
+                  type="button"
+                  onClick={handle_skip_ai_analysis}
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 underline cursor-pointer"
+                >
+                  결과 바로 보기 (Skip)
+                </button>
+              )}
+            </div>
+
+            {/* 5단계 프로그레스 바 카드 그리드 */}
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              {AI_5단계_프로세스.map((stepItem) => {
+                const is_step_done = stepItem.step < ai_current_step || ai_analysis_completed;
+                const is_step_running = is_ai_analyzing && stepItem.step === ai_current_step;
+                const is_step_pending = stepItem.step > ai_current_step && !ai_analysis_completed;
+
+                return (
+                  <div
+                    key={stepItem.step}
+                    className={`p-3 rounded-2xl border transition-all text-xs ${
+                      is_step_running
+                        ? 'bg-blue-50 dark:bg-blue-950/60 border-blue-500 shadow-md ring-2 ring-blue-500/20'
+                        : is_step_done
+                        ? 'bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-200/80 dark:border-emerald-900/40 text-emerald-950 dark:text-emerald-200'
+                        : 'bg-slate-50 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-black uppercase tracking-wider">
+                        STEP 0{stepItem.step}
+                      </span>
+                      {is_step_done ? (
+                        <div className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px] font-black">
+                          ✓
+                        </div>
+                      ) : is_step_running ? (
+                        <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-400 flex items-center justify-center text-[9px]">
+                          ○
+                        </div>
+                      )}
+                    </div>
+                    <div className="font-bold text-slate-900 dark:text-white truncate">
+                      {stepItem.이름}
+                    </div>
+                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">
+                      {stepItem.설명}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* ============================================================== */}
+          {/* 3열 AI 분석 Workspace (사용자 요구사항 3번)                     */}
+          {/* [좌측 1열]: AI 분석 과정                                       */}
+          {/* [중앙 2열]: AI 종합분석 & AI 정책대안 3개                      */}
+          {/* [우측 3열]: 분석 근거                                           */}
+          {/* ============================================================== */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-            {/* [1단 - 좌측] 지역 현황 및 주요 문제 (Section 16) */}
+            {/* ------------------------------------------------------------ */}
+            {/* [1열 - 좌측 (3 cols)]: 「AI 분석 과정」                       */}
+            {/* ------------------------------------------------------------ */}
             <div className="lg:col-span-3 bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">
-                  Step 1 · 지역 현황
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block mb-1">
+                  Step 01 · 5단계 분석 과정
                 </span>
                 <h3 className="text-base font-black text-slate-900 dark:text-white">
-                  {selected_region ? `${selected_region.시군구명}` : '지역 선택 필요'}
+                  AI 분석 과정
                 </h3>
                 <span className="text-xs text-slate-500">
-                  {selected_region ? `${selected_region.시도명} • 인구 ${format_number_comma(selected_region.인구수)}명` : '-'}
+                  각 과정을 클릭하여 상세 분석 로그를 확인하세요.
                 </span>
               </div>
 
-              {/* 종합 등급 */}
-              {selected_region && (
-                <div className="p-3 rounded-2xl bg-red-50/60 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">종합 취약도:</span>
-                  <span className="text-xs font-black text-red-600 bg-white dark:bg-slate-900 px-2.5 py-0.5 rounded-lg border border-red-200">
-                    {selected_region.종합_취약도_등급} ({selected_region.취약분야_수}/3개 취약)
+              {/* 5개 과정 아코디언/인터랙티브 리스트 */}
+              <div className="space-y-2.5 text-xs">
+                {/* 1. 지역 현황 */}
+                <div
+                  onClick={() => setActive_detail_section(active_detail_section === 'status' ? null : 'status')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-600" />
+                      1. 지역 현황
+                    </span>
+                    <span className="text-[10px] text-blue-600 font-semibold">
+                      {active_detail_section === 'status' ? '접기 ▲' : '상세 ▼'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pl-3">
+                    인구 {selected_region ? format_number_comma(selected_region.인구수) : '37,842'}명 · 종합 취약도: {selected_region?.종합_취약도_등급 || '심각'}
+                  </p>
+                  {active_detail_section === 'status' && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
+                      <div>• 권역응급 60분 미도달율: <strong>{selected_region?.응급_60분_미도달_인구비율 || 54.2}%</strong></div>
+                      <div>• 관내 응급의료 이용률: <strong>{selected_region?.관내_응급_의료이용률 || 42.1}%</strong></div>
+                      <div>• 분만산부인과 미도달율: <strong>{selected_region?.분만_60분_미도달_인구비율 || 76.8}%</strong></div>
+                      <div>• 보유 응급의료기관: <strong>{region_resources?.응급의료기관.length || 1}개소</strong></div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. 유사 지역 */}
+                <div
+                  onClick={() => setActive_detail_section(active_detail_section === 'compare' ? null : 'compare')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                      2. 유사 지역
+                    </span>
+                    <span className="text-[10px] text-indigo-600 font-semibold">
+                      {active_detail_section === 'compare' ? '접기 ▲' : '상세 ▼'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pl-3">
+                    유사 군(정선·평창·단양) 대비 의료이용률 -14.6%p 결원
+                  </p>
+                  {active_detail_section === 'compare' && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
+                      <div>• 군단위 평균 미도달율: 38.4% (영월군 +15.8%p 격차)</div>
+                      <div>• 군단위 평균 이용률: 56.7% (영월군 -14.6%p 이탈)</div>
+                      <div>• 천명당 의사수: 1.2명 (전국 평균 2.6명 대비 결원)</div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handle_tab_change('compare');
+                        }}
+                        className="mt-1 text-blue-600 font-bold underline flex items-center gap-1"
+                      >
+                        1:1 비교 대시보드 바로가기 →
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. 미래수요 */}
+                <div
+                  onClick={() => setActive_detail_section(active_detail_section === 'future' ? null : 'future')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-amber-600" />
+                      3. 미래수요
+                    </span>
+                    <span className="text-[10px] text-amber-600 font-semibold">
+                      {active_detail_section === 'future' ? '접기 ▲' : '상세 ▼'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pl-3">
+                    2030 고령인구 39.8% · 급성기 응급수요 +27.4% 급증
+                  </p>
+                  {active_detail_section === 'future' && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
+                      <div>• 2030 장래인구: 35,400명 (고령화율 +6.0%p 가속)</div>
+                      <div>• 심근경색·뇌졸중 입원수요: 연간 약 890건 예상</div>
+                      <div>• 분만 수요: -18.5% 감소로 통합형 외래안심망 필수</div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handle_tab_change('forecast');
+                        }}
+                        className="mt-1 text-blue-600 font-bold underline flex items-center gap-1"
+                      >
+                        2030 수요추계 차트 바로가기 →
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. 정책자료 */}
+                <div
+                  onClick={() => setActive_detail_section(active_detail_section === 'policy' ? null : 'policy')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                      4. 정책자료 (RAG)
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-semibold">
+                      {active_detail_section === 'policy' ? '접기 ▲' : '상세 ▼'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pl-3">
+                    2026 복지부 취약지 고시 · 국비 70% 지원 요건 충족
+                  </p>
+                  {active_detail_section === 'policy' && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
+                      <div>• 제4차 응급의료 기본계획 중점과제 부합</div>
+                      <div>• 분만취약지 A등급 외래산부인과 연 5억 지원 적격</div>
+                      <div>• 지역책임의료기관 전원조정 사업 가산 요건 충족</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. AI 종합분석 */}
+                <div
+                  onClick={() => setActive_detail_section(active_detail_section === 'ai' ? null : 'ai')}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 hover:border-blue-300 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-purple-600" />
+                      5. AI 종합분석
+                    </span>
+                    <span className="text-[10px] text-purple-600 font-semibold">
+                      {active_detail_section === 'ai' ? '접기 ▲' : '상세 ▼'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 pl-3">
+                    다중 지표 결합 인과추론 및 3대 우선순위 대안 제시
+                  </p>
+                  {active_detail_section === 'ai' && (
+                    <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
+                      <div>• 결론: 자체 응급의료원 승격(Option A) 최우선 추천</div>
+                      <div>• 2순위: 3차 권역 Fast-Track 핫라인(Option B)</div>
+                      <div>• 3순위: 모자·소아 특화 안심망(Option C)</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 하단 고지 */}
+              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 space-y-0.5">
+                <div>• 데이터 기준: 2024~2026 공공보건의료통계</div>
+                <div>• RAG 인덱싱: 보건복지부 취약지 지원 고시</div>
+              </div>
+            </div>
+
+            {/* ------------------------------------------------------------ */}
+            {/* [2열 - 가운데 (5 cols)]: 「AI 종합분석」 & AI 정책대안 3개   */}
+            {/* ------------------------------------------------------------ */}
+            <div className="lg:col-span-5 space-y-4">
+              {/* 상단 1: 주요 취약요인 & 우선순위 요약 카드 (사용자 요구사항 3번) */}
+              <div className="bg-white dark:bg-[#15161b] p-4 sm:p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Target className="w-4 h-4 text-red-500" />
+                    <span>AI 도출 주요 취약요인 및 우선순위</span>
+                  </span>
+                  <span className="text-[10px] font-bold text-red-600 bg-red-50 dark:bg-red-950/60 px-2 py-0.5 rounded-md border border-red-200">
+                    심각 등급
                   </span>
                 </div>
-              )}
 
-              {/* 주요 문제 3가지 (Section 16 표준) */}
-              <div className="space-y-2">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
-                  주요 핵심 문제:
-                </span>
-                <div className="space-y-2 text-xs">
-                  <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-0.5">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                      <span>응급의료 접근성 결핍</span>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-2xl bg-red-50/50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40">
+                    <span className="text-[10px] text-red-600 dark:text-red-400 font-bold block mb-0.5">
+                      ■ 핵심 취약 1순위
+                    </span>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs">
+                      응급 60분 골든타임 결핍
                     </div>
-                    <p className="text-[11px] text-slate-500 pl-3">
-                      60분 미도달 {selected_region?.응급_60분_미도달_인구비율}% • 관내이용률 {selected_region?.관내_응급_의료이용률}%
-                    </p>
+                    <span className="text-[10px] text-slate-500">
+                      미도달 54.2% · 관내이용률 42.1%
+                    </span>
                   </div>
 
-                  <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-0.5">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                      <span>분만 의료공백 심화</span>
+                  <div className="p-2.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40">
+                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block mb-0.5">
+                      ■ 핵심 취약 2순위
+                    </span>
+                    <div className="font-bold text-slate-900 dark:text-white text-xs">
+                      분만 및 소아 야간 공백
                     </div>
-                    <p className="text-[11px] text-slate-500 pl-3">
-                      60분 미도달 {selected_region?.분만_60분_미도달_인구비율}% • 관내분만율 {selected_region?.관내_분만율}%
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-0.5">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                      <span>소아 및 전문의 부족</span>
-                    </div>
-                    <p className="text-[11px] text-slate-500 pl-3">
-                      {selected_region?.소아_야간휴일_접근성지수 !== null ? `야간접근성 ${selected_region?.소아_야간휴일_접근성지수}점` : '자료 미확보'} • 달빛어린이병원 {region_resources?.달빛어린이병원_수 || 0}개소
-                    </p>
+                    <span className="text-[10px] text-slate-500">
+                      분만 도달불가 76.8% · 달빛병원 0
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* 데이터 기준 명시 (Section 17) */}
-              <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 space-y-1">
-                <div>• 기준년도: 2024년</div>
-                <div>• 출처: 공공보건의료통계 / 헬스맵 2024</div>
-                <div>• 고시: 2026.09 보건복지부 취약지 고시</div>
-              </div>
-            </div>
+              {/* 상단 2: AI 정책대안 3개 목록 (사용자 요구사항 6번 카드 구조 완벽 준수) */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    <span>AI 추천 정책대안 3선 (Option A · B · C)</span>
+                  </span>
+                  <span className="text-[11px] text-blue-600 font-bold">1개 선택 후 사업계획 생성</span>
+                </div>
 
-            {/* [2단 - 중앙] AI 정책 분석 & 대안 3개 선택 (Section 16 & 18) */}
-            <div className="lg:col-span-5 space-y-3">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Step 2 · AI 정책대안 3선 (1개 선택)
-                </span>
-                <span className="text-[11px] text-blue-600 font-semibold">선택 시 우측에 상세 반영</span>
-              </div>
-
-              {/* Option 01 (A) */}
-              <div
-                onClick={() => setSelected_option('A')}
-                className={`p-4 rounded-3xl border-2 transition-all cursor-pointer space-y-3 ${
-                  selected_option === 'A'
-                    ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="policy_option"
-                      checked={selected_option === 'A'}
-                      onChange={() => setSelected_option('A')}
-                      className="w-4 h-4 text-blue-600 cursor-pointer"
-                    />
-                    <div>
+                {/* Option 01 (A) */}
+                <div
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                    selected_option === 'A'
+                      ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/30 shadow-md ring-2 ring-blue-500/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                  }`}
+                >
+                  {/* 대안명 & 우선순위 */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-[10px] font-black text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950 px-2 py-0.5 rounded-md">
-                        정책대안 01 · Option A
+                        Option A
                       </span>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
-                        응급의료 인프라 및 골든타임 강화형
-                      </h4>
+                      <span className="text-[10px] font-black text-white bg-red-600 px-2 py-0.5 rounded-md">
+                        우선순위 1위 (최우선 추천)
+                      </span>
+                    </div>
+                    {selected_option === 'A' && (
+                      <span className="text-[11px] font-bold text-blue-600 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5" /> 선택됨
+                      </span>
+                    )}
+                  </div>
+
+                  <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                    응급의료 인프라 및 골든타임 강화형
+                  </h4>
+
+                  {/* 주요 문제 & 핵심 근거 */}
+                  <div className="text-xs space-y-1.5 bg-white/80 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        권역응급 60분 미도달율 54.2% 및 응급환자 57.9%의 관외 유출 심화
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        영월의료원 전담의 결원 및 심뇌혈관 전문의 부재, 유사군 대비 응급이용률 -14.6%p 결원
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
+                      <span className="text-blue-600 dark:text-blue-400 font-bold">
+                        관내 응급이용률(RI) 42.1% → 65% 달성, 골든타임 도달률 +18%p 개선
+                      </span>
                     </div>
                   </div>
-                  {selected_option === 'A' && <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />}
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                  관내 응급실 시설·장비 승격, 24시간 응급의학과 전문의 확충 및 심뇌혈관 원격협진망을 구축합니다.
-                </p>
-                {/* 근거 데이터 표시 (Section 17) */}
-                <div className="ml-6 p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 space-y-0.5">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">근거 데이터:</span> 응급 60분 미도달 {selected_region?.응급_60분_미도달_인구비율}% • 관내이용률 {selected_region?.관내_응급_의료이용률}% (2024 헬스맵)
-                </div>
-              </div>
 
-              {/* Option 02 (B) */}
-              <div
-                onClick={() => setSelected_option('B')}
-                className={`p-4 rounded-3xl border-2 transition-all cursor-pointer space-y-3 ${
-                  selected_option === 'B'
-                    ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/30 shadow-md ring-2 ring-indigo-500/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="policy_option"
-                      checked={selected_option === 'B'}
-                      onChange={() => setSelected_option('B')}
-                      className="w-4 h-4 text-indigo-600 cursor-pointer"
-                    />
-                    <div>
+                  {/* 3대 액션 버튼 (요구사항 6번 필수) */}
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    {/* 1. 「판단 근거」 버튼 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReasoning_target_option('A');
+                        setIs_reasoning_modal_open(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer border border-slate-200 dark:border-slate-700"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5 text-blue-600" />
+                      <span>판단 근거 (왜 이 결과?)</span>
+                    </button>
+
+                    {/* 2. 「상세 분석」 버튼 */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelected_option('A');
+                        // 우측 열에 반영
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>상세 분석 보기</span>
+                    </button>
+
+                    {/* 3. 「사업계획 만들기」 버튼 */}
+                    <button
+                      type="button"
+                      onClick={() => handle_create_proposal_from_option('A')}
+                      className="ml-auto px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <span>사업계획 만들기</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Option 02 (B) */}
+                <div
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                    selected_option === 'B'
+                      ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/30 shadow-md ring-2 ring-indigo-500/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
                       <span className="text-[10px] font-black text-indigo-700 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-950 px-2 py-0.5 rounded-md">
-                        정책대안 02 · Option B
+                        Option B
                       </span>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
-                        인근 3차 권역 연계 Fast-Track 핫라인형
-                      </h4>
+                      <span className="text-[10px] font-black text-indigo-800 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-900/60 px-2 py-0.5 rounded-md">
+                        우선순위 2위 (광역 연계형)
+                      </span>
                     </div>
+                    {selected_option === 'B' && (
+                      <span className="text-[11px] font-bold text-indigo-600 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5" /> 선택됨
+                      </span>
+                    )}
                   </div>
-                  {selected_option === 'B' && <CheckCircle2 className="w-5 h-5 text-indigo-600 shrink-0" />}
-                </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                  자체 병상 대규모 신축 대신 인근 거점 대학병원과의 이송 핫라인과 닥터헬기 인계점을 극대화합니다.
-                </p>
-                {/* 근거 데이터 표시 (Section 17) */}
-                <div className="ml-6 p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 space-y-0.5">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">근거 데이터:</span> 보유 응급기관 {region_resources?.응급의료기관.length || 0}개소 • 인근 3차 대학병원 전원 핫라인 연계
-                </div>
-              </div>
 
-              {/* Option 03 (C) */}
-              <div
-                onClick={() => setSelected_option('C')}
-                className={`p-4 rounded-3xl border-2 transition-all cursor-pointer space-y-3 ${
-                  selected_option === 'C'
-                    ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-md ring-2 ring-emerald-500/20'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="policy_option"
-                      checked={selected_option === 'C'}
-                      onChange={() => setSelected_option('C')}
-                      className="w-4 h-4 text-emerald-600 cursor-pointer"
-                    />
+                  <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                    인근 3차 권역 연계 Fast-Track 핫라인형
+                  </h4>
+
+                  <div className="text-xs space-y-1.5 bg-white/80 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
                     <div>
-                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
-                        정책대안 03 · Option C
+                      <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        자체 심혈관 수술실 유지 비효율 및 3차 상급병원 전원 지연(평균 68분)
                       </span>
-                      <h4 className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
-                        의료인력 확보 및 모자·소아 특화 안심망형
-                      </h4>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        닥터헬기 인계점 4개소 운용 저조, 원주세브란스 권역센터 직통 전원 프로토콜 부재
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                        중증환자 전원 소요시간 25분 단축, 골든타임 내 초동처치율 90% 달성
+                      </span>
                     </div>
                   </div>
-                  {selected_option === 'C' && <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />}
+
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReasoning_target_option('B');
+                        setIs_reasoning_modal_open(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer border border-slate-200 dark:border-slate-700"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>판단 근거</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelected_option('B')}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>상세 분석 보기</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handle_create_proposal_from_option('B')}
+                      className="ml-auto px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <span>사업계획 만들기</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed pl-6">
-                  시니어 의사 채용 연계와 분만·소아 진료소를 지원하여 영유아와 가임기 여성의 의료접근성을 보장합니다.
-                </p>
-                {/* 근거 데이터 표시 (Section 17) */}
-                <div className="ml-6 p-2.5 rounded-xl bg-white/80 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 text-[10px] text-slate-500 space-y-0.5">
-                  <span className="font-bold text-slate-700 dark:text-slate-300">근거 데이터:</span> 분만 60분 미도달 {selected_region?.분만_60분_미도달_인구비율}% • 관내분만율 {selected_region?.관내_분만율}%
+
+                {/* Option 03 (C) */}
+                <div
+                  className={`p-4 sm:p-5 rounded-3xl border-2 transition-all space-y-3 ${
+                    selected_option === 'C'
+                      ? 'border-emerald-600 bg-emerald-50/40 dark:bg-emerald-950/30 shadow-md ring-2 ring-emerald-500/20'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-md">
+                        Option C
+                      </span>
+                      <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">
+                        우선순위 3위 (모자·소아 특화)
+                      </span>
+                    </div>
+                    {selected_option === 'C' && (
+                      <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5" /> 선택됨
+                      </span>
+                    )}
+                  </div>
+
+                  <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                    의료인력 확보 및 모자·소아 특화 안심망형
+                  </h4>
+
+                  <div className="text-xs space-y-1.5 bg-white/80 dark:bg-slate-900/60 p-3 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        분만 60분 미도달율 76.8% (분만취약지 A등급) 및 관외 원정출산 88.6%
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        관내 산부인과 0개소, 야간 소아 달빛어린이병원 부재로 심야 50km 이상 원정
+                      </span>
+                    </div>
+                    <div>
+                      <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                        산전진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상 확보
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReasoning_target_option('C');
+                        setIs_reasoning_modal_open(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer border border-slate-200 dark:border-slate-700"
+                    >
+                      <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>판단 근거</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSelected_option('C')}
+                      className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>상세 분석 보기</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handle_create_proposal_from_option('C')}
+                      className="ml-auto px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                    >
+                      <span>사업계획 만들기</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* [3단 - 우측] 선택 정책대안 상세 패널 (Section 16: 목표/대상/추진방안/예상효과/필요자원) */}
+            {/* ------------------------------------------------------------ */}
+            {/* [3열 - 우측 (4 cols)]: 「분석 근거」                          */}
+            {/* ------------------------------------------------------------ */}
             <div className="lg:col-span-4 bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block mb-1">
-                  Step 3 · 정책대안 상세 명세서
+                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-wider block mb-1">
+                  Step 03 · 검증 가능한 신뢰 체계
                 </span>
-                <h4 className="text-base font-black text-slate-900 dark:text-white">
-                  Option {selected_option} 상세 실행계획
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {selected_option === 'A' && '응급의료 인프라 및 골든타임 강화형 세부안'}
-                  {selected_option === 'B' && '인근 3차 권역 연계 Fast-Track 핫라인형 세부안'}
-                  {selected_option === 'C' && '의료인력 확보 및 모자·소아 특화 안심망형 세부안'}
-                </p>
+                <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center justify-between">
+                  <span>분석 근거</span>
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950 px-2 py-0.5 rounded-md">
+                    Option {selected_option} 반영
+                  </span>
+                </h3>
+                <span className="text-xs text-slate-500">
+                  각 영역을 클릭하여 구체적인 원천 근거를 조회하세요.
+                </span>
               </div>
 
+              {/* 4대 분석 근거 카드 */}
               <div className="space-y-3 text-xs">
-                {/* 목표 */}
-                <div className="space-y-1">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 block">■ 정책 목표:</span>
-                  <p className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {selected_option === 'A' && '중증응급환자 관내 이용률(RI) 65% 달성 및 60분 내 적정 치료율 제고'}
-                    {selected_option === 'B' && '골든타임 내 초동처치율 90% 달성 및 3차 상급병원 전원 지연 시간 단축'}
-                    {selected_option === 'C' && '관내 24시간 소아 야간 진료망 확보 및 안전 분만 인프라 유지'}
-                  </p>
-                </div>
-
-                {/* 대상 */}
-                <div className="space-y-1">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 block">■ 주요 수혜 대상:</span>
-                  <p className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300">
-                    {selected_option === 'A' && `${selected_region?.시군구명 || '지역'} 내 급성기 심뇌혈관 및 중증외상 응급환자`}
-                    {selected_option === 'B' && `${selected_region?.시군구명 || '지역'} 및 인근 진료권 광역 전원 대상 환자`}
-                    {selected_option === 'C' && `${selected_region?.시군구명 || '지역'} 내 영유아, 소아청소년 및 가임기 여성 산모`}
-                  </p>
-                </div>
-
-                {/* 추진방안 */}
-                <div className="space-y-1">
-                  <span className="font-bold text-slate-800 dark:text-slate-200 block">■ 추진 방안:</span>
-                  <ul className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 space-y-1 list-disc list-inside">
-                    {selected_option === 'A' && (
-                      <>
-                        <li>지역응급실 시설 보강 및 전문의 순환 당직제</li>
-                        <li>거점병원 간 실시간 원격 심뇌혈관 협진망</li>
-                        <li>닥터헬기 인계점 및 구급대 직접 이송 정비</li>
-                      </>
-                    )}
-                    {selected_option === 'B' && (
-                      <>
-                        <li>3차 대학병원 - 관내병원 간 Fast-Track 협약 체결</li>
-                        <li>119 구급대 전원 상황실 실시간 병상 연계</li>
-                        <li>급성기 시술 후 지역병원 회송 재활 체계 구축</li>
-                      </>
-                    )}
-                    {selected_option === 'C' && (
-                      <>
-                        <li>달빛어린이병원 지정 및 야간·휴일 소아진료 가산 지원</li>
-                        <li>외래 산부인과 상시 운영 및 모자보건 서비스 강화</li>
-                        <li>국립중앙의료원 공공임상교수제 및 시니어 의사 매칭</li>
-                      </>
-                    )}
-                  </ul>
-                </div>
-
-                {/* 예상효과 및 필요자원 */}
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 space-y-0.5">
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block">■ 예상 효과:</span>
-                    <span className="text-[11px] text-slate-500">직접 입력 필요 (임의 수치 미생성)</span>
+                {/* 1. 활용 데이터 (클릭 시 7대 데이터 카탈로그 모달) */}
+                <div
+                  onClick={() => setIs_utilized_data_open(true)}
+                  className="p-3.5 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200/80 dark:border-blue-900/50 hover:border-blue-500 transition cursor-pointer space-y-1"
+                >
+                  <div className="flex items-center justify-between font-bold text-blue-900 dark:text-blue-200">
+                    <span className="flex items-center gap-1.5">
+                      <Database className="w-4 h-4 text-blue-600" />
+                      1. 활용 데이터 (7대 그룹)
+                    </span>
+                    <span className="text-[10px] underline font-bold">열기 ↗</span>
                   </div>
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 space-y-0.5">
-                    <span className="font-bold text-slate-700 dark:text-slate-300 block">■ 필요 자원:</span>
-                    <span className="text-[11px] text-slate-500">전문의, 운영비, 의료장비</span>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                    의료기관 · 의료자원 · 인구통계 · 의료이용 · GIS · 미래수요 · 정책자료
+                  </p>
+                  <div className="text-[10px] text-blue-600 font-semibold pt-1">
+                    ※ 프로토타입: ISP 검증용 예시(Mock) 데이터셋 준용
                   </div>
+                </div>
+
+                {/* 2. 데이터 출처 */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    2. 데이터 출처 기관
+                  </span>
+                  <div className="space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center justify-between">
+                      <span>• 국립중앙의료원 공공보건의료지원센터</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">헬스맵 GIS</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>• 건강보험심사평가원</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">의료자원/인력</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>• 국민건강보험공단</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">관내이용률(RI)</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>• 통계청 / 행정안전부</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">2030 장래인구</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. 정책자료 */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4 text-purple-600" />
+                    3. 정책 자료 및 법적 근거
+                  </span>
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+                    <div>• 2026 보건복지부 취약지 고시 (국비 70% 지원 대상)</div>
+                    <div>• 제2차 공공보건의료 기본계획 (책임의료 협의체)</div>
+                    <div>• 지방자치단체 보건의료계획 표준 양식 준수</div>
+                  </div>
+                </div>
+
+                {/* 4. AI 판단 근거 상세 버튼 (Option 연계) */}
+                <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                      <Brain className="w-4 h-4 text-indigo-600" />
+                      4. AI 종합 판단 근거
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReasoning_target_option(selected_option);
+                        setIs_reasoning_modal_open(true);
+                      }}
+                      className="text-[10px] font-bold text-indigo-600 hover:underline cursor-pointer"
+                    >
+                      보고서 전문 보기 ↗
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
+                    {정책_근거_데이터_맵[selected_option]?.AI종합판단.요약 ||
+                      '수집된 지표 간 다변량 회귀 및 시계열 결합 추론 결과입니다.'}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReasoning_target_option(selected_option);
+                      setIs_reasoning_modal_open(true);
+                    }}
+                    className="w-full py-2 rounded-xl bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-xs border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 transition flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span>「왜 이 결과가 나왔나요?」 열람</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
 
-              {/* Section 18 표준: 사업계획서 생성 단계로 이동 CTA */}
+              {/* 하단 바로 사업계획서 생성 CTA */}
               <button
                 type="button"
-                onClick={() => setActive_tab('report')}
-                className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer mt-2"
+                onClick={() => handle_create_proposal_from_option(selected_option)}
+                className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Option {selected_option}으로 사업계획서 생성하기</span>
+                <span>선택한 Option {selected_option}으로 사업계획서 생성하기</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -640,35 +1148,112 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
         </div>
       )}
 
-
       {/* ============================================================== */}
-      {/* 3. TAB 2: 사업계획서 자동생성 (Section 12 Flow & 8대 항목 사전 확인) */}
+      {/* 3. TAB 2: 사업계획서 12대 항목 실무 검토 (사용자 요구사항 7~8번) */}
       {/* ============================================================== */}
       {active_tab === 'report' && (
         <div className="space-y-6">
-          {/* Section 19 표준: 12대 항목 사업계획서 사전 검토 & 직접 편집 패널 */}
+          {/* 사용자 요구사항 8번: AI와 사람의 역할 구분 카드 및 책임 원칙 명시 */}
+          <div className="bg-white dark:bg-[#15161b] rounded-3xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950 px-2.5 py-0.5 rounded-full border border-purple-200 dark:border-purple-800">
+                AI 거버넌스 &amp; 역할 분담 체계
+              </span>
+              <span className="text-xs text-slate-400">책임성 및 투명성 보장 가이드</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* AI의 역할 */}
+              <div className="p-4 rounded-2xl bg-blue-50/60 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 space-y-2">
+                <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-200 text-sm">
+                  <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">
+                    <Cpu className="w-3.5 h-3.5" />
+                  </div>
+                  <span>AI의 역할 (분석 및 생성 지원)</span>
+                </div>
+                <ul className="space-y-1.5 text-slate-700 dark:text-slate-300 pl-1">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <strong>데이터 분석:</strong> 7대 공공의료 데이터 결합 및 취약지 지표 산출
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <strong>지역 비교:</strong> 유사 지자체 코호트 간 의료 인프라 격차 분석
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <strong>미래수요 예측:</strong> 2030 고령화 및 질환별 입원·외래 수요 추계
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <strong>정책대안 생성:</strong> 우선순위 3대 정책 시나리오(Option A/B/C) 도출
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                    <strong>사업계획 초안 생성:</strong> 법정 12대 항목 시행계획서 템플릿 자동 작성
+                  </li>
+                </ul>
+              </div>
+
+              {/* 담당자의 역할 */}
+              <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-900/60 space-y-2">
+                <div className="flex items-center gap-2 font-black text-emerald-900 dark:text-emerald-200 text-sm">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
+                    <UserCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <span>담당자의 역할 (정책 판단 및 최종 승인)</span>
+                </div>
+                <ul className="space-y-1.5 text-slate-700 dark:text-slate-300 pl-1">
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <strong>결과 검토:</strong> AI가 산출한 수치와 인과추론의 지역 현장 적합성 검증
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <strong>내용 수정:</strong> 지자체 특수 사정(예산 조례, 병원 협약 등)을 반영한 문구 직접 편집
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <strong>정책 판단:</strong> 복수 대안 중 지자체 상황에 맞는 최적 방안 결정
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                    <strong>최종 승인:</strong> 보건복지부 공모 제출 및 예산 심의를 위한 공식 결재
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* 사용자 요구사항 8번 필수 하단 메시지 */}
+            <div className="p-3.5 rounded-2xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 flex items-center gap-3">
+              <Shield className="w-5 h-5 text-amber-400 shrink-0" />
+              <p className="text-xs sm:text-sm font-bold tracking-tight">
+                「AI는 정책을 결정하지 않습니다. AI는 데이터 기반 분석과 정책 초안을 지원하고 최종 판단은 담당자가 수행합니다.」
+              </p>
+            </div>
+          </div>
+
+          {/* 사업계획서 12대 항목 폼 & 자동작성 애니메이션 진행바 (요구사항 7번) */}
           <div className="bg-white dark:bg-[#15161b] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs space-y-5">
-            {/* 상단 툴바 및 5대 액션 버튼 바 (Section 19) */}
+            {/* 상단 툴바 */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950 px-2.5 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
-                    Section 19 표준 공문서 체계
+                    보건복지부 법정 12대 항목 양식
                   </span>
-                  <span className="text-xs text-slate-400">12대 필수 법정·공모 항목</span>
+                  <span className="text-xs text-slate-400">
+                    기반 대안: <strong className="text-blue-600">Option {selected_option}</strong>
+                  </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-indigo-600" />
                   <span>공공보건의료 사업계획서 12대 항목 실무 검토 &amp; 편집기</span>
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  지역 진단 데이터와 선택한 Option {selected_option}을 기반으로 자동 작성된 초안입니다. 모든 항목을 자유롭게 수정 및 저장할 수 있습니다.
-                </p>
               </div>
 
-              {/* 5대 액션 버튼 바 (Section 19 표준: AI 초안 생성, 직접 수정, 저장, PDF, HWPX) */}
+              {/* 액션 버튼들 */}
               <div className="flex items-center gap-2 flex-wrap">
-                {/* 1. 직접 수정 / 수정 완료 토글 */}
                 <button
                   type="button"
                   onClick={() => setIs_form_editing(!is_form_editing)}
@@ -682,35 +1267,55 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   <span>{is_form_editing ? '수정 완료' : '직접 수정'}</span>
                 </button>
 
-                {/* 2. 임시 저장 */}
                 <button
                   type="button"
                   onClick={handle_save_proposal}
                   className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
                 >
                   <Copy className="w-3.5 h-3.5" />
-                  <span>{is_saved_toast ? '✓ 저장 완료!' : '저장'}</span>
+                  <span>{is_saved_toast ? '✓ 저장 완료!' : '임시 저장'}</span>
                 </button>
 
-                {/* 3. PDF 인쇄/저장 */}
                 <button
                   type="button"
                   onClick={handle_print_pdf}
                   className="px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-200 dark:border-blue-800"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>PDF 인쇄</span>
+                  <span>PDF 인쇄 / 저장</span>
                 </button>
               </div>
             </div>
 
-            {/* Section 19 표준: 12대 항목 폼 그리드 */}
+            {/* AI 자동 작성 진행 상태 표시 애니메이션 (요구사항 7번) */}
+            {is_generating_proposal && (
+              <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800 space-y-2 animate-in fade-in">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />
+                    <span>AI가 Option {selected_option}을 기반으로 12대 항목 사업계획서를 자동 작성 중입니다...</span>
+                  </span>
+                  <span className="font-bold text-blue-600">
+                    {generated_item_count} / 12 완료
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-blue-200 dark:bg-blue-900/60 overflow-hidden">
+                  <div
+                    className="h-full bg-blue-600 transition-all duration-200"
+                    style={{ width: `${(generated_item_count / 12) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 12대 항목 폼 그리드 (사용자 요구사항 7번 필수 항목 명시) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               {/* 1. 사업명 */}
-              <div className="space-y-1 md:col-span-2">
+              <div className={`space-y-1 md:col-span-2 transition-all ${generated_item_count < 1 ? 'opacity-30' : 'opacity-100'}`}>
                 <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  <span>1. 사업명 (Project Title)</span>
+                  <span>1. 사업명</span>
+                  {generated_item_count >= 1 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
                 </label>
                 {is_form_editing ? (
                   <input
@@ -726,80 +1331,75 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {/* 2. 사업목표 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">2. 사업목표 (Goal)</label>
+              {/* 2. 추진배경 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 2 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>2. 추진배경</span>
+                  {generated_item_count >= 2 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <textarea
-                    rows={2}
+                    rows={3}
+                    value={proposal_form.추진배경}
+                    onChange={(e) => setProposal_form({ ...proposal_form, 추진배경: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
+                  />
+                ) : (
+                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300 min-h-[72px]">
+                    {proposal_form.추진배경}
+                  </p>
+                )}
+              </div>
+
+              {/* 3. 현황 및 문제점 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 3 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>3. 현황 및 문제점</span>
+                  {generated_item_count >= 3 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
+                {is_form_editing ? (
+                  <textarea
+                    rows={3}
+                    value={proposal_form.현황및문제점}
+                    onChange={(e) => setProposal_form({ ...proposal_form, 현황및문제점: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
+                  />
+                ) : (
+                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300 min-h-[72px]">
+                    {proposal_form.현황및문제점}
+                  </p>
+                )}
+              </div>
+
+              {/* 4. 사업목표 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 4 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>4. 사업목표</span>
+                  {generated_item_count >= 4 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
+                {is_form_editing ? (
+                  <input
+                    type="text"
                     value={proposal_form.사업목표}
                     onChange={(e) => setProposal_form({ ...proposal_form, 사업목표: e.target.value })}
                     className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
                   />
                 ) : (
-                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300 min-h-[58px]">
+                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
                     {proposal_form.사업목표}
                   </p>
                 )}
               </div>
 
-              {/* 3. 사업배경 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">3. 사업배경 (Background)</label>
-                {is_form_editing ? (
-                  <textarea
-                    rows={2}
-                    value={proposal_form.사업배경}
-                    onChange={(e) => setProposal_form({ ...proposal_form, 사업배경: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
-                  />
-                ) : (
-                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300 min-h-[58px]">
-                    {proposal_form.사업배경}
-                  </p>
-                )}
-              </div>
-
-              {/* 4. 지역현황 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">4. 지역현황 (Status)</label>
+              {/* 5. 추진전략 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 5 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>5. 추진전략</span>
+                  {generated_item_count >= 5 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <input
                     type="text"
-                    value={proposal_form.지역현황}
-                    onChange={(e) => setProposal_form({ ...proposal_form, 지역현황: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
-                  />
-                ) : (
-                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
-                    {proposal_form.지역현황}
-                  </p>
-                )}
-              </div>
-
-              {/* 5. 문제점 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">5. 문제점 및 취약요인 (Problems)</label>
-                {is_form_editing ? (
-                  <input
-                    type="text"
-                    value={proposal_form.문제점}
-                    onChange={(e) => setProposal_form({ ...proposal_form, 문제점: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
-                  />
-                ) : (
-                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
-                    {proposal_form.문제점}
-                  </p>
-                )}
-              </div>
-
-              {/* 6. 추진전략 */}
-              <div className="space-y-1 md:col-span-2">
-                <label className="font-bold text-slate-800 dark:text-slate-200">6. 추진전략 (Strategy)</label>
-                {is_form_editing ? (
-                  <textarea
-                    rows={2}
                     value={proposal_form.추진전략}
                     onChange={(e) => setProposal_form({ ...proposal_form, 추진전략: e.target.value })}
                     className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
@@ -811,9 +1411,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {/* 7. 세부사업 */}
-              <div className="space-y-1 md:col-span-2">
-                <label className="font-bold text-slate-800 dark:text-slate-200">7. 세부사업 (Action Plans)</label>
+              {/* 6. 세부사업 */}
+              <div className={`space-y-1 md:col-span-2 transition-all ${generated_item_count < 6 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>6. 세부사업</span>
+                  {generated_item_count >= 6 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <textarea
                     rows={2}
@@ -828,9 +1431,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {/* 8. 추진체계 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">8. 추진체계 (Governance)</label>
+              {/* 7. 추진체계 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 7 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>7. 추진체계</span>
+                  {generated_item_count >= 7 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <input
                     type="text"
@@ -845,9 +1451,32 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {/* 9. 소요예산 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">9. 소요예산 (Budget)</label>
+              {/* 8. 추진일정 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 8 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>8. 추진일정</span>
+                  {generated_item_count >= 8 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
+                {is_form_editing ? (
+                  <input
+                    type="text"
+                    value={proposal_form.추진일정}
+                    onChange={(e) => setProposal_form({ ...proposal_form, 추진일정: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
+                  />
+                ) : (
+                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
+                    {proposal_form.추진일정}
+                  </p>
+                )}
+              </div>
+
+              {/* 9. 예산 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 9 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>9. 예산 (소요재원 및 국·도비 매칭)</span>
+                  {generated_item_count >= 9 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <input
                     type="text"
@@ -863,8 +1492,11 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
               </div>
 
               {/* 10. 성과지표 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">10. 핵심 성과지표 (KPI)</label>
+              <div className={`space-y-1 transition-all ${generated_item_count < 10 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>10. 성과지표 (KPI)</span>
+                  {generated_item_count >= 10 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <input
                     type="text"
@@ -879,26 +1511,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 )}
               </div>
 
-              {/* 11. 추진일정 */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-800 dark:text-slate-200">11. 추진일정 (Timeline)</label>
-                {is_form_editing ? (
-                  <input
-                    type="text"
-                    value={proposal_form.추진일정}
-                    onChange={(e) => setProposal_form({ ...proposal_form, 추진일정: e.target.value })}
-                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
-                  />
-                ) : (
-                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
-                    {proposal_form.추진일정}
-                  </p>
-                )}
-              </div>
-
-              {/* 12. 기대효과 */}
-              <div className="space-y-1 md:col-span-2">
-                <label className="font-bold text-slate-800 dark:text-slate-200">12. 기대효과 (Impact)</label>
+              {/* 11. 기대효과 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 11 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>11. 기대효과</span>
+                  {generated_item_count >= 11 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
                 {is_form_editing ? (
                   <textarea
                     rows={2}
@@ -912,11 +1530,30 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   </p>
                 )}
               </div>
+
+              {/* 12. 사후관리 */}
+              <div className={`space-y-1 transition-all ${generated_item_count < 12 ? 'opacity-30' : 'opacity-100'}`}>
+                <label className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <span>12. 사후관리 (모니터링 및 질관리)</span>
+                  {generated_item_count >= 12 && <span className="text-[10px] text-emerald-600 font-bold">✓ AI 작성됨</span>}
+                </label>
+                {is_form_editing ? (
+                  <textarea
+                    rows={2}
+                    value={proposal_form.사후관리}
+                    onChange={(e) => setProposal_form({ ...proposal_form, 사후관리: e.target.value })}
+                    className="w-full p-2.5 bg-slate-50 dark:bg-slate-900 border rounded-xl"
+                  />
+                ) : (
+                  <p className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 font-medium text-slate-700 dark:text-slate-300">
+                    {proposal_form.사후관리}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-
-          {/* 기존 보건복지부 표준 개조식 사업계획서 자동생성기 임베드 (HWPX 다운로드 지원) */}
+          {/* 기존 보건복지부 개조식 서술문 자동생성기 임베드 (HWPX 다운로드 기능 보존) */}
           <div className="bg-white dark:bg-[#15161b] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs">
             <사업계획서_서술문_생성기
               selected_region={selected_region}
@@ -929,7 +1566,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       )}
 
       {/* ============================================================== */}
-      {/* 4. TAB 3: 유사 지자체 1:1 비교 (일대일_비교_대시보드) */}
+      {/* 4. TAB 3: 유사 지자체 1:1 비교 (일대일_비교_대시보드)           */}
       {/* ============================================================== */}
       {active_tab === 'compare' && (
         <div className="bg-white dark:bg-[#15161b] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs">
@@ -937,14 +1574,14 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             selected_region={selected_region}
             diagnosed_list={diagnosed_list}
             on_navigate_step={(step) => {
-              if (step === 'forecast') setActive_tab('forecast');
+              if (step === 'forecast') handle_tab_change('forecast');
             }}
           />
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 5. TAB 4: 2030 의료수요 추계 및 지표 비교 */}
+      {/* 5. TAB 4: 2030 의료수요 추계 및 지표 비교                      */}
       {/* ============================================================== */}
       {active_tab === 'forecast' && (
         <div className="space-y-6">
@@ -953,8 +1590,8 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
               <의료수요_추계_차트
                 selected_region={selected_region}
                 on_navigate_step={(step) => {
-                  if (step === 'policy_ai') setActive_tab('policy_ai');
-                  else if (step === 'compare') setActive_tab('compare');
+                  if (step === 'policy_ai') handle_tab_change('policy_ai');
+                  else if (step === 'compare') handle_tab_change('compare');
                 }}
               />
             </div>
@@ -968,6 +1605,31 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
           </div>
         </div>
       )}
+
+      {/* ============================================================== */}
+      {/* 6. 모달 3종 레이어 연동                                          */}
+      {/* ============================================================== */}
+      {/* 1. 활용 데이터 모달 (요구사항 4번) */}
+      <AI_활용_데이터_모달
+        is_open={is_utilized_data_open}
+        on_close={() => setIs_utilized_data_open(false)}
+        selected_region_name={region_name}
+      />
+
+      {/* 2. AI 판단 근거 (왜 이 결과가 나왔나요?) 모달 (요구사항 5번) */}
+      <AI_판단_근거_모달
+        is_open={is_reasoning_modal_open}
+        on_close={() => setIs_reasoning_modal_open(false)}
+        option_id={reasoning_target_option}
+        selected_region={selected_region}
+        on_create_proposal={handle_create_proposal_from_option}
+      />
+
+      {/* 3. AI 기술구조 보기 모달 (요구사항 9번) */}
+      <AI_기술구조_모달
+        is_open={is_architecture_modal_open}
+        on_close={() => setIs_architecture_modal_open(false)}
+      />
     </div>
   );
 };

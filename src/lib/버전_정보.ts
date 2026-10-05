@@ -2,10 +2,11 @@
 // 배포 시마다 날짜 및 버전 번호를 순차 증가시킵니다.
 
 export const PLATFORM_VERSION = {
-  date: '20261003',
-  semver: '1.11.0',
-  fullLabel: '20261003 버전 1.11.0',
-  packageVersion: '20261003-v1.11.0',
-  updatedAt: '2026-10-03',
-  changelog: 'AI 분석 프로세스 시각화 프로토타입 탑재: ① AI 정책기획 탭에 [AI 분석 실행] 버튼 추가, ② 8단계 순차 Pipeline 애니메이션(질문 이해→데이터 확인→데이터 검색→RAG 지식 검색→데이터 분석→LLM 종합 분석→근거 검증→정책대안 생성), ③ 단계별 상세 내용 카드 표시, ④ 최종 결과(분석 요약·주요 결과·정책대안 3개·데이터 출처), ⑤ AI 처리구조(아키텍처) 다이어그램, ⑥ Mock Pipeline Demo(실제 AI API 미호출)',
+  date: '20261005',
+  semver: '1.12.0',
+  fullLabel: '20261005 버전 1.12.0',
+  packageVersion: '20261005-v1.12.0',
+  updatedAt: '2026-10-05',
+  changelog:
+    'AI 기반 공공의료 정책 의사결정 To-Be 모델 및 AI 분석 Workflow 고도화: ① 전체 Journey 상단 고정 Progress Navigation(지역진단→지역비교→미래수요→AI정책분석→정책대안→사업계획), ② AI 분석 5단계 인라인 애니메이션 Workspace, ③ 3열 Workspace(AI 분석 과정 / AI 종합분석 / 분석 근거), ④ 7대 활용 데이터 카탈로그 및 Mock 안내, ⑤ 정책대안별 판단 근거(왜 이 결과가 나왔나요?), ⑥ 12대 법정 항목 사업계획서 순차 자동작성 애니메이션, ⑦ AI vs 담당자 역할 구분 및 책임 원칙 명시, ⑧ AI 작동원리 및 기술구조 시각화',
 };

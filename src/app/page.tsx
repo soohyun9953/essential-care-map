@@ -23,6 +23,7 @@ import { export_element_as_png } from '@/lib/유틸리티';
 // 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
 import { 글로벌_공공_헤더, 워크스페이스_타입 } from '@/components/글로벌_공공_헤더';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
+import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
 import type { 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
 
 const 워크스페이스_로딩 = () => (
@@ -294,6 +295,30 @@ export default function Home() {
     }
   };
 
+  // 전체 AI 정책 의사결정 Journey 현재 단계 계산 (요구사항 1번)
+  const current_journey_step: 여정_단계_키 = useMemo(() => {
+    if (current_workspace === 'regional_diagnosis') return 'diagnosis';
+    if (current_workspace === 'policy_planning') {
+      if (policy_subtab === 'compare') return 'compare';
+      if (policy_subtab === 'forecast') return 'forecast';
+      if (policy_subtab === 'report') return 'report';
+      return 'ai_analysis';
+    }
+    return 'ai_analysis';
+  }, [current_workspace, policy_subtab]);
+
+  // Journey 단계 클릭 시 네비게이션 핸들러
+  const handle_select_journey_step = (step: 여정_단계_정의) => {
+    if (step.workspace === 'policy_planning') {
+      if (step.policyTab) {
+        set_policy_subtab(step.policyTab);
+      }
+      set_current_workspace('policy_planning');
+    } else {
+      set_current_workspace(step.workspace);
+    }
+  };
+
   return (
     <IspProvider onPersonaChange={handle_persona_change}>
       <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
@@ -319,6 +344,13 @@ export default function Home() {
         is_authenticated={is_authenticated}
         on_open_auth_modal={() => set_is_auth_modal_open(true)}
         on_open_review_guide_modal={() => set_is_review_guide_open(true)}
+      />
+
+      {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (요구사항 1번: 모든 주요 화면 상단 고정) */}
+      <전체_여정_프로그레스_바
+        current_step={current_journey_step}
+        selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : undefined}
+        on_select_step={handle_select_journey_step}
       />
 
       {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
@@ -359,6 +391,7 @@ export default function Home() {
             <정책기획_통합_워크스페이스
               key={policy_subtab}
               initial_tab={policy_subtab}
+              on_change_tab={(tab) => set_policy_subtab(tab)}
               selected_region={selected_region}
               diagnosed_list={diagnosed_list}
               sido_stat={sido_stat}

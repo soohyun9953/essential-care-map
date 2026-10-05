@@ -197,7 +197,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <span className={`text-[10px] font-black ${current_active === 'regional_diagnosis' ? 'text-blue-500' : 'text-slate-400'}`}>01</span>
               <span>지역진단</span>
             </button>
 
@@ -209,7 +208,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <span className={`text-[10px] font-black ${current_active === 'policy_planning' ? 'text-indigo-500' : 'text-slate-400'}`}>02</span>
               <span>정책기획</span>
             </button>
 

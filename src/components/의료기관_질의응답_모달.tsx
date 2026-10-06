@@ -209,7 +209,7 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                       {result.title}
                     </h3>
                   </div>
-                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-900">
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-900 shadow-2xs">
                     분석 완료 ({result.total_count}건)
                   </span>
                 </div>
@@ -224,12 +224,51 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                       key={idx}
                       className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed flex items-start gap-1.5"
                     >
-                      <span>•</span>
+                      <span className="text-emerald-600">•</span>
                       <span>{insight}</span>
                     </div>
                   ))}
                 </div>
               </div>
+
+              {/* 1-1. RAG 법령·지침 근거 카드 (질문 연계 법정 기준 및 사업 고시) */}
+              {result.rag_evidences && result.rag_evidences.length > 0 && (
+                <div className="p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900/60 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-900 dark:text-indigo-200">
+                      <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <span>연계 정부 법령·지침 근거 (RAG 벡터 검색 매칭)</span>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/80 dark:text-indigo-300 font-bold">
+                      {result.rag_evidences.length}건 지침 연계
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-0.5">
+                    {result.rag_evidences.map((chunk) => (
+                      <div
+                        key={chunk.id}
+                        className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/40 text-xs space-y-1.5 shadow-2xs"
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                            {chunk.문서명}
+                          </span>
+                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
+                            {chunk.분류}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed line-clamp-2">
+                          {chunk.본문}
+                        </p>
+                        <div className="flex items-center gap-1 text-[10px] text-indigo-700 dark:text-indigo-300 font-semibold pt-0.5">
+                          <span>📌 법정 기준:</span>
+                          <span className="line-clamp-1">{chunk.기준수치}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* 2. 시각적 막대 차트 */}
               {result.chart_data && result.chart_data.length > 0 && (
@@ -348,7 +387,20 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                                   : 'text-slate-700 dark:text-slate-300'
                               }`}
                             >
-                              {row[col.key] !== undefined ? row[col.key] : '-'}
+                              {col.key === '기관명' && row.raw_hospital && on_select_hospital ? (
+                                <button
+                                  type="button"
+                                  onClick={() => on_select_hospital(row.raw_hospital)}
+                                  className="font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer text-left"
+                                  title="클릭 시 기관 상세 프로필 보기"
+                                >
+                                  {row.기관명}
+                                </button>
+                              ) : row[col.key] !== undefined ? (
+                                row[col.key]
+                              ) : (
+                                '-'
+                              )}
                             </td>
                           ))}
                         </tr>

@@ -353,28 +353,49 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
           ))}
         </div>
 
-        {/* 8대 시스템 탭 버튼 리스트 */}
-        <div className="flex items-center gap-1.5 p-2 bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-x-auto shrink-0">
-          {filteredSystems.map((sys) => (
-            <button
-              key={sys.key}
-              onClick={() => setActiveSystemKey(sys.key)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0 ${
-                activeSystemKey === sys.key
-                  ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs ring-1 ring-blue-500/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-              }`}
-            >
-              {sys.icon}
-              <span>{sys.systemName}</span>
-              <span className="text-[10px] px-1 py-0.2 rounded bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-normal">
-                {sys.roleBadge}
-              </span>
-              {sys.key === 'aa_disclosure' && (
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              )}
-            </button>
-          ))}
+        {/* 8대 시스템 그리드 탭 (2행 4열로 8개 시스템 전체가 한눈에 시원하게 표시됨) */}
+        <div className="p-3 bg-slate-100/90 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {filteredSystems.map((sys) => {
+              const isSelected = activeSystemKey === sys.key;
+              return (
+                <button
+                  key={sys.key}
+                  type="button"
+                  onClick={() => setActiveSystemKey(sys.key)}
+                  className={`p-2 sm:p-2.5 rounded-2xl text-left transition-all cursor-pointer border flex flex-col justify-between gap-1 relative ${
+                    isSelected
+                      ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border-blue-500/50 ring-2 ring-blue-500/20'
+                      : 'bg-white/70 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="shrink-0">{sys.icon}</span>
+                      <span className="text-xs font-black truncate">{sys.systemName}</span>
+                    </div>
+                    {sys.key === 'aa_disclosure' && (
+                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-ping" />
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-1">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-medium truncate ${
+                        isSelected
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300'
+                          : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      {sys.roleBadge}
+                    </span>
+                    {isSelected && (
+                      <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 shrink-0">선택됨</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* 선택된 시스템 상세 안내 카드 본문 */}

@@ -215,8 +215,18 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           <span>퇴원환자 돌봄자원 매칭</span>
         </button>
 
-        {/* 공공데이터포털 API 키 등록 상태 뱃지 (의료기관 수치는 내장 기준 데이터) */}
+        {/* 우측 전역 빠른 액션: 의료기관 AI 자연어 질의응답 & API 키 상태 */}
         <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => handle_open_qa_modal('병상수가 가장 많은 공공병원 Top10 보여줘.')}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md ring-2 ring-emerald-300 dark:ring-emerald-800 active:scale-95 whitespace-nowrap animate-pulse"
+            title="전국 214개 공공병원 데이터 자연어 AI 질의응답 모달 열기"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+            <span>✨ 의료기관 AI 질의응답</span>
+          </button>
+
           {data_go_kr_api_key ? (
             <div
               className="px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold flex items-center gap-1.5 shadow-2xs"
@@ -284,11 +294,11 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
               <button
                 type="button"
                 onClick={() => handle_open_qa_modal('병상수가 가장 많은 공공병원 Top10 보여줘.')}
-                className="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-xs hover:from-emerald-700 hover:to-teal-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-black text-xs hover:from-emerald-700 hover:to-teal-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:shadow-md ring-2 ring-emerald-300 dark:ring-emerald-800 active:scale-95 whitespace-nowrap"
                 title="병상수, 전문의 인력, 필수의료 가동 등 자연어로 공공의료기관 전수 질의"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>의료기관 AI 질의응답</span>
+                <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                <span>✨ 의료기관 AI 질의응답</span>
               </button>
 
               <span className="text-xs text-slate-400 font-semibold whitespace-nowrap pl-1">

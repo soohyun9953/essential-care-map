@@ -254,7 +254,7 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
                     <span>5. 데이터 기준년도 및 고시 버전</span>
                   </div>
                   <p className="text-[11px] text-slate-500">
-                    현행 기준년도: 2024년 • 법정 기준: 2026.09 보건복지부 취약지 고시 • 플랫폼 버전: {PLATFORM_VERSION.packageVersion}
+                    현행 기준년도: 2024년 • 법정 기준: 2026.09 보건복지부 취약지 고시 • 배포일시: {PLATFORM_VERSION.fullLabel}
                   </p>
                 </div>
               </div>

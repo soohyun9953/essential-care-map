@@ -180,7 +180,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 공공의료 의사결정 지원 플랫폼
               </h1>
               <div className="flex items-center mt-0.5">
-                <span className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight">
+                <span
+                  className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight"
+                  title="플랫폼 최종 배포일시"
+                >
                   {PLATFORM_VERSION.fullLabel}
                 </span>
               </div>

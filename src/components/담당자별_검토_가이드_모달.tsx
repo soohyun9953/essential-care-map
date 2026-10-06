@@ -53,7 +53,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
       targetWorkspace: 'regional_diagnosis' as 워크스페이스_타입,
       subFeature: 'policy_ai',
-      menuPath: '① [지역진단] (35:65 GIS 지도) & ② [정책기획] (AI 사업계획서)',
+      menuPath: '[지역진단] (35:65 GIS 지도) & [정책기획] (AI 정책대안 및 사업계획서)',
       isImplemented: true,
       summary: '전국 250개 시군구 필수의료 취약도 지도 및 환자 유출입 분석, AI 기반 지자체 표준 사업계획서 1초 자동생성',
       keyChecks: [
@@ -75,7 +75,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <HeartPulse className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
       targetWorkspace: 'medical_institution' as 워크스페이스_타입,
       subFeature: 'cp_library',
-      menuPath: '③ [의료기관] ➔ [📋 표준 임상경로 CP] & [📈 CP 변이분석 & ROI]',
+      menuPath: '[의료기관] ➔ [71개 표준진료지침(CP) 라이브러리] & [CP 변이 분석 & ROI]',
       isImplemented: true,
       summary: '국립중앙의료원 71개 표준 CP 라이브러리 및 재원일수 변이(Variance) ROI 모니터링',
       keyChecks: [
@@ -84,7 +84,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '진료비 절감 및 병상회전율 향상에 따른 연간 재정적 ROI 산출',
         '임상 질 향상(QI) 및 적정진료 유도 효과 분석',
       ],
-      tip: '표준 CP 탭에서 "담낭절제술" 또는 "슬관절치환술"의 표준재원일수와 지침을 확인해 보세요.',
+      tip: '[71개 표준진료지침(CP) 라이브러리] 탭에서 "담낭절제술" 또는 "슬관절치환술"의 표준재원일수와 지침을 확인해 보세요.',
     },
     {
       key: 'resource_mgmt',
@@ -94,7 +94,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <LayoutGrid className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
       targetWorkspace: 'medical_institution' as 워크스페이스_타입,
       subFeature: 'hospitals',
-      menuPath: '③ [의료기관] ➔ [🏥 공공병원 통합현황 & 기관 데이터센터]',
+      menuPath: '[의료기관] ➔ [공공의료기관 탐색 (214개소)] & [기관 데이터센터]',
       isImplemented: true,
       summary: '전국 214개 공공병원(지방의료원 35, 적십자 6, 국립대병원 등) 통합 자원 데이터센터',
       keyChecks: [
@@ -104,7 +104,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '의사 1인당 연간 외래·입원 진료환자수 및 인력 결원율 분석',
         'NMC 표준 3종 엑셀 서식(크로스탭 원본 데이터셋) 일괄 다운로드',
       ],
-      tip: '검색창 우측 [의료기관 AI 질의응답] 버튼을 클릭하거나 "영월의료원"을 입력해 보세요.',
+      tip: '[공공의료기관 탐색] 탭의 [의료기관 AI 질의응답] 버튼을 클릭하거나 "영월의료원"을 검색해 보세요.',
     },
     {
       key: 'hospital_portal',
@@ -114,7 +114,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <Search className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />,
       targetWorkspace: 'national_safety' as 워크스페이스_타입,
       subFeature: 'citizen_view',
-      menuPath: '⑤ [국민안심] (대국민 5대 안심의료 포털) & [홈] (통합 메인)',
+      menuPath: '[국민안심] (대국민 5대 안심의료 포털) & [홈] (통합 메인)',
       isImplemented: true,
       summary: '대국민 모바일 최적화 실시간 안심의료 검색, 응급실 가용병상, 24시 달빛어린이병원 안내',
       keyChecks: [
@@ -123,7 +123,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '원클릭 119/병원 직통 전화연결 및 실시간 카카오/네이버 길찾기 연계',
         '※ (안내) 공공병원 내부 임직원 전용 업무포털(그룹웨어/전자결재)은 연계 시스템으로 분류됨',
       ],
-      tip: '우측 상단 [국민안심] 탭을 눌러 모바일 뷰에서 야간 응급의료 및 달빛어린이병원을 조회해 보세요.',
+      tip: '상단 [국민안심] 메뉴를 눌러 모바일 뷰에서 야간 응급의료 및 달빛어린이병원을 조회해 보세요.',
     },
     {
       key: 'care_network',
@@ -133,7 +133,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <Network className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
       targetWorkspace: 'medical_institution' as 워크스페이스_타입,
       subFeature: 'discharge_care',
-      menuPath: '③ [의료기관] ➔ [🏠 퇴원환자 지역사회 연계망]',
+      menuPath: '[의료기관] ➔ [퇴원환자 돌봄자원 매칭]',
       isImplemented: true,
       summary: '보건복지부 공공병원 퇴원환자 지역사회 연계사업(환자평가표 ➔ 돌봄계획 ➔ 복지관 원클릭 연계)',
       keyChecks: [
@@ -142,7 +142,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '지역 보건소 방문건강관리, 재가장기요양기관, 종합사회복지관 원클릭 연계 의뢰서 발행',
         '퇴원 후 30일/90일 재입원율 감소 효과 모니터링',
       ],
-      tip: '퇴원돌봄 탭에서 "가상 환자 평가표"를 작성하고 지역사회 복지관 연계 의뢰서를 확인해 보세요.',
+      tip: '[의료기관] ➔ [퇴원환자 돌봄자원 매칭] 탭에서 가상 환자(김공공/박돌봄)를 선택하고 영월종합사회복지관 등 맞춤형 연계 자원과 의뢰서를 확인해 보세요.',
     },
     {
       key: 'mgmt_monitoring',
@@ -151,8 +151,8 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-300',
       icon: <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
       targetWorkspace: 'medical_institution' as 워크스페이스_타입,
-      subFeature: 'hospital_crisis',
-      menuPath: '③ [의료기관] ➔ [🚨 경영위기 조기경보 & 신포괄 정산]',
+      subFeature: 'crisis',
+      menuPath: '[의료기관] ➔ [지방의료원 경영위기 조기경보] & [신포괄 정책가산 계산기]',
       isImplemented: true,
       summary: '전국 35개 지방의료원 결산 재무비율, 경영위기 4단계 조기경보 및 신포괄 정책가산 시뮬레이터',
       keyChecks: [
@@ -161,7 +161,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '신포괄수가제 정책가산율(5%~15%) 달성을 위한 6대 공공성 평가지표 시뮬레이션',
         '정책가산 달성에 따른 연간 추가 건강보험 재정 지원금 자동 산출',
       ],
-      tip: '경영위기 탭에서 신포괄 정책가산율 슬라이더를 조정하여 연간 추가 지원금을 산출해 보세요.',
+      tip: '[신포괄 정책가산(1.0%) 계산기] 탭에서 가산율 슬라이더를 조정하여 연간 추가 지원금을 산출해 보세요.',
     },
     {
       key: 'aa_disclosure',
@@ -171,7 +171,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
       icon: <Building2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
       targetWorkspace: 'medical_institution' as 워크스페이스_타입,
       subFeature: 'aa_disclosure',
-      menuPath: '③ [의료기관] ➔ [📋 41개 공공병원 알리미 공시검증] (과제 3.8)',
+      menuPath: '[의료기관] ➔ [41개 공공병원 알리미 공시검증] (과제 3.8)',
       isImplemented: true,
       summary: '국립중앙의료원 2026.6 실증 보고서 기반 41개 공공병원 오류검증, 14대 회계산식 & PII 비식별화 도구',
       keyChecks: [
@@ -181,7 +181,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         '수시공시 첨부문서 환자 개인정보(주민번호, 병록번호, 성명, 연락처, 주소) 실시간 비식별화 마스킹',
         '국립중앙의료원 6단계 수정공시 공식 소명사유서 원클릭 자동 생성기',
       ],
-      tip: '14대 회계산식 탭에서 "영월의료원" 또는 "오류다발" 프리셋을 눌러 실시간 판정을 확인해 보세요.',
+      tip: '[14대 회계산출식 & 통계이상치] 탭에서 "영월의료원" 또는 "오류다발" 프리셋을 눌러 실시간 판정을 확인해 보세요.',
     },
   ];
 

@@ -238,8 +238,9 @@ export default function Home() {
   // 안내 모달에서 메뉴 네비게이션
   const handle_guide_navigate = (menu_id: string) => {
     set_is_guide_modal_open(false);
-    if (['cp_library', 'policy_incentive', 'cp_variance', 'hospital_crisis', 'discharge_care', 'aa_disclosure'].includes(menu_id)) {
-      set_medical_subtab(menu_id as 의료기관_서브탭_타입);
+    const resolved_medical_tab = menu_id === 'hospital_crisis' ? 'crisis' : menu_id;
+    if (['cp_library', 'policy_incentive', 'cp_variance', 'crisis', 'discharge_care', 'aa_disclosure', 'hospitals', 'datacenter'].includes(resolved_medical_tab)) {
+      set_medical_subtab(resolved_medical_tab as 의료기관_서브탭_타입);
       set_current_workspace('medical_institution');
     } else if (['report_generator', 'compare_1to1', 'demand_forecast'].includes(menu_id)) {
       if (menu_id === 'report_generator') set_policy_subtab('report');
@@ -261,7 +262,8 @@ export default function Home() {
     subFeature?: string
   ) => {
     if (workspace === 'medical_institution' && subFeature) {
-      set_medical_subtab(subFeature as any);
+      const targetSubtab = subFeature === 'hospital_crisis' ? 'crisis' : subFeature;
+      set_medical_subtab(targetSubtab as any);
     } else if (workspace === 'policy_planning' && subFeature) {
       if (['compare', 'forecast', 'policy_ai', 'report'].includes(subFeature)) {
         set_policy_subtab(subFeature as any);

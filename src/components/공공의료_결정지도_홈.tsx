@@ -23,11 +23,12 @@ import {
 import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
+import { 워크스페이스_타입 } from './글로벌_공공_헤더';
 
 interface 공공의료_결정지도_홈_속성 {
   on_search_region: (region_name: string) => void;
   on_navigate_workspace: (
-    workspace: 'regional_diagnosis' | 'policy_planning' | 'medical_institution' | 'ai_analysis' | 'national_safety',
+    workspace: 워크스페이스_타입,
     sub_feature?: string
   ) => void;
   on_open_guide_modal?: () => void;
@@ -212,6 +213,38 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* ================================================================== */}
+      {/* ⭐ 신규 핵심 개편: 공공병원 중심 AI 의사결정 워크스페이스 배너             */}
+      {/* 공공병원 선택 ➔ AI 병원진단 ➔ 문제·원인분석 ➔ Benchmarking ➔ 수요예측 ➔ 대안/시뮬레이션 ➔ 실행계획 ➔ 성과관리 */}
+      {/* ================================================================== */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden">
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-black">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>핵심 분석 대상 개편: 지역 ➔ 공공병원 중심 AI 의사결정 플랫폼</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              AI 공공병원 종합진단 & 개선 시뮬레이션
+            </h2>
+            <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium">
+              단순 조회 중심의 「의료기관」 메뉴를 넘어, <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로<br className="hidden sm:block" />
+              <strong>진단 ➔ 원인분석 ➔ 유사병원 Benchmarking ➔ 미래예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획 ➔ 성과관리</strong>까지 지원합니다.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => on_navigate_workspace('hospital_ai_diagnosis')}
+            className="px-6 py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-sm shadow-lg transition active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer group"
+          >
+            <Building2 className="w-4 h-4 text-white" />
+            <span>41개 공공병원 AI 진단 시작하기</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       </div>
 

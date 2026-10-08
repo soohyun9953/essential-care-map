@@ -74,8 +74,33 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
 
   if (!isOpen) return null;
 
-  // 공공의료 7대 시스템 + AI 스튜디오 총 8대 영역 정밀 가이드 정의
+  // 공공병원 AI 진단·개선 + 공공의료 7대 시스템 + AI 스튜디오 총 9대 영역 정밀 가이드 정의
   const systemGuides: 시스템_가이드_항목[] = [
+    {
+      key: 'ai_hospital_diagnosis',
+      systemName: '⭐ AI 병원진단·개선 (신규 핵심)',
+      category: 'all',
+      targetRole: '지방의료원장, 지자체 보건의료과장, 보건복지부, NMC 지원센터',
+      roleBadge: '병원장 / 지자체장 / 복지부',
+      badge: 'AI 병원진단·개선·의사결정',
+      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
+      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
+      targetWorkspace: 'hospital_ai_diagnosis',
+      menuPath: '[AI 병원진단·개선] ➔ 7단계 풀스택 의사결정 프로세스',
+      isImplemented: true,
+      summary: '41개 거점공공병원 대상 종합진단 ➔ 문제·원인분석 ➔ Benchmarking ➔ 5개년 수요예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획 ➔ 성과관리',
+      keyChecks: [
+        '41개 거점공공병원(지방의료원 35, 적십자 6) 전수 AI 진단점수(공공성·효율·수요·인력·필수의료·재무 6대 지표 및 69점 등 종합점수 산출)',
+        'AI 설명가능성(XAI): 각 점수마다 산출기준, 사용데이터, 기준연도, 비교대상 [AI 분석 근거 보기] 모달 제공',
+        'AI가 발견한 4대 핵심 문제(응급인력 부족, 필수의료 약화, 간호인력 부담, 외래유출) 클릭 시 직접원인, 구조적원인, 연관데이터 심층 분석',
+        '유사병원 Benchmarking: 우리병원 vs 유사규모 vs 전국평균 vs 상위 10% 병원 Gap 자동 발견',
+        'AI 5개년 수요예측(2026~2030): 외래·입원·응급·병상·의료인력 추계 및 2028년 위험구간 조기경보',
+        'Human-in-the-loop 의사결정: AI 추천 3대 대안(A안: 인력충원 vs B안: 필수의료종합 vs C안: 원격협진) 담당자 검토 및 확정 채택',
+        '실시간 경영·정책 시뮬레이터: 의사·간호사 증원 및 원격협진 슬라이더 직접 조절에 따른 처리량·대기시간·전원율 실시간 비교',
+        'ISP 실행계획 로드맵 & 2027년 예산 매칭(국비 70%, 지방비 30%) 및 성과관리 KPI 목표 대비 달성률 환류 체계',
+      ],
+      tip: '헤더의 [AI 병원진단·개선] 버튼을 누르고 영월의료원 선택 후, ①종합진단 ➔ ②유사병원 Benchmarking ➔ ④개선대안 및 실시간 시뮬레이터를 순서대로 체험해 보세요.',
+    },
     {
       key: 'health_map',
       systemName: '1. 헬스맵',

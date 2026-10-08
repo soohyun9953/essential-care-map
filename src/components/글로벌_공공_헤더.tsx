@@ -30,6 +30,7 @@ export type 워크스페이스_타입 =
   | 'regional_diagnosis'    // ① 지역진단
   | 'policy_planning'       // ② 정책기획
   | 'medical_institution'   // ③ 의료기관
+  | 'hospital_ai_diagnosis' // ⭐ 신규: AI 병원진단·개선
   | 'ai_analysis'           // ④ AI 분석
   | 'national_safety';      // ⑤ 국민안심
 
@@ -271,6 +272,23 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
+
+            {/* ⭐ 신규 핵심 메뉴: AI 병원진단·개선 */}
+            <button
+              onClick={() => handle_workspace_change('hospital_ai_diagnosis')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+                current_active === 'hospital_ai_diagnosis'
+                  ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
+              }`}
+              title="공공병원 AI 종합진단, 원인분석, 유사병원 Benchmarking, 미래예측, 시뮬레이션 및 ISP 실행계획"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>AI 병원진단·개선</span>
+              <span className="px-1 py-0.2 rounded-full text-[9px] bg-amber-400 text-slate-900 font-black">
+                신규
+              </span>
+            </button>
 
             <button
               onClick={() => handle_workspace_change('ai_analysis')}

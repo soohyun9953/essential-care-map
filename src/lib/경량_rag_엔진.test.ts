@@ -9,11 +9,11 @@ const 지역 = 필수의료_진단_엔진.diagnose_region({
 });
 
 describe('경량 RAG 템플릿 답변', () => {
-  it('분만: 공식 선정 기준과 확인된 지원 금액을 쓰고, 근거 없는 외래 설치비 1억은 쓰지 않는다', () => {
+  it('분만: 공식 선정 기준과 원문 확인된 지원 금액(NMC 소개자료 78쪽)을 쓴다', () => {
     const r = 경량_RAG_엔진.execute_rag('분만취약지 지원 기준', 지역).생성된_답변;
     expect(r).toContain('60분 내 분만의료 이용률 30% 미만');
-    expect(r).toContain('외래산부인과 운영비 연 2억원');
-    expect(r).not.toContain('설치비 1억원');
+    expect(r).toContain('외래산부인과 시설·장비비 1억원 + 운영비 연 2억원');
+    expect(r).toContain('순회산부인과');
     expect(r).not.toContain('A등급 지원 신청 자격 충족');
   });
 

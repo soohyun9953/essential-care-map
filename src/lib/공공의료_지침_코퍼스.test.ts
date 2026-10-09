@@ -27,4 +27,16 @@ describe('지침 코퍼스 원문 대조 표기 (2026-09-24 대조)', () => {
     expect(전체).not.toContain('제3조(응급의료취약지의 기준)');
     expect(전체).not.toContain('2억 5천만원');
   });
+
+  it('2026-10-09 원문 대조 결과: 받은자료 근거로 확인된 청크와 남은 미확인(플랫폼 자체 기준)', () => {
+    const 청크 = (id: string) => 공공의료_지침_코퍼스.find((c) => c.id === id)!;
+    expect(청크('CHUNK-MATERN-02').검증상태).toBe('원문 확인');
+    expect(청크('CHUNK-MATERN-02').본문).toContain('외래산부인과 시설·장비비 1억원과 운영비 2억원');
+    expect(청크('CHUNK-PEDI-03').본문).toContain('운영비 3억원');
+    expect(청크('CHUNK-EVAL-01').검증상태).toBe('일부 확인');
+    expect(청크('CHUNK-EVAL-01').기준수치).not.toContain('정성 70 + 정량 30');
+    expect(청크('CHUNK-FACIL-01').본문).toContain('1,230억원');
+    const 미확인 = 공공의료_지침_코퍼스.filter((c) => c.검증상태 === '원문 미확인').map((c) => c.id).sort();
+    expect(미확인).toEqual(['CHUNK-EMERG-02', 'CHUNK-PEDI-01']);
+  });
 });

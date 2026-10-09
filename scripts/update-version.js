@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.16.0';
+const SEMVER = '1.16.1';
 
 // 한국 시간 기준 YYYY-MM-DD HH:mm 생성
 const now = new Date();

@@ -32,6 +32,7 @@ import {
 } from '@/lib/필수의료_타입';
 import { 취약도_등급_정보 } from '@/lib/필수의료_엔진';
 import { format_number_comma } from '@/lib/유틸리티';
+import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { 지도_래퍼 } from './지도_래퍼';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
@@ -271,7 +272,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                 {active_kpi_tooltip === '응급' && (
                   <div className="absolute top-full left-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
                     <p className="font-bold text-red-300">■ 응급의료 취약지 기준</p>
-                    <p className="text-slate-300 leading-tight">권역응급센터 60분 미도달 인구비율 30% 이상 및 관내 응급이용률(RI) 30% 미만.</p>
+                    <p className="text-slate-300 leading-tight">권역응급의료센터 60분 내 도달 불가 인구 30% 이상 (응급의료취약지 선정 기준). 관내이용률(RI)은 참고 지표.</p>
                   </div>
                 )}
               </div>
@@ -297,8 +298,8 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                 </span>
                 {active_kpi_tooltip === '분만' && (
                   <div className="absolute top-full left-0 mt-1 w-48 p-2.5 bg-slate-900 text-white rounded-xl text-[10px] z-50 shadow-xl space-y-1">
-                    <p className="font-bold text-orange-300">■ 분만취약지 고시 기준</p>
-                    <p className="text-slate-300 leading-tight">분만산부인과 60분 미도달 인구비율 30% 이상 및 관내분만율 30% 미만.</p>
+                    <p className="font-bold text-orange-300">■ 분만취약지 선정 기준</p>
+                    <p className="text-slate-300 leading-tight">① 60분 내 분만의료 이용률 30% 미만, ② 60분 접근 불가 인구 30% 이상 — 둘 다 A등급, 하나 B등급.</p>
                   </div>
                 )}
               </div>
@@ -369,9 +370,9 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="font-bold">데이터 기준 고지:</span>
-              <span>기준년도 <strong>2024년</strong> • 대상 <strong>전국 250개 시·군·구</strong> • 출처 <strong>공공보건의료통계 / 헬스맵 2024</strong></span>
+              <span>기준년도 <strong>2024년</strong> • 대상 <strong>전국 250개 시·군·구</strong> • 출처 <strong>헬스맵 주제도 지표 2024</strong></span>
             </div>
-            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">최종 갱신: 2026-09-26 (v1.1.2)</span>
+            <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">최종 배포: {PLATFORM_VERSION.fullLabel}</span>
           </div>
         </div>
       )}
@@ -567,7 +568,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                     title: '분만 의료공백',
                     summary: '분만 가능 의료기관 부족으로 산모 관외유출 심화',
                     detail: active_region.분만_판정근거,
-                    metric: `60분 미도달 ${active_region.분만_60분_미도달_인구비율}%, 관내분만율 ${active_region.관내_분만율}%`,
+                    metric: `60분 내 이용률 ${active_region.분만_60분_이용률 ?? '-'}%, 60분 미도달 ${active_region.분만_60분_미도달_인구비율}%${active_region.분만취약지_등급 ? ` (${active_region.분만취약지_등급}등급 기준)` : ''}`,
                     isWeak: active_region.분만취약지역_여부,
                   },
                   {

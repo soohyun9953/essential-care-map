@@ -518,8 +518,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     [산식 1] 필수의료 3대 취약 판정 및 종합 취약도 점수·등급 공식
                   </span>
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-xs font-bold text-slate-800 dark:text-slate-200 space-y-1">
-                    <div>• 응급 취약: 60분 미도달인구율 ≥ 30% OR 관내이용률(RI) &lt; 30%</div>
-                    <div>• 분만 취약: 60분 미도달인구율 ≥ 30% OR 관내분만율 &lt; 40%</div>
+                    <div>• 응급 취약: 권역응급 60분 미도달인구율 ≥ 30% (응급의료취약지 선정 기준, 관내이용률 RI는 참고 지표)</div>
+                    <div>• 분만 취약: ① 60분 내 분만의료 이용률(TRI) &lt; 30% 또는 ② 60분 접근 불가 인구 ≥ 30% — 둘 다 A등급, 하나 B등급 (분만취약지 선정 기준)</div>
                     <div>• 종합 취약도 점수 = (응급점수 × 0.4 + 분만점수 × 0.35) / 0.75 (소아 지표 부재 시 정규화)</div>
                     <div>• 4단계 등급: 심각(취약분야 3개 OR 점수≥65), 취약(취약분야 2개 OR 점수≥45), 관찰(취약분야 1개 OR 점수≥25), 정상(그 외)</div>
                   </div>

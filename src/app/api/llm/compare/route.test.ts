@@ -63,13 +63,13 @@ describe('사전 작성 템플릿 답변 (로컬 sLLM 미연결)', () => {
   it('취약 지역에는 실제 값에 따른 취약 판정을 표시한다', async () => {
     const r = await 질의('기타 질문', 'general_qa', 취약);
     expect(r.response).toContain('68.2% (법정 기준선 30% 이상');
-    expect(r.response).toContain('19.8% (플랫폼 기준 30% 미만 (취약))');
+    expect(r.response).toContain('19.8% (참고 지표 — 취약 판정 기준 아님)');
   });
 
   it('분만취약지는 원문 선정 기준(분만의료 이용률·접근 불가 인구)과 지원액으로 안내한다', async () => {
     const r = await 질의('분만취약지 A등급', 'general_qa', 양호);
     expect(r.response).toContain('60분 내 분만의료 이용률 30% 미만');
     expect(r.response).toContain('시설·장비비 10억원');
-    expect(r.response).toContain('관내 분만율(플랫폼 지표)');
+    expect(r.response).toContain('분만 관내이용률(참고 지표)');
   });
 });

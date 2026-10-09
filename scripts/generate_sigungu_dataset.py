@@ -8,6 +8,8 @@
     ABA01 인구수, BBB01 권역응급(60분) 취약인구율, CBB04 응급의료기관 관내이용률(RI),
     BBD01 분만기관(60분) 취약인구율, CBD01 분만 관내이용률(RI)
 - 소아 병상 공급비율·야간휴일 접근성: 실데이터가 없어 null (진단에서 제외)
+- CAD01 분만(60분) TRI (60분 내 분만의료 이용률, 2024): 헬스맵 원천 엑셀 '2-3-1. 지표산출(기준시간내 이용률)'
+  → 보건복지부 분만취약지 선정 기준 ① (60분 내 분만의료 이용률 30% 미만) 판정에 사용 (2026-10-09 추가)
 - 시군구코드: 공공의료기관 데이터셋 → 환자 유출입 데이터(동명 시군구 제외) 순으로 채택,
   나머지 동명 자치구 등은 행정표준코드를 아래에 직접 기재
 
@@ -16,9 +18,33 @@
 import json
 import os
 import re
+import sys
+
+import openpyxl
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_TS = os.path.join(ROOT, 'src', 'lib', '시군구_데이터셋.ts')
+# 헬스맵 주제도 분석 지표 원천 엑셀 (경로는 인자로 바꿀 수 있음)
+TRI_XLSX = sys.argv[1] if len(sys.argv) > 1 else r'C:\Users\KITC\Desktop\프로토타입\참고자료\헬스맵+주제도+분석+지표_2019-2024_0825수정.xlsx'
+TRI_SHEET = '2-3-1. 지표산출(기준시간내 이용률)'
+TRI_HEADER = '152. 분만 (60분) TRI'
+
+
+def load_delivery_tri():
+    """(시도, 시군구) → 2024년 분만(60분) TRI. 시군구 구역의 행만 사용하며 NA는 None."""
+    wb = openpyxl.load_workbook(TRI_XLSX, read_only=True)
+    rows = list(wb[TRI_SHEET].iter_rows(values_only=True))
+    col = next(j for j, c in enumerate(rows[1]) if c == TRI_HEADER)
+    assert rows[4][col + 5] == 2024, '2024년 열 위치가 예상과 다름'
+    out, section = {}, None
+    for r in rows[6:]:
+        if r[0]:
+            section = str(r[0])
+        if not section or not section.startswith('시군구') or not r[1] or not r[2]:
+            continue
+        v = r[col + 5]
+        out[(r[1], r[2])] = round(float(v), 2) if isinstance(v, (int, float)) else None
+    return out
 
 # 헬스맵의 옛 시도명 → 앱 표기 (강원·전북 특별자치도 전환 반영, 광주·전남 통합은 앱 전체 결정 후 반영)
 시도_앱표기 = {'강원도': '강원특별자치도', '전라북도': '전북특별자치도'}
@@ -53,6 +79,7 @@ def main():
     hm = load('src/lib/헬스맵_주제도_지표_데이터셋.ts', '시군구_지표_시계열', '{')
     pub = load('src/lib/공공의료기관_데이터셋.ts', '전국_공공의료기관_목록', '[')
     flow = load('src/lib/환자_유출입_데이터셋.ts', '환자_유출입_2024_데이터', '{')
+    tri = load_delivery_tri()
 
     codes = {}
     for p in pub:
@@ -86,6 +113,7 @@ def main():
             '관내_응급_의료이용률': round(val('CBB04'), 2),
             '분만_60분_미도달_인구비율': round(val('BBD01'), 2),
             '관내_분만율': round(val('CBD01'), 2),
+            '분만_60분_이용률': tri.get((v['sido'], v['sigungu'])),
             '소아_병상_공급비율': None,
             '소아_야간휴일_접근성지수': None,
         })
@@ -97,13 +125,14 @@ def main():
 // 출처: 헬스맵 주제도 지표 (src/lib/헬스맵_주제도_지표_데이터셋.ts)
 //   ABA01 인구수 · BBB01 권역응급(60분) 취약인구율 · CBB04 응급의료기관 관내이용률(RI)
 //   BBD01 분만기관(60분) 취약인구율 · CBD01 분만 관내이용률(RI)
+//   CAD01 분만(60분) TRI = 60분 내 분만의료 이용률 (원천 엑셀 '기준시간내 이용률' 시트)
 // 소아 병상 공급비율·야간휴일 접근성은 실데이터가 없어 null (진단에서 제외)
 
 import {{ 시군구_원천_데이터 }} from './필수의료_타입';
 
 export const 시군구_진단_데이터_출처 = {{
   자료: '헬스맵 주제도 지표 (2024년)',
-  지표: 'ABA01·BBB01·CBB04·BBD01·CBD01',
+  지표: 'ABA01·BBB01·CBB04·BBD01·CBD01·CAD01',
   소아: '실데이터 미확보 — 진단 제외',
 }} as const;
 

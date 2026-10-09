@@ -55,35 +55,31 @@ export class 필수의료_진단_엔진 {
    * 단일 시군구 데이터를 평가하여 3대 취약 여부 및 4단계 등급을 판정하는 함수
    */
   public static diagnose_region(raw_data: 시군구_원천_데이터): 필수의료_진단_결과 {
-    // 1. 응급의료 취약지 판정: 60분 미도달 인구 > 30% 또는 RI(의료이용률) < 30%
-    // 응급의료취약지 선정 기준: 도달 불가 인구 30% '이상' (보건복지부 기준, 2026-09-24 원문 대조)
-    const is_emergency_unreachable = raw_data.응급_60분_미도달_인구비율 >= 30;
-    const is_emergency_low_ri = raw_data.관내_응급_의료이용률 < 30;
-    const is_emergency_vulnerable = is_emergency_unreachable || is_emergency_low_ri;
+    // 1. 응급의료 취약 판정 — 보건복지부 응급의료취약지 선정 기준(응급의료센터 1시간 내 도달 불가 인구 30% 이상)에 맞춤
+    //    지표: 권역응급의료센터 60분 접근성 취약 인구율(헬스맵 BBB01). 관내이용률(RI)은 참고 지표로만 표시 (2026-10-09 결정)
+    const is_emergency_vulnerable = raw_data.응급_60분_미도달_인구비율 >= 30;
+    const 응급_RI_참고 = `참고: 관내이용률 ${raw_data.관내_응급_의료이용률.toFixed(1)}%`;
+    const emergency_reason = is_emergency_vulnerable
+      ? `권역응급 60분 미도달 인구 ${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% ≥ 30% (응급의료취약지 선정 기준 해당) · ${응급_RI_참고}`
+      : `기준 미해당 (권역응급 60분 미도달 ${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% < 30%) · ${응급_RI_참고}`;
 
-    let emergency_reason = '기준 충족 (정상)';
-    if (is_emergency_unreachable && is_emergency_low_ri) {
-      emergency_reason = `60분 미도달(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 및 관내이용률(${raw_data.관내_응급_의료이용률.toFixed(1)}% < 30%) 동시 취약`;
-    } else if (is_emergency_unreachable) {
-      emergency_reason = `60분 미도달 인구(${raw_data.응급_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 기준 해당`;
-    } else if (is_emergency_low_ri) {
-      emergency_reason = `관내 의료이용률(${raw_data.관내_응급_의료이용률.toFixed(1)}% < 30%) 기준치 미달`;
-    }
-
-    // 2. 분만·모자의료 취약지 판정: 60분 미도달 인구 > 30% 또는 분만율 < 40%
-    // 분만취약지 선정 기준: 60분 내 분만기관 접근 불가 인구 30% '이상' (보건복지부 분만취약지 지원사업)
-    const is_delivery_unreachable = raw_data.분만_60분_미도달_인구비율 >= 30;
-    const is_delivery_low_rate = raw_data.관내_분만율 < 40;
-    const is_delivery_vulnerable = is_delivery_unreachable || is_delivery_low_rate;
-
-    let delivery_reason = '기준 충족 (정상)';
-    if (is_delivery_unreachable && is_delivery_low_rate) {
-      delivery_reason = `60분 미도달(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 및 관내분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 동시 취약`;
-    } else if (is_delivery_unreachable) {
-      delivery_reason = `60분 미도달 인구(${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% ≥ 30%) 기준 해당`;
-    } else if (is_delivery_low_rate) {
-      delivery_reason = `관내 분만율(${raw_data.관내_분만율.toFixed(1)}% < 40%) 기준치 미달`;
-    }
+    // 2. 분만 취약 판정 — 보건복지부 분만취약지 선정 기준
+    //    ① 60분 내 분만의료 이용률 30% 미만(헬스맵 CAD01 TRI), ② 60분 내 분만기관 접근 불가 인구 30% 이상(헬스맵 BBD01)
+    //    둘 다 해당 A등급, 하나 해당 B등급. 관내 분만율(RI)은 참고 지표 (2026-10-09 결정)
+    const 분만_TRI = raw_data.분만_60분_이용률 ?? null;
+    const 분만_기준1 = 분만_TRI !== null && 분만_TRI < 30;
+    const 분만_기준2 = raw_data.분만_60분_미도달_인구비율 >= 30;
+    const is_delivery_vulnerable = 분만_기준1 || 분만_기준2;
+    const 분만취약지_등급: 'A' | 'B' | null = 분만_기준1 && 분만_기준2 ? 'A' : is_delivery_vulnerable ? 'B' : null;
+    const 분만_항목 = [
+      분만_TRI === null
+        ? '60분 내 분만의료 이용률 자료 없음'
+        : `60분 내 분만의료 이용률 ${분만_TRI.toFixed(1)}% ${분만_기준1 ? '< 30% (해당)' : '≥ 30%'}`,
+      `60분 접근 불가 인구 ${raw_data.분만_60분_미도달_인구비율.toFixed(1)}% ${분만_기준2 ? '≥ 30% (해당)' : '< 30%'}`,
+    ].join(', ');
+    const delivery_reason = 분만취약지_등급
+      ? `분만취약지 기준 ${분만취약지_등급}등급 해당 — ${분만_항목}`
+      : `기준 미해당 — ${분만_항목}`;
 
     // 3. 소아·중증진료 취약지 판정: 병상 공급 비율 < 60% (플랫폼 기준)
     //    소아 지표 실데이터가 없으면(null) 소아 분야는 판정·점수에서 제외
@@ -138,6 +134,7 @@ export class 필수의료_진단_엔진 {
       관내_응급_의료이용률: raw_data.관내_응급_의료이용률,
       분만_60분_미도달_인구비율: raw_data.분만_60분_미도달_인구비율,
       관내_분만율: raw_data.관내_분만율,
+      분만_60분_이용률: 분만_TRI,
       소아_병상_공급비율: raw_data.소아_병상_공급비율,
       소아_야간휴일_접근성지수: raw_data.소아_야간휴일_접근성지수,
 
@@ -145,6 +142,7 @@ export class 필수의료_진단_엔진 {
       분만취약지역_여부: is_delivery_vulnerable,
       소아취약지역_여부: is_pediatric_vulnerable,
       소아_판정_가능,
+      분만취약지_등급,
 
       취약분야_수: vulnerable_count,
       종합_취약도_등급: final_grade,

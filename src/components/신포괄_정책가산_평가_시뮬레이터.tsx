@@ -8,6 +8,7 @@ import {
   CP_개발_체크리스트,
   CP_적용_실적_입력,
   공공병원_프로필,
+  신포괄_산식_근거,
 } from '@/lib/신포괄_정책가산_시뮬레이션_엔진';
 import {
   Calculator,
@@ -134,9 +135,9 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
   const handle_copy_report = () => {
     const text = `[신포괄 정책가산 & 지역거점 운영평가 시뮬레이션 결과]
 기관명: ${selected_hospital.이름} (${result.병원_규모}, ${selected_hospital.병상수}병상)
-연간 신포괄 진료비: ${result.연간_신포괄_진료비_억원}억 원
+연간 포괄수가 총액(입력값): ${result.연간_신포괄_진료비_억원}억 원
 ------------------------------------------------
-1. 운영평가 1.1.8 종합 점수: ${result.종합_운영평가_점수}점 / 100점 (등급: ${result.운영평가_예상_등급})
+1. 표준진료지침(CP) 운영 점수: ${result.종합_운영평가_점수}점 / 100점
  - ㉠ 표준진료지침 개발 영역: ${result.개발_영역_점수}점 / 50점
  - ㉡ 표준진료지침 적용 영역: ${result.적용_영역_점수}점 / 50점
 2. 적용 성과 지표:
@@ -144,10 +145,10 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
  - 완료율: ${result.완료율_퍼센트}% (완료 ${usage.완료_환자건수}건)
  - 관리율: ${result.질환별_관리율_퍼센트}% (운영 ${usage.운영_CP_개수}개)
 3. 신포괄 정책가산 평가 결과:
- - 확정 정책가산율: +${result.신포괄_정책가산율}% (최대 1.0%)
- - 연간 예상 추가 건보 수가: +${result.연간_예상_수가_가산금액_만원.toLocaleString()}만 원 (약 ${(result.연간_예상_수가_가산금액_만원 / 10000).toFixed(2)}억 원)
+ - 예상 가산율: +${result.신포괄_정책가산율}% (CP 운영 최대 1.0% × 점수 비례)
+ - 연간 예상 가산수가 (포괄수가 × 가산율): +${result.연간_예상_수가_가산금액_만원.toLocaleString()}만 원 (약 ${(result.연간_예상_수가_가산금액_만원 / 10000).toFixed(2)}억 원)
 ------------------------------------------------
-(출처: 보건복지부·국립중앙의료원 2026 공공의료 CP 지침 & 심평원 2026 신포괄지불제도 지침)`;
+(출처: 「신포괄지불제도 시범사업 지침」 2026.1 별표3·35쪽, NMC 「2026년 공공의료 CP 개발 및 보급 사업 안내」 제4장. 점수 환산 일부는 플랫폼 가정)`;
 
     navigator.clipboard.writeText(text);
     set_is_copied(true);
@@ -163,7 +164,7 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
           <div className="flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-200 border border-blue-400/30 backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-blue-300" />
-              건강보험심사평가원 2026.1 신포괄 지침 [별표3] 반영
+              신포괄 지침(2026.1) 별표3 · CP 사업 안내 원문 대조
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
               <ShieldCheck className="w-3 h-3" />
@@ -171,7 +172,7 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
             </span>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
               <Award className="w-3 h-3" />
-              최대 1.0% 정책가산금 실시간 시뮬레이션
+              CP 운영 가산율 최대 1.0% (점수 비례)
             </span>
           </div>
 
@@ -183,15 +184,15 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
               </h1>
               <p className="text-xs md:text-sm text-slate-300 mt-2 max-w-3xl leading-relaxed">
                 공공병원 규모별 필수 CP 기준 충족 여부, 16개 정규 개발 체계 체크리스트 및 환자 적용률·완료율 데이터를 기반으로
-                운영평가 득점과 신포괄 수가 정책가산액(수억 원 대)을 실시간으로 산출하고 가산금 극대화 처방전을 제시합니다.
+                CP 운영 점수와 가산율(최대 1.0%, 점수 비례), 포괄수가 기준 가산수가를 계산하고 미충족 항목별 개선 처방을 제시합니다.
               </p>
             </div>
 
-            {/* 전국 41개 공공병원 프리셋 신속 선택기 */}
+            {/* 신포괄 시범기관(지역거점 공공병원) 프리셋 선택기 */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-xl min-w-[280px]">
               <span className="text-[11px] font-semibold text-blue-200 block mb-1 flex items-center gap-1">
                 <Building2 className="w-3.5 h-3.5" />
-                41개 공공병원 데이터 프리셋
+                신포괄 시범기관 공공병원 프리셋 ({공공병원_41개_프리셋.length}곳)
               </span>
               <select
                 value={selected_hospital.이름}
@@ -288,7 +289,7 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
               <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    연간 신포괄 포괄수가 청구액
+                    연간 포괄수가 총액 (예시값 — 실제 값 입력)
                   </span>
                   <span className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
                     {annual_revenue}억 원
@@ -557,6 +558,29 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
 
         {/* 우측: 실시간 시뮬레이션 결과 대시보드 */}
         <div className="lg:col-span-7 space-y-4">
+          {/* 산식 근거: 원문 확인 항목과 플랫폼 가정 구분 */}
+          <details className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 text-xs">
+            <summary className="font-bold text-slate-800 dark:text-slate-200 cursor-pointer">산식 근거 보기 (원문 확인 {신포괄_산식_근거.원문_확인.length}건 · 플랫폼 가정 {신포괄_산식_근거.플랫폼_가정.length}건)</summary>
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <div className="font-bold text-emerald-700 dark:text-emerald-400 mb-1">원문 확인</div>
+                <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-300">
+                  {신포괄_산식_근거.원문_확인.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <div className="font-bold text-amber-700 dark:text-amber-400 mb-1">플랫폼 가정 (원문에 없음)</div>
+                <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-300">
+                  {신포괄_산식_근거.플랫폼_가정.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </details>
+
           {/* 상단 4대 핵심 결과 카드 */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {/* 1. 신포괄 정책가산율 */}
@@ -565,17 +589,17 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
                 신포괄 정책가산율
               </span>
               <div className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 mt-1">
-                +{result.신포괄_정책가산율.toFixed(1)}%
+                +{result.신포괄_정책가산율.toFixed(2)}%
               </div>
               <span className="text-[10px] text-slate-400 mt-0.5 block">
-                최대 1.0% 만점 기준
+                1.0% × 점수/100 (비례방식)
               </span>
             </div>
 
             {/* 2. 연간 예상 수가 가산 금액 */}
             <div className="bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/60 rounded-2xl p-4 shadow-sm relative overflow-hidden">
               <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
-                연간 건보 수가 증액분
+                연간 가산수가 (포괄수가 × 가산율)
               </span>
               <div className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 truncate">
                 +{(result.연간_예상_수가_가산금액_만원 / 10000).toFixed(2)}억
@@ -588,13 +612,13 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
             {/* 3. 운영평가 종합 득점 */}
             <div className="bg-white dark:bg-slate-900 border border-indigo-200 dark:border-indigo-900/60 rounded-2xl p-4 shadow-sm relative overflow-hidden">
               <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
-                운영평가 1.1.8 득점
+                CP 운영 점수
               </span>
               <div className="text-2xl sm:text-3xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
                 {result.종합_운영평가_점수}점
               </div>
               <span className="text-[10px] text-slate-400 mt-0.5 block">
-                등급: <strong>{result.운영평가_예상_등급}</strong>
+                개발 50 + 적용 50 (100점 만점)
               </span>
             </div>
 

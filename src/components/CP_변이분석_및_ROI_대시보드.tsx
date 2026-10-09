@@ -8,6 +8,7 @@ import {
   CP_질환_변이_프로필,
   ROI_시뮬레이션_결과,
   세부_변이_사유,
+  ROI_가정값,
 } from '@/lib/CP_변이분석_및_ROI_엔진';
 import {
   TrendingUp,
@@ -716,7 +717,7 @@ export default function CP_변이분석_및_ROI_대시보드() {
                           2. 병상 회전율 증대에 따른 신규 입원 진료수익 창출 (가장 큼)
                         </span>
                         <span className="text-xs text-emerald-700/80 dark:text-emerald-400/80 block">
-                          단축된 가용 병상({roi_result.총_가용_병상일수.toLocaleString()}일)에 신규 환자 유치로 병원 마진 극대화
+                          단축된 가용 병상({roi_result.총_가용_병상일수.toLocaleString()}일) × 가동률 {ROI_가정값.신규입원_가동률 * 100}% × 마진율 {ROI_가정값.입원_마진율 * 100}% (플랫폼 가정값)
                         </span>
                       </div>
                       <span className="text-base md:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 shrink-0">
@@ -728,10 +729,10 @@ export default function CP_변이분석_및_ROI_대시보드() {
                     <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-center justify-between">
                       <div className="space-y-1">
                         <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                          3. 신포괄 기준초과(Outlier) 비포괄 전환 및 심사 삭감 예방액
+                          3. 상단열외군(정상군 상단 입원일수 초과) 손실 예방 추정액
                         </span>
                         <span className="text-xs text-slate-500 dark:text-slate-400 block">
-                          정상군 재원일수 초과로 인한 심평원 정액 삭감 방지
+                          상단열외군은 포괄수가를 정상군 상단 입원일수로 산정(신포괄 지침 34쪽) · 반영비율 {ROI_가정값.이탈_방지_반영비율 * 100}%는 플랫폼 가정
                         </span>
                       </div>
                       <span className="text-base md:text-lg font-bold text-slate-900 dark:text-white shrink-0">

@@ -884,7 +884,7 @@ export default function 공공의료_CP_오더세트_라이브러리() {
                       신포괄 정책가산 평가 (건보 수가 직결)
                     </strong>
                     <p className="text-slate-300 text-[11px] leading-relaxed">
-                      • 의료의 질 영역(9.5%) 중 CP 운영 배점 1.0%<br />
+                      • 의료의 질 영역(9.5%) 중 CP 운영 가산율 1.0% (신포괄 지침 별표3)<br />
                       • 질환별 적용률·완료율 전산(EMR/OCS) 제출 필수<br />
                       • 변이(Variance) 분석 및 분기별 모니터링 환류
                     </p>

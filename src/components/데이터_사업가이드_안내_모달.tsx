@@ -23,6 +23,7 @@ import {
   UserCheck,
   HeartPulse,
 } from 'lucide-react';
+import { 근거자료_반영_이력 } from '@/lib/근거자료_반영이력';
 import { 메뉴_아이디 } from './메인_사이드바_네비게이션';
 
 interface 데이터_사업가이드_안내_모달_속성 {
@@ -340,8 +341,39 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
           {active_tab === 'guidelines' && (
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-900/40 text-xs text-emerald-950 dark:text-emerald-200 leading-relaxed">
-                ⚖️ <strong>법적 근거 및 정책 정합성 (7대 정부 공식 지침):</strong> 본 플랫폼의 진단 규칙, 시뮬레이션 알고리즘, 사업계획서 12대 필수 항목은 아래 7대 법령·지침을 100% 반영하여 구축되었습니다.
+                ⚖️ <strong>법적 근거 및 정책 정합성:</strong> 진단 규칙·시뮬레이션·사업계획서는 아래 법령·지침을 참고해 구성했습니다. 원문을 대조해 반영한 항목은 아래 「근거자료 반영 이력」에, 원문에 없는 플랫폼 가정은 각 화면에 따로 표시합니다.
               </div>
+
+              {/* 근거자료 반영 이력 (원문 대조 기록) */}
+              <details className="p-4 rounded-2xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 text-xs" open>
+                <summary className="font-bold text-blue-900 dark:text-blue-200 cursor-pointer">
+                  📑 근거자료 반영 이력 ({근거자료_반영_이력.length}건) — 원문 대조 후 앱에 반영한 내용
+                </summary>
+                <div className="mt-3 space-y-3">
+                  {근거자료_반영_이력.map((h) => (
+                    <div key={h.문서} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5">
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        <span className="text-blue-600 dark:text-blue-400 mr-1.5">{h.대조일}</span>
+                        {h.문서}
+                      </div>
+                      <div className="text-slate-600 dark:text-slate-300">
+                        <strong>확인한 내용:</strong>
+                        <ul className="list-disc pl-4">{h.확인한_내용.map((t) => <li key={t}>{t}</li>)}</ul>
+                      </div>
+                      <div className="text-slate-600 dark:text-slate-300">
+                        <strong>앱 반영:</strong>
+                        <ul className="list-disc pl-4">{h.앱_반영.map((t) => <li key={t}>{t}</li>)}</ul>
+                      </div>
+                      {h.남은_가정.length > 0 && (
+                        <div className="text-amber-700 dark:text-amber-400">
+                          <strong>남은 가정:</strong>
+                          <ul className="list-disc pl-4">{h.남은_가정.map((t) => <li key={t}>{t}</li>)}</ul>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </details>
 
               <div className="space-y-4">
                 {/* 1) 복지부 의료취약지 지정 고시 */}
@@ -368,15 +400,15 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                       지침 2 · 건강보험심사평가원 지침
                     </span>
-                    <span className="text-xs text-slate-400">별표 3 「정책가산평가 지침」</span>
+                    <span className="text-xs text-slate-400">별표3 「정책가산평가 항목 및 가산율」 (원문 대조)</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    「2026 신포괄지불제도 시범사업 지침 (2026.1 개정)」
+                    「신포괄지불제도 시범사업 지침」 (2026.1 개정, 2026.1.1. 시행)
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>1.0% 정책가산율:</strong> 의료의 질 영역(9.5%) 중 CP 운영 배점 최대 1.0% 정책가산 부여.<br />
-                    • <strong>추가 재정 지원 공식:</strong> 연간 신포괄 진료비 × (가산율 / 100). (계산 예시: 연 250억 원 × 1.0% = 연 2억 5,000만 원, 가산율 기준은 원문 미확인).<br />
-                    • <strong>K-DRG 정상군 관리:</strong> 기준 재원일수 초과 시 정액수가 삭감 및 비포괄 전환 방지 체계.
+                    • <strong>CP 운영 가산율 1.0%:</strong> 병원·종합병원의 의료의 질 영역(9.5%) 중 표준진료지침(CP) 운영 1.0% (별표3, 213쪽).<br />
+                    • <strong>가산수가 산식:</strong> 정책가산평가 항목당 가산율 총합 × 포괄수가 (35쪽). 진료비 전체가 아니라 포괄수가에 곱함.<br />
+                    • <strong>질병군·입원일수:</strong> 607개 적용 질병군(ADRG). 상단열외군의 포괄수가는 정상군 상단 입원일수로 산정 (15·34쪽).
                   </p>
                 </div>
 
@@ -384,18 +416,17 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                 <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                      지침 3 · 보건복지부 평가 편람
+                      지침 3 · 지역거점 공공병원 운영평가
                     </span>
                     <span className="text-xs text-slate-400">지표 1.1.8 [표준진료지침 운영]</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    「지역거점 공공병원 운영평가 편람 (100점 만점 구조)」
+                    지역거점 공공병원 운영평가 1.1.8 [표준진료지침 운영] (NMC 「2026년 공공의료 CP 개발 및 보급 사업 안내」 인용)
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>㉠ 개발 체계 (50점):</strong> 16개 공문서 점검 (300병상 초과 전담인력 1명 필수, 유형별 Branch CP 개발, CP위원회 회의록 등).<br />
-                    • <strong>㉡ 적용 및 운영 (50점):</strong> 병상 규모별 최소 운영(20점) + 질환별 적용(10점) + 관리율(5점, 85% 이상) + 5대 모니터링(15점).<br />
-                    • <strong>신포괄 연계 득점 구간:</strong> 90점 이상 ➔ 1.0%, 80~89점 ➔ 0.8%, 70~79점 ➔ 0.6%, 60~69점 ➔ 0.4%, 60점 미만 ➔ 0.0%.<br />
-                    <span className="text-amber-700 dark:text-amber-400">※ 배점 구조와 점수별 가산율은 공개 자료에서 원문을 확인하지 못함. 인용 전 해당 연도 편람·지침 확인 필요.</span>
+                    • <strong>㉠ 개발 (배점비율 50%):</strong> 16개 평가항목 중 인정 항목 비율 (300병상 초과 종합병원은 의료인 전담 1명, 유형별 CP 개발, CP위원회 질환 선정 회의 등).<br />
+                    • <strong>㉡ 적용:</strong> 적용현황 20점 + 질환별 적용 10점 + 질환별 관리율 5점 + 질환별 모니터링 15점. 적용현황 기준 CP 15·10·7·5개(500병상 초과·300병상 초과·300병상 이하·병원급).<br />
+                    • <strong>신포괄 연계:</strong> 가산율 적용방법은 <strong>비례방식</strong>(점수 구간표 없음). 지역거점 공공병원은 적용현황·질환별 적용만 심평원 평가, 그 외 항목은 운영평가 결과 활용.
                   </p>
                 </div>
 
@@ -503,10 +534,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     [산식 2] 신포괄 정책가산 추가 수가액
                   </span>
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
-                    연간 추가 수가 = 연간 신포괄 진료비 × (정책가산율 / 100)
+                    가산수가 = 포괄수가 × (정책가산율 / 100), CP 운영 가산율 = 1.0% × 점수/100
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    계산 예시: 연간 진료비 250억 원 × 정책가산율 1.0% = <strong>연 2억 5,000만 원</strong> (가산율 표는 원문 미확인)
+                    계산 예시: 포괄수가 250억 원, CP 점수 100점(가산율 1.0%) → <strong>연 2억 5,000만 원</strong> / 80점 → 0.8% → 2억 원 (신포괄 지침 35쪽·별표3)
                   </p>
                 </div>
 
@@ -519,7 +550,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     종합 점수 = 개발체계(50점) + 병상적용(20점) + 질환적용(10점) + 관리율(5점) + 모니터링(15점)
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    개발 16개 항목(각 3.125점), 관리율(85% 이상 5점), 5개 모니터링(질환당 3점)
+                    개발 16개 항목(인정 1개당 3.125점), 관리율 = 모니터링 CP 수 ÷ 운영 CP 수 × 100, 대표 5개 CP 모니터링 (CP 사업 안내 제4장)
                   </p>
                 </div>
 

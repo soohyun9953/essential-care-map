@@ -69,7 +69,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
 
   // 환자 의료이용 및 유출입 AI 데이터 질의응답 모달 상태
   const [is_qa_modal_open, setIs_qa_modal_open] = useState(false);
-  const [qa_initial_query, setQa_initial_query] = useState('중진료권별 유출 Top10과 유출 인구수 보여줘.');
+  const [qa_initial_query, setQa_initial_query] = useState('중진료권별 유출 Top10과 유출 재원일수 보여줘.');
 
   const handle_open_qa_modal = (query?: string) => {
     if (query) {
@@ -165,7 +165,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => handle_open_qa_modal('중진료권별 유출 Top10과 유출 인구수 보여줘.')}
+              onClick={() => handle_open_qa_modal('중진료권별 유출 Top10과 유출 재원일수 보여줘.')}
               className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs hover:from-blue-700 hover:to-indigo-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow"
               title="중진료권/시도/시군구 환자 유출입 실데이터 자연어 질의응답"
             >
@@ -556,7 +556,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                     id: '응급' as const,
                     rank: '①',
                     title: '응급의료 접근성',
-                    summary: '응급의료기관까지 평균 이동시간 및 60분 미도달율 높음',
+                    summary: '권역응급 60분 미도달 인구비율 또는 응급 관내이용률 기준 해당',
                     detail: active_region.응급_판정근거,
                     metric: `60분 미도달 ${active_region.응급_60분_미도달_인구비율}%, 관내이용률 ${active_region.관내_응급_의료이용률}%`,
                     isWeak: active_region.응급취약지역_여부,

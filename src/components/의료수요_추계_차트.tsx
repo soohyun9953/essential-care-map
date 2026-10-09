@@ -108,7 +108,7 @@ export const 의료수요_추계_차트: React.FC<의료수요_추계_차트_속
         <div>
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-200 dark:border-amber-800">
-              03 의료수요 예측 · NMC 표준 모델
+              03 의료수요 예측 · 단순 추정 모델 (실측 아님)
             </span>
             <span className="text-xs text-slate-400">2024 ~ 2030+ 중장기 추계</span>
           </div>

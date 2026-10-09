@@ -285,9 +285,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>AI 병원진단·개선</span>
-              <span className="px-1 py-0.2 rounded-full text-[9px] bg-amber-400 text-slate-900 font-black">
-                신규
-              </span>
             </button>
 
             <button

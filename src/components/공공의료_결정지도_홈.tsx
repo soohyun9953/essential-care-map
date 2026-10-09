@@ -116,7 +116,7 @@ const PREVIEW_REGION = {
     { name: '소아의료', score: 73, color: 'text-amber-600', bar: 'bg-amber-500', weak: true },
   ],
   factors: [
-    { rank: 1, title: '응급의료 접근성', desc: '응급의료기관까지 평균 이동시간 60분 초과 인구 비율 높음' },
+    { rank: 1, title: '응급의료 접근성', desc: '권역응급의료센터 60분 내 도달 불가 인구 비율 높음' },
     { rank: 2, title: '분만 의료공백', desc: '분만 가능 의료기관 부재로 관내 분만율 극히 낮음' },
     { rank: 3, title: '전문인력 부족', desc: '지역 내 필수의료 전문의 공급 절대 부족' },
   ],
@@ -455,7 +455,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                 </div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">2030 의료수요 변화</h3>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  인구 고령화와 질환별 의료이용 추세를 반영한 중장기 수요를 예측합니다.
+                  인구수 기반 단순 추정 모델로 중장기 수요를 추정합니다.
                 </p>
               </div>
               <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between group-hover:underline">

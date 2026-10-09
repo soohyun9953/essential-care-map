@@ -61,7 +61,7 @@ import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 // 모달 컴포넌트들
 import { AI_활용_데이터_모달 } from './ai/AI_활용_데이터_모달';
-import { AI_판단_근거_모달, 정책_근거_데이터_맵 } from './ai/AI_판단_근거_모달';
+import { AI_판단_근거_모달, 정책_근거_생성 } from './ai/AI_판단_근거_모달';
 import { AI_기술구조_모달 } from './ai/AI_기술구조_모달';
 import { AI_분석_패널 } from './ai/AI_분석_패널';
 
@@ -94,11 +94,11 @@ interface AI_분석_스텝 {
 }
 
 const AI_5단계_프로세스: AI_분석_스텝[] = [
-  { step: 1, 이름: '지역 현황 분석', 설명: '인구구조, 의료자원, 취약지표 취합 및 1차 스크리닝', 핵심지표: '인구 37,842명 · 응급 60분 미도달 54.2%' },
-  { step: 2, 유사지역_분석: true, 이름: '유사 지역 비교', 설명: '전국 유사 군단위 코호트 매칭 및 격차 Gap 분석', 핵심지표: '유사군 평균 대비 관내이용률 -14.6%p 결원' } as any,
-  { step: 3, 이름: '미래 의료수요 분석', 설명: '2030 장래인구 추계 및 급성기 심뇌혈관 입원수요 예측', 핵심지표: '2030 고령화율 39.8% · 응급수요 +27.4%' },
-  { step: 4, 이름: '정책·사업 자료 분석', 설명: '보건복지부 취약지 고시 및 우수 시행계획 RAG 벡터 검색', 핵심지표: '취약지 국비 70% 매칭 및 책임의료 지원사업 조항 충족' },
-  { step: 5, 이름: 'AI 종합 정책대안 생성', 설명: '다중 에이전트 인과추론 및 최적 실행 시나리오 도출', 핵심지표: '우선순위 3대 정책대안 및 예상효과 산출 완료' },
+  { step: 1, 이름: '지역 현황 분석', 설명: '인구구조, 의료자원, 취약지표 취합 및 1차 스크리닝', 핵심지표: '선택 지역의 헬스맵 2024 진단값' },
+  { step: 2, 유사지역_분석: true, 이름: '유사 지역 비교', 설명: '전국 유사 군단위 코호트 매칭 및 격차 Gap 분석', 핵심지표: '인구 규모가 비슷한 시군구 평균과 비교' } as any,
+  { step: 3, 이름: '미래 의료수요 분석', 설명: '2030 장래인구 추계 및 급성기 심뇌혈관 입원수요 예측', 핵심지표: '수요추계 탭의 추정 모델 참고 (실측 아님)' },
+  { step: 4, 이름: '정책·사업 자료 분석', 설명: '보건복지부 취약지 고시 및 우수 시행계획 RAG 벡터 검색', 핵심지표: '지침 코퍼스 검색 (검증상태 표기)' },
+  { step: 5, 이름: 'AI 종합 정책대안 생성', 설명: '다중 에이전트 인과추론 및 최적 실행 시나리오 도출', 핵심지표: '대안 유형 3가지 제시 (예산·효과는 직접 산정)' },
 ];
 
 export const 정책기획_통합_워크스페이스: React.FC<정책기획_통합_워크스페이스_속성> = ({
@@ -185,8 +185,9 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   // ==============================================================
   // 3. 사업계획서 12대 항목 및 자동작성 애니메이션 (사용자 요구사항 7번)
   // ==============================================================
-  const region_name = selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '강원 영월군';
-  const region_short = selected_region ? selected_region.시군구명 : '영월군';
+  const region_name = selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : '(지역 선택 필요)';
+  const region_short = selected_region ? selected_region.시군구명 : '○○군';
+  const R = selected_region;
 
   // Option별 특화 사업계획 내용 생성 함수
   const get_proposal_by_option = useCallback(
@@ -194,51 +195,59 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       if (option_id === 'A') {
         return {
           사업명: `2026년 ${region_short} 응급의료 인프라 및 골든타임 강화 사업`,
-          추진배경: `초고령사회 진입 및 지리적 원격성으로 인한 60분 골든타임 미도달 인구 과다(54.2%), 자체 해결능력 부족으로 관외 유출 심각(57.9%) (2024 헬스맵)`,
-          현황및문제점: `관내 응급기관 1개소 전담의 결원, 중증 심뇌혈관 질환 이송시간 62분 소요, 권역센터 직통 전원 프로토콜 부재`,
-          사업목표: '중증응급환자 관내 이용률(RI) 65% 달성 및 60분 내 적정 치료율 제고',
-          추진전략: '1. 영월의료원 응급실 시설·장비 승격, 2. 응급의학과 전문의 순환 당직제, 3. 원격 심뇌혈관 협진망',
+          추진배경: R
+            ? `권역응급 60분 미도달 ${R.응급_60분_미도달_인구비율}%, 응급 관내이용률(RI) ${R.관내_응급_의료이용률}% (헬스맵 2024)`
+            : '지역을 선택하면 진단 수치가 채워집니다',
+          현황및문제점: R ? `응급 판정: ${R.응급_판정근거}` : '-',
+          사업목표: '중증응급환자 관내 이용률(RI) ○○% 달성 (목표 직접 설정)',
+          추진전략: '1. 관내 응급의료기관 시설·장비 보강, 2. 응급의학과 당직 체계 확보, 3. 권역센터 원격협진망',
           세부사업: '1) 응급실 중환자 모니터링 시스템 구축, 2) 심뇌혈관 전문의 핫라인, 3) 119 구급대 직접 이송 프로토콜',
-          추진체계: '영월군 보건소 - 영월의료원 - 원주세브란스기독병원 협력 체계',
-          추진일정: '2026.01 ~ 2028.12 (총 3개년 계속사업)',
-          예산: '국비 70% (17.5억원) / 지방비 30% (7.5억원) 매칭 (총 25억원 규모)',
-          성과지표: '권역응급 60분 미도달율 18%p 감축, 관내 응급이용률(RI) 65% 달성',
-          기대효과: '골든타임 내 초동처치율 85% 확보 및 예방가능 외상 사망률 30% 감소',
+          추진체계: `${region_short} 보건소 - 관내 공공병원 - 권역응급의료센터 협력 체계 (기관명 직접 기재)`,
+          추진일정: '(공모 지침에 따라 기재)',
+          예산: '직접 입력 필요 (국비·지방비 분담 비율은 해당 연도 공모 지침 확인)',
+          성과지표: '권역응급 60분 미도달률 ○○%p 감축, 관내 응급이용률(RI) ○○% (목표 직접 설정)',
+          기대효과: '직접 입력 필요 (플랫폼에 산출 근거 없음)',
           사후관리: '매월 응급환자 이송 골든타임 통계 모니터링 및 권역센터 협진 질관리',
         };
       } else if (option_id === 'B') {
         return {
           사업명: `2026년 ${region_short} 인근 3차 권역 연계 Fast-Track 광역 전원 핫라인 구축 사업`,
-          추진배경: `자체 고난도 수술실 유지 한계 극복을 위해 인근 상급종합병원과의 신속 전원 연계 절실 (2024 헬스맵)`,
-          현황및문제점: `원주세브란스까지 육상이동 평균 68분, 전원 지연 및 응급실 재이송 리스크 상존, 닥터헬기 인계점 운용 저조`,
-          사업목표: '골든타임 내 초동처치율 90% 달성 및 3차 상급병원 전원 지연시간 25분 단축',
-          추진전략: '1. 3차 대학병원 직통 핫라인 개설, 2. 닥터헬기 인계점 확대, 3. 초동처치 보건지소 네트워크',
-          세부사업: '1) 스마트 구급차 실시간 원격 심전도 전송기 보급, 2) 닥터헬기 인계점 4개소 보강, 3) 회송 재활망 구축',
-          추진체계: '지자체 - 강원도 소방본부 - 권역응급의료센터 - 지역병원 4자 협약',
-          추진일정: '2026.03 ~ 2027.12 (총 2개년 사업)',
-          예산: '국비 70% (12.6억원) / 도비 15% (2.7억원) / 군비 15% (2.7억원) (총 18억원)',
-          성과지표: '중증환자 전원 소요시간 25분 단축, 닥터헬기 출동 성공률 95% 이상',
-          기대효과: '전원 거부 0건 달성 및 중증 외상환자의 골든타임 내 최종 치료 성공률 제고',
+          추진배경: '자체 고난도 진료 유지가 어려운 경우 인근 상급종합병원과의 신속 전원 연계 검토',
+          현황및문제점: R
+            ? `권역응급 60분 미도달 ${R.응급_60분_미도달_인구비율}% (헬스맵 2024). 전원 소요시간·헬기 인계점 현황은 직접 기재`
+            : '-',
+          사업목표: '상급병원 전원 소요시간 ○○분 단축 (목표 직접 설정)',
+          추진전략: '1. 상급종합병원 직통 핫라인 개설, 2. 닥터헬기 인계점 확대, 3. 초동처치 보건지소 네트워크',
+          세부사업: '1) 스마트 구급차 원격 심전도 전송, 2) 닥터헬기 인계점 보강 (개소 직접 기재), 3) 회송 재활망 구축',
+          추진체계: '지자체 - 소방본부 - 권역응급의료센터 - 지역병원 협약',
+          추진일정: '(공모 지침에 따라 기재)',
+          예산: '직접 입력 필요 (국비·지방비 분담 비율은 해당 연도 공모 지침 확인)',
+          성과지표: '전원 소요시간 ○○분 단축 (목표 직접 설정)',
+          기대효과: '직접 입력 필요 (플랫폼에 산출 근거 없음)',
           사후관리: '분기별 전원 환자 추적조사 및 핫라인 연결 가동률 분기별 점검',
         };
       } else {
         return {
           사업명: `2026년 ${region_short} 분만 취약지 해소 및 소아 야간진료 모자안심망 구축 사업`,
-          추진배경: `분만취약지 A등급 고시 지역으로 원정출산 88.6%, 야간 소아 진료 공백으로 정주여건 악화 (2024 헬스맵)`,
-          현황및문제점: `분만 60분 미도달율 76.8%, 관내 분만율 11.4%, 야간 소아 발열 시 50km 이상 심야 원정 진료`,
-          사업목표: '24시간 소아 야간 진료망 확보 및 안전 분만 외래 상시 운영',
-          추진전략: '1. 영월의료원 외래 산부인과 개설, 2. 달빛어린이병원 야간진료 지원, 3. 공공임상교수 매칭',
-          세부사업: '1) 산부인과 전문의 2인 채용 보조, 2) 평일 야간 23시 소아 진료실 운영, 3) 안심분만 이송지원',
-          추진체계: '보건소 - 영월의료원 - 국립중앙의료원(공공임상교수제) 연계 협력',
-          추진일정: '2026.01 ~ 2028.12 (총 3개년 계속사업)',
-          예산: '국비 50% (22.5억원) / 지방비 50% (22.5억원) 매칭 (총 45억원 규모)',
-          성과지표: '산전 진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상 확보',
-          기대효과: '아이 낳고 키우기 좋은 환경 조성 및 임산부·영유아 응급상황 안전망 확보',
+          추진배경: R
+            ? `분만 60분 미도달 ${R.분만_60분_미도달_인구비율}%, 분만 관내이용률 ${R.관내_분만율}% (헬스맵 2024)`
+            : '지역을 선택하면 진단 수치가 채워집니다',
+          현황및문제점: R
+            ? `분만 판정: ${R.분만_판정근거}. 분만취약지 등급은 복지부 공모 지침의 지역 목록으로 확인`
+            : '-',
+          사업목표: '안전 분만(또는 외래 산전진찰) 상시 운영 및 소아 야간 진료 확보',
+          추진전략: '1. 관내 공공병원 산부인과(분만 또는 외래) 운영, 2. 달빛어린이병원 지정 검토, 3. 공공임상교수 매칭',
+          세부사업: '1) 산부인과 전문의 채용 보조 (인원 직접 기재), 2) 소아 야간 진료실 운영, 3) 고위험 산모 이송 지원',
+          추진체계: '보건소 - 관내 공공병원 - 국립중앙의료원(공공임상교수제) 연계 협력',
+          추진일정: '(공모 지침에 따라 기재)',
+          예산: '분만취약지 지원사업 기준: 분만산부인과 시설·장비비 10억원(첫해) + 운영비 연 5억원, 외래산부인과 운영비 연 2억원 (국비·지방비 각 50%). 소아 야간진료 예산은 직접 기재',
+          성과지표: '산전 진찰 관내 이용률 ○○% (목표 직접 설정)',
+          기대효과: '직접 입력 필요 (플랫폼에 산출 근거 없음)',
           사후관리: '지역 산모·학부모 모니터링단 운영 및 야간 진료 일지 일일 점검',
         };
       }
     },
-    [region_short]
+    [region_short, R]
   );
 
   const [proposal_form, setProposal_form] = useState(() => get_proposal_by_option('A'));
@@ -298,6 +307,23 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
     () => (selected_region ? 지역_의료자원_집계(selected_region.시도명, selected_region.시군구명, selected_region.시군구코드) : null),
     [selected_region]
   );
+
+  // 인구 규모가 가장 비슷한 시군구 5곳의 평균 (헬스맵 2024 진단값)
+  const 유사지역 = useMemo(() => {
+    if (!selected_region) return null;
+    const 후보 = diagnosed_list
+      .filter((r) => r.시군구코드 !== selected_region.시군구코드)
+      .sort((a, b) => Math.abs(a.인구수 - selected_region.인구수) - Math.abs(b.인구수 - selected_region.인구수))
+      .slice(0, 5);
+    if (후보.length === 0) return null;
+    const 평균 = (f: (r: 필수의료_진단_결과) => number) =>
+      Math.round((후보.reduce((acc, r) => acc + f(r), 0) / 후보.length) * 10) / 10;
+    return {
+      이름: 후보.map((r) => r.시군구명).join('·'),
+      응급미도달: 평균((r) => r.응급_60분_미도달_인구비율),
+      응급RI: 평균((r) => r.관내_응급_의료이용률),
+    };
+  }, [diagnosed_list, selected_region]);
 
   // 사업계획서 12대 항목 목록
   const proposal_field_keys: (keyof typeof proposal_form)[] = [
@@ -609,14 +635,16 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 pl-3">
-                    인구 {selected_region ? format_number_comma(selected_region.인구수) : '37,842'}명 · 종합 취약도: {selected_region?.종합_취약도_등급 || '심각'}
+                    {selected_region
+                      ? `인구 ${format_number_comma(selected_region.인구수)}명 · 종합 취약도: ${selected_region.종합_취약도_등급}`
+                      : '지역을 선택하세요'}
                   </p>
                   {active_detail_section === 'status' && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
-                      <div>• 권역응급 60분 미도달율: <strong>{selected_region?.응급_60분_미도달_인구비율 || 54.2}%</strong></div>
-                      <div>• 관내 응급의료 이용률: <strong>{selected_region?.관내_응급_의료이용률 || 42.1}%</strong></div>
-                      <div>• 분만산부인과 미도달율: <strong>{selected_region?.분만_60분_미도달_인구비율 || 76.8}%</strong></div>
-                      <div>• 보유 응급의료기관: <strong>{region_resources?.응급의료기관.length || 1}개소</strong></div>
+                      <div>• 권역응급 60분 미도달율: <strong>{selected_region ? `${selected_region.응급_60분_미도달_인구비율}%` : '-'}</strong></div>
+                      <div>• 관내 응급의료 이용률: <strong>{selected_region ? `${selected_region.관내_응급_의료이용률}%` : '-'}</strong></div>
+                      <div>• 분만산부인과 미도달율: <strong>{selected_region ? `${selected_region.분만_60분_미도달_인구비율}%` : '-'}</strong></div>
+                      <div>• 보유 응급의료기관: <strong>{region_resources ? `${region_resources.응급의료기관.length}개소` : '-'}</strong></div>
                     </div>
                   )}
                 </div>
@@ -636,13 +664,21 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 pl-3">
-                    유사 군(정선·평창·단양) 대비 의료이용률 -14.6%p 결원
+                    {유사지역 && selected_region
+                      ? `인구 유사 지역(${유사지역.이름}) 평균 응급 RI ${유사지역.응급RI}% · 선택 지역 ${selected_region.관내_응급_의료이용률}%`
+                      : '지역을 선택하세요'}
                   </p>
                   {active_detail_section === 'compare' && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
-                      <div>• 군단위 평균 미도달율: 38.4% (영월군 +15.8%p 격차)</div>
-                      <div>• 군단위 평균 이용률: 56.7% (영월군 -14.6%p 이탈)</div>
-                      <div>• 천명당 의사수: 1.2명 (전국 평균 2.6명 대비 결원)</div>
+                      {유사지역 && selected_region ? (
+                        <>
+                          <div>• 유사 지역 평균 응급 미도달: {유사지역.응급미도달}% (선택 지역 {selected_region.응급_60분_미도달_인구비율}%)</div>
+                          <div>• 유사 지역 평균 응급 RI: {유사지역.응급RI}% (선택 지역 {selected_region.관내_응급_의료이용률}%)</div>
+                          <div className="text-slate-400">• 기준: 인구 규모가 가장 비슷한 시군구 5곳, 헬스맵 2024</div>
+                        </>
+                      ) : (
+                        <div>• 지역을 선택하세요</div>
+                      )}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -672,13 +708,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 pl-3">
-                    2030 고령인구 39.8% · 급성기 응급수요 +27.4% 급증
+                    2030 수요추계 탭의 추정 모델 참고 (실측 아님)
                   </p>
                   {active_detail_section === 'future' && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
-                      <div>• 2030 장래인구: 35,400명 (고령화율 +6.0%p 가속)</div>
-                      <div>• 심근경색·뇌졸중 입원수요: 연간 약 890건 예상</div>
-                      <div>• 분만 수요: -18.5% 감소로 통합형 외래안심망 필수</div>
+                      <div>• 장래인구·질환별 입원수요 추계 자료는 내장되어 있지 않음</div>
+                      <div>• 수요추계 탭의 값은 인구수 기반 단순 추정 모델임</div>
                       <button
                         type="button"
                         onClick={(e) => {
@@ -708,13 +743,13 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 pl-3">
-                    2026 복지부 취약지 고시 · 국비 70% 지원 요건 충족
+                    응급의료취약지 고시·분만취약지 지원사업 기준 대조
                   </p>
                   {active_detail_section === 'policy' && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
-                      <div>• 제4차 응급의료 기본계획 중점과제 부합</div>
-                      <div>• 분만취약지 A등급 외래산부인과 연 5억 지원 적격</div>
-                      <div>• 지역책임의료기관 전원조정 사업 가산 요건 충족</div>
+                      <div>• 응급의료취약지: 응급의료센터 60분 내 도달 불가 인구 30% 이상 (고시 제2024-261호)</div>
+                      <div>• 분만취약지 지원: 분만산부인과 운영비 연 5억원, 외래산부인과 운영비 연 2억원</div>
+                      <div>• 실제 지원 대상 여부는 해당 연도 고시·공모 지침으로 확인</div>
                     </div>
                   )}
                 </div>
@@ -734,13 +769,19 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </span>
                   </div>
                   <p className="text-[11px] text-slate-500 pl-3">
-                    다중 지표 결합 인과추론 및 3대 우선순위 대안 제시
+                    분야별 판정 결과에 따른 대안 유형 연결 (규칙 기반)
                   </p>
                   {active_detail_section === 'ai' && (
                     <div className="mt-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1 pl-3 bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl">
-                      <div>• 결론: 자체 응급의료원 승격(Option A) 최우선 추천</div>
-                      <div>• 2순위: 3차 권역 Fast-Track 핫라인(Option B)</div>
-                      <div>• 3순위: 모자·소아 특화 안심망(Option C)</div>
+                      {selected_region ? (
+                        <>
+                          <div>• 응급: {selected_region.응급취약지역_여부 ? '취약' : '기준 충족'} → Option A·B 검토</div>
+                          <div>• 분만: {selected_region.분만취약지역_여부 ? '취약' : '기준 충족'} → Option C 검토</div>
+                        </>
+                      ) : (
+                        <div>• 지역을 선택하세요</div>
+                      )}
+                      <div>• 대안 우선순위는 담당자가 판단 (AI 자동 산출 아님)</div>
                     </div>
                   )}
                 </div>
@@ -748,7 +789,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
               {/* 하단 고지 */}
               <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 space-y-0.5">
-                <div>• 데이터 기준: 2024~2026 공공보건의료통계</div>
+                <div>• 데이터 기준: 헬스맵 주제도 2024, E-Gen·심평원·NMC 기관 목록</div>
                 <div>• RAG 인덱싱: 보건복지부 취약지 지원 고시</div>
               </div>
             </div>
@@ -772,25 +813,29 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-2.5 rounded-2xl bg-red-50/50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/40">
                     <span className="text-[10px] text-red-600 dark:text-red-400 font-bold block mb-0.5">
-                      ■ 핵심 취약 1순위
+                      ■ 응급 분야 {selected_region ? (selected_region.응급취약지역_여부 ? '(취약)' : '(기준 충족)') : ''}
                     </span>
                     <div className="font-bold text-slate-900 dark:text-white text-xs">
-                      응급 60분 골든타임 결핍
+                      권역응급 60분 미도달 · 응급 RI
                     </div>
                     <span className="text-[10px] text-slate-500">
-                      미도달 54.2% · 관내이용률 42.1%
+                      {selected_region
+                        ? `미도달 ${selected_region.응급_60분_미도달_인구비율}% · 관내이용률 ${selected_region.관내_응급_의료이용률}%`
+                        : '지역을 선택하세요'}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-100 dark:border-amber-900/40">
                     <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold block mb-0.5">
-                      ■ 핵심 취약 2순위
+                      ■ 분만·소아 분야 {selected_region ? (selected_region.분만취약지역_여부 ? '(분만 취약)' : '(분만 기준 충족)') : ''}
                     </span>
                     <div className="font-bold text-slate-900 dark:text-white text-xs">
-                      분만 및 소아 야간 공백
+                      분만 60분 미도달 · 달빛어린이병원
                     </div>
                     <span className="text-[10px] text-slate-500">
-                      분만 도달불가 76.8% · 달빛병원 0
+                      {selected_region
+                        ? `분만 미도달 ${selected_region.분만_60분_미도달_인구비율}% · 달빛어린이병원 ${region_resources?.달빛어린이병원_수 ?? '-'}곳`
+                        : '지역을 선택하세요'}
                     </span>
                   </div>
                 </div>
@@ -801,7 +846,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 <div className="flex items-center justify-between px-1">
                   <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                     <Sparkles className="w-4 h-4 text-blue-600" />
-                    <span>AI 추천 정책대안 3선 (Option A · B · C)</span>
+                    <span>정책대안 유형 3가지 (Option A · B · C)</span>
                   </span>
                   <span className="text-[11px] text-blue-600 font-bold">1개 선택 후 사업계획 생성</span>
                 </div>
@@ -822,7 +867,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         Option A
                       </span>
                       <span className="text-[10px] font-black text-white bg-red-600 px-2 py-0.5 rounded-md">
-                        우선순위 1위 (최우선 추천)
+                        {selected_region?.응급취약지역_여부 ? '응급 취약 지역 해당' : '유형 예시'}
                       </span>
                     </div>
                     {selected_option === 'A' ? (
@@ -852,19 +897,19 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        권역응급 60분 미도달율 54.2% 및 응급환자 57.9%의 관외 유출 심화
+                        {selected_region ? `권역응급 60분 미도달 ${selected_region.응급_60분_미도달_인구비율}%, 응급 관내이용률 ${selected_region.관내_응급_의료이용률}%` : '지역을 선택하세요'}
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        영월의료원 전담의 결원 및 심뇌혈관 전문의 부재, 유사군 대비 응급이용률 -14.6%p 결원
+                        {selected_region ? selected_region.응급_판정근거 : '-'}
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
                       <span className="text-blue-600 dark:text-blue-400 font-bold">
-                        관내 응급이용률(RI) 42.1% → 65% 달성, 골든타임 도달률 +18%p 개선
+                        산출 근거 없음 (목표치는 사업 설계 시 직접 설정)
                       </span>
                     </div>
                   </div>
@@ -928,7 +973,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         Option B
                       </span>
                       <span className="text-[10px] font-black text-indigo-800 dark:text-indigo-200 bg-indigo-100 dark:bg-indigo-900/60 px-2 py-0.5 rounded-md">
-                        우선순위 2위 (광역 연계형)
+                        광역 연계형 (유형 예시)
                       </span>
                     </div>
                     {selected_option === 'B' ? (
@@ -957,19 +1002,19 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        자체 심혈관 수술실 유지 비효율 및 3차 상급병원 전원 지연(평균 68분)
+                        자체 고난도 진료 유지가 어려운 경우 상급병원 전원 지연 위험
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        닥터헬기 인계점 4개소 운용 저조, 원주세브란스 권역센터 직통 전원 프로토콜 부재
+                        {selected_region ? `권역응급 60분 미도달 ${selected_region.응급_60분_미도달_인구비율}% (전원 소요시간 자료는 내장되어 있지 않음)` : '-'}
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
                       <span className="text-indigo-600 dark:text-indigo-400 font-bold">
-                        중증환자 전원 소요시간 25분 단축, 골든타임 내 초동처치율 90% 달성
+                        산출 근거 없음 (목표치는 사업 설계 시 직접 설정)
                       </span>
                     </div>
                   </div>
@@ -1027,7 +1072,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                         Option C
                       </span>
                       <span className="text-[10px] font-black text-emerald-800 dark:text-emerald-200 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md">
-                        우선순위 3위 (모자·소아 특화)
+                        {selected_region?.분만취약지역_여부 ? '분만 취약 지역 해당' : '유형 예시'}
                       </span>
                     </div>
                     {selected_option === 'C' ? (
@@ -1056,19 +1101,19 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">주요 문제: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        분만 60분 미도달율 76.8% (분만취약지 A등급) 및 관외 원정출산 88.6%
+                        {selected_region ? `분만 60분 미도달 ${selected_region.분만_60분_미도달_인구비율}%, 분만 관내이용률 ${selected_region.관내_분만율}%` : '지역을 선택하세요'}
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">핵심 근거: </strong>
                       <span className="text-slate-600 dark:text-slate-400">
-                        관내 산부인과 0개소, 야간 소아 달빛어린이병원 부재로 심야 50km 이상 원정
+                        {region_resources ? `관내 분만 가능 기관 ${region_resources.분만기관_수}곳, 달빛어린이병원 ${region_resources.달빛어린이병원_수}곳` : '-'}
                       </span>
                     </div>
                     <div>
                       <strong className="text-slate-800 dark:text-slate-200">예상 효과: </strong>
                       <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                        산전진찰 관내 이용률 70% 달성, 소아 야간진료 만족도 90% 이상 확보
+                        산출 근거 없음 (목표치는 사업 설계 시 직접 설정)
                       </span>
                     </div>
                   </div>
@@ -1187,7 +1232,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     3. 정책 자료 및 법적 근거
                   </span>
                   <div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-                    <div>• 2026 보건복지부 취약지 고시 (국비 70% 지원 대상)</div>
+                    <div>• 보건복지부 고시 「응급의료분야 의료취약지 지정」 (제2024-261호)</div>
                     <div>• 제2차 공공보건의료 기본계획 (책임의료 협의체)</div>
                     <div>• 지방자치단체 보건의료계획 표준 양식 준수</div>
                   </div>
@@ -1212,8 +1257,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                     </button>
                   </div>
                   <p className="text-[11px] text-slate-700 dark:text-slate-300 leading-relaxed">
-                    {정책_근거_데이터_맵[selected_option]?.AI종합판단.요약 ||
-                      '수집된 지표 간 다변량 회귀 및 시계열 결합 추론 결과입니다.'}
+                    {정책_근거_생성(selected_option, selected_region).AI종합판단.요약}
                   </p>
                   <button
                     type="button"

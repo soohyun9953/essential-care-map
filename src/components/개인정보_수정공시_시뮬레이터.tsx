@@ -78,7 +78,7 @@ export const 개인정보_수정공시_시뮬레이터: React.FC = () => {
       수정공시_단계: 'STEP 2 정정 자료 및 사유서 회신',
       담당자성명: managerName,
       연락처: managerPhone,
-      오류의심_지표목록: selectedHospitalData.주요_오류_유형,
+      오류의심_지표목록: ['(NMC 검증결과 통보 자료의 기관별 오류 항목을 기재)'],
       오류발생_원인분석: errorCause,
       정정_내용및결과: amendmentDetail,
       재발방지대책: preventionPlan,
@@ -141,7 +141,7 @@ export const 개인정보_수정공시_시뮬레이터: React.FC = () => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-[10px] font-black bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-                  실증 사례: 1,932건 중 34건 유출 적발
+                  검증 결과: 수시공시 1,932건 중 오류의심 34건 (개인정보 포함·문서형식 오류 등)
                 </span>
                 <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
                   수시공시 첨부문서 PII 안전 점검
@@ -391,15 +391,9 @@ export const 개인정보_수정공시_시뮬레이터: React.FC = () => {
                   </select>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 space-y-1">
-                  <span className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
-                    국립중앙의료원 검증 도출 오류 지표:
-                  </span>
-                  <ul className="text-[11px] text-rose-700 dark:text-rose-400 list-disc list-inside space-y-0.5">
-                    {selectedHospitalData.주요_오류_유형.map((err, i) => (
-                      <li key={i}>{err}</li>
-                    ))}
-                  </ul>
+                <div className="p-3 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 space-y-1 text-[11px] text-rose-800 dark:text-rose-300">
+                  <span className="font-bold">국립중앙의료원 검증 결과 (업무보고 붙임 2):</span>{' '}
+                  오류의심 {selectedHospitalData.오류의심_건수}건 · 검토요청 {selectedHospitalData.검토요청_건수}건. 세부 오류 항목은 NMC 통보 자료를 확인하세요.
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">

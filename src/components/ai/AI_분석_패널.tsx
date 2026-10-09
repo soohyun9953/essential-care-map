@@ -168,7 +168,7 @@ function Step4_RAG({ show_detail, on_toggle }: { show_detail: boolean; on_toggle
               </div>
             </div>
             <div className="text-xs font-black text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full shrink-0 ml-2">
-              관련도 {doc.관련도_퍼센트}%
+              관련도 {doc.관련도_퍼센트}% (예시)
             </div>
           </div>
         ))}
@@ -367,7 +367,7 @@ function AI_최종_결과({ on_restart, on_show_arch }: { on_restart: () => void
         <div>
           <div className="text-sm font-black text-emerald-700 dark:text-emerald-300">AI 분석 완료</div>
           <div className="text-xs text-emerald-600 dark:text-emerald-400">
-            총 8단계 처리 완료 · 참고 문서 {결과.참고_문서_수}건 · 분석 신뢰도 {결과.분석_신뢰도}%
+            시연 시나리오 · 참고 문서 {결과.참고_문서_수}건 (영월군 예시, 실제 AI 호출 아님)
           </div>
         </div>
       </div>
@@ -694,6 +694,15 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                   placeholder="분석할 질문을 입력하세요."
                 />
                 <p className="text-[11px] text-slate-400">기본 질문을 그대로 사용하거나, 직접 수정하여 분석할 수 있습니다.</p>
+              </div>
+
+              {/* 시연 안내 */}
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs font-bold text-amber-900 dark:text-amber-200">
+                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>
+                  시연용 화면입니다. 실제 AI를 호출하지 않으며, 선택 지역과 관계없이 영월군 예시 결과(헬스맵 2024·E-Gen 실제 값)를 보여줍니다.
+                  관련도 점수와 처리 단계는 예시입니다.
+                </span>
               </div>
 
               {/* 분석 대상 지역 표시 */}

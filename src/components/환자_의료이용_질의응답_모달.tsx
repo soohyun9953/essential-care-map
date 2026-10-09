@@ -33,9 +33,9 @@ interface 환자_의료이용_질의응답_모달_속성 {
 }
 
 const PRESET_QUERIES = [
-  '중진료권별 유출 Top10과 유출 인구수 보여줘.',
+  '중진료권별 유출 Top10과 유출 재원일수 보여줘.',
   '타지역 환자가 가장 많이 유입되는 중진료권 Top10 보여줘.',
-  '전국 17개 시도별 환자 유출률 및 유출 인구수 순위 알려줘.',
+  '전국 17개 시도별 환자 유출률 순위 알려줘.',
   '전국 시군구 중 환자 관외 유출률이 가장 높은 Top10 보여줘.',
   '서울특별시 종로구 환자 의료이용 유출입 현황 분석해줘.',
 ];
@@ -43,7 +43,7 @@ const PRESET_QUERIES = [
 export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이용_질의응답_모달_속성> = ({
   is_open,
   on_close,
-  initial_query = '중진료권별 유출 Top10과 유출 인구수 보여줘.',
+  initial_query = '중진료권별 유출 Top10과 유출 재원일수 보여줘.',
   selected_sgg_name,
 }) => {
   const [query_input, set_query_input] = useState(initial_query);
@@ -55,7 +55,7 @@ export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이�
   // 모달 열릴 때 초기 질의 실행
   useEffect(() => {
     if (is_open) {
-      const q = initial_query || '중진료권별 유출 Top10과 유출 인구수 보여줘.';
+      const q = initial_query || '중진료권별 유출 Top10과 유출 재원일수 보여줘.';
       set_query_input(q);
       execute_query(q);
       setTimeout(() => input_ref.current?.focus(), 100);
@@ -158,7 +158,7 @@ export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이�
                 type="text"
                 value={query_input}
                 onChange={(e) => set_query_input(e.target.value)}
-                placeholder="질문을 입력하세요 (예: 중진료권별 유출 Top10과 유출 인구수 보여줘.)"
+                placeholder="질문을 입력하세요 (예: 중진료권별 유출 Top10과 유출 재원일수 보여줘.)"
                 className="w-full pl-12 pr-28 py-3.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-inner"
               />
               <button

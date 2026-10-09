@@ -294,7 +294,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>환자(5개), 의료진(5개), 병원 시스템(5개) 15개 표준 변이 사유 DB</li>
                     <li>10대 대표 질환군별 가변 점유율(평균 약 환자 43%, 의료진 32%, 시스템 25%)</li>
-                    <li>비CP vs CP표준 vs 이탈군 4단 정밀 대조 및 재원일수 단축(-1.8일) 통계</li>
+                    <li>비CP vs CP표준 vs 이탈군 대조 및 재원일수 단축 효과 계산 (입력값 기준)</li>
                     <li>병상 회전 신규 수익 창출 및 Outlier 삭감 예방 ROI 알고리즘</li>
                   </ul>
                 </div>
@@ -375,7 +375,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>1.0% 정책가산율:</strong> 의료의 질 영역(9.5%) 중 CP 운영 배점 최대 1.0% 정책가산 부여.<br />
-                    • <strong>추가 재정 지원 공식:</strong> 연간 신포괄 진료비 × (가산율 / 100). (예: 연 250억 원 × 1.0% = 연 2억 5,000만 원 추가 재정 확보).<br />
+                    • <strong>추가 재정 지원 공식:</strong> 연간 신포괄 진료비 × (가산율 / 100). (계산 예시: 연 250억 원 × 1.0% = 연 2억 5,000만 원, 가산율 기준은 원문 미확인).<br />
                     • <strong>K-DRG 정상군 관리:</strong> 기준 재원일수 초과 시 정액수가 삭감 및 비포괄 전환 방지 체계.
                   </p>
                 </div>
@@ -394,7 +394,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>㉠ 개발 체계 (50점):</strong> 16개 공문서 점검 (300병상 초과 전담인력 1명 필수, 유형별 Branch CP 개발, CP위원회 회의록 등).<br />
                     • <strong>㉡ 적용 및 운영 (50점):</strong> 병상 규모별 최소 운영(20점) + 질환별 적용(10점) + 관리율(5점, 85% 이상) + 5대 모니터링(15점).<br />
-                    • <strong>신포괄 연계 득점 구간:</strong> 90점 이상 ➔ 1.0%, 80~89점 ➔ 0.8%, 70~79점 ➔ 0.6%, 60~69점 ➔ 0.4%, 60점 미만 ➔ 0.0%.
+                    • <strong>신포괄 연계 득점 구간:</strong> 90점 이상 ➔ 1.0%, 80~89점 ➔ 0.8%, 70~79점 ➔ 0.6%, 60~69점 ➔ 0.4%, 60점 미만 ➔ 0.0%.<br />
+                    <span className="text-amber-700 dark:text-amber-400">※ 배점 구조와 점수별 가산율은 공개 자료에서 원문을 확인하지 못함. 인용 전 해당 연도 편람·지침 확인 필요.</span>
                   </p>
                 </div>
 
@@ -505,7 +506,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     연간 추가 수가 = 연간 신포괄 진료비 × (정책가산율 / 100)
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    계산 예시: 연간 진료비 250억 원 × 정책가산율 1.0% = <strong>연 2억 5,000만 원</strong>
+                    계산 예시: 연간 진료비 250억 원 × 정책가산율 1.0% = <strong>연 2억 5,000만 원</strong> (가산율 표는 원문 미확인)
                   </p>
                 </div>
 

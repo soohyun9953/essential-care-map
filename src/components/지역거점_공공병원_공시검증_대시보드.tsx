@@ -37,7 +37,6 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
   const [activeTab, setActiveTab] = useState<'hospitals' | 'formulas' | 'pii_process'>('hospitals');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSido, setSelectedSido] = useState('전체');
-  const [selectedGrade, setSelectedGrade] = useState<'전체' | '우수' | '양호' | '보통' | '중점관리'>('전체');
   const [sortOrder, setSortOrder] = useState<'suspect_desc' | 'suspect_asc' | 'name_asc'>('suspect_desc');
   const [selectedHospital, setSelectedHospital] = useState<공공병원_공시검증_기관_데이터 | null>(null);
 
@@ -53,8 +52,7 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
       .filter((h) => {
         const matchName = h.기관명.toLowerCase().includes(searchTerm.toLowerCase());
         const matchSido = selectedSido === '전체' || h.시도 === selectedSido;
-        const matchGrade = selectedGrade === '전체' || h.품질등급 === selectedGrade;
-        return matchName && matchSido && matchGrade;
+        return matchName && matchSido;
       })
       .sort((a, b) => {
         if (sortOrder === 'suspect_desc') {
@@ -65,7 +63,7 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
         }
         return a.기관명.localeCompare(b.기관명, 'ko');
       });
-  }, [searchTerm, selectedSido, selectedGrade, sortOrder]);
+  }, [searchTerm, selectedSido, sortOrder]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -181,7 +179,7 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
             <span className="text-xs text-blue-800 dark:text-blue-300 font-bold">인력오류 급감</span>
           </div>
           <p className="text-[11px] text-blue-700 dark:text-blue-400">
-            사전예방 총괄검증 도입 후 242건 ➔ 119건으로 감소
+            인력항목: 이전 5개년 연평균 242건 ➔ 2025년 119건
           </p>
         </div>
       </div>
@@ -216,19 +214,6 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
                     시도: {s}
                   </option>
                 ))}
-              </select>
-
-              {/* 품질등급 필터 */}
-              <select
-                value={selectedGrade}
-                onChange={(e) => setSelectedGrade(e.target.value as any)}
-                className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
-              >
-                <option value="전체">등급: 전체</option>
-                <option value="중점관리">🚨 중점관리 (오류 8건 이상)</option>
-                <option value="보통">⚠️ 보통 (오류 6~7건)</option>
-                <option value="양호">✓ 양호 (오류 4~5건)</option>
-                <option value="우수">⭐ 우수 (오류 3건 이하)</option>
               </select>
 
               {/* 정렬 순서 */}
@@ -270,8 +255,6 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
                       <span className="text-amber-600 dark:text-amber-400 font-black">❷ 검토요청(소명)</span>
                     </th>
                     <th className="py-3 px-4 text-center">총 검증건수</th>
-                    <th className="py-3 px-4 text-center">데이터 품질등급</th>
-                    <th className="py-3 px-4">주요 검출 유형</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -316,33 +299,6 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
                       </td>
                       <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-800 dark:text-slate-200">
                         {hospital.총_점검_건수}건
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold ${
-                            hospital.품질등급 === '중점관리'
-                              ? 'bg-red-500 text-white'
-                              : hospital.품질등급 === '보통'
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : hospital.품질등급 === '양호'
-                              ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                              : 'bg-emerald-500 text-white'
-                          }`}
-                        >
-                          {hospital.품질등급}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {hospital.주요_오류_유형.map((err, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
-                            >
-                              {err}
-                            </span>
-                          ))}
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -448,8 +404,8 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
             </div>
             <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-slate-300">
               수시공시 항목 1,932건 검토 결과, 이사회 회의록·사업계획서·감면자료 등 첨부문서 내에서{' '}
-              <strong className="text-rose-600 dark:text-rose-400">환자 병록번호, 성명, 소속, 주소 노출 34건(오류율 1.76%)</strong>이
-              적발되어 즉각 비식별화 및 재공시 조치가 취해졌습니다.
+              <strong className="text-rose-600 dark:text-rose-400">오류의심 34건(오류율 1.76%)</strong>이 확인되었습니다. 여기에는 개인정보(이름·병록번호·소속·주소 등)가 포함된 첨부파일 공시와 암호화로 열람할 수 없는 문서 등이 포함되며, 개인정보 포함 문서는
+              대국민공시 페이지에서 삭제 후 비식별화하여 재공시하도록 요구했습니다.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-1">
               <div className="p-3 bg-white/70 dark:bg-slate-900/60 rounded-xl border border-amber-200 dark:border-amber-800">
@@ -546,19 +502,9 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
               </div>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                주요 도출 오류 및 검토 항목:
-              </span>
-              <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
-                {selectedHospital.주요_오류_유형.map((err, i) => (
-                  <div key={i} className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                    <span>{err}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <p className="text-[11px] text-slate-500">
+              기관별 세부 오류 항목은 업무보고 원문에 없어 표시하지 않습니다. NMC 검증결과 통보 자료를 확인하세요.
+            </p>
 
             <div className="p-3 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-900 dark:text-blue-300">
               💡 2026 수정공시 일정에 따라 해당 기관은 소명사유서 제출 및 시스템 직접 수정을 완료해야 합니다.

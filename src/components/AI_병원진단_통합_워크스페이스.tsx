@@ -59,6 +59,7 @@ import {
   전국_41개_공공병원_AI_프로필,
   get_공공병원_ai_프로필,
   get_전국_공공병원_AI_종합통계,
+  AI진단_가상데이터_안내,
 } from '@/lib/공공병원_AI진단_데이터셋';
 
 export type AI_병원진단_서브탭 =
@@ -166,6 +167,11 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
 
   return (
     <div className="w-full space-y-6 pb-16">
+      {/* 가상 시연 데이터 안내 */}
+      <div className="flex items-start gap-2 p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs font-bold text-amber-900 dark:text-amber-200">
+        <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+        <span>{AI진단_가상데이터_안내}</span>
+      </div>
       {/* ==================================================================== */}
       {/* 1. 상단 병원 선택 바 & 컨텍스트 헤더 */}
       {/* ==================================================================== */}
@@ -1039,7 +1045,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                 </div>
 
                 <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                  * 본 시뮬레이션 수치는 국립중앙의료원(NMC) 표준 인력-환자 처리량 회귀분석 모델과 과거 5개년 공공병원 실적 DB를 기반으로 실시간 추정됩니다.
+                  * 시뮬레이션 수치는 시연용 단순 계산식으로 만든 값이며, 실제 실적 자료나 검증된 예측 모델에 근거하지 않습니다.
                 </div>
               </div>
             </div>
@@ -1170,7 +1176,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
               </div>
 
               <span className="px-2.5 py-1 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-bold text-xs">
-                실시간 EMR/심평원 연동 모니터링
+                가상 시연 데이터 (실시간 연동 아님)
               </span>
             </div>
 
@@ -1317,7 +1323,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              본 시스템의 AI 진단 및 개선 대안은 환각(Hallucination)을 배제하기 위해 보건복지부, 국립중앙의료원(NMC), 심평원 등 5대 국가 공공보건의료 데이터베이스의 실제 결산·공시 지표를 근거로 산출됩니다.
+              현재 표시되는 진단 점수와 근거는 가상 시연 데이터입니다. 아래 「연계 예정」 자료를 실제로 연계해야 기관별 실적에 근거한 진단이 됩니다.
             </p>
 
             <div className="space-y-3">

@@ -86,7 +86,7 @@ export const 환자_유출입_상세분석_카드: React.FC<환자_유출입_상
         {on_open_qa_modal && (
           <button
             type="button"
-            onClick={() => on_open_qa_modal(`중진료권별 유출 Top10과 유출 인구수 보여줘.`)}
+            onClick={() => on_open_qa_modal(`중진료권별 유출 Top10과 유출 재원일수 보여줘.`)}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 shadow-xs hover:shadow transition-all shrink-0 cursor-pointer"
             title="자연어 질의로 전국 권역·시도·시군구 의료이용 유출입 분석"
           >

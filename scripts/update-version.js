@@ -1,6 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
+// 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
+const SEMVER = '1.15.0';
+
 // 한국 시간 기준 YYYY-MM-DD HH:mm 생성
 const now = new Date();
 const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -32,8 +35,8 @@ export const PLATFORM_VERSION = {
   date: '${dateStr}',
   time: '${timeStr}',
   deployedAt: '${fullLabel}',
-  semver: '1.15.0',
-  fullLabel: '${fullLabel}',
+  semver: '${SEMVER}',
+  fullLabel: '${fullLabel} · v${SEMVER}',
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
@@ -42,4 +45,4 @@ export const PLATFORM_VERSION = {
 `;
 
 fs.writeFileSync(versionFilePath, versionContent, 'utf8');
-console.log(`[Version Update] 배포시간 갱신 완료: ${fullLabel} (${packageVersion})`);
+console.log(`[Version Update] 배포시간 갱신 완료: ${fullLabel} · v${SEMVER} (${packageVersion})`);

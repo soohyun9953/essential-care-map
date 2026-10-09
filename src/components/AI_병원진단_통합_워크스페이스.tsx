@@ -216,9 +216,9 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   <MapPin className="w-3.5 h-3.5 text-blue-500" />
                   <span>{currentHospital.시도명} {currentHospital.시군구명}</span>
                   <span className="text-slate-300 dark:text-slate-600">•</span>
-                  <span>허가병상 <strong>{currentHospital.허가병상}</strong>개</span>
+                  <span>허가병상 <strong>{currentHospital.허가병상}</strong>개{currentHospital.실데이터.병상수 === null && ' (시연값)'}</span>
                   <span className="text-slate-300 dark:text-slate-600">•</span>
-                  <span>전문의 <strong>{currentHospital.전문의수}</strong>명</span>
+                  <span>전문의 <strong>{currentHospital.전문의수}</strong>명 (시연값)</span>
                 </div>
               </div>
             </div>
@@ -258,14 +258,23 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
               배후지역 Context 환경:
             </span>
             <span>배후인구 {currentHospital.지역컨텍스트.배후인구.toLocaleString()}명</span>
-            <span>• 고령화율 <strong className="text-rose-600 dark:text-rose-400">{currentHospital.지역컨텍스트.고령화율_pct}%</strong></span>
-            <span>• 응급취약여부 {currentHospital.지역컨텍스트.응급의료취약여부 ? '⚠️ 취약지' : '정상'}</span>
-            <span>• 분만취약지 {currentHospital.지역컨텍스트.분만취약지등급}</span>
-            <span>• 관내 중증환자 유출률 <strong className="text-amber-600 dark:text-amber-400">{currentHospital.지역컨텍스트.관내입원환자유출률_pct}%</strong></span>
+            <span>• 고령화율 <strong className="text-slate-400">{currentHospital.지역컨텍스트.고령화율_pct === null ? '자료 없음' : `${currentHospital.지역컨텍스트.고령화율_pct}%`}</strong></span>
+            <span>• 응급 {currentHospital.지역컨텍스트.응급의료취약여부 ? '⚠️ 취약 (60분 미도달 ≥ 30%)' : '기준 미해당'}</span>
+            <span>• 분만취약지 기준 {currentHospital.지역컨텍스트.분만취약지등급}</span>
+            <span>• 입원 유출률 <strong className="text-amber-600 dark:text-amber-400">{currentHospital.지역컨텍스트.관내입원환자유출률_pct === null ? '자료 없음' : `${currentHospital.지역컨텍스트.관내입원환자유출률_pct}%`}</strong></span>
           </div>
 
-          <div className="text-[11px] font-semibold text-slate-400">
-            * 지역 데이터는 병원 AI 의사결정을 위한 외부 거시 환경(Context)으로 결합됩니다.
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold">
+              응급: {currentHospital.실데이터.응급의료기관_분류 ?? '지정 없음'}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold">
+              분만: {currentHospital.실데이터.분만가능 ? `가능${currentHospital.실데이터.야간분만 ? ' (야간 포함)' : ''}` : '청구 실적 없음'}
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold">
+              달빛어린이병원: {currentHospital.실데이터.달빛어린이병원 ? '지정' : '미지정'}
+            </span>
+            <span className="text-slate-400">출처: 헬스맵 2024 · E-Gen · 심평원 · NMC · 2024 환자 유출입</span>
           </div>
         </div>
       </div>
@@ -802,10 +811,13 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
               <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
               <div className="space-y-1 text-xs text-amber-900 dark:text-amber-200">
                 <h4 className="font-bold text-amber-950 dark:text-amber-100">
-                  AI 위험구간 사전 경보: 2028년부터 응급의료 수요가 공급능력을 초과할 가능성 84.7%
+                  위험구간 표시 (시연 예측 모델)
                 </h4>
                 <p className="leading-relaxed">
-                  영월 및 인근 폐광지역 초고령화(고령화율 36% 돌파)로 인한 심뇌혈관 급성기 환자 폭증이 예상됩니다. 현 인력 수준(전문의 19명) 유지 시 2028년부터 야간 응급실 수용 거부율이 15%를 넘어설 것으로 예측되므로, 2026~2027년 내 선제적 충원 및 개선사업 추진이 불가피합니다.
+                  위 수요예측은 병상 수에 고정 증가율을 곱한 시연용 계산이며 실제 수요 추계가 아닙니다.
+                  {currentHospital.시군구명} 배후 지역의 실제 현황: 응급 {currentHospital.지역컨텍스트.응급의료취약여부 ? '취약 기준 해당' : '기준 미해당'},
+                  분만취약지 기준 {currentHospital.지역컨텍스트.분만취약지등급},
+                  입원 유출률 {currentHospital.지역컨텍스트.관내입원환자유출률_pct === null ? '자료 없음' : `${currentHospital.지역컨텍스트.관내입원환자유출률_pct}%`} (헬스맵 2024 · 2024 환자 유출입).
                 </p>
               </div>
             </div>

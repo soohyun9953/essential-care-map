@@ -114,13 +114,13 @@ export interface 성과관리_KPI_실적 {
 
 export interface 병원_지역_Context {
   소재지: string;
-  배후인구: number;
-  고령화율_pct: number;
-  응급의료취약여부: boolean;
-  분만취약지등급: string;
-  관내외래환자유출률_pct: number;
-  관내입원환자유출률_pct: number;
-  인근경쟁협력기관수: number;
+  배후인구: number; // 소재 시군구 인구 (헬스맵 2024)
+  고령화율_pct: number | null; // 내장 자료 없음 → null
+  응급의료취약여부: boolean; // 소재 시군구의 공식 기준 판정
+  분만취약지등급: string; // 'A등급' | 'B등급' | '해당 없음' (공식 기준 판정)
+  관내외래환자유출률_pct: number | null; // 내장 자료 없음 → null
+  관내입원환자유출률_pct: number | null; // 2024 입원 재원일수 기준
+  인근경쟁협력기관수: number | null; // 내장 자료 없음 → null
   주요유출지역: string[];
 }
 
@@ -143,4 +143,6 @@ export interface 공공병원_종합_AI_프로필 {
   실행계획: 실행계획_과제;
   성과관리목록: 성과관리_KPI_실적[];
   지역컨텍스트: 병원_지역_Context;
+  /** 내장 실데이터로 연결된 값 (병상·지정 현황·배후 시군구 판정 등) */
+  실데이터: import('@/lib/공공병원_실데이터_연계').병원_실데이터;
 }

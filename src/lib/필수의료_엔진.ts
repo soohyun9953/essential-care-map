@@ -98,9 +98,14 @@ export class 필수의료_진단_엔진 {
     if (is_delivery_vulnerable) vulnerable_count += 1;
     if (is_pediatric_vulnerable) vulnerable_count += 1;
 
-    // 5. 종합 취약도 점수 계산 (0~100점, 높을수록 취약)
-    const emergency_score = Math.min(100, Math.max(0, raw_data.응급_60분_미도달_인구비율 * 0.7 + (100 - raw_data.관내_응급_의료이용률) * 0.3));
-    const delivery_score = Math.min(100, Math.max(0, raw_data.분만_60분_미도달_인구비율 * 0.6 + (100 - raw_data.관내_분만율) * 0.4));
+    // 5. 종합 취약도 점수 계산 (0~100점, 높을수록 취약) — 판정과 같은 공식 지표만 사용 (2026-10-09 결정)
+    //    응급 = 권역응급 60분 미도달률, 분만 = (60분 미도달률 + (100 − 60분 내 분만의료 이용률)) / 2 (이용률 자료 없으면 미도달률)
+    //    관내이용률(RI)은 점수에 쓰지 않고 참고 지표로만 표시
+    const emergency_score = Math.min(100, Math.max(0, raw_data.응급_60분_미도달_인구비율));
+    const delivery_score = Math.min(
+      100,
+      Math.max(0, 분만_TRI === null ? raw_data.분만_60분_미도달_인구비율 : (raw_data.분만_60분_미도달_인구비율 + (100 - 분만_TRI)) / 2)
+    );
     // 소아 자료가 없으면 응급·분만 가중치(0.4 : 0.35)만으로 재정규화
     const total_vulnerability_score = 소아_판정_가능
       ? Math.round(

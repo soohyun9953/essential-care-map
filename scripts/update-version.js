@@ -32,7 +32,7 @@ export const PLATFORM_VERSION = {
   date: '${dateStr}',
   time: '${timeStr}',
   deployedAt: '${fullLabel}',
-  semver: '1.14.0',
+  semver: '1.15.0',
   fullLabel: '${fullLabel}',
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',

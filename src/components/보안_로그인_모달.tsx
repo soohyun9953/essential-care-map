@@ -13,10 +13,6 @@ import {
   LogOut,
   Hospital,
 } from 'lucide-react';
-import {
-  verify_site_password,
-  set_site_auth_status,
-} from '@/lib/보안_인증_저장소';
 
 interface 보안_로그인_모달_속성 {
   isOpen: boolean;
@@ -37,6 +33,7 @@ export const 보안_로그인_모달: React.FC<보안_로그인_모달_속성> =
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccessAnim, setIsSuccessAnim] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -53,8 +50,10 @@ export const 보안_로그인_모달: React.FC<보안_로그인_모달_속성> =
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e?: React.FormEvent) => {
+  // 비밀번호 검증은 서버(/api/auth/login)에서 수행하고, 성공 시 서버가 HttpOnly 인증 쿠키를 발급한다
+  const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isSubmitting) return;
     setErrorMessage('');
 
     if (!password) {
@@ -63,25 +62,40 @@ export const 보안_로그인_모달: React.FC<보안_로그인_모달_속성> =
       return;
     }
 
-    const isValid = verify_site_password(password);
-    if (isValid) {
-      setIsSuccessAnim(true);
-      set_site_auth_status(true);
-      setTimeout(() => {
-        onAuthSuccess();
-        onClose();
-      }, 600);
-    } else {
-      setErrorMessage('패스워드가 일치하지 않습니다. 다시 확인해주세요.');
-      setPassword('');
-      inputRef.current?.focus();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setIsSuccessAnim(true);
+        setTimeout(() => {
+          onAuthSuccess();
+          onClose();
+        }, 600);
+        return;
+      }
+      setErrorMessage(data.message || '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } catch {
+      setErrorMessage('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
     }
+    setPassword('');
+    inputRef.current?.focus();
   };
 
-  const handleLogoutClick = () => {
-    set_site_auth_status(false);
-    onLogout();
-    onClose();
+  const handleLogoutClick = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } finally {
+      onLogout();
+      onClose();
+      window.location.replace('/login');
+    }
   };
 
   return (
@@ -227,7 +241,7 @@ export const 보안_로그인_모달: React.FC<보안_로그인_모달_속성> =
               {/* 제출 버튼 */}
               <button
                 type="submit"
-                disabled={isSuccessAnim}
+                disabled={isSuccessAnim || isSubmitting}
                 className="w-full py-3.5 px-5 rounded-2xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-bold shadow-apple-sm transition active:scale-95 disabled:opacity-70 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSuccessAnim ? (

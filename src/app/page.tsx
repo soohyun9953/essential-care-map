@@ -74,7 +74,6 @@ import { ISP_과제_드로어 } from '@/components/ISP_과제_드로어';
 import { Lock, Unlock, ShieldAlert } from 'lucide-react';
 
 import { API키_불러오기 } from '@/lib/API키_저장소';
-import { get_site_auth_status, set_site_auth_status } from '@/lib/보안_인증_저장소';
 
 export default function Home() {
   // 5대 Global Workspace 상태 (기본: 'home')
@@ -121,13 +120,15 @@ export default function Home() {
   // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화 + 보안 인증 상태 확인)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 보안 로그인 인증 여부 확인
-      const is_auth = get_site_auth_status();
-      set_is_authenticated(is_auth);
-      if (!is_auth) {
-        set_is_auth_modal_open(true);
-      }
-      set_is_auth_initialized(true);
+      // 보안 로그인 인증 여부 확인 (서버가 HttpOnly 쿠키를 검증; 미인증 요청은 미들웨어가 /login 으로 보냄)
+      fetch('/api/auth/status')
+        .then((r) => r.json())
+        .then((d) => {
+          set_is_authenticated(Boolean(d.authenticated));
+          if (!d.authenticated) set_is_auth_modal_open(true);
+        })
+        .catch(() => set_is_auth_modal_open(true))
+        .finally(() => set_is_auth_initialized(true));
 
       const stored_gemini = API키_불러오기('google_gemini_api_key');
       const stored_data_go_kr = API키_불러오기('data_go_kr_api_key');

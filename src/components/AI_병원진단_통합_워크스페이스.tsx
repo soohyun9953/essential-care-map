@@ -66,7 +66,7 @@ export type AI_병원진단_서브탭 =
   | 'benchmark'     // 2. 공공병원 비교분석 (Benchmarking)
   | 'forecast'      // 3. AI 수요·성과 예측
   | 'simulation'    // 4. AI 개선대안 & 시뮬레이션 (Human-in-the-loop)
-  | 'execution'     // 5. 실행계획 (ISP 사업계획서 연동)
+  | 'execution'     // 5. 세부 추진계획
   | 'kpi'           // 6. 성과관리 & 환류
   | 'national_view';// 7. 전국 41개 공공병원 통합현황
 
@@ -331,7 +331,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
           }`}
         >
           <span className="w-4 h-4 rounded-full bg-amber-100 dark:bg-amber-900/60 text-amber-600 text-[10px] flex items-center justify-center font-black">5</span>
-          <span>⑤ 실행계획 (ISP 사업계획)</span>
+          <span>⑤ 세부 추진계획</span>
         </button>
 
         <button
@@ -799,7 +799,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   AI 위험구간 사전 경보: 2028년부터 응급의료 수요가 공급능력을 초과할 가능성 84.7%
                 </h4>
                 <p className="leading-relaxed">
-                  영월 및 인근 폐광지역 초고령화(고령화율 36% 돌파)로 인한 심뇌혈관 급성기 환자 폭증이 예상됩니다. 현 인력 수준(전문의 19명) 유지 시 2028년부터 야간 응급실 수용 거부율이 15%를 넘어설 것으로 예측되므로, 2026~2027년 내 선제적 충원 ISP 집행이 불가피합니다.
+                  영월 및 인근 폐광지역 초고령화(고령화율 36% 돌파)로 인한 심뇌혈관 급성기 환자 폭증이 예상됩니다. 현 인력 수준(전문의 19명) 유지 시 2028년부터 야간 응급실 수용 거부율이 15%를 넘어설 것으로 예측되므로, 2026~2027년 내 선제적 충원 및 개선사업 추진이 불가피합니다.
                 </p>
               </div>
             </div>
@@ -1048,7 +1048,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
       )}
 
       {/* ==================================================================== */}
-      {/* 7. 서브탭 5: 실행계획 (ISP 사업계획서 자동 연결) */}
+      {/* 7. 서브탭 5: 세부 추진계획 */}
       {/* ==================================================================== */}
       {activeSubtab === 'execution' && (
         <div className="space-y-6">
@@ -1056,7 +1056,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
                 <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider">
-                  ISP Execution RoadMap (2026-2027)
+                  Action Plan RoadMap (2026-2027)
                 </span>
                 <h3 className="text-base font-extrabold text-slate-900 dark:text-white">
                   {currentHospital.실행계획.과제명}
@@ -1165,7 +1165,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   <span>성과관리 및 모니터링 (KPI 추적 & 환류)</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  ISP 사업 착수 이후 목표 대비 현재 실적 달성률을 추적하고, 미달성 지표에 대해 AI가 추가 개선방안을 제시합니다.
+                  개선 사업 착수 이후 목표 대비 현재 실적 달성률을 추적하고, 미달성 지표에 대해 AI가 추가 개선방안을 제시합니다.
                 </p>
               </div>
 

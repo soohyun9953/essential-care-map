@@ -281,10 +281,6 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                       : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
                     }`}
                 >
-                  {/* 상단 ISP 개선과제 태그 뱃지 */}
-                  <div className="w-full flex justify-center">
-                    <ISP_과제_뱃지 taskId={step.taskId} customLabel={step.taskLabel} />
-                  </div>
 
                   {/* 단계 번호 원 */}
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all

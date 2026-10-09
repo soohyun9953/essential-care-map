@@ -475,7 +475,7 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-base font-black text-slate-900 dark:text-white">AI 처리 구조</h3>
-          <p className="text-xs text-slate-500 mt-0.5">ISP 제안 AI 기반 공공의료 정보시스템 아키텍처</p>
+          <p className="text-xs text-slate-500 mt-0.5">AI 기반 공공의료 정보시스템 아키텍처</p>
         </div>
         <button type="button" onClick={on_close} className="text-slate-400 hover:text-slate-600 cursor-pointer">
           <X className="w-4 h-4" />
@@ -483,50 +483,58 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
       </div>
 
       {/* 아키텍처 다이어그램 */}
-      <div className="p-4 rounded-2xl bg-slate-900 dark:bg-black border border-slate-700 text-[11px] space-y-3 font-mono text-center">
-        {/* 사용자 */}
-        <div className="px-4 py-2 rounded-xl bg-blue-900/50 border border-blue-700/50 text-blue-200">
+      <div className="p-5 rounded-2xl bg-slate-900/90 dark:bg-slate-950 border border-slate-700 shadow-lg text-xs space-y-3 font-sans text-center">
+        {/* 사용자 질문 */}
+        <div className="px-4 py-2.5 rounded-xl bg-blue-500/20 border-2 border-blue-400 text-blue-100 font-black text-sm shadow-xs">
           👤 사용자 질문
         </div>
-        <div className="text-slate-500">↓</div>
+        <div className="text-slate-300 font-black text-base leading-none">↓</div>
 
         {/* 질문 분석 */}
-        <div className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">
+        <div className="px-4 py-2.5 rounded-xl bg-indigo-500/25 border-2 border-indigo-400 text-indigo-100 font-black text-sm shadow-xs">
           🔍 질문 이해 · 의도 파악 엔진
         </div>
-        <div className="text-slate-500">↓</div>
+        <div className="text-slate-300 font-black text-base leading-none">↓</div>
 
         {/* 병렬 처리 영역 */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="p-2.5 rounded-xl bg-emerald-900/40 border border-emerald-700/50 text-emerald-200">
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-xl bg-emerald-500/25 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm shadow-xs leading-relaxed">
             🗄️ 공공의료<br/>데이터 검색
           </div>
-          <div className="p-2.5 rounded-xl bg-purple-900/40 border border-purple-700/50 text-purple-200">
+          <div className="p-3 rounded-xl bg-purple-500/25 border-2 border-purple-400 text-purple-100 font-black text-xs sm:text-sm shadow-xs leading-relaxed">
             📚 Vector DB<br/>RAG 검색
           </div>
         </div>
-        <div className="text-slate-500">↓ 병렬 처리 결과 통합</div>
 
-        {/* LLM */}
-        <div className="px-4 py-3 rounded-xl bg-amber-900/40 border border-amber-600/50 text-amber-200">
-          <Brain className="w-4 h-4 mx-auto mb-1 inline-block" /> <strong>LLM 종합 분석</strong><br/>
-          <span className="text-[10px] text-amber-300">데이터 + RAG Context + 질문 → 추론</span>
+        <div className="py-1">
+          <span className="inline-block px-3.5 py-1 rounded-full bg-slate-800 text-slate-200 font-extrabold text-[11px] border border-slate-600 shadow-xs">
+            ↓ 병렬 처리 결과 통합
+          </span>
         </div>
-        <div className="text-slate-500">↓</div>
 
-        {/* 검증 */}
-        <div className="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-slate-300">
+        {/* LLM 종합 분석 */}
+        <div className="px-4 py-3.5 rounded-xl bg-amber-500/30 border-2 border-amber-400 text-amber-50 font-black shadow-md ring-2 ring-amber-400/30">
+          <Brain className="w-5 h-5 mx-auto mb-1 text-amber-300 inline-block" />
+          <div className="text-sm sm:text-base font-black text-amber-200">LLM 종합 분석</div>
+          <div className="text-xs font-bold text-amber-100 mt-1">
+            데이터 + RAG Context + 질문 → 추론
+          </div>
+        </div>
+        <div className="text-slate-300 font-black text-base leading-none">↓</div>
+
+        {/* 근거 검증 */}
+        <div className="px-4 py-2.5 rounded-xl bg-teal-500/25 border-2 border-teal-400 text-teal-100 font-black text-sm shadow-xs">
           ✅ 근거 검증 · 출처 확인
         </div>
-        <div className="text-slate-500">↓</div>
+        <div className="text-slate-300 font-black text-base leading-none">↓</div>
 
         {/* 결과 */}
-        <div className="px-4 py-2 rounded-xl bg-red-900/40 border border-red-700/50 text-red-200">
+        <div className="px-4 py-2.5 rounded-xl bg-rose-500/30 border-2 border-rose-400 text-rose-50 font-black text-sm shadow-xs">
           📝 정책대안 생성 · 최종 결과
         </div>
 
         {/* MCP 확장 설명 */}
-        <div className="mt-3 p-2.5 rounded-xl bg-slate-800/50 border border-dashed border-slate-600 text-slate-400 text-[10px]">
+        <div className="mt-4 p-3 rounded-xl bg-slate-800/90 border-2 border-dashed border-slate-500 text-slate-200 text-xs font-bold leading-relaxed shadow-inner">
           🔌 MCP(Model Context Protocol) 확장 구조 — 외부 데이터베이스,<br/>
           공공데이터 포털, 병원 정보시스템과의 실시간 연동을 지원합니다.
         </div>

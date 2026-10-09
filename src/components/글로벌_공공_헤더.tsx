@@ -281,7 +281,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                   ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
               }`}
-              title="공공병원 AI 종합진단, 원인분석, 유사병원 Benchmarking, 미래예측, 시뮬레이션 및 ISP 실행계획"
+              title="공공병원 AI 종합진단, 원인분석, 유사병원 Benchmarking, 미래예측, 시뮬레이션 및 세부 실행계획"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>AI 병원진단·개선</span>
@@ -313,36 +313,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </button>
           </nav>
 
-          {/* 3. 우측: ISP 비교 토글 / 페르소나 셀렉터 / 데이터·사업가이드 / 테마 / 관리자 */}
+          {/* 3. 우측: 페르소나 셀렉터 / 데이터·사업가이드 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0">
-            {/* ISP 비교 토글 스위치 (As-Is vs To-Be) */}
-            <div className="hidden md:flex items-center p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setIspViewMode('as_is')}
-                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
-                  ispViewMode === 'as_is'
-                    ? 'bg-rose-600 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="과거 수기 행정 및 파편화 분석 비효율 모드"
-              >
-                과거 수작업 (As-Is)
-              </button>
-              <button
-                type="button"
-                onClick={() => setIspViewMode('to_be')}
-                className={`px-2.5 py-1 rounded-lg font-extrabold transition-all flex items-center gap-1 cursor-pointer ${
-                  ispViewMode === 'to_be'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-                title="AI 기반 자동화 및 원스톱 정책 의사결정 모드"
-              >
-                <span>AI 플랫폼 (To-Be)</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
-              </button>
-            </div>
 
             {/* 페르소나(역할별 뷰) 선택 드롭다운 */}
             <div className="relative" ref={persona_ref}>
@@ -679,17 +651,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           <span className="font-semibold text-slate-500 dark:text-slate-400 hidden md:inline">
             중점 지표: <strong className="text-slate-900 dark:text-white">{currentPersonaInfo.keyMetric}</strong>
           </span>
-          <button
-            type="button"
-            onClick={toggleIspViewMode}
-            className={`font-black underline underline-offset-2 cursor-pointer transition ${
-              ispViewMode === 'as_is'
-                ? 'text-rose-700 dark:text-rose-300 hover:text-rose-900'
-                : 'text-blue-600 dark:text-blue-400 hover:text-blue-800'
-            }`}
-          >
-            {ispViewMode === 'as_is' ? 'To-Be AI 플랫폼 복귀 ➔' : 'As-Is 수작업 비교 ➔'}
-          </button>
         </div>
       </div>
     </header>

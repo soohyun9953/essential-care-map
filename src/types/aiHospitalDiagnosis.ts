@@ -36,11 +36,33 @@ export interface AI_발견_이슈 {
 export interface 벤치마킹_지표 {
   지표명: string;
   우리병원: number;
-  유사병원: number;
-  전국평균: number;
-  상위병원: number;
+  유사병원: number; // 알리미 지표: 같은 유형 공시기관 중앙값
+  전국평균: number; // 알리미 지표: 공시기관 평균
+  상위병원: number; // 알리미 지표: 상위 25% 경계
   단위: string;
   격차설명: string;
+  출처: '알리미 공시' | '가상 시연값';
+}
+
+/** 지역거점공공병원 알리미 결산·인력 공시 요약 (실데이터) */
+export interface 알리미_경영공시_요약 {
+  알리미_기관명: string;
+  결산_기준일: string | null;
+  결산_제출일: string | null;
+  연도별: {
+    연도: number;
+    의료수익_억: number | null;
+    의료이익_억: number | null;
+    당기순이익_억: number | null;
+    의료이익률: number | null;
+    인건비율: number | null;
+    지원금_비율: number | null;
+    부채비율: number | null;
+    자본잠식: boolean | null;
+    의사직_현원: number | null;
+    간호직_현원: number | null;
+  }[];
+  재무건전성: { 연도: number; 점수: number; 구성: { 지표: string; 값: number; 백분위: number }[] } | null;
 }
 
 export interface 연도별_수요예측 {
@@ -132,8 +154,9 @@ export interface 공공병원_종합_AI_프로필 {
   유형: '지방의료원' | '적십자병원';
   설립연도: number;
   허가병상: number;
-  전문의수: number;
-  간호사수: number;
+  전문의수: number; // 알리미 공시가 있으면 의사직 현원
+  간호사수: number; // 알리미 공시가 있으면 간호직 현원
+  인력_출처: string; // 예: '알리미 2025 공시' (의사직·간호직 현원) / '시연값'
   진단지표: 공공병원_진단_지표점수;
   산출근거목록: 지표_산출_근거[];
   주요이슈목록: AI_발견_이슈[];
@@ -145,4 +168,6 @@ export interface 공공병원_종합_AI_프로필 {
   지역컨텍스트: 병원_지역_Context;
   /** 내장 실데이터로 연결된 값 (병상·지정 현황·배후 시군구 판정 등) */
   실데이터: import('@/lib/공공병원_실데이터_연계').병원_실데이터;
+  /** 지역거점공공병원 알리미 결산·인력 공시 (없으면 null) */
+  경영공시: 알리미_경영공시_요약 | null;
 }

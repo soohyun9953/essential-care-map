@@ -7,6 +7,7 @@
 // ============================================================================
 
 import React, { useState, useMemo } from 'react';
+import { 알리미_경영공시_카드 } from './ai/알리미_경영공시_카드';
 import {
   Building2,
   Activity,
@@ -218,7 +219,9 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   <span className="text-slate-300 dark:text-slate-600">•</span>
                   <span>허가병상 <strong>{currentHospital.허가병상}</strong>개{currentHospital.실데이터.병상수 === null && ' (시연값)'}</span>
                   <span className="text-slate-300 dark:text-slate-600">•</span>
-                  <span>전문의 <strong>{currentHospital.전문의수}</strong>명 (시연값)</span>
+                  <span>
+                    {currentHospital.인력_출처 === '시연값' ? '전문의' : '의사직'} <strong>{currentHospital.전문의수}</strong>명 ({currentHospital.인력_출처})
+                  </span>
                 </div>
               </div>
             </div>
@@ -647,6 +650,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
       {/* ==================================================================== */}
       {activeSubtab === 'benchmark' && (
         <div className="space-y-6">
+          <알리미_경영공시_카드 공시={currentHospital.경영공시} />
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
@@ -655,13 +659,14 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   <span>AI Benchmarking 비교분석</span>
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  우리 병원과 동일 병상 규모(150~250병상) 유사 공공병원, 전국 41개소 평균 및 상위 10% 우수 병원 지표 비교
+                  「알리미 공시」 지표는 지역거점공공병원 알리미 결산·인력 공시값이며, 같은 연도 공시기관 중 같은 유형(지방의료원/적십자병원) 중앙값, 전체 평균, 상위 25% 경계와 비교합니다.
+                  「가상 시연값」 지표는 실제 실적이 아닙니다.
                 </p>
               </div>
 
               <div className="flex items-center gap-2 text-xs">
                 <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-bold">
-                  비교군: 유사 규모 공공병원 12개소
+                  비교군: 알리미 공시기관 42곳
                 </span>
               </div>
             </div>
@@ -673,17 +678,26 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                   <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold">
                     <th className="py-3 px-4">지표명</th>
                     <th className="py-3 px-4 text-blue-600 dark:text-blue-400 font-black">우리 병원 ({currentHospital.기관명})</th>
-                    <th className="py-3 px-4">유사병원 평균</th>
-                    <th className="py-3 px-4">전국평균</th>
-                    <th className="py-3 px-4 text-emerald-600 dark:text-emerald-400">상위 공공병원</th>
-                    <th className="py-3 px-4">AI Gap 진단 및 격차 원인</th>
+                    <th className="py-3 px-4">같은 유형 중앙값</th>
+                    <th className="py-3 px-4">공시기관 평균</th>
+                    <th className="py-3 px-4 text-emerald-600 dark:text-emerald-400">상위 25%</th>
+                    <th className="py-3 px-4">비교 설명</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {currentHospital.벤치마킹데이터.map((b, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition">
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                        {b.지표명}
+                        <div>{b.지표명}</div>
+                        <span
+                          className={`inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                            b.출처 === '알리미 공시'
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                              : 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                          }`}
+                        >
+                          {b.출처}
+                        </span>
                       </td>
                       <td className="py-3.5 px-4 font-black text-sm text-blue-700 dark:text-blue-400">
                         {b.우리병원.toLocaleString()} {b.단위}
@@ -713,15 +727,24 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
             <div className="p-4 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 space-y-2">
               <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-extrabold text-xs">
                 <Sparkles className="w-4 h-4" />
-                <span>AI 지표 분석 자동 Gap 요약 코멘트</span>
+                <span>알리미 공시 지표 비교 요약</span>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-indigo-950 dark:text-indigo-200">
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/60">
-                  📢 <strong>전문의 확보 수준 취약:</strong> 유사 공공병원 평균(5.1명/100병상)보다 <strong>17.6% 낮음</strong>. 특히 응급의학과 및 외과 전문의 공백이 입원환자 유출의 직접 원인으로 작용함.
-                </div>
-                <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/60">
-                  📢 <strong>응급환자 유입 과밀:</strong> 응급의료 인력 증가율 대비 연간 응급환자 유입 증가율이 2.4배 높아 야간 당직 의료진의 번아웃 및 조기 퇴사 위험 발생.
-                </div>
+                {currentHospital.벤치마킹데이터.filter((b) => b.출처 === '알리미 공시').length === 0 ? (
+                  <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/60">
+                    알리미 공시와 연결되지 않아 비교할 실데이터가 없습니다.
+                  </div>
+                ) : (
+                  currentHospital.벤치마킹데이터
+                    .filter((b) => b.출처 === '알리미 공시')
+                    .map((b) => (
+                      <div key={b.지표명} className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/60">
+                        📢 <strong>{b.지표명}:</strong> 우리 병원 {b.우리병원.toLocaleString()}
+                        {b.단위}, 같은 유형 중앙값 {b.유사병원.toLocaleString()}
+                        {b.단위} — {b.격차설명}
+                      </div>
+                    ))
+                )}
               </div>
             </div>
           </div>
@@ -1293,7 +1316,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
                       <span className="text-[10px] text-slate-500">({h.시도명})</span>
                     </div>
                     <div className="text-[11px] text-slate-500">
-                      허가병상 {h.허가병상}개 • 전문의 {h.전문의수}명
+                      허가병상 {h.허가병상}개 • {h.인력_출처 === '시연값' ? `전문의 ${h.전문의수}명 (시연값)` : `의사직 ${h.전문의수}명`}
                     </div>
                   </div>
 
@@ -1335,7 +1358,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
             </div>
 
             <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              현재 표시되는 진단 점수와 근거는 가상 시연 데이터입니다. 아래 「연계 예정」 자료를 실제로 연계해야 기관별 실적에 근거한 진단이 됩니다.
+              재무건전성 점수는 지역거점공공병원 알리미 결산 공시로 계산합니다(알리미와 연결된 기관). 그 밖의 진단 점수와 근거는 가상 시연 데이터이며, 「연계 예정」 자료를 실제로 연계해야 기관별 실적에 근거한 진단이 됩니다.
             </p>
 
             <div className="space-y-3">

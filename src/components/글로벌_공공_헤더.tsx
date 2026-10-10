@@ -164,13 +164,14 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors shadow-xs">
       {/* 1줄 단일 헤더 (모든 정보 1줄에 컴팩트 통합) */}
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
-        <div className="h-14 flex items-center justify-between gap-3">
+        {/* 1800px 이상은 한 줄, 그보다 좁으면 메뉴가 두 번째 줄로 내려감 (글자 단위 줄바꿈 방지) */}
+        <div className="min-h-14 py-2 min-[1800px]:py-0 min-[1800px]:h-14 flex flex-wrap min-[1800px]:flex-nowrap items-center justify-between gap-x-3 gap-y-2">
           
           {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 (클릭 시 최초 초기 화면으로 이동) */}
           <button
             type="button"
             onClick={() => handle_workspace_change('home')}
-            className="flex items-center gap-2.5 select-none shrink-0 cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
+            className="flex items-center gap-2.5 select-none shrink-0 whitespace-nowrap cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
             title="최초 초기 화면으로 이동"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
@@ -192,10 +193,10 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           </button>
 
           {/* 2. 중앙: 5대 핵심 워크스페이스 네비게이션 */}
-          <nav className="hidden lg:flex items-center gap-0.5 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+          <nav className="order-last min-[1800px]:order-none w-full min-[1800px]:w-auto flex flex-wrap min-[1800px]:flex-nowrap justify-center items-center gap-0.5 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
             <button
               onClick={() => handle_workspace_change('regional_diagnosis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
                 current_active === 'regional_diagnosis'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -206,7 +207,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
 
             <button
               onClick={() => handle_workspace_change('policy_planning')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
                 current_active === 'policy_planning'
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -225,7 +226,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               <button
                 type="button"
                 onClick={() => handle_workspace_change('medical_institution')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
                   current_active === 'medical_institution'
                     ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -276,7 +277,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             {/* ⭐ 신규 핵심 메뉴: AI 병원진단·개선 */}
             <button
               onClick={() => handle_workspace_change('hospital_ai_diagnosis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                 current_active === 'hospital_ai_diagnosis'
                   ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
@@ -289,7 +290,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
 
             <button
               onClick={() => handle_workspace_change('ai_analysis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 current_active === 'ai_analysis'
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -300,7 +301,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
 
             <button
               onClick={() => handle_workspace_change('national_safety')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                 current_active === 'national_safety'
                   ? 'bg-white dark:bg-[#1a1d24] text-emerald-700 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
@@ -311,7 +312,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           </nav>
 
           {/* 3. 우측: 페르소나 셀렉터 / 데이터·사업가이드 / 테마 / 관리자 */}
-          <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex items-center space-x-2 shrink-0 whitespace-nowrap">
 
             {/* 페르소나(역할별 뷰) 선택 드롭다운 */}
             <div className="relative" ref={persona_ref}>
@@ -371,9 +372,9 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               title="플랫폼 탑재 7대 데이터셋 & 2026 정부 법정 사업가이드 총람 보기"
             >
               <BookOpen className="w-3.5 h-3.5 text-blue-200" />
-              <span className="hidden sm:inline">데이터·사업가이드</span>
-              <span className="sm:hidden inline">가이드</span>
-              <span className="px-1 py-0.5 rounded bg-white/20 text-[10px] font-extrabold text-white">
+              <span className="hidden min-[1800px]:inline">데이터·사업가이드</span>
+              <span className="min-[1800px]:hidden inline">가이드</span>
+              <span className="hidden min-[1800px]:inline px-1 py-0.5 rounded bg-white/20 text-[10px] font-extrabold text-white">
                 안내
               </span>
             </button>
@@ -386,8 +387,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               title="고객 검토 안내: 각 시스템 담당자별 집중 확인 메뉴 및 가이드"
             >
               <Compass className="w-3.5 h-3.5 text-blue-100" />
-              <span className="hidden sm:inline">담당자별 검토 가이드</span>
-              <span className="sm:hidden inline">검토 가이드</span>
+              <span className="hidden min-[1800px]:inline">담당자별 검토 가이드</span>
+              <span className="min-[1800px]:hidden inline">검토</span>
             </button>
 
             {/* 4. 보안 로그인 아이콘 버튼 (일반인 접근 차단 및 패스워드 인증) */}
@@ -408,8 +409,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               {is_authenticated ? (
                 <>
                   <Unlock className="w-3.5 h-3.5 text-emerald-100" />
-                  <span className="hidden sm:inline">인증완료</span>
-                  <span className="sm:hidden inline">인증</span>
+                  <span className="hidden min-[1800px]:inline">인증완료</span>
+                  <span className="min-[1800px]:hidden inline">인증</span>
                 </>
               ) : (
                 <>

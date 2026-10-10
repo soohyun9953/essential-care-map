@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import 'leaflet/dist/leaflet.css';
 import './globals.css';
+import { 배포_갱신_감지 } from '@/components/배포_갱신_감지';
 
 export const metadata: Metadata = {
   title: '국립중앙의료원 필수의료 취약지 진단 및 사업계획서 자동생성 플랫폼',
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="ko">
       <body className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] antialiased">
         {children}
+        <배포_갱신_감지 />
       </body>
     </html>
   );

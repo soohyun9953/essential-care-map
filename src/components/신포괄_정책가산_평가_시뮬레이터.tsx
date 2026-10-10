@@ -205,6 +205,9 @@ export default function 신포괄_정책가산_평가_시뮬레이터() {
                   </option>
                 ))}
               </select>
+              <span className="text-[10px] text-blue-200/80 block mt-1">
+                병상: {selected_hospital.병상_출처 ?? '출처 미확인'} · 포괄수가 총액은 예시값
+              </span>
             </div>
           </div>
         </div>

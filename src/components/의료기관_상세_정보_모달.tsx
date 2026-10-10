@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { 알리미_경영공시_카드 } from './ai/알리미_경영공시_카드';
+import { 알리미_공시_조회, 알리미_경영공시_요약_생성 } from '@/lib/알리미_경영지표';
 import {
   X,
   Building2,
@@ -67,6 +69,9 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
   }, [is_open, on_close]);
 
   if (!is_open || !hospital) return null;
+
+  // 지역거점공공병원(지방의료원·적십자병원)이면 알리미 결산·인력 공시 연결
+  const 알리미_공시 = 알리미_공시_조회(hospital.기관명);
 
   const handle_copy_address = async () => {
     // 상세 주소가 없으므로 지도 검색에 쓸 수 있도록 기관명과 함께 복사
@@ -422,6 +427,7 @@ export const 의료기관_상세_정보_모달: React.FC<의료기관_상세_정
           {/* ============================================================ */}
           {active_tab === 'public_role' && (
             <div className="space-y-4">
+              {알리미_공시 && <알리미_경영공시_카드 공시={알리미_경영공시_요약_생성(알리미_공시)} />}
               <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200 dark:border-indigo-900/50 space-y-2">
                 <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300 block">
                   보건복지부 법정 책임의료기관 지정 현황

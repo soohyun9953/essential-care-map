@@ -21,6 +21,7 @@ import {
   Sparkles,
   BarChart3,
   Calendar,
+  FileSearch,
 } from 'lucide-react';
 import {
   전국_41개_지역거점공공병원_공시검증_목록,
@@ -32,9 +33,10 @@ import {
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { 회계_공시_사전검증_시뮬레이터 } from './회계_공시_사전검증_시뮬레이터';
 import { 개인정보_수정공시_시뮬레이터 } from './개인정보_수정공시_시뮬레이터';
+import { 알리미_실공시_자동점검_패널 } from './알리미_실공시_자동점검_패널';
 
 export const 지역거점_공공병원_공시검증_대시보드: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'hospitals' | 'formulas' | 'pii_process'>('hospitals');
+  const [activeTab, setActiveTab] = useState<'hospitals' | 'alimi_check' | 'formulas' | 'pii_process'>('hospitals');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSido, setSelectedSido] = useState('전체');
   const [sortOrder, setSortOrder] = useState<'suspect_desc' | 'suspect_asc' | 'name_asc'>('suspect_desc');
@@ -101,6 +103,17 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
           >
             <Building2 className="w-3.5 h-3.5" />
             <span>41개 병원별 품질검증</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('alimi_check')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              activeTab === 'alimi_check'
+                ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            <FileSearch className="w-3.5 h-3.5" />
+            <span>알리미 실공시 자동점검</span>
           </button>
           <button
             onClick={() => setActiveTab('formulas')}
@@ -310,6 +323,8 @@ export const 지역거점_공공병원_공시검증_대시보드: React.FC = () 
       )}
 
       {/* [탭 2] 14대 회계 산출식 & 통계적 이상치 분석 */}
+      {activeTab === 'alimi_check' && <알리미_실공시_자동점검_패널 />}
+
       {activeTab === 'formulas' && (
         <div className="space-y-6">
           {/* 실시간 AI 회계·공시 사전검증 시뮬레이터 위젯 */}

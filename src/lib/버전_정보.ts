@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-10',
-  time: '19:36',
-  deployedAt: '2026.10.10 19:36',
-  semver: '1.20.0',
-  fullLabel: '2026.10.10 19:36 · v1.20.0',
-  packageVersion: '20261010-1936',
-  updatedAt: '2026-10-10 19:36',
+  time: '19:46',
+  deployedAt: '2026.10.10 19:46',
+  semver: '1.21.0',
+  fullLabel: '2026.10.10 19:46 · v1.21.0',
+  packageVersion: '20261010-1946',
+  updatedAt: '2026-10-10 19:46',
   changelog:
-    '공공의료 AI 의사결정 플랫폼 배포 및 배포시간(2026.10.10 19:36) 갱신',
+    '공공의료 AI 의사결정 플랫폼 배포 및 배포시간(2026.10.10 19:46) 갱신',
 };

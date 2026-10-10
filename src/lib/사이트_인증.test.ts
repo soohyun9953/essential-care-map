@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { 비밀번호_검증, 인증_토큰_생성, 인증_토큰_검증, 인증_유효기간_초 } from './사이트_인증';
 import { POST as 로그인 } from '@/app/api/auth/login/route';
-import { middleware } from '@/middleware';
+import { proxy } from '@/proxy';
 import { NextRequest } from 'next/server';
 
 const 요청 = (url: string, init?: { cookie?: string; body?: unknown }) =>
@@ -52,12 +52,12 @@ describe('사이트 인증 (서버 측)', () => {
 
   it('미들웨어: 쿠키 없으면 페이지는 /login 으로, API는 401; 유효 쿠키면 통과', async () => {
     vi.stubEnv('SITE_PASSWORD', 'test-pass-1');
-    const page = await middleware(요청('/'));
+    const page = await proxy(요청('/'));
     expect(page.status).toBe(307);
     expect(page.headers.get('location')).toMatch(/\/login$/);
-    expect((await middleware(요청('/api/llm/compare'))).status).toBe(401);
+    expect((await proxy(요청('/api/llm/compare'))).status).toBe(401);
     const t = await 인증_토큰_생성();
-    const pass = await middleware(요청('/', { cookie: `site_auth=${t}` }));
+    const pass = await proxy(요청('/', { cookie: `site_auth=${t}` }));
     expect(pass.headers.get('x-middleware-next')).toBe('1');
   });
 

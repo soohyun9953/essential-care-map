@@ -451,7 +451,7 @@ function AI_최종_결과({ on_restart, on_show_arch }: { on_restart: () => void
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-xs font-bold text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition cursor-pointer border border-blue-200 dark:border-blue-800"
         >
           <Network className="w-3.5 h-3.5" />
-          AI 처리구조 보기
+          AI 시스템 구조 보기
         </button>
         <button
           type="button"
@@ -474,7 +474,7 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-black text-slate-900 dark:text-white">AI 처리 구조</h3>
+          <h3 className="text-base font-black text-slate-900 dark:text-white">AI 시스템 구조</h3>
           <p className="text-xs text-slate-500 mt-0.5">AI 기반 공공의료 정보시스템 아키텍처</p>
         </div>
         <button type="button" onClick={on_close} className="text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -658,9 +658,9 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
           <div>
             <div className="flex items-center gap-2">
               <Cpu className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-black text-slate-900 dark:text-white">AI 분석 실행</h2>
+              <h2 className="text-sm font-black text-slate-900 dark:text-white">AI 처리 8단계</h2>
               <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
-                분석 프로세스 시각화
+                시연
               </span>
             </div>
             <p className="text-[11px] text-slate-400 mt-0.5">
@@ -715,7 +715,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
 
               {/* 전체 파이프라인 미리보기 */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">AI 분석 과정 (8단계)</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">AI 처리 8단계 미리보기</div>
 
                 {/* 색상 범례: 구축 주체 기준 */}
                 <div className="flex flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200 dark:border-slate-700">

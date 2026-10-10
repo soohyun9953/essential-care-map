@@ -3,8 +3,9 @@
 // Essential Care Map - 정책기획 통합 워크스페이스
 // AI 기반 공공의료 정책 의사결정 To-Be 모델 핵심 Workspace
 // Journey: 지역진단 → 지역비교 → 미래수요 → AI 정책기획 → 사업계획서
-// 1) 인라인 5단계 AI 분석 애니메이션
-// 2) 3열 Workspace (AI 분석 과정 / AI 종합분석 / 분석 근거)
+// 1) 「정책분석 5단계」 인라인 진행 애니메이션
+// 2) 3열 Workspace (정책분석 5단계 / AI 종합분석 / 분석 근거)
+// ※ 명칭 규칙: 「정책분석 5단계」 = 이 화면의 인라인 분석, 「AI 처리 8단계」 = AI 분석 패널(시연 팝업)
 // 3) AI 정책대안 3개 (판단 근거 / 상세 분석 / 사업계획 만들기)
 // 4) 12대 항목 사업계획서 자동 작성 애니메이션 & AI vs 담당자 역할 구분
 // 5) AI 활용 7대 데이터 및 기술구조 보기 연동
@@ -85,7 +86,7 @@ interface 정책기획_통합_워크스페이스_속성 {
   on_change_tab?: (tab: 'policy_ai' | 'report' | 'compare' | 'forecast') => void;
 }
 
-// 5단계 AI 분석 프로세스 정의
+// 「정책분석 5단계」 정의
 interface AI_분석_스텝 {
   step: number;
   이름: string;
@@ -129,7 +130,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   const [ai_analysis_completed, setAi_analysis_completed] = useState<boolean>(true);
   const animation_timer_ref = useRef<NodeJS.Timeout | null>(null);
 
-  // AI 분석 실행 버튼 핸들러 (5단계 애니메이션 진행)
+  // 「정책분석 5단계」 실행 핸들러
   const handle_run_ai_analysis = () => {
     setIs_ai_analyzing(true);
     setAi_analysis_completed(false);
@@ -170,13 +171,13 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   }, []);
 
   // ==============================================================
-  // 2. 모달 상태 (활용 데이터 / 판단 근거 / 기술구조 / 상세 분석 / 8단계 AI 파이프라인)
+  // 2. 모달 상태 (활용 데이터 / 판단 근거 / 기술구조 / 상세 분석 / AI 처리 8단계)
   // ==============================================================
   const [is_utilized_data_open, setIs_utilized_data_open] = useState(false);
   const [is_reasoning_modal_open, setIs_reasoning_modal_open] = useState(false);
   const [reasoning_target_option, setReasoning_target_option] = useState<'A' | 'B' | 'C'>('A');
   const [is_architecture_modal_open, setIs_architecture_modal_open] = useState(false);
-  const [is_ai_pipeline_open, setIs_ai_pipeline_open] = useState(false); // 8단계 AI 분석 프로세스 시각화 모달
+  const [is_ai_pipeline_open, setIs_ai_pipeline_open] = useState(false); // 「AI 처리 8단계」 시연 팝업
   const [active_detail_section, setActive_detail_section] = useState<string | null>(null);
 
   // 선택된 정책대안 (Option A / Option B / Option C)
@@ -400,14 +401,14 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0 flex-wrap">
-          {/* AI 8단계 분석 프로세스 시각화 버튼 (팝업 모달) */}
+          {/* 「AI 처리 8단계」 시연 팝업 버튼 */}
           <button
             type="button"
             onClick={() => setIs_ai_pipeline_open(true)}
             className="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI 분석 실행 (8단계 시각화)</span>
+            <span>AI 처리 8단계 보기</span>
           </button>
 
           {/* AI가 어떻게 작동하나요? 버튼 (요구사항 9번) */}
@@ -454,17 +455,17 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             </div>
 
             <div className="flex items-center gap-2 flex-wrap shrink-0">
-              {/* 「AI 분석 실행 (8단계 시각화)」 버튼 — 질문 입력, 8단계 파이프라인 애니메이션, 실행주체 뱃지 모달 */}
+              {/* 「AI 처리 8단계 보기」 버튼 — 질문 입력, 8단계 처리 애니메이션, 실행주체 뱃지 (시연) */}
               <button
                 type="button"
                 onClick={() => setIs_ai_pipeline_open(true)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-95 text-white text-xs sm:text-sm font-black transition shadow-sm cursor-pointer"
               >
                 <Cpu className="w-4 h-4 text-white" />
-                <span>AI 분석 실행 (8단계 시각화)</span>
+                <span>AI 처리 8단계 보기</span>
               </button>
 
-              {/* 「인라인 분석 재실행」 버튼 */}
+              {/* 「정책분석 5단계 다시 실행」 버튼 */}
               <button
                 type="button"
                 onClick={handle_run_ai_analysis}
@@ -474,12 +475,12 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                 {is_ai_analyzing ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-                    <span>인라인 분석 진행 중...</span>
+                    <span>정책분석 진행 중...</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 text-slate-500" />
-                    <span>워크스페이스 재분석</span>
+                    <span>정책분석 다시 실행</span>
                   </>
                 )}
               </button>
@@ -496,17 +497,17 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             </div>
           </div>
 
-          {/* AI 분석 5단계 애니메이션 상태 바 (사용자 요구사항 2번) */}
+          {/* 「정책분석 5단계」 진행 상태 바 */}
           <div className="bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-blue-600" />
-                  <span>AI 분석 5단계 파이프라인 진행 상태</span>
+                  <span>정책분석 5단계 진행 상태</span>
                 </span>
                 {is_ai_analyzing && (
                   <span className="text-[11px] font-bold text-blue-600 animate-pulse">
-                    (Step {ai_current_step}/5 실행 중...)
+                    ({ai_current_step}/5단계 실행 중...)
                   </span>
                 )}
                 {ai_analysis_completed && (
@@ -524,7 +525,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-xs font-bold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition flex items-center gap-1 cursor-pointer"
                 >
                   <Cpu className="w-3.5 h-3.5" />
-                  <span>8단계 파이프라인 시각화 팝업 열기 →</span>
+                  <span>AI 처리 8단계 보기 →</span>
                 </button>
 
                 {is_ai_analyzing && (
@@ -539,7 +540,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
               </div>
             </div>
 
-            {/* 5단계 프로그레스 바 카드 그리드 */}
+            {/* 「정책분석 5단계」 카드 그리드 */}
             <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
               {AI_5단계_프로세스.map((stepItem) => {
                 const is_step_done = stepItem.step < ai_current_step || ai_analysis_completed;
@@ -587,22 +588,22 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
           {/* ============================================================== */}
           {/* 3열 AI 분석 Workspace (사용자 요구사항 3번)                     */}
-          {/* [좌측 1열]: AI 분석 과정                                       */}
+          {/* [좌측 1열]: 정책분석 5단계                                       */}
           {/* [중앙 2열]: AI 종합분석 & AI 정책대안 3개                      */}
           {/* [우측 3열]: 분석 근거                                           */}
           {/* ============================================================== */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* ------------------------------------------------------------ */}
-            {/* [1열 - 좌측 (3 cols)]: 「AI 분석 과정」                       */}
+            {/* [1열 - 좌측 (3 cols)]: 「정책분석 5단계」                       */}
             {/* ------------------------------------------------------------ */}
             <div className="lg:col-span-3 bg-white dark:bg-[#15161b] p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-4">
               <div className="border-b border-slate-100 dark:border-slate-800 pb-3 flex items-start justify-between gap-2">
                 <div>
                   <span className="text-[10px] font-black text-blue-600 uppercase tracking-wider block mb-1">
-                    Step 01 · 5단계 분석 과정
+                    1열 · 분석 과정
                   </span>
                   <h3 className="text-base font-black text-slate-900 dark:text-white">
-                    AI 분석 과정
+                    정책분석 5단계
                   </h3>
                   <span className="text-xs text-slate-500">
                     각 과정을 클릭하여 상세 분석 로그를 확인하세요.
@@ -612,9 +613,9 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   type="button"
                   onClick={() => setIs_ai_pipeline_open(true)}
                   className="px-2 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold hover:bg-blue-100 border border-blue-200 dark:border-blue-800 transition shrink-0 cursor-pointer"
-                  title="8단계 파이프라인 시각화 모달 열기"
+                  title="AI 처리 8단계 시연 팝업 열기"
                 >
-                  8단계 시각화 팝업
+                  AI 처리 8단계 보기
                 </button>
               </div>
 
@@ -1797,7 +1798,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
         on_close={() => setIs_architecture_modal_open(false)}
       />
 
-      {/* 4. AI 8단계 전체 분석 프로세스 시각화 모달 (질문입력, 순차 파이프라인 애니메이션, 실행주체 뱃지, RAG상세, 최종결과) */}
+      {/* 4. 「AI 처리 8단계」 시연 팝업 (질문입력, 순차 파이프라인 애니메이션, 실행주체 뱃지, RAG상세, 최종결과) */}
       <AI_분석_패널
         is_open={is_ai_pipeline_open}
         on_close={() => setIs_ai_pipeline_open(false)}

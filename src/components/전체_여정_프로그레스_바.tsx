@@ -67,7 +67,7 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
     key: 'ai_analysis',
     order: 4,
     label: 'AI 정책분석',
-    subLabel: '데이터·지침 5단계 인과추론',
+    subLabel: '정책분석 5단계 (데이터·지침 근거)',
     icon: Cpu,
     workspace: 'policy_planning',
     policyTab: 'policy_ai',

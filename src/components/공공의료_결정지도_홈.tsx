@@ -39,7 +39,7 @@ interface 공공의료_결정지도_홈_속성 {
 
 const SAMPLE_REGIONS = ['영월군', '태백시', '강원특별자치도', '정선군'];
 
-// 5단계 정책 Journey 정의
+// 정책 의사결정 여정 정의 (※ 「정책분석 5단계」와 별개인 화면 이동 흐름)
 const JOURNEY_STEPS = [
   {
     step: '01',
@@ -249,7 +249,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       </div>
 
       {/* ================================================================== */}
-      {/* 2. 정책분석 Journey Stepper (5단계 연결 흐름)                         */}
+      {/* 2. 정책 의사결정 여정 Stepper (화면 이동 흐름)                         */}
       {/* ================================================================== */}
       <div className="space-y-4">
         {/* As-Is vs To-Be 인텔리전스 비교 배너 */}
@@ -257,7 +257,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
         <div className="flex items-center gap-2 px-1">
           <div className="w-1 h-5 rounded-full bg-blue-700" />
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책분석 Journey · 5단계 의사결정 흐름</span>
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책 의사결정 여정 · 진단부터 사업계획서까지</span>
           <span className="text-xs text-slate-400">각 단계를 클릭해 바로 이동할 수 있습니다</span>
         </div>
 

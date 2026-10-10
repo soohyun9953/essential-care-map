@@ -79,7 +79,7 @@ export const 실행_주체_카탈로그: Record<string, 실행_주체> = {
   },
 };
 
-/** [MOCK DATA] 8단계 AI 분석 파이프라인 기본 정의 */
+/** [MOCK DATA] 「AI 처리 8단계」(시연) 기본 정의 */
 export const AI_파이프라인_단계_목록: Omit<파이프라인_단계, '상태'>[] = [
   {
     id: 'step_understand',

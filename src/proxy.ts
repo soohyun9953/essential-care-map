@@ -17,6 +17,6 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // 로그인 화면·인증 API·정적 자산은 제외
-  matcher: ['/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)'],
+  // 로그인 화면·인증 API·배포 버전 확인(버전 문자열만 응답)·정적 자산은 제외
+  matcher: ['/((?!login|api/auth|api/version|_next/static|_next/image|favicon.ico).*)'],
 };

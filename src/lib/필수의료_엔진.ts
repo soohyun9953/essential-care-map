@@ -81,16 +81,15 @@ export class 필수의료_진단_엔진 {
       ? `분만취약지 기준 ${분만취약지_등급}등급 해당 — ${분만_항목}`
       : `기준 미해당 — ${분만_항목}`;
 
-    // 3. 소아·중증진료 취약지 판정: 병상 공급 비율 < 60% (플랫폼 기준)
-    //    소아 지표 실데이터가 없으면(null) 소아 분야는 판정·점수에서 제외
+    // 3. 소아: 병상 공급 비율 60% 기준은 법령·지침 근거를 확인하지 못해 판정에 쓰지 않고 참고로만 표시 (2026-10-11 결정)
+    //    근거 문서를 확인하면 is_pediatric_vulnerable 판정을 다시 켠다
     const 소아_병상 = raw_data.소아_병상_공급비율;
     const 소아_접근 = raw_data.소아_야간휴일_접근성지수;
     const 소아_판정_가능 = 소아_병상 !== null && 소아_병상 !== undefined;
-    const is_pediatric_vulnerable = 소아_판정_가능 && (소아_병상 as number) < 60;
-    let pediatric_reason = 소아_판정_가능 ? '기준 충족 (정상)' : '자료 없음 (소아 지표 실데이터 미확보로 판정 제외)';
-    if (is_pediatric_vulnerable) {
-      pediatric_reason = `기준 병상 대비 공급 비율(${(소아_병상 as number).toFixed(1)}% < 60%) 심각 미달`;
-    }
+    const is_pediatric_vulnerable = false;
+    const pediatric_reason = 소아_판정_가능
+      ? `참고: 기준 병상 대비 공급 비율 ${(소아_병상 as number).toFixed(1)}% (참고 기준 60% ${(소아_병상 as number) < 60 ? '미만' : '이상'}) — 근거 확인 중인 기준이라 판정에 쓰지 않음`
+      : '자료 없음 (소아 지표 실데이터 미확보) — 60% 기준은 근거 확인 중인 참고 기준';
 
     // 4. 취약분야 개수 산정
     let vulnerable_count = 0;
@@ -259,11 +258,11 @@ export class 사업계획서_문안_생성기 {
       legal_status_name = '필수의료 부분 취약지역 (집중 관리 대상)';
     }
 
-    const legal_text = `  ○ (법정 기준 충족 여부) 보건복지부 필수의료 취약지 고시 기준에 의거, 관내 의료이용률(RI)이 ${target_region.관내_응급_의료이용률.toFixed(1)}%로 법정 기준치(30%)를 하회하고 응급 미도달 인구가 ${target_region.응급_60분_미도달_인구비율.toFixed(1)}%에 달하여 [${legal_status_name}]으로 분류됨.
+    const legal_text = `  ○ (법정 기준 충족 여부) 보건복지부 응급의료·분만 취약지 선정 기준에 따라 권역응급의료센터 60분 미도달 인구가 ${target_region.응급_60분_미도달_인구비율.toFixed(1)}%(기준 30%)이며, 관내 응급 의료이용률(RI)은 참고 지표로 ${target_region.관내_응급_의료이용률.toFixed(1)}%임. 종합 판정 [${legal_status_name}].
   ○ (3대 필수의료 취약 영역)
     - 응급의료: ${target_region.응급취약지역_여부 ? '【취약】 ' + target_region.응급_판정근거 : '【적정】 법정 기준 충족'}
     - 분만·모자: ${target_region.분만취약지역_여부 ? '【취약】 ' + target_region.분만_판정근거 : '【적정】 법정 기준 충족'}
-    - 소아·중증: ${!target_region.소아_판정_가능 ? '【자료 없음】 소아 지표 실데이터 미확보로 판정 제외' : target_region.소아취약지역_여부 ? '【취약】 ' + target_region.소아_판정근거 : '【적정】 법정 기준 충족'}`;
+    - 소아·중증: ${!target_region.소아_판정_가능 ? '【자료 없음】 소아 지표 실데이터 미확보로 판정 제외' : '【참고】 ' + target_region.소아_판정근거}`;
 
     // 3. 모자·소아 인프라 결핍
     const delivery_reach_gap = (target_region.분만_60분_미도달_인구비율 - national_stat.평균_분만_60분_미도달_인구비율).toFixed(1);

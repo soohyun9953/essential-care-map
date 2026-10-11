@@ -318,11 +318,10 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                   </button>
                 </div>
                 {active_region.소아_판정_가능 ? (
-                  <span className={`text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 ${
-                    active_region.소아취약지역_여부 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'
-                  }`}>
-                    <span>{active_region.소아취약지역_여부 ? '🟠' : '🟢'}</span>
-                    <span>{active_region.소아취약지역_여부 ? '주의' : '양호'}</span>
+                  // 60% 기준은 근거 확인 중인 참고 기준이라 판정 대신 값만 표시
+                  <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-slate-600 dark:text-slate-300" title={active_region.소아_판정근거}>
+                    <span>⚪</span>
+                    <span>참고 {active_region.소아_병상_공급비율?.toFixed(1)}%</span>
                   </span>
                 ) : (
                   <span className="text-sm sm:text-base font-black flex items-center gap-1 mt-0.5 text-slate-400">
@@ -370,7 +369,12 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             <div className="flex items-center gap-2">
               <Info className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="font-bold">데이터 기준 고지:</span>
-              <span>기준년도 <strong>2024년</strong> • 대상 <strong>전국 250개 시·군·구</strong> • 출처 <strong>헬스맵 주제도 지표 2024</strong></span>
+              <span>
+                기준년도 <strong>2024년</strong> • 대상 <strong>전국 250개 시·군·구</strong> • 출처 <strong>헬스맵 주제도 지표 2024</strong>
+                <span className="block text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+                  원자료가 2024년 행정구역 기준이라 2026년 개편 지역(인천 중·동·서구 재편, 광주·전남 통합 등)은 개편 전 명칭·구역으로 표시합니다.
+                </span>
+              </span>
             </div>
             <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">최종 배포: {PLATFORM_VERSION.fullLabel}</span>
           </div>

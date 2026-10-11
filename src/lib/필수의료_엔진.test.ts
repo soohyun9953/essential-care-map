@@ -53,9 +53,12 @@ describe('필수의료_진단_엔진.diagnose_region - 법정 취약 기준 경�
     expect(자료없음.분만_판정근거).toContain('이용률 자료 없음');
   });
 
-  it('소아: 병상 공급비율 60% 미만이면 취약', () => {
-    expect(필수의료_진단_엔진.diagnose_region(정상_지역({ 소아_병상_공급비율: 60 })).소아취약지역_여부).toBe(false);
-    expect(필수의료_진단_엔진.diagnose_region(정상_지역({ 소아_병상_공급비율: 59.9 })).소아취약지역_여부).toBe(true);
+  it('소아: 60% 기준은 근거 확인 중인 참고 기준이라 판정하지 않고 근거에만 표시한다', () => {
+    const r = 필수의료_진단_엔진.diagnose_region(정상_지역({ 소아_병상_공급비율: 40 }));
+    expect(r.소아취약지역_여부).toBe(false);
+    expect(r.소아_판정근거).toContain('40.0%');
+    expect(r.소아_판정근거).toContain('참고 기준 60% 미만');
+    expect(r.소아_판정근거).toContain('판정에 쓰지 않음');
   });
 
   it('판정 근거 문구에 실제 수치가 반영된다', () => {
@@ -75,7 +78,8 @@ describe('필수의료_진단_엔진.diagnose_region - 종합 등급', () => {
 
     expect(필수의료_진단_엔진.diagnose_region(응급만).종합_취약도_등급).toBe('관찰');
     expect(필수의료_진단_엔진.diagnose_region(응급_분만).종합_취약도_등급).toBe('취약');
-    expect(필수의료_진단_엔진.diagnose_region(전부).종합_취약도_등급).toBe('심각');
+    // 소아 60%는 참고 기준이라 취약분야 개수에 들어가지 않는다
+    expect(필수의료_진단_엔진.diagnose_region(전부).종합_취약도_등급).toBe('취약');
   });
 
   it('취약분야가 없어도 종합 점수가 높으면 등급이 올라간다', () => {

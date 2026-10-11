@@ -87,7 +87,8 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
     } else if (view_mode === '분만모자') {
       return item.분만취약지역_여부 ? '#ff6934' : '#34c759';
     } else if (view_mode === '소아중증') {
-      return item.소아취약지역_여부 ? '#ff9500' : '#34c759';
+      // 소아 60% 기준은 근거 확인 중인 참고 기준이라 판정 색을 칠하지 않음
+      return '#c7c7cc';
     } else if (view_mode === '의료인력') {
       return (item.인구_천명당_의사수 !== undefined && item.인구_천명당_의사수 < 1.6) || item.종합_취약도_등급 === '심각'
         ? '#ff3b30'
@@ -185,7 +186,7 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
             { id: '종합취약도', label: '취약도' },
             { id: '응급의료', label: '응급' },
             { id: '분만모자', label: '분만' },
-            { id: '소아중증', label: '소아' },
+            { id: '소아중증', label: '소아(참고)' },
             { id: '의료인력', label: '인력' },
             { id: '병상인프라', label: '병상' },
             { id: '공공의료기관', label: '공공병원' },

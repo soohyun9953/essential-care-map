@@ -78,7 +78,13 @@ export const 보안_로그인_모달: React.FC<보안_로그인_모달_속성> =
         }, 600);
         return;
       }
-      setErrorMessage(data.message || '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      // 429인데 앱 문구가 없으면 Vercel 방화벽이 막은 경우
+      setErrorMessage(
+        data.message ||
+          (res.status === 429
+            ? '로그인 시도가 너무 많습니다. 잠시 후 다시 시도해주세요.'
+            : '로그인에 실패했습니다. 잠시 후 다시 시도해주세요.')
+      );
     } catch {
       setErrorMessage('서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.');
     } finally {

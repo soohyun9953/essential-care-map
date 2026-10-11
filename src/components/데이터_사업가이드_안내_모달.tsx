@@ -81,7 +81,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   플랫폼 탑재 데이터셋 &amp; 2026 정부 법정 사업가이드 총람
                 </h2>
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  프로그램 데이터·로직 100% 동기화
+                  구현 기준 안내
                 </span>
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -111,7 +111,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
             }`}
           >
             <Database className="w-4 h-4" />
-            1. 탑재 데이터셋 (7대 핵심 자산)
+            1. 탑재 데이터셋 (8종)
           </button>
 
           <button
@@ -152,7 +152,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                 💡 <strong>데이터 정합성 안내:</strong> 프로그램에서 실제로 취급하고 있는 데이터셋의 기준과 원천을 투명하게 공개합니다.
                 시군구 취약지 진단은 헬스맵 2024년 전국 250개 시군구 데이터(소아 실데이터는 미확보로 판정 제외 및 응급·분만 재정규화)이며,
                 환자 유출입(OD Matrix)은 원천 72.6MB 엑셀 전수 분석 기반 228개 시군구 데이터셋입니다.
-                공공의료기관 전수 DB는 214개소이며, 국립중앙의료원 E-Gen 응급기관 528개소, 심평원 분만가능 기관(2025.1~2026.4 청구실적), NMC 달빛어린이병원 114곳이 연계되어 있습니다.
+                공공의료기관 전수 DB는 214개소이며, 국립중앙의료원 E-Gen 응급기관 528개소, 심평원 분만가능 기관 420곳(2025.1~2026.4 청구실적), NMC 달빛어린이병원 114곳이 연계되어 있습니다.
+                지역거점공공병원 42곳의 알리미 결산·인력 공시(2021~2025년)도 탑재되어 있습니다.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -175,8 +176,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>인구수 지표 (ABA01)</li>
                     <li>응급의료: 권역응급 60분 취약인구율(BBB01), 응급의료기관 관내이용률(RI, CBB04)</li>
-                    <li>분만: 분만기관 60분 취약인구율(BBD01), 분만 관내이용률(RI, CBD01)</li>
-                    <li>소아청소년: 실데이터 미확보(null)로 <strong>판정 제외 및 가중치(0.4:0.35) 재정규화</strong></li>
+                    <li>분만: 분만기관 60분 취약인구율(BBD01), 60분 내 분만의료 이용률(TRI, CAD01, 판정 지표), 분만 관내이용률(RI, CBD01, 참고)</li>
+                    <li>소아청소년: 실데이터 미확보(null)로 <strong>판정 제외 및 가중치(0.4:0.35) 재정규화</strong>. 병상 공급 비율 60%는 근거 확인 중인 참고 기준이라 판정에 쓰지 않음</li>
                     <li>종합 취약도 점수(0~100) 및 4단계 등급(정상/관찰/취약/심각) 자동 산정</li>
                   </ul>
                 </div>
@@ -293,10 +294,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     3대 변이(Variance) 15개 사유 &amp; 10대 질환 ROI 분석 모델
                   </h4>
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
-                    <li>환자(5개), 의료진(5개), 병원 시스템(5개) 15개 표준 변이 사유 DB</li>
-                    <li>10대 대표 질환군별 가변 점유율(평균 약 환자 43%, 의료진 32%, 시스템 25%)</li>
+                    <li>환자(5개), 의료진(5개), 병원 시스템(5개) 15개 변이 사유 분류 (원문 대조 전, 확인 필요)</li>
+                    <li>10대 대표 질환군 재원일수·진료비·변이 점유율은 시뮬레이션 기본값 (출처 확인 필요)</li>
                     <li>비CP vs CP표준 vs 이탈군 대조 및 재원일수 단축 효과 계산 (입력값 기준)</li>
-                    <li>병상 회전 신규 수익 창출 및 Outlier 삭감 예방 ROI 알고리즘</li>
+                    <li>병상 회전 신규 수익·Outlier 삭감 예방 ROI (가동률·마진율 등은 플랫폼 가정값)</li>
                   </ul>
                 </div>
 
@@ -323,13 +324,37 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     </div>
                     <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                       <strong className="text-slate-900 dark:text-white block mb-1">분만가능 의료기관</strong>
-                      건강보험심사평가원(HIRA) 분만 청구 실적(2025.1~2026.4, 공공누리 제1유형) 기반 전수 목록 및 24시간 분만 가능 여부
+                      건강보험심사평가원(HIRA) 분만 청구 실적(2025.1~2026.4, 공공누리 제1유형) 기반 420곳 목록 및 야간(심야 포함) 분만 청구 실적 여부
                     </div>
                     <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                       <strong className="text-slate-900 dark:text-white block mb-1">달빛어린이병원 (114곳)</strong>
-                      국립중앙의료원 공식 등록 소아 야간·휴일 진료기관 전수 목록, 운영시간 및 인근 진료망 매핑
+                      국립중앙의료원 누리집 등록 소아 야간·휴일 진료기관 목록 (기관명·주소·대표전화·좌표, 운영시간은 미수록)
                     </div>
                   </div>
+                </div>
+
+                {/* 8) 지역거점공공병원 알리미 경영 공시 */}
+                <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/30 space-y-3 md:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 flex items-center gap-1.5">
+                      <FileText className="w-4 h-4" /> 데이터셋 8
+                    </span>
+                    <button
+                      onClick={() => handle_menu_click('aa_disclosure')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400"
+                    >
+                      공시검증 대시보드 <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                    지역거점공공병원 알리미 결산·인력 공시 (42곳, 2021~2025년)
+                  </h4>
+                  <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
+                    <li>보건복지부 지역거점공공병원 알리미 기관별 통합공시: 결산서(재무상태표·손익계산서), 수입·지출 현황, 직원 현황 (개인정보 제외)</li>
+                    <li>의료이익률·인건비 지출 비율·지원금 비율·부채 비율·100병상당 의사/간호 현원과 공시기관 분포 비교</li>
+                    <li>AI 병원진단 재무건전성 점수(공시기관 내 백분위 평균, 플랫폼 산식)·비교분석 표, 의료기관 상세 「알리미 경영 공시」 표에 사용</li>
+                    <li>공시 품질 자동점검 5개 규칙(재무상태표·손익 항등식, 결산 미공시, 인건비 0원, 직원 수 집계 불일치) — 플랫폼 규칙이며 공식 검증결과 아님</li>
+                  </ul>
                 </div>
               </div>
             </div>
@@ -388,9 +413,9 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     보건복지부 고시 「응급의료분야 의료취약지 지정」(제2024-261호) &amp; 「공공보건의료에 관한 법률」 제12조
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>응급취약지:</strong> 응급의료기관 30분 또는 응급의료센터 1시간 내 도달 불가 인구 30% 이상 (보건복지부 고시 기준). 플랫폼에서는 관내이용률(RI) 30% 미만도 자체충족 결핍 판정 기준으로 복합 적용.<br />
-                    • <strong>분만취약지:</strong> 60분 내 분만의료 이용률 30% 미만 및 접근 불가 인구 30% 이상 (둘 다 충족 시 A등급, 하나 충족 시 B등급). 분만산부인과 설치 시 시설·장비비 10억원 + 운영비 연 5억원 지원. 플랫폼은 관내 분만율 40% 미만을 대리 지표로 분석.<br />
-                    • <strong>소아취약지:</strong> 소아청소년과 지표는 원천데이터 실데이터 미확보로 진단 판정에서 제외하고 응급·분만 가중치(0.4:0.35)로 재정규화하여 왜곡을 원천 방지함.
+                    • <strong>응급취약지:</strong> 응급의료기관 30분 또는 응급의료센터 1시간 내 도달 불가 인구 30% 이상 (보건복지부 고시 기준). 플랫폼은 권역응급의료센터 60분 미도달 인구 30% 이상으로 판정하며(응급의료기관 30분 지표는 미확보), 관내이용률(RI)은 참고 지표로만 표시.<br />
+                    • <strong>분만취약지:</strong> 60분 내 분만의료 이용률 30% 미만 및 접근 불가 인구 30% 이상 (둘 다 충족 시 A등급, 하나 충족 시 B등급). 플랫폼은 헬스맵 CAD01(이용률)·BBD01(접근 불가)로 이 기준을 그대로 적용하고, 관내 분만율은 참고 지표로 표시. 분만산부인과 설치 시 시설·장비비 10억원 + 운영비 연 5억원 지원.<br />
+                    • <strong>소아취약지:</strong> 소아청소년과 지표는 실데이터 미확보로 판정에서 제외하고 응급·분만 가중치(0.4:0.35)로 재정규화. 병상 공급 비율 60%는 근거 확인 중인 참고 기준으로만 표시.
                   </p>
                 </div>
 
@@ -442,8 +467,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     「2026 공공의료 표준진료지침(CP) 개발 및 보급 사업 안내서」
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>변이(Variance) 규격:</strong> 환자/의료진/시스템 3대 영역 15대 세부 코드 표준 분류 및 EMR 모니터링 체계.<br />
-                    • <strong>경영 개선 효과 (ROI):</strong> 재원일수 단축에 따른 병상 회전율 증대 및 직접 진료비 절감 실시간 산출 알고리즘 적용.
+                    • <strong>변이(Variance) 관리:</strong> 환자/의료진/시스템 3대 영역으로 변이를 분류해 모니터링. 플랫폼의 15개 세부 사유 목록은 원문 대조 전이라 확인이 필요함.<br />
+                    • <strong>경영 개선 효과 (ROI):</strong> 안내서에는 ROI 산식이 없음. 플랫폼이 재원일수 단축·병상 회전·삭감 예방을 플랫폼 가정값(가동률·마진율 등)으로 계산해 참고용으로 제공.
                   </p>
                 </div>
 
@@ -453,14 +478,14 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
                       지침 5 · 보건복지부 공모 표준
                     </span>
-                    <span className="text-xs text-slate-400">Section 19 표준 사업계획서</span>
+                    <span className="text-xs text-slate-400">플랫폼 사업계획서 구성</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    「보건복지부 공공보건의료 기능보강 및 책임의료계획 12대 필수 항목 사업계획서」
+                    공공보건의료 사업계획서 12개 항목 (플랫폼 구성 — 실제 공모 서식은 해당 연도 공고문 확인)
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>12대 필수 목차 완비:</strong> ① 사업명, ② 사업목표, ③ 사업배경, ④ 지역현황, ⑤ 핵심 문제점, ⑥ 추진전략, ⑦ 세부사업, ⑧ 추진체계, ⑨ 소요예산, ⑩ 핵심 성과지표(KPI), ⑪ 추진일정, ⑫ 기대효과.<br />
-                    • <strong>플랫폼 제공 기능:</strong> AI 기반 맞춤 초안 생성, 직접 수정/편집 폼, 브라우저 로컬 스토리지 임시저장, A4 규격 인쇄, HWPX 한글 공문서 다운로드 연계 지원.<br />
+                    • <strong>12개 항목:</strong> ① 사업명, ② 추진배경, ③ 현황 및 문제점, ④ 사업목표, ⑤ 추진전략, ⑥ 세부사업, ⑦ 추진체계, ⑧ 추진일정, ⑨ 예산, ⑩ 성과지표, ⑪ 기대효과, ⑫ 사후관리.<br />
+                    • <strong>플랫폼 제공 기능:</strong> 지역 진단 결과 기반 초안 생성, 직접 수정/편집 폼, 브라우저 임시저장, PDF 인쇄, HWPX 한글 문서 다운로드.<br />
                     • <strong>환각 방지 원칙:</strong> 법정 산출근거 없는 예산·인력 수치는 임의 생성하지 않고 &apos;직접 입력 필요&apos;로 안내.
                   </p>
                 </div>
@@ -477,7 +502,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     「공공병원 파견 의료인력 인건비 지원사업」 &amp; 「국립대병원 공공임상교수제」
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                    • <strong>파견의사 인건비 국고 지원:</strong> 지방의료원·적십자병원 등 공공병원이 대학병원과 협약하여 파견받은 의료인력 인건비의 <strong>50% 국고 지원</strong> (1인당 최대 1.5억 원 한도).<br />
+                    • <strong>파견의사 인건비 국고 지원:</strong> 지방의료원·적십자병원 등 공공병원이 대학병원과 협약하여 파견받은 의료인력 인건비의 <strong>50% 국고 지원</strong>. 1인당 한도는 연도별로 다르게 안내되어(1억원·1.5억원 등) 해당 연도 사업지침 확인 필요.<br />
                     • <strong>공공임상교수제:</strong> 국립대병원 소속 정규 교원으로 임용되어 지방의료원 등 필수의료 현장에 상주 순환 배치되는 전문 의료인력 지원 체계.
                   </p>
                 </div>
@@ -495,7 +520,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>4단계 표준 프로세스:</strong> 입원 조기 스크리닝 환자평가 ➔ 다학제 심층 케어플랜 수립 ➔ 지역사회 연계(보건소·장기요양·방문간호) ➔ 퇴원 후 정기 모니터링.<br />
-                    • <strong>수가 보상 체계:</strong> 통합퇴원계획관리료, 지역사회연계관리료 및 퇴원 환자 재입원 방지 성과 지표 연계.
+                    • <strong>수가 보상 체계:</strong> 통합퇴원계획관리료, 지역사회연계관리료 등 (세부 기준은 심평원 시범사업 지침 원문 확인).
                   </p>
                 </div>
               </div>
@@ -522,7 +547,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     <div>• 분만 취약: ① 60분 내 분만의료 이용률(TRI) &lt; 30% 또는 ② 60분 접근 불가 인구 ≥ 30% — 둘 다 A등급, 하나 B등급 (분만취약지 선정 기준)</div>
                     <div>• 응급점수 = 권역응급 60분 미도달률, 분만점수 = (60분 미도달률 + (100 − 60분 내 분만의료 이용률)) ÷ 2 (공식 지표만, RI 미반영)</div>
                     <div>• 종합 취약도 점수 = (응급점수 × 0.4 + 분만점수 × 0.35) / 0.75 (소아 지표 부재 시 정규화)</div>
-                    <div>• 4단계 등급: 심각(취약분야 3개 OR 점수≥65), 취약(취약분야 2개 OR 점수≥45), 관찰(취약분야 1개 OR 점수≥25), 정상(그 외)</div>
+                    <div>• 4단계 등급: 심각(점수≥65), 취약(취약분야 2개 OR 점수≥45), 관찰(취약분야 1개 OR 점수≥25), 정상(그 외) — 소아 판정 제외로 취약분야는 응급·분만 최대 2개</div>
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     원천: 헬스맵 2024년 전국 250개 시군구 진단 데이터셋 및 법정 취약지 지정 기준
@@ -577,7 +602,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     RI (%) = (관내 거주자의 관내 의료이용 건수 / 관내 거주자의 총 의료이용 건수) × 100
                   </div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    자체충족률 30% 미만 시 의료공백 취약지역으로 판정 및 거점의료기관 기능보강 우선 지원
+                    참고 지표로만 표시하며 취약 판정·종합 점수에는 쓰지 않음 (응급·분만 취약지 공식 선정 기준에 RI 조건 없음)
                   </p>
                 </div>
               </div>
@@ -591,7 +616,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
         <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Info className="w-4 h-4 text-blue-500" />
-            <span>플랫폼 데이터 및 산출공식 100% 동기화 검증 완료 (2026.09 기준)</span>
+            <span>앱에 구현된 데이터·산식 기준으로 작성 (2026-10-11 대조). 원문 대조 내역은 「근거자료 반영 이력」 참고</span>
           </div>
 
           <button

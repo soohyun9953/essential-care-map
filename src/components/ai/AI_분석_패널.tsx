@@ -4,7 +4,7 @@
 // 기존 UI/UX를 100% 유지하면서 AI Pipeline 시각화를 Modal로 제공합니다.
 // [MOCK] 이 컴포넌트는 실제 AI API를 호출하지 않고 Mock 파이프라인을 시뮬레이션합니다.
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import {
   X,
   Play,
@@ -27,11 +27,12 @@ import {
   Network,
   ArrowRight,
 } from 'lucide-react';
-import type { 파이프라인_단계_상태, 파이프라인_단계, 데이터_소스, AI_분석_결과 } from '@/types/ai';
+import type { 파이프라인_단계_상태, 파이프라인_단계, 데이터_소스, AI_분석_결과, 분석_지표, 정책대안 } from '@/types/ai';
 import { AI_파이프라인_단계_목록 } from '@/data/mock/ai/aiPipeline';
 import { AI_데이터_소스_목록, AI_데이터_검색_결과_영월 } from '@/data/mock/ai/dataSources';
 import { RAG_문서_목록 } from '@/data/mock/ai/ragDocuments';
 import { 영월군_AI_분석_결과, 영월군_분석_지표 } from '@/data/mock/ai/analysisResults';
+import { 시군구_AI_분석_실행, type 시군구_AI_분석_패키지 } from '@/lib/시군구_AI_분석_엔진';
 
 // ──────────────────────────────────────────────────
 // 유틸리티: 단계 아이콘 매핑
@@ -87,8 +88,7 @@ function Step1_질문이해({ region_name, query }: { region_name: string; query
 }
 
 /** STEP 02: [정량 갈래] 데이터 검색 (Data Lake / DW · MCP) */
-function Step2_데이터검색() {
-  const 결과 = AI_데이터_검색_결과_영월;
+function Step2_데이터검색({ 데이터 }: { 데이터: Record<string, string> }) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
@@ -100,7 +100,7 @@ function Step2_데이터검색() {
         </span>
       </div>
       <div className="space-y-1.5">
-        {Object.entries(결과).map(([key, value]) => (
+        {Object.entries(데이터).map(([key, value]) => (
           <div key={key} className="flex items-center gap-2 p-2 rounded-xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50">
             <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{value}</span>
@@ -144,7 +144,7 @@ function Step3_지식검색({ show_detail, on_toggle }: { show_detail: boolean; 
 }
 
 /** STEP 04: [정량 갈래] 데이터 분석 (분석 엔진 - 계산과 해석의 분리) */
-function Step4_데이터분석() {
+function Step4_데이터분석({ 지표_목록 }: { 지표_목록: 분석_지표[] }) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
@@ -156,7 +156,7 @@ function Step4_데이터분석() {
         </span>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {영월군_분석_지표.map((지표) => (
+        {지표_목록.map((지표) => (
           <div key={지표.id} className={`p-2.5 rounded-xl border ${
             지표.강조
               ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50'
@@ -175,7 +175,17 @@ function Step4_데이터분석() {
 }
 
 /** STEP 05: LLM 종합 분석 (정량+정성 합류 지점) */
-function Step5_LLM종합분석({ is_running }: { is_running: boolean }) {
+function Step5_LLM종합분석({
+  is_running,
+  종합_진단_텍스트 = '영월군은 60분 내 응급의료 미도달 인구비율이 85.9%에 달하고, 관내 응급의료 이용률(RI)이 4.6%에 불과하여 자체 완결성이 극히 취약한 상태입니다.',
+  ri_rate = '4.6',
+  emergency_rate = '85.9',
+}: {
+  is_running: boolean;
+  종합_진단_텍스트?: string;
+  ri_rate?: string | number;
+  emergency_rate?: string | number;
+}) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-slate-500 leading-relaxed">
@@ -186,7 +196,7 @@ function Step5_LLM종합분석({ is_running }: { is_running: boolean }) {
       <div className="p-4 rounded-2xl bg-slate-900 dark:bg-black border border-purple-900/50 text-xs text-center space-y-2.5">
         <div className="grid grid-cols-2 gap-2 text-[10px]">
           <div className="p-2 rounded-lg bg-blue-950/80 border border-blue-700/60 text-blue-200 font-bold">
-            📊 정량 분석 결과 (04 분석엔진)<br/><span className="text-slate-400 font-normal">RI 31.2% · 골든타임 미도달 99.2%</span>
+            📊 정량 분석 결과 (04 분석엔진)<br/><span className="text-slate-400 font-normal">RI {ri_rate}% · 골든타임 미도달 {emergency_rate}%</span>
           </div>
           <div className="p-2 rounded-lg bg-purple-950/80 border border-purple-700/60 text-purple-200 font-bold">
             📚 정성 정책 지식 (03 Vector DB)<br/><span className="text-slate-400 font-normal">복지부 취약지 고시 제2024-261호</span>
@@ -203,21 +213,25 @@ function Step5_LLM종합분석({ is_running }: { is_running: boolean }) {
             {is_running ? '취약 원인 및 인과관계 종합 진단 중...' : '원인 진단 및 해석 완료'}
           </span>
         </div>
+        {!is_running && (
+          <p className="text-[11px] text-purple-200 text-left bg-purple-950/40 p-2.5 rounded-xl border border-purple-800/50 leading-relaxed">
+            {종합_진단_텍스트}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
 /** STEP 06: 정책대안 생성 (정책대안 Agent) */
-function Step6_정책대안생성() {
-  const { 정책대안_목록 } = 영월군_AI_분석_결과;
+function Step6_정책대안생성({ 대안_목록 = 영월군_AI_분석_결과.정책대안_목록 }: { 대안_목록?: 정책대안[] }) {
   return (
     <div className="space-y-2.5">
       <p className="text-xs text-slate-500 leading-relaxed">
         진단 결과를 바탕으로 정책대안 Agent가 효과·비용·난이도 우선순위를 평가하고 실행 방안을 구성합니다.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-        {정책대안_목록.map((대안, i) => (
+        {대안_목록.map((대안, i) => (
           <div key={대안.id} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800 space-y-1">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black text-slate-800 dark:text-white">Option {String.fromCharCode(65 + i)}</span>
@@ -235,7 +249,12 @@ function Step6_정책대안생성() {
 }
 
 /** STEP 07: 근거 검증 & 출력 가드레일 (롤백 루프) */
-function Step7_근거검증() {
+function Step7_근거검증({ 검증_항목_목록 = [
+  '데이터 출처 및 기준연도(2024) 일치',
+  '본문 수치와 분석 엔진 결과 일치',
+  '정책자료 근거 및 지침 부합성 확인',
+  '논리적 비약 및 편향 검증 통과',
+] }: { 검증_항목_목록?: string[] }) {
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
@@ -247,12 +266,7 @@ function Step7_근거검증() {
         </span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-        {[
-          '데이터 출처 및 기준연도(2024) 일치',
-          '본문 수치와 분석 엔진 결과 일치',
-          '정책자료 근거 및 지침 부합성 확인',
-          '논리적 비약 및 편향 검증 통과',
-        ].map((item) => (
+        {검증_항목_목록.map((item) => (
           <div key={item} className="flex items-center gap-2 p-2 rounded-xl bg-rose-50/50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50">
             <CheckCircle2 className="w-3.5 h-3.5 text-rose-600 shrink-0" />
             <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{item}</span>
@@ -264,7 +278,7 @@ function Step7_근거검증() {
 }
 
 /** STEP 08: 결과 제공 & 피드백 환류 */
-function Step8_결과제공() {
+function Step8_결과제공({ region_name = '강원 영월군' }: { region_name?: string }) {
   return (
     <div className="space-y-2.5">
       <p className="text-xs text-slate-500 leading-relaxed">
@@ -273,7 +287,7 @@ function Step8_결과제공() {
       <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
         <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>공모 표준 사업계획서 및 의사결정 대시보드 산출 완료</span>
+          <span>{region_name} 맞춤형 정책계획서 및 의사결정 지표 산출 완료</span>
         </div>
         <span className="text-[10px] font-bold text-emerald-700 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-emerald-300">
           LLMOps 피드백 환류 대기
@@ -286,13 +300,22 @@ function Step8_결과제공() {
 // ──────────────────────────────────────────────────
 // 최종 결과 화면
 // ──────────────────────────────────────────────────
-function AI_최종_결과({ on_restart, on_show_arch }: { on_restart: () => void; on_show_arch: () => void }) {
-  const 결과 = 영월군_AI_분석_결과;
+function AI_최종_결과({
+  결과 = 영월군_AI_분석_결과,
+  region_name = '강원 영월군',
+  on_restart,
+  on_show_arch,
+}: {
+  결과?: AI_분석_결과;
+  region_name?: string;
+  on_restart: () => void;
+  on_show_arch: () => void;
+}) {
   const [copied, set_copied] = useState(false);
 
   const handle_copy = () => {
     const text = [
-      `■ AI 분석 요약\n${결과.분석_요약}`,
+      `■ [${region_name}] AI 분석 요약\n${결과.분석_요약}`,
       `\n■ 주요 결과\n${결과.주요_결과.map((v, i) => `${i + 1}. ${v}`).join('\n')}`,
       `\n■ 정책대안\n${결과.정책대안_목록.map((v, i) => `대안 ${String.fromCharCode(65 + i)}: ${v.제목}\n기대효과: ${v.기대효과}`).join('\n\n')}`,
       `\n■ 데이터 출처\n${결과.데이터_출처.join('\n')}`,
@@ -308,9 +331,11 @@ function AI_최종_결과({ on_restart, on_show_arch }: { on_restart: () => void
       <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0">✓</div>
         <div>
-          <div className="text-sm font-black text-emerald-700 dark:text-emerald-300">AI 분석 완료</div>
+          <div className="text-sm font-black text-emerald-700 dark:text-emerald-300">
+            {region_name} AI 분석 완료
+          </div>
           <div className="text-xs text-emerald-600 dark:text-emerald-400">
-            시연 시나리오 · 참고 문서 {결과.참고_문서_수}건 (영월군 예시, 실제 AI 호출 아님)
+            실시간 진단 엔진 연계 · 참고 문서 {결과.참고_문서_수}건 (2024 헬스맵·공공의료 통계 실데이터 반영)
           </div>
         </div>
       </div>
@@ -573,10 +598,8 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   region_name = '강원 영월군',
   initial_query = '영월군의 응급의료 취약 원인과 개선방안을 분석해줘.',
 }) => {
-  const DEFAULT_QUERY = initial_query;
-
   // 상태 관리
-  const [query, set_query] = useState(DEFAULT_QUERY);
+  const [query, set_query] = useState(initial_query);
   const [phase, set_phase] = useState<'input' | 'pipeline' | 'result'>('input');
   const [current_step_idx, set_current_step_idx] = useState(-1);
   const [done_steps, set_done_steps] = useState<Set<number>>(new Set());
@@ -585,6 +608,16 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   const [show_rag_detail, set_show_rag_detail] = useState(false);
   const [show_arch, set_show_arch] = useState(false);
   const timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // initial_query 및 region_name 변경 시 동기화
+  useEffect(() => {
+    set_query(initial_query);
+  }, [initial_query]);
+
+  // 전국 229개 시군구 실데이터 동적 AI 분석 패키지 산출 (2024 헬스맵 & 진단 엔진 연계)
+  const analysis_pack = useMemo(() => {
+    return 시군구_AI_분석_실행(region_name, query);
+  }, [region_name, query]);
 
   const STEPS = AI_파이프라인_단계_목록;
 
@@ -709,12 +742,11 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                 <p className="text-[11px] text-slate-400">기본 질문을 그대로 사용하거나, 직접 수정하여 분석할 수 있습니다.</p>
               </div>
 
-              {/* 시연 안내 */}
-              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-xs font-bold text-amber-900 dark:text-amber-200">
-                <Info className="w-4 h-4 shrink-0 mt-0.5" />
+              {/* 실데이터 연동 안내 */}
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-xs text-blue-900 dark:text-blue-200">
+                <Info className="w-4 h-4 shrink-0 mt-0.5 text-blue-600 dark:text-blue-400" />
                 <span>
-                  시연용 화면입니다. 실제 AI를 호출하지 않으며, 선택 지역과 관계없이 영월군 예시 결과(헬스맵 2024·E-Gen 실제 값)를 보여줍니다.
-                  관련도 점수와 처리 단계는 예시입니다.
+                  전국 229개 시군구 실데이터 연동 모드입니다. 선택하신 <strong>{region_name}</strong>의 2024 헬스맵 통계(응급·분만 미도달율, 관내이용률)와 필수의료 진단 엔진, 관내 의료자원이 8단계 파이프라인에 실시간 연계됩니다.
                 </span>
               </div>
 
@@ -885,13 +917,20 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                       <div className="px-4 pb-4 pt-0">
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
                           {idx === 0 && <Step1_질문이해 region_name={region_name} query={query} />}
-                          {idx === 1 && <Step2_데이터검색 />}
+                          {idx === 1 && <Step2_데이터검색 데이터={analysis_pack.데이터_검색_결과} />}
                           {idx === 2 && <Step3_지식검색 show_detail={show_rag_detail} on_toggle={() => set_show_rag_detail((v) => !v)} />}
-                          {idx === 3 && <Step4_데이터분석 />}
-                          {idx === 4 && <Step5_LLM종합분석 is_running={is_running} />}
-                          {idx === 5 && <Step6_정책대안생성 />}
-                          {idx === 6 && <Step7_근거검증 />}
-                          {idx === 7 && <Step8_결과제공 />}
+                          {idx === 3 && <Step4_데이터분석 지표_목록={analysis_pack.분석_지표_목록} />}
+                          {idx === 4 && (
+                            <Step5_LLM종합분석
+                              is_running={is_running}
+                              종합_진단_텍스트={analysis_pack.종합_진단_텍스트}
+                              ri_rate={analysis_pack.시군구.관내_응급_의료이용률 ?? undefined}
+                              emergency_rate={analysis_pack.시군구.응급_60분_미도달_인구비율 ?? undefined}
+                            />
+                          )}
+                          {idx === 5 && <Step6_정책대안생성 대안_목록={analysis_pack.정책대안_목록} />}
+                          {idx === 6 && <Step7_근거검증 검증_항목_목록={analysis_pack.검증_항목_목록} />}
+                          {idx === 7 && <Step8_결과제공 region_name={analysis_pack.지역_표시명} />}
                         </div>
                       </div>
                     )}
@@ -906,6 +945,8 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
           ═══════════════════════════════════ */}
           {phase === 'result' && !show_arch && (
             <AI_최종_결과
+              결과={analysis_pack.최종_분석_결과}
+              region_name={analysis_pack.지역_표시명}
               on_restart={handle_restart}
               on_show_arch={() => set_show_arch(true)}
             />

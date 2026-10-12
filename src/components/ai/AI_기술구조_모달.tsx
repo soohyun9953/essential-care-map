@@ -62,7 +62,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
               <span>공공의료 AI 분석 시스템 표준 아키텍처 명세</span>
             </h3>
             <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-              정량 분석(분석 엔진)과 정성 지식(Vector DB)의 병렬 분기·합류, 계산과 해석의 분리, 대안 생성 후 근거 검증 및 LLMOps 환류 체계로 구성됩니다.
+              Step 0 인프라(DW, Vector DB, MCP Gateway) 기반 위에서 정량 수치 분석과 정성 지식의 병렬 분기·합류, 계산과 해석의 분리, 대안 생성 후 근거 검증 및 LLMOps 환류 체계로 구성됩니다.
             </p>
           </div>
           <button

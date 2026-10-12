@@ -1234,7 +1234,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
                   </span>
                   <div className="text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
                     <div>• 보건복지부 고시 「응급의료분야 의료취약지 지정」 (제2024-261호)</div>
-                    <div>• 제2차 공공보건의료 기본계획 (책임의료 협의체)</div>
+                    <div>• 제3차 공공보건의료 기본계획 (2026~2030, 책임의료 협의체)</div>
                     <div>• 지방자치단체 보건의료계획 표준 양식 준수</div>
                   </div>
                 </div>

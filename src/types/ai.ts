@@ -9,13 +9,20 @@ export type 실행_주체_유형 =
   | 'user'
   | 'foundation'
   | 'orchestrator'
+  | 'analysis_engine'
+  | 'vector_db'
+  | 'data_dw'
+  | 'mcp_gateway'
+  | 'llm_layer'
+  | 'policy_agent'
+  | 'validator'
+  | 'result_delivery'
   | 'agent'
   | 'nlp'
   | 'data_db'
   | 'rag_engine'
   | 'analysis'
   | 'llm'
-  | 'validator'
   | 'policy_gen';
 
 /** 실행 주체 정보 */

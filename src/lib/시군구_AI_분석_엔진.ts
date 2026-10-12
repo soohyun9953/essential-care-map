@@ -17,6 +17,9 @@ export interface 시군구_AI_분석_패키지 {
   정책대안_목록: 정책대안[];
   검증_항목_목록: string[];
   최종_분석_결과: AI_분석_결과;
+  생성_모델?: string;
+  is_gemini_live?: boolean;
+  소요시간_ms?: number;
 }
 
 /**
@@ -245,5 +248,39 @@ export function 시군구_AI_분석_실행(
     정책대안_목록,
     검증_항목_목록,
     최종_분석_결과,
+  };
+}
+
+/**
+ * Google Gemini 실시간 API 응답을 패키지에 반영하여 갱신된 패키지 반환
+ */
+export function 시군구_AI_분석_Gemini_결과_반영(
+  기존_패키지: 시군구_AI_분석_패키지,
+  gemini_response: string,
+  model_name: string,
+  elapsed_ms: number
+): 시군구_AI_분석_패키지 {
+  // 호출 텍스트 정제 (모델 안내 헤더 등 정리)
+  const clean_text = (gemini_response || '')
+    .replace(/^\[✓ 호출 성공 모델: [^\]]+\]\s*/i, '')
+    .trim();
+
+  const 갱신_요약 = clean_text || 기존_패키지.종합_진단_텍스트;
+
+  return {
+    ...기존_패키지,
+    종합_진단_텍스트: 갱신_요약,
+    생성_모델: model_name,
+    is_gemini_live: true,
+    소요시간_ms: elapsed_ms,
+    최종_분석_결과: {
+      ...기존_패키지.최종_분석_결과,
+      분석_요약: 갱신_요약,
+      참고_문서_수: 기존_패키지.최종_분석_결과.참고_문서_수 + 2,
+      데이터_출처: [
+        `Google Gemini (${model_name}) 실시간 추론 연동`,
+        ...기존_패키지.최종_분석_결과.데이터_출처,
+      ],
+    },
   };
 }

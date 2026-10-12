@@ -26,13 +26,19 @@ import {
   Cpu,
   Network,
   ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 import type { 파이프라인_단계_상태, 파이프라인_단계, 데이터_소스, AI_분석_결과, 분석_지표, 정책대안 } from '@/types/ai';
 import { AI_파이프라인_단계_목록 } from '@/data/mock/ai/aiPipeline';
 import { AI_데이터_소스_목록, AI_데이터_검색_결과_영월 } from '@/data/mock/ai/dataSources';
 import { RAG_문서_목록 } from '@/data/mock/ai/ragDocuments';
 import { 영월군_AI_분석_결과, 영월군_분석_지표 } from '@/data/mock/ai/analysisResults';
-import { 시군구_AI_분석_실행, type 시군구_AI_분석_패키지 } from '@/lib/시군구_AI_분석_엔진';
+import {
+  시군구_AI_분석_실행,
+  시군구_AI_분석_Gemini_결과_반영,
+  type 시군구_AI_분석_패키지,
+} from '@/lib/시군구_AI_분석_엔진';
+import { API키_불러오기 } from '@/lib/API키_저장소';
 
 // ──────────────────────────────────────────────────
 // 유틸리티: 단계 아이콘 매핑
@@ -180,11 +186,17 @@ function Step5_LLM종합분석({
   종합_진단_텍스트 = '영월군은 60분 내 응급의료 미도달 인구비율이 85.9%에 달하고, 관내 응급의료 이용률(RI)이 4.6%에 불과하여 자체 완결성이 극히 취약한 상태입니다.',
   ri_rate = '4.6',
   emergency_rate = '85.9',
+  used_model,
+  is_gemini_live,
+  elapsed_ms,
 }: {
   is_running: boolean;
   종합_진단_텍스트?: string;
   ri_rate?: string | number;
   emergency_rate?: string | number;
+  used_model?: string;
+  is_gemini_live?: boolean;
+  elapsed_ms?: number;
 }) {
   return (
     <div className="space-y-3">
@@ -208,13 +220,36 @@ function Step5_LLM종합분석({
         </div>
 
         <div className="p-2.5 rounded-xl bg-purple-950/90 border border-purple-600 text-purple-100 flex items-center justify-center gap-2">
-          <Brain className="w-4 h-4 text-purple-400 animate-pulse" />
+          {is_gemini_live ? (
+            <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+          ) : (
+            <Brain className="w-4 h-4 text-purple-400 animate-pulse" />
+          )}
           <span className="font-bold text-xs">
-            {is_running ? '취약 원인 및 인과관계 종합 진단 중...' : '원인 진단 및 해석 완료'}
+            {is_running
+              ? is_gemini_live
+                ? 'Google Gemini 모델 실시간 추론 진행 중...'
+                : '취약 원인 및 인과관계 종합 진단 중...'
+              : '원인 진단 및 해석 완료'}
           </span>
         </div>
+
+        {!is_running && is_gemini_live && (
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-purple-900/60 border border-purple-500/50 text-[10px] text-purple-200">
+            <span className="flex items-center gap-1 font-bold">
+              <Sparkles className="w-3 h-3 text-purple-300" />
+              {used_model || 'Google Gemini 2.5 Flash 실시간 추론'}
+            </span>
+            {elapsed_ms && (
+              <span className="text-purple-300 opacity-80">
+                (응답 소요: {(elapsed_ms / 1000).toFixed(1)}초)
+              </span>
+            )}
+          </div>
+        )}
+
         {!is_running && (
-          <p className="text-[11px] text-purple-200 text-left bg-purple-950/40 p-2.5 rounded-xl border border-purple-800/50 leading-relaxed">
+          <p className="text-[11px] text-purple-200 text-left bg-purple-950/40 p-2.5 rounded-xl border border-purple-800/50 leading-relaxed whitespace-pre-line">
             {종합_진단_텍스트}
           </p>
         )}
@@ -303,11 +338,17 @@ function Step8_결과제공({ region_name = '강원 영월군' }: { region_name?
 function AI_최종_결과({
   결과 = 영월군_AI_분석_결과,
   region_name = '강원 영월군',
+  생성_모델,
+  is_gemini_live,
+  소요시간_ms,
   on_restart,
   on_show_arch,
 }: {
   결과?: AI_분석_결과;
   region_name?: string;
+  생성_모델?: string;
+  is_gemini_live?: boolean;
+  소요시간_ms?: number;
   on_restart: () => void;
   on_show_arch: () => void;
 }) {
@@ -330,12 +371,26 @@ function AI_최종_결과({
       {/* 분석 완료 배너 */}
       <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0">✓</div>
-        <div>
-          <div className="text-sm font-black text-emerald-700 dark:text-emerald-300">
-            {region_name} AI 분석 완료
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">
+              {region_name} AI 분석 완료
+            </span>
+            {is_gemini_live ? (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/60 px-2 py-0.5 rounded-full border border-purple-300">
+                <Sparkles className="w-2.5 h-2.5" />
+                {생성_모델 || 'Google Gemini'} 실시간 추론 연동
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-300">
+                공공의료 지능형 진단 엔진
+              </span>
+            )}
           </div>
-          <div className="text-xs text-emerald-600 dark:text-emerald-400">
-            실시간 진단 엔진 연계 · 참고 문서 {결과.참고_문서_수}건 (2024 헬스맵·공공의료 통계 실데이터 반영)
+          <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">
+            {is_gemini_live
+              ? `Gemini 클라우드 연동 (${소요시간_ms ? (소요시간_ms / 1000).toFixed(1) : '1.2'}초 소요)`
+              : '실시간 진단 엔진 연계'} · 참고 문서 {결과.참고_문서_수}건 (2024 헬스맵·공공의료 통계 실데이터 반영)
           </div>
         </div>
       </div>
@@ -343,7 +398,7 @@ function AI_최종_결과({
       {/* 분석 요약 */}
       <div className="p-4 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 space-y-2">
         <div className="text-xs font-black text-slate-400 uppercase tracking-wider">분석 요약</div>
-        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{결과.분석_요약}</p>
+        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{결과.분석_요약}</p>
       </div>
 
       {/* 주요 결과 */}
@@ -607,7 +662,17 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   const [pipeline_all_done, set_pipeline_all_done] = useState(false); // 파이프라인 전체 완료 여부
   const [show_rag_detail, set_show_rag_detail] = useState(false);
   const [show_arch, set_show_arch] = useState(false);
+  const [has_gemini_key, set_has_gemini_key] = useState(false);
+  const [live_gemini_pack, set_live_gemini_pack] = useState<시군구_AI_분석_패키지 | null>(null);
   const timer_ref = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Gemini API 키 등록 여부 감지
+  useEffect(() => {
+    if (is_open) {
+      const key = API키_불러오기('google_gemini_api_key');
+      set_has_gemini_key(!!key);
+    }
+  }, [is_open]);
 
   // initial_query 및 region_name 변경 시 동기화
   useEffect(() => {
@@ -618,6 +683,9 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   const analysis_pack = useMemo(() => {
     return 시군구_AI_분석_실행(region_name, query);
   }, [region_name, query]);
+
+  // 실시간 Gemini 결과가 있으면 우선 사용, 없으면 엔진 내장 패키지 사용
+  const current_pack = live_gemini_pack || analysis_pack;
 
   const STEPS = AI_파이프라인_단계_목록;
 
@@ -631,13 +699,52 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
     return () => window.removeEventListener('keydown', handle_key);
   }, [is_open, on_close]);
 
-  // 파이프라인 순차 실행 함수
+  // 파이프라인 순차 실행 함수 (Google Gemini 실시간 호출 병렬 트리거)
   const run_pipeline = useCallback(() => {
     set_phase('pipeline');
     set_current_step_idx(0);
     set_done_steps(new Set());
     set_expanded_steps(new Set([0]));
     set_pipeline_all_done(false);
+    set_live_gemini_pack(null);
+
+    // Google Gemini API 키가 등록된 경우 백그라운드 실시간 호출
+    const gemini_key = API키_불러오기('google_gemini_api_key');
+    if (gemini_key) {
+      fetch('/api/llm/compare', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          google_api_key: gemini_key,
+          region_name: analysis_pack.지역_표시명,
+          region_stats: {
+            emergency_rate: analysis_pack.시군구.응급_60분_미도달_인구비율,
+            ri_rate: analysis_pack.시군구.관내_응급_의료이용률,
+            maternity_rate: analysis_pack.시군구.관내_분만율,
+            vulnerability_grade:
+              (analysis_pack.시군구.응급_60분_미도달_인구비율 ?? 0) >= 30 ? '심각' : '관찰',
+          },
+          rag_context: '보건복지부 취약지 고시 제2024-261호, 공공보건의료에 관한 법률 제12조',
+          mode: 'general_qa',
+        }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data?.google_gemini?.response) {
+            const updated = 시군구_AI_분석_Gemini_결과_반영(
+              analysis_pack,
+              data.google_gemini.response,
+              data.google_gemini.model || 'Google Gemini 2.5 Flash',
+              data.google_gemini.elapsed_ms || 1200
+            );
+            set_live_gemini_pack(updated);
+          }
+        })
+        .catch((err) => {
+          console.warn('[Gemini 연동] 실시간 호출 실패, 엔진 기본 결과 유지:', err);
+        });
+    }
 
     const run_next = (step_index: number) => {
       if (step_index >= STEPS.length) {
@@ -662,7 +769,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
     };
 
     run_next(0);
-  }, [STEPS]);
+  }, [STEPS, analysis_pack, query]);
 
   // 재분석 핸들러
   const handle_restart = () => {
@@ -673,6 +780,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
     set_expanded_steps(new Set());
     set_pipeline_all_done(false);
     set_show_arch(false);
+    set_live_gemini_pack(null);
   };
 
   // 컴포넌트 언마운트 시 타이머 정리
@@ -749,6 +857,28 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                   전국 229개 시군구 실데이터 연동 모드입니다. 선택하신 <strong>{region_name}</strong>의 2024 헬스맵 통계(응급·분만 미도달율, 관내이용률)와 필수의료 진단 엔진, 관내 의료자원이 8단계 파이프라인에 실시간 연계됩니다.
                 </span>
               </div>
+
+              {/* Gemini 연동 상태 배너 */}
+              {has_gemini_key ? (
+                <div className="flex items-center justify-between p-3 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 text-xs text-purple-900 dark:text-purple-200">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 animate-pulse" />
+                    <span>
+                      <strong>Google Gemini 실시간 추론 연동됨:</strong> 05단계 종합 분석 시 등록된 API 키를 통해 실시간 클라우드 LLM 추론이 수행됩니다.
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold text-purple-700 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded-full shrink-0">
+                    Active
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400">
+                  <Brain className="w-4 h-4 text-slate-400 shrink-0" />
+                  <span>
+                    <strong>공공의료 지능형 분석 엔진 모드:</strong> 상단 헤더에서 Gemini API 키를 등록하면 대형 LLM 실시간 추론이 활성화됩니다. (미등록 시에도 229개 시군구 실데이터 정밀 분석)
+                  </span>
+                </div>
+              )}
 
               {/* 분석 대상 지역 표시 */}
               <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
@@ -917,20 +1047,23 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                       <div className="px-4 pb-4 pt-0">
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
                           {idx === 0 && <Step1_질문이해 region_name={region_name} query={query} />}
-                          {idx === 1 && <Step2_데이터검색 데이터={analysis_pack.데이터_검색_결과} />}
+                          {idx === 1 && <Step2_데이터검색 데이터={current_pack.데이터_검색_결과} />}
                           {idx === 2 && <Step3_지식검색 show_detail={show_rag_detail} on_toggle={() => set_show_rag_detail((v) => !v)} />}
-                          {idx === 3 && <Step4_데이터분석 지표_목록={analysis_pack.분석_지표_목록} />}
+                          {idx === 3 && <Step4_데이터분석 지표_목록={current_pack.분석_지표_목록} />}
                           {idx === 4 && (
                             <Step5_LLM종합분석
                               is_running={is_running}
-                              종합_진단_텍스트={analysis_pack.종합_진단_텍스트}
-                              ri_rate={analysis_pack.시군구.관내_응급_의료이용률 ?? undefined}
-                              emergency_rate={analysis_pack.시군구.응급_60분_미도달_인구비율 ?? undefined}
+                              종합_진단_텍스트={current_pack.종합_진단_텍스트}
+                              ri_rate={current_pack.시군구.관내_응급_의료이용률 ?? undefined}
+                              emergency_rate={current_pack.시군구.응급_60분_미도달_인구비율 ?? undefined}
+                              used_model={current_pack.생성_모델}
+                              is_gemini_live={current_pack.is_gemini_live}
+                              elapsed_ms={current_pack.소요시간_ms}
                             />
                           )}
-                          {idx === 5 && <Step6_정책대안생성 대안_목록={analysis_pack.정책대안_목록} />}
-                          {idx === 6 && <Step7_근거검증 검증_항목_목록={analysis_pack.검증_항목_목록} />}
-                          {idx === 7 && <Step8_결과제공 region_name={analysis_pack.지역_표시명} />}
+                          {idx === 5 && <Step6_정책대안생성 대안_목록={current_pack.정책대안_목록} />}
+                          {idx === 6 && <Step7_근거검증 검증_항목_목록={current_pack.검증_항목_목록} />}
+                          {idx === 7 && <Step8_결과제공 region_name={current_pack.지역_표시명} />}
                         </div>
                       </div>
                     )}
@@ -945,8 +1078,11 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
           ═══════════════════════════════════ */}
           {phase === 'result' && !show_arch && (
             <AI_최종_결과
-              결과={analysis_pack.최종_분석_결과}
-              region_name={analysis_pack.지역_표시명}
+              결과={current_pack.최종_분석_결과}
+              region_name={current_pack.지역_표시명}
+              생성_모델={current_pack.생성_모델}
+              is_gemini_live={current_pack.is_gemini_live}
+              소요시간_ms={current_pack.소요시간_ms}
               on_restart={handle_restart}
               on_show_arch={() => set_show_arch(true)}
             />

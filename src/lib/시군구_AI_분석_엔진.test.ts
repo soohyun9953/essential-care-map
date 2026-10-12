@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { 시군구_찾기, 시군구_AI_분석_실행 } from './시군구_AI_분석_엔진';
+import { 시군구_찾기, 시군구_AI_분석_실행, 시군구_AI_분석_Gemini_결과_반영 } from './시군구_AI_분석_엔진';
 
 describe('시군구_AI_분석_엔진', () => {
   it('시군구명을 정확하게 검색한다 (영월군, 신안군, 울릉군, 종로구)', () => {
@@ -44,4 +44,20 @@ describe('시군구_AI_분석_엔진', () => {
     expect(result.시군구.응급_60분_미도달_인구비율).toBe(0);
     expect(result.정책대안_목록.length).toBe(3);
   });
+
+  it('Gemini 실시간 응답 반영 시 분석 요약과 모델 메타데이터가 정상 갱신된다', () => {
+    const pack = 시군구_AI_분석_실행('강원 영월군');
+    const updated = 시군구_AI_분석_Gemini_결과_반영(
+      pack,
+      '영월군은 골든타임 확보를 위해 공공병원 전담 인력 확충이 시급합니다.',
+      'Google Gemini 2.5 Flash',
+      1200
+    );
+    expect(updated.is_gemini_live).toBe(true);
+    expect(updated.생성_모델).toBe('Google Gemini 2.5 Flash');
+    expect(updated.소요시간_ms).toBe(1200);
+    expect(updated.종합_진단_텍스트).toContain('골든타임 확보를 위해');
+    expect(updated.최종_분석_결과.데이터_출처[0]).toContain('Gemini');
+  });
 });
+

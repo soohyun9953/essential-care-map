@@ -25,6 +25,7 @@ import {
 } from '@/lib/의료기관_질의응답_엔진';
 import { 공공의료기관_상세_프로필 } from '@/lib/의료서비스_검색_엔진';
 import { copy_text_to_clipboard, format_number_comma } from '@/lib/유틸리티';
+import { API키_불러오기 } from '@/lib/API키_저장소';
 
 interface 의료기관_질의응답_모달_속성 {
   is_open: boolean;
@@ -51,11 +52,16 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
   const [query_input, set_query_input] = useState(initial_query);
   const [result, set_result] = useState<의료기관_질의_응답_결과 | null>(null);
   const [is_searching, set_is_searching] = useState(false);
+  const [is_gemini_loading, set_is_gemini_loading] = useState(false);
+  const [has_gemini_key, set_has_gemini_key] = useState(false);
   const [copied, set_copied] = useState(false);
   const input_ref = useRef<HTMLInputElement>(null);
 
+  // Gemini API 키 등록 여부 감지
   useEffect(() => {
     if (is_open) {
+      const key = API키_불러오기('google_gemini_api_key');
+      set_has_gemini_key(!!key);
       const q = initial_query || '병상수가 가장 많은 공공병원 Top10 보여줘.';
       set_query_input(q);
       execute_query(q);
@@ -76,11 +82,63 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
   const execute_query = (query_text: string) => {
     if (!query_text.trim()) return;
     set_is_searching(true);
+    set_is_gemini_loading(false);
 
     setTimeout(() => {
       try {
         const res = analyze_hospital_query(query_text);
         set_result(res);
+
+        // Google Gemini 온라인 실시간 질의응답 비동기 연동
+        const gemini_key = API키_불러오기('google_gemini_api_key');
+        if (gemini_key) {
+          set_is_gemini_loading(true);
+
+          // 상위 공공병원 추출 요약 생성
+          const top_hospitals_summary = res.hospitals.slice(0, 5).map((h, i) =>
+            `${i + 1}. ${h.기관명}(${h.시도명} ${h.시군구명}) - ${h.기관유형}, 총병상 ${h.의료자원.병상.총병상}개, 전문의 ${h.의료자원.의료인력.전문의수}명, 주요서비스: ${h.주요_의료서비스.join('/')}`
+          ).join('\n');
+
+          const rag_text = (res.rag_evidences || []).map((r) => `[${r.문서명}] ${r.본문} (기준: ${r.기준수치})`).join('\n');
+
+          fetch('/api/llm/compare', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: `[전국 214개 공공병원 데이터 자연어 질의]\n질문: ${query_text}\n\n[검색된 공공병원 정형 데이터 요약 (총 ${res.total_count}건 중 상위)]:\n${top_hospitals_summary}\n\n[관련 보건복지부 법령 및 지침]:\n${rag_text}`,
+              google_api_key: gemini_key,
+              region_name: '전국 214개 공공의료기관 데이터 관제',
+              region_stats: {
+                emergency_rate: 0,
+                ri_rate: 0,
+                maternity_rate: 0,
+                vulnerability_grade: '의료기관 자원 분석',
+              },
+              mode: 'general_qa',
+            }),
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+              if (data?.google_gemini?.response) {
+                const clean_text = data.google_gemini.response
+                  .replace(/^\[✓ 호출 성공 모델: [^\]]+\]\s*/i, '')
+                  .trim();
+                set_result((prev) => (prev ? {
+                  ...prev,
+                  gemini_analysis: clean_text,
+                  gemini_model: data.google_gemini.model || 'Google Gemini 2.5 Flash',
+                  gemini_elapsed_ms: data.google_gemini.elapsed_ms || 1200,
+                  is_gemini_live: true,
+                } : null));
+              }
+            })
+            .catch((err) => {
+              console.warn('[의료기관 QA Gemini 호출 실패]:', err);
+            })
+            .finally(() => {
+              set_is_gemini_loading(false);
+            });
+        }
       } catch (err) {
         console.error('의료기관 질의 분석 오류:', err);
       } finally {
@@ -127,9 +185,16 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   의료기관 데이터 AI 자연어 질의응답
                 </h2>
-                <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900">
-                  전국 214개 공공병원 전수 연동
-                </span>
+                {has_gemini_key ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-300 dark:border-purple-800">
+                    <Sparkles className="w-2.5 h-2.5 text-purple-600 animate-pulse" />
+                    Google Gemini 온라인 연동
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900">
+                    전국 214개 공공병원 전수 연동 (로컬 엔진)
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 병상 규모, 전문의·의사인력, 응급/분만/소아 필수의료 가동 현황을 자연어로 즉시 질의합니다.
@@ -198,6 +263,41 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
           {/* 질의 분석 결과 영역 */}
           {result && (
             <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300">
+              {/* Google Gemini 온라인 실시간 심층 소견 카드 */}
+              {(is_gemini_loading || result.gemini_analysis) && (
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-50/90 via-indigo-50/40 to-white dark:from-purple-950/40 dark:via-slate-900 dark:to-slate-900 border border-purple-200 dark:border-purple-800 shadow-xs space-y-3 animate-in fade-in duration-300">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 text-white shadow-xs">
+                        <Sparkles className="w-4 h-4 animate-pulse" />
+                      </span>
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>Google Gemini 온라인 AI 심층 소견</span>
+                        <span className="text-[9px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-950 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                          LIVE
+                        </span>
+                      </h3>
+                    </div>
+                    {result.gemini_model && !is_gemini_loading && (
+                      <span className="text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100/80 dark:bg-purple-900/50 px-2.5 py-0.5 rounded-full border border-purple-300 dark:border-purple-700">
+                        {result.gemini_model} · {result.gemini_elapsed_ms ? `${(result.gemini_elapsed_ms / 1000).toFixed(1)}초` : '완료'}
+                      </span>
+                    )}
+                  </div>
+
+                  {is_gemini_loading ? (
+                    <div className="p-3.5 rounded-xl bg-purple-950/5 dark:bg-purple-900/20 border border-purple-200/50 dark:border-purple-800/40 flex items-center gap-2.5 text-xs text-purple-800 dark:text-purple-300">
+                      <RefreshCw className="w-4 h-4 text-purple-600 animate-spin shrink-0" />
+                      <span>전국 214개 공공병원 통계 데이터를 바탕으로 Google Gemini 모델이 실시간 정책 분석 소견을 작성하고 있습니다...</span>
+                    </div>
+                  ) : (
+                    <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-purple-100 dark:border-purple-900/40 text-xs sm:text-sm text-slate-800 dark:text-slate-200 leading-relaxed font-normal whitespace-pre-line shadow-2xs">
+                      {result.gemini_analysis}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* 1. AI 종합 분석 브리핑 카드 */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-emerald-50/80 via-teal-50/40 to-white dark:from-emerald-950/30 dark:via-slate-900 dark:to-slate-900 border border-emerald-100 dark:border-emerald-900/60 shadow-xs space-y-3">
                 <div className="flex items-center justify-between gap-3">

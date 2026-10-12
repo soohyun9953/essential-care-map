@@ -29,6 +29,10 @@ export interface 의료기관_질의_응답_결과 {
   chart_data?: { name: string; value1: number; value2?: number; label1: string; label2?: string }[];
   hospitals: 공공의료기관_상세_프로필[];
   rag_evidences?: 지침_문서_청크[]; // RAG 코퍼스에서 검색된 관련 법령/지침
+  gemini_analysis?: string; // Google Gemini 온라인 심층 질의응답 분석 소견
+  gemini_model?: string;
+  gemini_elapsed_ms?: number;
+  is_gemini_live?: boolean;
 }
 
 /**

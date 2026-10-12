@@ -185,7 +185,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
                   <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-1">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
                       <span className="px-1.5 py-0.2 rounded bg-blue-600 text-white text-[9px] font-black">02</span>
-                      <span>데이터 검색 (Data Lake / DW·CDW)</span>
+                      <span>데이터 검색 (Data Lake / DW)</span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                       의료기관 병상·인력, 응급실 내원, 119 이송시간, 인구통계, 의료이용 정형 데이터를 SQL로 조회합니다.
@@ -372,7 +372,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
             <div className="space-y-4">
               <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 text-xs text-teal-950 dark:text-teal-200 leading-relaxed">
                 <strong>지식 구축 흐름(C 영역) 원칙:</strong> 사용자 질의와 무관하게 사전·주기적으로 데이터를 수집·정제하여 저장소에 적재합니다.
-                저장소는 담는 데이터의 성격에 따라 <strong>DW/CDW, Vector DB, MCP Gateway</strong> 3가지로 엄격히 구분됩니다.
+                저장소는 담는 데이터의 성격에 따라 <strong>DW, Vector DB, MCP Gateway</strong> 3가지로 엄격히 구분됩니다.
               </div>
 
               {/* 3대 저장소 비교 표 */}
@@ -381,7 +381,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
                   <thead>
                     <tr className="bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700">
                       <th className="p-3 font-black text-slate-800 dark:text-slate-200 w-24">구분</th>
-                      <th className="p-3 font-black text-blue-700 dark:text-blue-400">Data Lake / DW·CDW</th>
+                      <th className="p-3 font-black text-blue-700 dark:text-blue-400">Data Lake / DW</th>
                       <th className="p-3 font-black text-purple-700 dark:text-purple-400">Vector DB</th>
                       <th className="p-3 font-black text-teal-700 dark:text-teal-400">MCP Gateway</th>
                     </tr>
@@ -423,7 +423,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
                     <span>정형 데이터 파이프라인</span>
                   </div>
                   <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                    공공데이터포털 및 행정정보시스템에서 API/ETL로 수집 ➔ 비식별화 및 품질검사, 표준화 ➔ DW/CDW 정기 적재 (개인단위는 비식별·집계 수준 유지).
+                    공공데이터포털 및 행정정보시스템에서 API/ETL로 수집 ➔ 비식별화 및 품질검사, 표준화 ➔ DW 정기 적재 (개인단위는 비식별·집계 수준 유지).
                   </p>
                 </div>
 

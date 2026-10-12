@@ -86,14 +86,14 @@ function Step1_질문이해({ region_name, query }: { region_name: string; query
   );
 }
 
-/** STEP 02: [정량 갈래] 데이터 검색 (Data Lake / DW·CDW) */
+/** STEP 02: [정량 갈래] 데이터 검색 (Data Lake / DW) */
 function Step2_데이터검색() {
   const 결과 = AI_데이터_검색_결과_영월;
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-500">
-          Data Lake / DW·CDW에 정기 배치 적재된 정형 데이터를 SQL로 조회했습니다.
+          Data Lake / DW에 정기 배치 적재된 정형 데이터를 SQL로 조회했습니다.
         </p>
         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-200">
           정량 갈래 02단계
@@ -452,7 +452,7 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
               <span className="text-[9px] font-bold text-blue-300">계산과 해석의 분리</span>
             </div>
             <div className="p-2 rounded-lg bg-blue-900/60 border border-blue-700/60 text-[11px] text-blue-100">
-              <strong>02. 데이터 검색:</strong> DW/CDW 병상·인력, 이송시간, 인구통계 SQL 조회
+              <strong>02. 데이터 검색:</strong> DW 병상·인력, 이송시간, 인구통계 SQL 조회
             </div>
             <div className="text-center text-blue-400 font-bold text-[10px]">↓</div>
             <div className="p-2 rounded-lg bg-blue-900/90 border border-blue-400 text-[11px] text-blue-100 font-medium">
@@ -539,7 +539,7 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
         {/* 3대 저장소 안내 바 */}
         <div className="pt-2 border-t border-slate-700 text-left grid grid-cols-3 gap-2 text-[10px]">
           <div className="p-2 rounded-lg bg-slate-800 text-slate-300">
-            <strong className="text-blue-400 block mb-0.5">DW/CDW (정형)</strong>
+            <strong className="text-blue-400 block mb-0.5">DW (정형)</strong>
             의료기관·인구통계 정기 배치 적재
           </div>
           <div className="p-2 rounded-lg bg-slate-800 text-slate-300">

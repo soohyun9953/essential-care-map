@@ -8,7 +8,7 @@ import type { RAG_문서 } from '@/types/ai';
 export const RAG_문서_목록: RAG_문서[] = [
   {
     id: 'doc_public_health_policy',
-    제목: '공공보건의료 기본계획 (2023~2027)',
+    제목: '공공보건의료 기본계획 (2026~2030)',
     유형: '정책자료',
     관련도_퍼센트: 94, // [MOCK] Demo용 임의 관련도 점수
     아이콘: '📄',

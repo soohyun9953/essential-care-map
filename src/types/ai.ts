@@ -5,7 +5,18 @@
 export type 파이프라인_단계_상태 = 'waiting' | 'running' | 'done' | 'error';
 
 /** 실행 주체 카테고리 */
-export type 실행_주체_유형 = 'user' | 'nlp' | 'data_db' | 'rag_engine' | 'analysis' | 'llm' | 'validator' | 'policy_gen';
+export type 실행_주체_유형 =
+  | 'user'
+  | 'foundation'
+  | 'orchestrator'
+  | 'agent'
+  | 'nlp'
+  | 'data_db'
+  | 'rag_engine'
+  | 'analysis'
+  | 'llm'
+  | 'validator'
+  | 'policy_gen';
 
 /** 실행 주체 정보 */
 export interface 실행_주체 {

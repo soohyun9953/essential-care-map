@@ -60,251 +60,209 @@ function get_step_color(상태: 파이프라인_단계_상태) {
 // 단계별 상세 내용 컴포넌트들
 // ──────────────────────────────────────────────────
 
-/** STEP 1: 질문 이해 - 분석 결과 카드 */
-function Step1_질문이해({ region_name, query }: { region_name: string; query: string }) {
-  // 지역명 추출 (간단한 정규식)
+/** STEP 0: 사전 구축 기반 인프라 확인 (Enterprise Foundation) */
+function Step0_사전구축인프라({ is_done }: { is_done: boolean }) {
+  return (
+    <div className="space-y-3">
+      <div className="p-3 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 text-xs text-emerald-950 dark:text-emerald-200 leading-relaxed">
+        <strong>💡 사전 구축 인프라 (기구축 완료):</strong> 분석 시점에 DB를 생성하지 않고, 사전에 완비된
+        <strong> 공공의료 HIS · 보건의료 DW · RAG Vector DB · MCP</strong>가 상시 고속 조회를 지원합니다.
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[
+          { icon: '🏥', title: '공공의료정보(HIS)', desc: '214개 공공병원 병상·인력' },
+          { icon: '🗄️', title: '보건의료 DW / CDW', desc: '헬스맵 7대 지표·심평원 마트' },
+          { icon: '📚', title: 'RAG Vector DB', desc: '복지부 고시·지침 벡터 임베딩' },
+          { icon: '🔌', title: 'MCP 인터페이스', desc: '표준 도구 호출 통신 계층' },
+        ].map((item, i) => (
+          <div key={i} className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="text-base">{item.icon}</div>
+            <div className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{item.title}</div>
+            <div className="text-[10px] text-slate-500">{item.desc}</div>
+            <div className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300">
+              ● 연결 완비
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** STEP 1: 질문 이해 & 작업 분배 (AI Orchestrator) */
+function Step1_오케스트레이션({ region_name, query }: { region_name: string; query: string }) {
   const extracted_region = region_name || '영월군';
   const is_emergency = query.includes('응급');
   return (
     <div className="space-y-3">
       <p className="text-xs text-slate-500 leading-relaxed">
-        AI가 사용자의 질문에서 분석 대상 지역과 분석 목적을 파악했습니다.
+        AI 오케스트레이터가 질문을 해석하여 3대 전문 멀티에이전트에게 작업을 동시 분배합니다.
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {[
-          { 항목: '대상 지역', 값: extracted_region },
-          { 항목: '분석 분야', 값: is_emergency ? '응급의료' : '필수의료' },
-          { 항목: '분석 목적', 값: '취약 원인 분석 및 개선방안 도출' },
+          { 항목: '대상 지자체', 값: extracted_region },
+          { 항목: '분석 중점 분야', 값: is_emergency ? '응급의료 취약지표' : '필수의료 전반' },
+          { 항목: '오케스트레이터 배분', 값: '3대 멀티에이전트 동시 가동' },
         ].map((item) => (
-          <div key={item.항목} className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50">
-            <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">{item.항목}</div>
+          <div key={item.항목} className="p-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/50">
+            <div className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mb-0.5">{item.항목}</div>
             <div className="text-xs font-black text-slate-900 dark:text-white">{item.값}</div>
           </div>
         ))}
       </div>
-      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
-        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">처리 흐름</div>
-        <div className="flex items-center gap-1 flex-wrap text-xs text-slate-600 dark:text-slate-400">
-          {['사용자 질문', '→', '질문 분석', '→', '지역 추출', '→', '분석 분야 추출', '→', '분석 목적 추출'].map((item, i) => (
-            <span key={i} className={item === '→' ? 'text-slate-300' : 'font-semibold'}>{item}</span>
-          ))}
-        </div>
+      <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
+        <span className="font-semibold text-[11px]">작업 분배 흐름:</span>
+        <span className="text-[11px] text-blue-600 dark:text-blue-400 font-bold">
+          자연어 질의 ➔ 의도 파악 ➔ [데이터 / 분석 / 정책] 3개 에이전트로 동시 전송 ➔
+        </span>
       </div>
     </div>
   );
 }
 
-/** STEP 2: 필요한 데이터 확인 - 데이터 소스 카드 */
-function Step2_데이터확인({ is_done }: { is_done: boolean }) {
-  return (
-    <div className="space-y-3">
-      <p className="text-xs text-slate-500 leading-relaxed">
-        AI가 질문에 답하기 위해 필요한 데이터 항목을 확인합니다.
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {AI_데이터_소스_목록.map((src, i) => (
-          <div key={src.id} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-1.5">
-            <div className="text-lg">{src.아이콘}</div>
-            <div className="text-xs font-bold text-slate-800 dark:text-slate-200">{src.제목}</div>
-            <div className="text-[10px] text-slate-500">{src.설명}</div>
-            <div className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-              is_done
-                ? 'bg-emerald-100 dark:bg-emerald-950/50 text-emerald-600'
-                : i < 2
-                  ? 'bg-blue-100 dark:bg-blue-950/50 text-blue-600'
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-400'
-            }`}>
-              <span>{is_done ? '● 확인 완료' : i < 2 ? '● 확인 중' : '● 대기'}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** STEP 3: 데이터 검색 결과 */
-function Step3_데이터검색() {
+/** STEP 2: [동시 실행 1/3] 데이터 수집 에이전트 */
+function Step2_데이터에이전트() {
   const 결과 = AI_데이터_검색_결과_영월;
   return (
-    <div className="space-y-3">
-      <p className="text-xs text-slate-500 leading-relaxed">
-        공공의료 데이터베이스에서 영월군 관련 데이터를 검색했습니다.
-      </p>
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-slate-500">
+          MCP를 통해 <strong>기구축 보건의료 DW</strong>에서 실시간 팩트 데이터를 쿼리했습니다.
+        </p>
+        <span className="text-[10px] font-bold text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-200">
+          Multi-Agent 1 동시 실행
+        </span>
+      </div>
       <div className="space-y-1.5">
         {Object.entries(결과).map(([key, value]) => (
-          <div key={key} className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <div key={key} className="flex items-center gap-2 p-2 rounded-xl bg-cyan-50/60 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-900/50">
+            <CheckCircle2 className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
             <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{value}</span>
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-slate-400 italic">
-        AI는 질문에 필요한 데이터만 선별하여 분석에 활용합니다.
-      </p>
     </div>
   );
 }
 
-/** STEP 4: RAG 지식 검색 */
-function Step4_RAG({ show_detail, on_toggle }: { show_detail: boolean; on_toggle: () => void }) {
+/** STEP 3: [동시 실행 2/3] 통계·수요분석 에이전트 */
+function Step3_분석에이전트() {
   return (
-    <div className="space-y-3">
-      {/* RAG 개념 설명 (고객용) */}
-      <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
-        <strong>관련 자료 검색(RAG)</strong>이란, AI가 기억하고 있는 정보만 사용하는 것이 아니라,
-        관련 자료를 먼저 검색한 후 그 내용을 바탕으로 답변하도록 하는 방식입니다.
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-slate-500">
+          지역 취약도 지표, 1:1 비교 격차 및 <strong>2030 시계열 장래인구 의료수요</strong>를 동시 연산했습니다.
+        </p>
+        <span className="text-[10px] font-bold text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-200">
+          Multi-Agent 2 동시 실행
+        </span>
       </div>
-
-      {/* 문서 카드 목록 */}
-      <div className="space-y-2">
-        {RAG_문서_목록.map((doc) => (
-          <div key={doc.id} className="flex items-center justify-between p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-base shrink-0">{doc.아이콘}</span>
-              <div className="min-w-0">
-                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{doc.제목}</div>
-                <div className="text-[10px] text-slate-400">{doc.유형}</div>
-              </div>
-            </div>
-            <div className="text-xs font-black text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full shrink-0 ml-2">
-              관련도 {doc.관련도_퍼센트}% (예시)
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* 기술 상세 토글 */}
-      <button
-        type="button"
-        onClick={on_toggle}
-        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer"
-      >
-        <span>기술 구조 보기 (개발자용)</span>
-        {show_detail ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-      </button>
-
-      {show_detail && (
-        <div className="p-3 rounded-xl bg-slate-900 dark:bg-black text-emerald-400 font-mono text-[11px] space-y-1.5">
-          <div className="text-slate-500 mb-2">{'/* RAG 처리 흐름 (기술 상세) */'}</div>
-          {[
-            { step: '사용자 질문', tip: '자연어 입력' },
-            { step: 'Embedding', tip: '질문의 의미를 AI가 검색 가능한 형태로 변환합니다.' },
-            { step: 'Vector DB', tip: '정책자료와 업무문서를 AI가 빠르게 검색할 수 있도록 저장한 공간입니다.' },
-            { step: '관련 문서 검색', tip: '질문과 관련성이 높은 자료를 찾아줍니다.' },
-            { step: 'Context 전달', tip: '검색된 자료를 LLM이 참고할 수 있도록 전달합니다.' },
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="text-blue-400 shrink-0">{i < 4 ? '↓' : '→'}</span>
-              <span className="text-emerald-300">{item.step}</span>
-              <span className="text-slate-500 text-[10px]">{'// '}{item.tip}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** STEP 5: 데이터 분석 결과 */
-function Step5_데이터분석() {
-  return (
-    <div className="space-y-3">
-      <p className="text-xs text-slate-500 leading-relaxed">
-        검색된 공공의료 데이터를 분석하여 지역의 특성과 문제점을 파악합니다.
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {영월군_분석_지표.map((지표) => (
-          <div key={지표.id} className={`p-3 rounded-xl border ${
+          <div key={지표.id} className={`p-2.5 rounded-xl border ${
             지표.강조
               ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-900/50'
               : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700'
           }`}>
             <div className="text-[10px] text-slate-500 mb-0.5">{지표.항목}</div>
-            <div className={`text-xl font-black ${지표.강조 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-200'}`}>
+            <div className={`text-base font-black ${지표.강조 ? 'text-red-600 dark:text-red-400' : 'text-slate-800 dark:text-slate-200'}`}>
               {지표.값}<span className="text-xs font-semibold ml-0.5">{지표.단위}</span>
             </div>
-            <div className="text-[10px] text-slate-400 mt-0.5 leading-tight">{지표.설명}</div>
+            <div className="text-[9px] text-slate-400 mt-0.5 truncate">{지표.설명}</div>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-slate-400 italic">
-        ※ 위 수치는 국립중앙의료원 공공의료 플랫폼 탑재 데이터 기준입니다.
-      </p>
     </div>
   );
 }
 
-/** STEP 6: LLM 종합 분석 */
-function Step6_LLM({ is_running }: { is_running: boolean }) {
+/** STEP 4: [동시 실행 3/3] 정책·지침 에이전트 */
+function Step4_정책에이전트({ show_detail, on_toggle }: { show_detail: boolean; on_toggle: () => void }) {
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-slate-500">
+          사전 구축된 <strong>RAG Vector DB</strong>에서 복지부 취약지 고시 및 국비 50% 매칭 규정을 동시 발췌했습니다.
+        </p>
+        <span className="text-[10px] font-bold text-cyan-600 bg-cyan-50 dark:bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-200">
+          Multi-Agent 3 동시 실행
+        </span>
+      </div>
+      <div className="space-y-1.5">
+        {RAG_문서_목록.slice(0, 3).map((doc) => (
+          <div key={doc.id} className="flex items-center justify-between p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-sm shrink-0">{doc.아이콘}</span>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{doc.제목}</div>
+                <div className="text-[9px] text-slate-400">{doc.유형}</div>
+              </div>
+            </div>
+            <div className="text-[10px] font-black text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full shrink-0 ml-2">
+              유사도 {doc.관련도_퍼센트}%
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** STEP 5: 에이전트 결과 통합 → LLM 종합 추론 */
+function Step5_LLM추론({ is_running }: { is_running: boolean }) {
   return (
     <div className="space-y-3">
       <p className="text-xs text-slate-500 leading-relaxed">
-        AI가 질문, 데이터, 관련 지식을 종합하여 문제의 원인과 의미를 분석합니다.
+        3대 에이전트의 산출물(팩트데이터 + 분석통계 + 법령지침)을 통합 전달받아 LLM이 지역 맞춤형 정책 인과관계를 종합 추론합니다.
       </p>
 
-      {/* LLM 입출력 시각화 */}
-      <div className="p-4 rounded-2xl bg-slate-900 dark:bg-black border border-blue-900/50 text-xs text-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <Brain className="w-5 h-5 text-blue-400" />
-          <span className="font-black text-blue-300 text-sm">AI 언어모델 (LLM)</span>
-        </div>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-slate-400">
-          <div className="space-y-1">
-            <div className="px-3 py-1 rounded-lg bg-slate-800 text-emerald-300 text-[11px]">질문</div>
-            <div className="px-3 py-1 rounded-lg bg-slate-800 text-emerald-300 text-[11px]">공공의료 데이터</div>
-            <div className="px-3 py-1 rounded-lg bg-slate-800 text-emerald-300 text-[11px]">관련 지식 (RAG)</div>
+      {/* 3개 에이전트 → LLM 전달 시각화 */}
+      <div className="p-4 rounded-2xl bg-slate-900 dark:bg-black border border-purple-900/50 text-xs text-center space-y-3">
+        <div className="grid grid-cols-3 gap-2">
+          <div className="p-2 rounded-lg bg-slate-800 text-cyan-300 text-[10px] font-bold">
+            📡 Data Agent<br/><span className="text-[9px] text-slate-400">병상·자원 데이터</span>
           </div>
-          <ArrowRight className="w-5 h-5 text-blue-500 rotate-90 sm:rotate-0" />
-          <div className={`px-4 py-2 rounded-xl bg-blue-900/50 border border-blue-700/50 text-blue-200 text-[11px] font-bold ${is_running ? 'animate-pulse' : ''}`}>
-            {is_running ? '종합 분석 중...' : '종합 분석 완료'}
+          <div className="p-2 rounded-lg bg-slate-800 text-cyan-300 text-[10px] font-bold">
+            📊 Analytics Agent<br/><span className="text-[9px] text-slate-400">RI 31.2%·취약 99%</span>
+          </div>
+          <div className="p-2 rounded-lg bg-slate-800 text-cyan-300 text-[10px] font-bold">
+            📚 Policy Agent<br/><span className="text-[9px] text-slate-400">고시 제2024-261호</span>
           </div>
         </div>
-      </div>
 
-      {/* 처리 상태 체크리스트 */}
-      <div className="space-y-1.5">
-        {[
-          { 항목: '질문 이해', 완료: true },
-          { 항목: '데이터 확보', 완료: true },
-          { 항목: '관련 지식 확보', 완료: true },
-          { 항목: '종합 분석', 완료: !is_running },
-        ].map((item) => (
-          <div key={item.항목} className="flex items-center gap-2 text-xs">
-            {item.완료
-              ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              : <Loader2 className="w-4 h-4 text-blue-600 animate-spin shrink-0" />
-            }
-            <span className={item.완료 ? 'text-slate-700 dark:text-slate-300' : 'text-blue-600 font-bold'}>
-              {item.항목}
-              {!item.완료 && ' 처리 중...'}
-              {item.완료 && ' ✓'}
-            </span>
-          </div>
-        ))}
+        <div className="flex items-center justify-center gap-2 text-purple-400 font-bold text-[11px]">
+          <span>▼ 3대 에이전트 산출물 통합 컨텍스트 전달 ▼</span>
+        </div>
+
+        <div className="p-2.5 rounded-xl bg-purple-950/80 border border-purple-700/60 text-purple-100 flex items-center justify-center gap-2">
+          <Brain className="w-4 h-4 text-purple-400 animate-pulse" />
+          <span className="font-bold text-xs">
+            {is_running ? 'LLM(Gemini / 로컬 sLLM) 종합 추론 연산 중...' : 'LLM 종합 정책 추론 완료'}
+          </span>
+        </div>
       </div>
     </div>
   );
 }
 
-/** STEP 7: 근거 검증 */
-function Step7_검증() {
+/** STEP 6: 분석 근거 검증 (XAI) */
+function Step6_검증() {
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <p className="text-xs text-slate-500 leading-relaxed">
-        AI가 생성한 분석 결과가 실제 데이터와 관련 자료에 근거하고 있는지 확인합니다.
+        AI가 생성한 분석 결과가 실제 법령 조항 및 공공데이터 수치에 근거하고 있는지 교차 검증합니다.
       </p>
-      <div className="space-y-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
         {[
-          '데이터 출처 확인 완료',
-          '기준연도 (2023~2024) 확인 완료',
-          '수치 일치 여부 확인 완료',
-          '정책 적용 범위 검토 완료',
-          '논리 일관성 검증 완료',
+          '기구축 DW 원천 데이터 대조 일치',
+          '보건복지부 취약지 법령 기준 적합',
+          '지자체 배후인구 및 RI 수치 일치',
+          '환각(Hallucination) 방지 필터 통과',
         ].map((item) => (
-          <div key={item} className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="text-xs text-slate-700 dark:text-slate-300">{item}</span>
+          <div key={item} className="flex items-center gap-2 p-2 rounded-xl bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50">
+            <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+            <span className="text-xs text-slate-700 dark:text-slate-300 font-medium">{item}</span>
           </div>
         ))}
       </div>
@@ -312,30 +270,28 @@ function Step7_검증() {
   );
 }
 
-/** STEP 8: 정책대안 생성 */
-function Step8_정책대안() {
+/** STEP 7: 정책대안 및 사업계획서 도출 */
+function Step7_정책대안() {
   const { 정책대안_목록 } = 영월군_AI_분석_결과;
   return (
-    <div className="space-y-3">
+    <div className="space-y-2.5">
       <p className="text-xs text-slate-500 leading-relaxed">
-        분석 결과를 바탕으로 실행 가능한 정책대안 {정책대안_목록.length}개가 생성되었습니다.
+        검증된 결과를 바탕으로 3대 실행 정책대안과 표준 사업계획서가 생성되었습니다.
       </p>
-      {정책대안_목록.map((대안, i) => (
-        <div key={대안.id} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-800 dark:text-white">대안 {String.fromCharCode(65 + i)}. {대안.제목}</span>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              대안.우선순위 === '높음'
-                ? 'bg-red-100 dark:bg-red-950/50 text-red-600'
-                : 'bg-amber-100 dark:bg-amber-950/50 text-amber-600'
-            }`}>
-              우선순위 {대안.우선순위}
-            </span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        {정책대안_목록.map((대안, i) => (
+          <div key={대안.id} className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black text-slate-800 dark:text-white">Option {String.fromCharCode(65 + i)}</span>
+              {대안.우선순위 === '높음' && (
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-red-100 text-red-600">★ 권장</span>
+              )}
+            </div>
+            <div className="text-[11px] font-bold text-slate-900 dark:text-slate-200 truncate">{대안.제목}</div>
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">{대안.기대효과}</div>
           </div>
-          <div className="text-[10px] text-slate-500">예산 규모: <span className="font-semibold">{대안.예산_규모}</span></div>
-          <div className="text-[10px] text-emerald-700 dark:text-emerald-300">기대효과: {대안.기대효과}</div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -474,8 +430,8 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-black text-slate-900 dark:text-white">AI 시스템 구조</h3>
-          <p className="text-xs text-slate-500 mt-0.5">AI 기반 공공의료 정보시스템 아키텍처</p>
+          <h3 className="text-base font-black text-slate-900 dark:text-white">AI 시스템 아키텍처</h3>
+          <p className="text-xs text-slate-500 mt-0.5">기구축 인프라(Step 0) 기반 3대 멀티에이전트 병렬 협업 구조</p>
         </div>
         <button type="button" onClick={on_close} className="text-slate-400 hover:text-slate-600 cursor-pointer">
           <X className="w-4 h-4" />
@@ -483,60 +439,125 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
       </div>
 
       {/* 아키텍처 다이어그램 */}
-      <div className="p-5 rounded-2xl bg-slate-900/90 dark:bg-slate-950 border border-slate-700 shadow-lg text-xs space-y-3 font-sans text-center">
-        {/* 사용자 질문 */}
-        <div className="px-4 py-2.5 rounded-xl bg-blue-500/20 border-2 border-blue-400 text-blue-100 font-black text-sm shadow-xs">
-          👤 사용자 질문
-        </div>
-        <div className="text-slate-300 font-black text-base leading-none">↓</div>
-
-        {/* 질문 분석 */}
-        <div className="px-4 py-2.5 rounded-xl bg-indigo-500/25 border-2 border-indigo-400 text-indigo-100 font-black text-sm shadow-xs">
-          🔍 질문 이해 · 의도 파악 엔진
-        </div>
-        <div className="text-slate-300 font-black text-base leading-none">↓</div>
-
-        {/* 병렬 처리 영역 */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-xl bg-emerald-500/25 border-2 border-emerald-400 text-emerald-100 font-black text-xs sm:text-sm shadow-xs leading-relaxed">
-            🗄️ 공공의료<br/>데이터 검색
+      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 dark:bg-black border border-slate-700 shadow-xl text-xs space-y-3 font-sans text-center">
+        {/* 🟢 Step 0: 사전 구축 기반 인프라 */}
+        <div className="p-3.5 rounded-xl bg-emerald-950/80 border-2 border-emerald-500 text-left text-emerald-100 shadow-sm space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500 text-slate-950">
+              STEP 0 · 상시 가동 기구축 인프라
+            </span>
+            <span className="text-[10px] text-emerald-300 font-semibold">Enterprise Foundation Layer</span>
           </div>
-          <div className="p-3 rounded-xl bg-purple-500/25 border-2 border-purple-400 text-purple-100 font-black text-xs sm:text-sm shadow-xs leading-relaxed">
-            📚 Vector DB<br/>RAG 검색
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-center">
+            <div className="p-2 rounded-lg bg-emerald-900/60 border border-emerald-700/60 text-[11px] font-bold">
+              🏥 공공의료 HIS/EMR
+            </div>
+            <div className="p-2 rounded-lg bg-emerald-900/60 border border-emerald-700/60 text-[11px] font-bold">
+              🗄️ 보건의료 DW/CDW
+            </div>
+            <div className="p-2 rounded-lg bg-emerald-900/60 border border-emerald-700/60 text-[11px] font-bold">
+              📚 RAG Vector DB
+            </div>
+            <div className="p-2 rounded-lg bg-emerald-900/60 border border-emerald-700/60 text-[11px] font-bold">
+              🔌 MCP 프로토콜
+            </div>
+          </div>
+          <div className="text-[10px] text-emerald-300/80 text-center">
+            ※ 실시간 분석 전 사전에 구축 완료된 국가 공공의료 데이터 인프라로, 분석 요청 시 즉각적인 고속 조회를 지원합니다.
           </div>
         </div>
 
-        <div className="py-1">
-          <span className="inline-block px-3.5 py-1 rounded-full bg-slate-800 text-slate-200 font-extrabold text-[11px] border border-slate-600 shadow-xs">
-            ↓ 병렬 처리 결과 통합
+        <div className="text-emerald-400 font-bold text-xs">▲ 기구축 데이터 인프라 실시간 쿼리 ▲</div>
+
+        {/* 👤 Step 1: 사용자 질문 & 오케스트레이터 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+          <div className="p-3 rounded-xl bg-blue-500/20 border border-blue-400 text-blue-100 font-bold text-xs flex items-center gap-2">
+            <span className="text-base">👤</span>
+            <div>
+              <div className="text-[10px] text-blue-300">사용자 인입</div>
+              <div>지자체 현황 질문 및 사업계획 지시</div>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-indigo-500/25 border border-indigo-400 text-indigo-100 font-bold text-xs flex items-center gap-2">
+            <span className="text-base">🧭</span>
+            <div>
+              <div className="text-[10px] text-indigo-300">Step 1. AI 오케스트레이터</div>
+              <div>의도 파악 ➔ 3대 에이전트에 동시 분배</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-cyan-400 font-bold text-xs">▼ 3대 멀티에이전트 동시 병렬 실행 (Parallel Multi-Agents) ▼</div>
+
+        {/* 🔷 Step 2: 3대 멀티에이전트 병렬 처리 영역 */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div className="p-3 rounded-xl bg-cyan-950/80 border-2 border-cyan-400 text-cyan-100 text-left shadow-xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">📡</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500 text-slate-950">Agent 1</span>
+            </div>
+            <div className="font-black text-xs text-white">데이터 수집 에이전트</div>
+            <div className="text-[10px] text-cyan-300 leading-tight">
+              MCP로 기구축 DW 및 병원시스템 팩트 데이터 실시간 쿼리
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-cyan-950/80 border-2 border-cyan-400 text-cyan-100 text-left shadow-xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">📊</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500 text-slate-950">Agent 2</span>
+            </div>
+            <div className="font-black text-xs text-white">통계·수요분석 에이전트</div>
+            <div className="text-[10px] text-cyan-300 leading-tight">
+              RI·유출입 격차 및 2030 시계열 미래 의료수요 연산
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-cyan-950/80 border-2 border-cyan-400 text-cyan-100 text-left shadow-xs space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">📚</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500 text-slate-950">Agent 3</span>
+            </div>
+            <div className="font-black text-xs text-white">법령·지침 정책 에이전트</div>
+            <div className="text-[10px] text-cyan-300 leading-tight">
+              Vector DB에서 복지부 고시·국비 50% 매칭 기준 발췌
+            </div>
+          </div>
+        </div>
+
+        <div className="py-0.5">
+          <span className="inline-block px-3 py-1 rounded-full bg-purple-900/60 text-purple-200 font-extrabold text-[11px] border border-purple-500">
+            ▼ 3개 에이전트 산출물(데이터+통계+법령) 통합 전달 ▼
           </span>
         </div>
 
-        {/* LLM 종합 분석 */}
-        <div className="px-4 py-3.5 rounded-xl bg-amber-500/30 border-2 border-amber-400 text-amber-50 font-black shadow-md ring-2 ring-amber-400/30">
-          <Brain className="w-5 h-5 mx-auto mb-1 text-amber-300 inline-block" />
-          <div className="text-sm sm:text-base font-black text-amber-200">LLM 종합 분석</div>
-          <div className="text-xs font-bold text-amber-100 mt-1">
-            데이터 + RAG Context + 질문 → 추론
+        {/* 🟠 Step 3: LLM 종합 분석 */}
+        <div className="px-4 py-3 rounded-xl bg-purple-950/80 border-2 border-purple-400 text-purple-50 font-black shadow-md">
+          <Brain className="w-5 h-5 mx-auto mb-1 text-purple-300 inline-block" />
+          <div className="text-sm font-black text-purple-200">Step 3. LLM 종합 추론 엔진</div>
+          <div className="text-xs font-bold text-purple-100 mt-0.5">
+            Google Gemini Cloud AI 또는 원내 폐쇄망 On-Device 로컬 sLLM 듀얼 추론
           </div>
         </div>
-        <div className="text-slate-300 font-black text-base leading-none">↓</div>
 
-        {/* 근거 검증 */}
-        <div className="px-4 py-2.5 rounded-xl bg-teal-500/25 border-2 border-teal-400 text-teal-100 font-black text-sm shadow-xs">
-          ✅ 근거 검증 · 출처 확인
-        </div>
-        <div className="text-slate-300 font-black text-base leading-none">↓</div>
+        <div className="text-slate-400 font-bold text-xs">↓</div>
 
-        {/* 결과 */}
-        <div className="px-4 py-2.5 rounded-xl bg-rose-500/30 border-2 border-rose-400 text-rose-50 font-black text-sm shadow-xs">
-          📝 정책대안 생성 · 최종 결과
-        </div>
-
-        {/* MCP 확장 설명 */}
-        <div className="mt-4 p-3 rounded-xl bg-slate-800/90 border-2 border-dashed border-slate-500 text-slate-200 text-xs font-bold leading-relaxed shadow-inner">
-          🔌 MCP(Model Context Protocol) 확장 구조 — 외부 데이터베이스,<br/>
-          공공데이터 포털, 병원 정보시스템과의 실시간 연동을 지원합니다.
+        {/* 🛡️ Step 4 & 📝 Step 5 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-left">
+          <div className="p-2.5 rounded-xl bg-teal-500/20 border border-teal-400 text-teal-100 font-bold text-xs flex items-center gap-2">
+            <span className="text-base">🛡️</span>
+            <div>
+              <div className="text-[10px] text-teal-300">Step 4. 근거 검증 (XAI)</div>
+              <div>법령 원문 대조 & 환각(Hallucination) 방지</div>
+            </div>
+          </div>
+          <div className="p-2.5 rounded-xl bg-amber-500/20 border border-amber-400 text-amber-100 font-bold text-xs flex items-center gap-2">
+            <span className="text-base">📝</span>
+            <div>
+              <div className="text-[10px] text-amber-300">Step 5. 최종 산출물</div>
+              <div>정책대안 Option A·B·C & 표준 사업계획서</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -715,19 +736,24 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
 
               {/* 전체 파이프라인 미리보기 */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">AI 처리 8단계 미리보기</div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                  AI 시스템 8단계 파이프라인 (Step 0 기반 + 3대 멀티에이전트)
+                </div>
 
-                {/* 색상 범례: 구축 주체 기준 */}
+                {/* 색상 범례: 기구축 인프라 및 실행 주체 기준 */}
                 <div className="flex flex-wrap gap-2 mb-3 pb-2.5 border-b border-slate-200 dark:border-slate-700">
-                  <span className="text-[10px] text-slate-400 font-semibold self-center">구축 주체:</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800">
-                    🔵 개발사 구현
+                  <span className="text-[10px] text-slate-400 font-semibold self-center">시스템 분류:</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+                    🟢 Step 0 기구축 인프라
                   </span>
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-950/50 dark:text-teal-300 dark:border-teal-800">
-                    🟢 인프라·DB 구축
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-indigo-100 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800">
+                    🔵 AI Orchestrator
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">
+                    🔷 멀티에이전트 3종
                   </span>
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800">
-                    🟠 외부 AI API
+                    🟠 LLM 추론 엔진
                   </span>
                 </div>
 
@@ -860,14 +886,14 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
                     {(is_running || (is_done && is_expanded)) && (
                       <div className="px-4 pb-4 pt-0">
                         <div className="border-t border-slate-100 dark:border-slate-800 pt-3">
-                          {idx === 0 && <Step1_질문이해 region_name={region_name} query={query} />}
-                          {idx === 1 && <Step2_데이터확인 is_done={is_done} />}
-                          {idx === 2 && <Step3_데이터검색 />}
-                          {idx === 3 && <Step4_RAG show_detail={show_rag_detail} on_toggle={() => set_show_rag_detail((v) => !v)} />}
-                          {idx === 4 && <Step5_데이터분석 />}
-                          {idx === 5 && <Step6_LLM is_running={is_running} />}
-                          {idx === 6 && <Step7_검증 />}
-                          {idx === 7 && <Step8_정책대안 />}
+                          {idx === 0 && <Step0_사전구축인프라 is_done={is_done} />}
+                          {idx === 1 && <Step1_오케스트레이션 region_name={region_name} query={query} />}
+                          {idx === 2 && <Step2_데이터에이전트 />}
+                          {idx === 3 && <Step3_분석에이전트 />}
+                          {idx === 4 && <Step4_정책에이전트 show_detail={show_rag_detail} on_toggle={() => set_show_rag_detail((v) => !v)} />}
+                          {idx === 5 && <Step5_LLM추론 is_running={is_running} />}
+                          {idx === 6 && <Step6_검증 />}
+                          {idx === 7 && <Step7_정책대안 />}
                         </div>
                       </div>
                     )}

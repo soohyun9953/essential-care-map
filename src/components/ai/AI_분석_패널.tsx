@@ -86,14 +86,14 @@ function Step1_질문이해({ region_name, query }: { region_name: string; query
   );
 }
 
-/** STEP 02: [정량 갈래] 데이터 검색 (Data Lake / DW) */
+/** STEP 02: [정량 갈래] 데이터 검색 (Data Lake / DW · MCP) */
 function Step2_데이터검색() {
   const 결과 = AI_데이터_검색_결과_영월;
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
         <p className="text-xs text-slate-500">
-          Data Lake / DW에 정기 배치 적재된 정형 데이터를 SQL로 조회했습니다.
+          Data Lake / DW 적재 정형 데이터(SQL) 및 MCP Gateway 실시간 연계 데이터를 조회했습니다.
         </p>
         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full border border-blue-200">
           정량 갈래 02단계
@@ -452,7 +452,7 @@ function AI_처리구조_뷰({ on_close }: { on_close: () => void }) {
               <span className="text-[9px] font-bold text-blue-300">계산과 해석의 분리</span>
             </div>
             <div className="p-2 rounded-lg bg-blue-900/60 border border-blue-700/60 text-[11px] text-blue-100">
-              <strong>02. 데이터 검색:</strong> DW 병상·인력, 이송시간, 인구통계 SQL 조회
+              <strong>02. 데이터 검색 (DW · MCP):</strong> DW 병상·인력 SQL 조회 및 MCP 실시간 가용병상 연계
             </div>
             <div className="text-center text-blue-400 font-bold text-[10px]">↓</div>
             <div className="p-2 rounded-lg bg-blue-900/90 border border-blue-400 text-[11px] text-blue-100 font-medium">

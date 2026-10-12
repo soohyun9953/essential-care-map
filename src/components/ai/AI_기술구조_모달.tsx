@@ -57,20 +57,6 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
         {/* ── 1. 모달 헤더 ── */}
         <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex items-start justify-between gap-4 bg-slate-50/80 dark:bg-slate-900/50">
           <div>
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-blue-100 text-blue-700 dark:bg-blue-950/80 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                공공의료 AI 분석 시스템 아키텍처
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                2대 흐름 분리 (질의 처리 vs 지식 구축)
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                계산과 해석의 분리
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-                LLMOps 기반 지속 개선
-              </span>
-            </div>
             <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Cpu className="w-5 h-5 text-blue-600" />
               <span>공공의료 AI 분석 시스템 표준 아키텍처 명세</span>
@@ -100,7 +86,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
             }`}
           >
             <GitBranch className="w-3.5 h-3.5" />
-            <span>A. 질의 처리 흐름 (01~08단계 분기·합류)</span>
+            <span>질의 처리 흐름 (01~08단계 분기·합류)</span>
           </button>
           <button
             type="button"
@@ -112,7 +98,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
             }`}
           >
             <Database className="w-3.5 h-3.5" />
-            <span>B & C. 3대 저장소 및 지식 구축 흐름</span>
+            <span>3대 저장소 및 지식 구축 흐름</span>
           </button>
           <button
             type="button"
@@ -124,7 +110,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5" />
-            <span>D. 공통 운영 기반 & LLMOps 지속 개선</span>
+            <span>공통 운영 기반 & LLMOps 지속 개선</span>
           </button>
         </div>
 
@@ -182,13 +168,13 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
                   </div>
 
                   {/* 02. 데이터 검색 */}
-                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-1">
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-900/60 space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
                       <span className="px-1.5 py-0.2 rounded bg-blue-600 text-white text-[9px] font-black">02</span>
-                      <span>데이터 검색 (Data Lake / DW)</span>
+                      <span>데이터 검색 (Data Lake / DW · MCP)</span>
                     </div>
                     <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-                      의료기관 병상·인력, 응급실 내원, 119 이송시간, 인구통계, 의료이용 정형 데이터를 SQL로 조회합니다.
+                      의료기관 병상·인력, 응급실 내원, 119 이송시간, 인구통계 정형 데이터를 SQL로 조회하고, <strong>MCP Gateway</strong>를 통해 실시간 가용 병상 등 외부 연계 최신 데이터를 도구(Tool)로 실시간 조회합니다.
                     </p>
                   </div>
 
@@ -371,7 +357,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
           {activeTab === 'storage_build' && (
             <div className="space-y-4">
               <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900/50 text-xs text-teal-950 dark:text-teal-200 leading-relaxed">
-                <strong>지식 구축 흐름(C 영역) 원칙:</strong> 사용자 질의와 무관하게 사전·주기적으로 데이터를 수집·정제하여 저장소에 적재합니다.
+                <strong>지식 구축 흐름 원칙:</strong> 사용자 질의와 무관하게 사전·주기적으로 데이터를 수집·정제하여 저장소에 적재합니다.
                 저장소는 담는 데이터의 성격에 따라 <strong>DW, Vector DB, MCP Gateway</strong> 3가지로 엄격히 구분됩니다.
               </div>
 

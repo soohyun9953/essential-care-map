@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-13',
-  time: '16:10',
-  deployedAt: '2026.10.13 16:10',
-  semver: '1.27.0',
-  fullLabel: '2026.10.13 16:10 · v1.27.0',
-  packageVersion: '20261013-1610',
-  updatedAt: '2026.10.13 16:10',
+  time: '16:22',
+  deployedAt: '2026.10.13 16:22',
+  semver: '1.27.1',
+  fullLabel: '2026.10.13 16:22 · v1.27.1',
+  packageVersion: '20261013-1622',
+  updatedAt: '2026.10.13 16:22',
   changelog:
-    '5종 진단보고서 HWP 다운로드 기능 추가 — 인쇄/PDF 버튼을 JSZip 기반 HWPX(.hwpx) 다운로드 버튼으로 교체 (2026.10.13 16:10)',
+    '5종 진단보고서 HWPX 다운로드 규격 완벽 정상화 — 한컴오피스 한글 표준 HWPX 문서 빌더 연동 및 프록시 허용 (2026.10.13 16:22)',
 };

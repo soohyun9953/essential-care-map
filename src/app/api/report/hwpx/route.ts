@@ -47,12 +47,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const outPath = path.join(tmpDir, fileName);
     const reportPath = path.join(tmpDir, 'quality.json');
 
-    // one_shot.py 명세 JSON 작성
+    // rawText를 깔끔한 구조적 마크다운으로 변환
+    const cleanMarkdown = formatRawTextToMarkdown(title, markdownContent);
+
+    // one_shot.py 명세 JSON 작성 (표준 보고서 스타일)
     const spec = {
       version: 1,
-      kind: 'brief-report',
+      kind: 'markdown',
       output: outPath,
-      markdown: `# ${title}\n\n${markdownContent}`,
+      template: 'report',
+      markdown: cleanMarkdown,
       metadata_date: new Date().toISOString().slice(0, 10),
       quality: {
         hancom: 'off',
@@ -117,14 +121,48 @@ function runPython(
       resolve({ exitCode: code ?? 1, stdout, stderr });
     });
 
-    proc.on('error', (err) => {
-      resolve({ exitCode: 1, stdout, stderr: stderr + '\n' + String(err) });
-    });
-
     // 30초 타임아웃
     setTimeout(() => {
       proc.kill('SIGTERM');
       resolve({ exitCode: 1, stdout, stderr: stderr + '\n[TIMEOUT]' });
     }, 30000);
   });
+}
+
+// ─── RawText → 구조적 Markdown 변환 ─────────────────────────────
+function formatRawTextToMarkdown(title: string, raw: string): string {
+  if (raw.includes('# ')) {
+    return raw;
+  }
+
+  const lines = raw.split('\n').map((l) => l.trim()).filter(Boolean);
+  const out: string[] = [`# ${title}`, ''];
+
+  for (const line of lines) {
+    if (
+      line.startsWith('■') ||
+      line.startsWith('●') ||
+      /^[1-5]\.\s/.test(line) ||
+      line.includes('【종합 진단')
+    ) {
+      out.push(`\n## ${line}\n`);
+    } else if (
+      line.startsWith('◆') ||
+      line.startsWith('▶') ||
+      line.startsWith('▷') ||
+      line.startsWith('가.') ||
+      line.startsWith('나.') ||
+      line.startsWith('다.')
+    ) {
+      out.push(`\n### ${line}\n`);
+    } else if (line.startsWith('·') || line.startsWith('-') || line.startsWith('○')) {
+      out.push(`- ${line.replace(/^[·\-○]\s*/, '')}`);
+    } else if (line.includes('{LLM 해석}')) {
+      out.push(`\n> **${line}**\n`);
+    } else {
+      out.push(line);
+    }
+  }
+
+  return out.join('\n');
 }

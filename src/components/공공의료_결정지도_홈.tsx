@@ -91,6 +91,16 @@ const JOURNEY_STEPS = [
     taskId: '3.4',
     taskLabel: '과제 3.4 기능보강 PMS',
   },
+  {
+    step: '06',
+    title: '시행계획 평가',
+    desc: '100점 평가표 산출\n및 AI 6단계 심사',
+    workspace: 'policy_planning' as const,
+    sub: 'evaluation',
+    color: 'indigo',
+    taskId: '3.4',
+    taskLabel: '과제 3.4 시행계획 AI 평가',
+  },
 ];
 
 const STEP_COLOR_MAP: Record<string, { ring: string; text: string; bg: string; border: string; badge: string }> = {
@@ -173,7 +183,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
         {/* 서브 설명 */}
         <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
           지역별 필수의료 현황을 진단하고 지역 간 격차와 미래 의료수요를 분석하여<br className="hidden sm:block" />
-          정책대안과 사업계획 수립까지 지원합니다.
+          정책대안과 사업계획 수립, 그리고 <strong>시행계획·추진실적 AI 평가</strong>까지 지원합니다.
         </p>
 
         {/* 검색창 */}
@@ -217,29 +227,54 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       </div>
 
       {/* ================================================================== */}
-      {/* ⭐ 신규 핵심 개편: 공공병원 중심 AI 의사결정 워크스페이스 배너             */}
-      {/* 공공병원 선택 ➔ AI 병원진단 ➔ 문제·원인분석 ➔ Benchmarking ➔ 수요예측 ➔ 대안/시뮬레이션 ➔ 실행계획 ➔ 성과관리 */}
+      {/* ⭐ 신규 핵심 배너 2종: 1) 시행계획·추진실적 AI 평가 / 2) 공공병원 AI 진단 */}
       {/* ================================================================== */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden">
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* 배너 1: 공공보건의료 시행계획·추진실적 AI 평가 (100점 평가표) */}
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 text-white shadow-xl border border-indigo-400/40 relative overflow-hidden flex flex-col justify-between gap-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>NEW · 2025 시행계획 수립지침 &amp; 2024 추진실적 작성지침 반영</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              공공보건의료 시행계획 · 추진실적 AI 평가
+            </h2>
+            <p className="text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-medium">
+              공공기관(시·도 17개소 / 중앙부처 8개소 / 공공단체) 평가자료 입력 시 <strong>지침 공식 평가표(추진실적 70점 + 사업계획 30점 = 100점 만점)</strong> 산출 및 <strong>6단계 AI 평가 서비스(사전검증·지표교정·정량채점·이견조정·결과보고서)</strong>를 제공합니다.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => on_navigate_workspace('policy_planning', 'evaluation')}
+            className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
+          >
+            <ShieldCheck className="w-4 h-4 text-slate-950" />
+            <span>시행계획·추진실적 AI 평가 바로가기 (100점 평가표)</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
+
+        {/* 배너 2: AI 공공병원 종합진단 & 개선 시뮬레이션 */}
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden flex flex-col justify-between gap-5">
+          <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-black">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>핵심 분석 대상 개편: 지역 ➔ 공공병원 중심 AI 의사결정 플랫폼</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              AI 공공병원 종합진단 & 개선 시뮬레이션
+              AI 공공병원 종합진단 &amp; 개선 시뮬레이션
             </h2>
             <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium">
-              단순 조회 중심의 「의료기관」 메뉴를 넘어, <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로<br className="hidden sm:block" />
-              <strong>진단 ➔ 원인분석 ➔ 유사병원 Benchmarking ➔ 미래예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획 ➔ 성과관리</strong>까지 지원합니다.
+              단순 조회 중심의 「의료기관」 메뉴를 넘어, <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로 <strong>진단 ➔ 원인분석 ➔ 유사병원 Benchmarking ➔ 미래예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획</strong>까지 지원합니다.
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => on_navigate_workspace('hospital_ai_diagnosis')}
-            className="px-6 py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-sm shadow-lg transition active:scale-95 shrink-0 flex items-center justify-center gap-2 cursor-pointer group"
+            className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
           >
             <Building2 className="w-4 h-4 text-white" />
             <span>41개 공공병원 AI 진단 시작하기</span>
@@ -257,16 +292,16 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
         <div className="flex items-center gap-2 px-1">
           <div className="w-1 h-5 rounded-full bg-blue-700" />
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책 의사결정 여정 · 진단부터 사업계획서까지</span>
+          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책 의사결정 여정 · 진단부터 사업계획서 및 시행계획 평가까지</span>
           <span className="text-xs text-slate-400">각 단계를 클릭해 바로 이동할 수 있습니다</span>
         </div>
 
         {/* 스텝 컨테이너 */}
         <div className="relative">
           {/* 연결선 (데스크탑) */}
-          <div className="hidden lg:block absolute top-[2.4rem] left-[10%] right-[10%] h-0.5 bg-slate-200 dark:bg-slate-700 z-0" />
+          <div className="hidden lg:block absolute top-[2.4rem] left-[8%] right-[8%] h-0.5 bg-slate-200 dark:bg-slate-700 z-0" />
 
-          <div className="grid grid-cols-5 gap-3 relative z-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 relative z-10">
             {JOURNEY_STEPS.map((step, idx) => {
               const colors = STEP_COLOR_MAP[step.color];
               const isActive = active_step === idx;

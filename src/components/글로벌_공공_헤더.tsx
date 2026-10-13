@@ -73,6 +73,8 @@ interface 글로벌_공공_헤더_속성 {
   is_authenticated?: boolean;
   on_open_auth_modal?: () => void;
   on_open_review_guide_modal?: () => void;
+  on_open_plan_evaluation?: () => void;
+  is_plan_evaluation_active?: boolean;
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
@@ -101,6 +103,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   is_authenticated = false,
   on_open_auth_modal,
   on_open_review_guide_modal,
+  on_open_plan_evaluation,
+  is_plan_evaluation_active = false,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_persona_open, set_is_persona_open] = useState(false);
@@ -208,12 +212,33 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             <button
               onClick={() => handle_workspace_change('policy_planning')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
-                current_active === 'policy_planning'
+                current_active === 'policy_planning' && !is_plan_evaluation_active
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
               }`}
             >
               <span>정책기획</span>
+            </button>
+
+            {/* ⭐ 신규 핵심 메뉴: 시행계획 AI 평가 (100점 평가표 & 6단계 AI 심사) */}
+            <button
+              type="button"
+              onClick={() => {
+                if (on_open_plan_evaluation) {
+                  on_open_plan_evaluation();
+                } else {
+                  handle_workspace_change('policy_planning');
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                current_active === 'policy_planning' && is_plan_evaluation_active
+                  ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/30'
+                  : 'bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/70 dark:border-indigo-800/60'
+              }`}
+              title="공공보건의료 시행계획 및 추진실적 100점 평가표 산출 & 6단계 AI 심사"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+              <span>시행계획 AI 평가</span>
             </button>
 
             {/* 의료기관: 공공데이터 API 키 등록 여부를 호버 툴팁으로 안내 */}

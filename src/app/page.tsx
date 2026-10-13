@@ -335,7 +335,17 @@ export default function Home() {
         {/* 1. 최상단 글로벌 공공 헤더 (5대 워크스페이스 통합 네비게이션) */}
       <글로벌_공공_헤더
         active_workspace={current_workspace}
-        on_change_workspace={(ws) => set_current_workspace(ws)}
+        on_change_workspace={(ws) => {
+          if (ws === 'policy_planning' && policy_subtab === 'evaluation') {
+            set_policy_subtab('policy_ai');
+          }
+          set_current_workspace(ws);
+        }}
+        on_open_plan_evaluation={() => {
+          set_policy_subtab('evaluation');
+          set_current_workspace('policy_planning');
+        }}
+        is_plan_evaluation_active={current_workspace === 'policy_planning' && policy_subtab === 'evaluation'}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}

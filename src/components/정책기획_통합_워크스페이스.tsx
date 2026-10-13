@@ -75,6 +75,10 @@ const 사업계획서_서술문_생성기 = dynamic(
   () => import('./사업계획서_서술문_생성기').then((m) => m.사업계획서_서술문_생성기),
   { loading: () => <div className="py-16 text-center text-sm text-[#86868b]">데이터를 불러오는 중입니다...</div> }
 );
+const 시행계획_추진실적_AI평가_시스템 = dynamic(
+  () => import('./시행계획_추진실적_AI평가_시스템').then((m) => m.시행계획_추진실적_AI평가_시스템),
+  { loading: () => <div className="py-16 text-center text-sm text-[#86868b]">AI 평가 시스템을 불러오는 중입니다...</div> }
+);
 
 interface 정책기획_통합_워크스페이스_속성 {
   selected_region: 필수의료_진단_결과 | null;
@@ -82,8 +86,8 @@ interface 정책기획_통합_워크스페이스_속성 {
   sido_stat: 지역_평균_통계;
   national_stat: 지역_평균_통계;
   google_api_key?: string;
-  initial_tab?: 'policy_ai' | 'report' | 'compare' | 'forecast';
-  on_change_tab?: (tab: 'policy_ai' | 'report' | 'compare' | 'forecast') => void;
+  initial_tab?: 'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast';
+  on_change_tab?: (tab: 'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast') => void;
 }
 
 // 「정책분석 5단계」 정의
@@ -111,13 +115,13 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   initial_tab = 'policy_ai',
   on_change_tab,
 }) => {
-  const [active_tab, setActive_tab] = useState<'policy_ai' | 'report' | 'compare' | 'forecast'>(initial_tab);
+  const [active_tab, setActive_tab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>(initial_tab);
 
   useEffect(() => {
     setActive_tab(initial_tab);
   }, [initial_tab]);
 
-  const handle_tab_change = (tab: 'policy_ai' | 'report' | 'compare' | 'forecast') => {
+  const handle_tab_change = (tab: 'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast') => {
     setActive_tab(tab);
     if (on_change_tab) on_change_tab(tab);
   };
@@ -373,6 +377,27 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             <FileText className="w-3.5 h-3.5" />
             <span>12대 항목 사업계획서</span>
             <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
+          </button>
+
+          <button
+            onClick={() => handle_tab_change('evaluation')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              active_tab === 'evaluation'
+                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-xs'
+                : 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/70 dark:border-indigo-800/60'
+            }`}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>시행계획·추진실적 AI 평가</span>
+            <span
+              className={`px-1.5 py-0.2 rounded-md text-[10px] font-black ${
+                active_tab === 'evaluation'
+                  ? 'bg-white/20 text-white'
+                  : 'bg-indigo-600 text-white'
+              }`}
+            >
+              100점 평가표 · NEW
+            </span>
           </button>
 
           <button
@@ -1729,7 +1754,40 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
               google_api_key={google_api_key}
             />
           </div>
+
+          {/* 사업계획 수립 완료 후 『시행계획·추진실적 AI 평가 (100점 평가표)』 단계로 이어지는 연계 카드 */}
+          <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-5 rounded-3xl border border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+            <div className="space-y-1">
+              <div className="text-[11px] font-black text-amber-300 uppercase tracking-wider">
+                NEXT STEP · 공공보건의료법 제4조 시행계획 및 추진실적 평가 연계
+              </div>
+              <h4 className="text-base font-black text-white">
+                작성된 시행계획 및 전년도 추진실적을 공식 평가표(100점 만점)로 즉시 사전 진단해보세요
+              </h4>
+              <p className="text-xs text-slate-300">
+                『2025년 공공보건의료 시행계획 수립 지침』 및 『2024년 추진실적 작성 지침』의 10대 평가지표(추진실적 70점 + 사업계획 30점) 루브릭 채점과 6단계 AI 평가 서비스를 제공합니다.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => handle_tab_change('evaluation')}
+              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>시행계획·추진실적 AI 평가 열기 →</span>
+            </button>
+          </div>
         </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 3-2. TAB: 공공보건의료 시행계획 · 추진실적 AI 평가 (100점 만점) */}
+      {/* ============================================================== */}
+      {active_tab === 'evaluation' && (
+        <시행계획_추진실적_AI평가_시스템
+          selected_region_name={region_name}
+          google_api_key={google_api_key}
+        />
       )}
 
       {/* ============================================================== */}

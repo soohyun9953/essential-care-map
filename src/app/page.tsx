@@ -80,7 +80,7 @@ export default function Home() {
   const [current_workspace, set_current_workspace] = useState<워크스페이스_타입>('home');
 
   // 정책기획 서브탭 및 의료기관 서브탭 딥링크 상태
-  const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'compare' | 'forecast'>('policy_ai');
+  const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>('policy_ai');
   const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
   const [ai_hospital_id, set_ai_hospital_id] = useState<string>('HOSP_001'); // 영월의료원 기본
 
@@ -226,7 +226,7 @@ export default function Home() {
     sub_feature?: string
   ) => {
     if (workspace === 'policy_planning' && sub_feature) {
-      if (['compare', 'forecast', 'policy_ai', 'report'].includes(sub_feature)) {
+      if (['compare', 'forecast', 'policy_ai', 'report', 'evaluation'].includes(sub_feature)) {
         set_policy_subtab(sub_feature as any);
       }
     } else if (workspace === 'medical_institution' && sub_feature) {
@@ -236,7 +236,7 @@ export default function Home() {
   };
 
   // 지역진단에서 정책 연계 액션 클릭 시 정책기획 탭 전환
-  const handle_navigate_policy = (feature: 'compare' | 'forecast' | 'policy_ai' | 'report') => {
+  const handle_navigate_policy = (feature: 'compare' | 'forecast' | 'policy_ai' | 'report' | 'evaluation') => {
     set_policy_subtab(feature);
     set_current_workspace('policy_planning');
   };
@@ -248,8 +248,9 @@ export default function Home() {
     if (['cp_library', 'policy_incentive', 'cp_variance', 'crisis', 'discharge_care', 'aa_disclosure', 'hospitals', 'datacenter'].includes(resolved_medical_tab)) {
       set_medical_subtab(resolved_medical_tab as 의료기관_서브탭_타입);
       set_current_workspace('medical_institution');
-    } else if (['report_generator', 'compare_1to1', 'demand_forecast'].includes(menu_id)) {
+    } else if (['report_generator', 'compare_1to1', 'demand_forecast', 'evaluation'].includes(menu_id)) {
       if (menu_id === 'report_generator') set_policy_subtab('report');
+      else if (menu_id === 'evaluation') set_policy_subtab('evaluation');
       else if (menu_id === 'compare_1to1') set_policy_subtab('compare');
       else if (menu_id === 'demand_forecast') set_policy_subtab('forecast');
       set_current_workspace('policy_planning');
@@ -271,7 +272,7 @@ export default function Home() {
       const targetSubtab = subFeature === 'hospital_crisis' ? 'crisis' : subFeature;
       set_medical_subtab(targetSubtab as any);
     } else if (workspace === 'policy_planning' && subFeature) {
-      if (['compare', 'forecast', 'policy_ai', 'report'].includes(subFeature)) {
+      if (['compare', 'forecast', 'policy_ai', 'report', 'evaluation'].includes(subFeature)) {
         set_policy_subtab(subFeature as any);
       }
     }
@@ -310,6 +311,7 @@ export default function Home() {
       if (policy_subtab === 'compare') return 'compare';
       if (policy_subtab === 'forecast') return 'forecast';
       if (policy_subtab === 'report') return 'report';
+      if (policy_subtab === 'evaluation') return 'evaluation';
       return 'ai_analysis';
     }
     return 'ai_analysis';

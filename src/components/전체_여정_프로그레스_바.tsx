@@ -12,6 +12,7 @@ import {
   Cpu,
   Sparkles,
   FileText,
+  ShieldCheck,
   Check,
   ChevronRight,
   Info,
@@ -24,7 +25,8 @@ export type 여정_단계_키 =
   | 'forecast'     // 3. 미래수요
   | 'ai_analysis'  // 4. AI 정책분석
   | 'alternatives' // 5. 정책대안
-  | 'report';      // 6. 사업계획
+  | 'report'       // 6. 사업계획
+  | 'evaluation';  // 7. 시행계획 평가
 
 export interface 여정_단계_정의 {
   key: 여정_단계_키;
@@ -33,7 +35,7 @@ export interface 여정_단계_정의 {
   subLabel: string;
   icon: React.ComponentType<{ className?: string }>;
   workspace: 워크스페이스_타입;
-  policyTab?: 'compare' | 'forecast' | 'policy_ai' | 'report';
+  policyTab?: 'compare' | 'forecast' | 'policy_ai' | 'report' | 'evaluation';
 }
 
 export const 전체_여정_단계_목록: 여정_단계_정의[] = [
@@ -89,6 +91,15 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
     icon: FileText,
     workspace: 'policy_planning',
     policyTab: 'report',
+  },
+  {
+    key: 'evaluation',
+    order: 7,
+    label: '시행계획 평가',
+    subLabel: '평가지침 100점 평가표 & 6단계 AI 심사',
+    icon: ShieldCheck,
+    workspace: 'policy_planning',
+    policyTab: 'evaluation',
   },
 ];
 

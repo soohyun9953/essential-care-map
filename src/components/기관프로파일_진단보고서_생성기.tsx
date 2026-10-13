@@ -520,29 +520,15 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
           <div className="flex items-center gap-2 flex-wrap shrink-0">
             <button
               type="button"
-              onClick={() => setShowTemplateTags(!showTemplateTags)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
-                showTemplateTags
-                  ? 'bg-blue-600/40 border-blue-400 text-blue-200'
-                  : 'bg-white/10 border-white/15 text-slate-300 hover:bg-white/15'
-              }`}
-              title="보고서 내 템플릿 메타 태그 표시 여부 전환"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{showTemplateTags ? '표기 태그 숨기기' : '템플릿 표기 태그 보기'}</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => setIsEditMode(!isEditMode)}
-              className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
                 isEditMode
                   ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
                   : 'bg-white/10 border-white/15 text-slate-200 hover:bg-white/20'
               }`}
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>{isEditMode ? '진단문안 편집 완료' : '{LLM 해석} 직접 편집'}</span>
+              <span>{isEditMode ? '진단 소견 편집 완료' : '진단 소견 직접 편집'}</span>
             </button>
 
             <button
@@ -559,7 +545,7 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI {`{LLM 해석}`} 심층 재생성</span>
+                  <span>AI 심층 진단 재생성</span>
                 </>
               )}
             </button>
@@ -626,17 +612,18 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
       </div>
 
       {/* ==================================================================== */}
-      {/* 2. 동적 플레이스홀더 필터 바 ({연도}, {시도}, {지역구분}, {기관명} 등) */}
+      {/* ==================================================================== */}
+      {/* 2. 진단 보고서 파라미터 필터 바                                      */}
       {/* ==================================================================== */}
       <div className="bg-white dark:bg-[#15161b] p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-wrap items-center gap-3 text-xs">
-        <div className="flex items-center gap-1.5 font-black text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/50 px-2.5 py-1.5 rounded-xl border border-orange-200 dark:border-orange-800/60">
-          <Sliders className="w-3.5 h-3.5" />
-          <span>주황 {`{…}`} 데이터 연동 필터:</span>
+        <div className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-slate-300">
+          <Sliders className="w-3.5 h-3.5 text-blue-600" />
+          <span>진단 조건 설정:</span>
         </div>
 
-        {/* {연도} */}
+        {/* 연도 */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500 font-bold">{`{연도}`}:</span>
+          <span className="text-slate-500 font-bold">기준연도:</span>
           <select
             value={baseYear}
             onChange={(e) => setBaseYear(e.target.value)}
@@ -648,9 +635,9 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
           </select>
         </div>
 
-        {/* {지역구분} */}
+        {/* 지역구분 */}
         <div className="flex items-center gap-1.5">
-          <span className="text-slate-500 font-bold">{`{지역구분}`}:</span>
+          <span className="text-slate-500 font-bold">분석단위:</span>
           <select
             value={regionLevel}
             onChange={(e) => setRegionLevel(e.target.value as any)}
@@ -662,9 +649,9 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
           </select>
         </div>
 
-        {/* ◆선택기관 {기관명} */}
+        {/* 선택기관 */}
         <div className="flex items-center gap-1.5">
-          <span className="text-blue-600 font-black">◆선택기관 {`{기관명}`}:</span>
+          <span className="text-blue-600 font-black">선택기관:</span>
           <select
             value={selectedHospId}
             onChange={(e) => setSelectedHospId(e.target.value)}
@@ -678,10 +665,10 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
           </select>
         </div>
 
-        {/* ④ 기관비교 탭일 때 ◆비교기관 선택기 표시 */}
+        {/* ④ 기관비교 탭일 때 비교기관 선택기 표시 */}
         {activeReportTab === 'p4_inst_compare' && (
           <div className="flex items-center gap-1.5">
-            <span className="text-emerald-600 font-black">◆비교기관 {`{비교기관명}`}:</span>
+            <span className="text-emerald-600 font-black">비교기관:</span>
             <select
               value={compareHospId}
               onChange={(e) => setCompareHospId(e.target.value)}
@@ -700,7 +687,7 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
         {activeReportTab === 'p5_region_compare' && (
           <>
             <div className="flex items-center gap-1.5">
-              <span className="text-blue-600 font-black">◆비교지역1:</span>
+              <span className="text-blue-600 font-black">비교지역 1:</span>
               <input
                 type="text"
                 value={compareRegion1}
@@ -709,7 +696,7 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
               />
             </div>
             <div className="flex items-center gap-1.5">
-              <span className="text-emerald-600 font-black">◆비교지역2:</span>
+              <span className="text-emerald-600 font-black">비교지역 2:</span>
               <input
                 type="text"
                 value={compareRegion2}

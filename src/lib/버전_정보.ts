@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-13',
-  time: '16:40',
-  deployedAt: '2026.10.13 16:40',
-  semver: '1.28.1',
-  fullLabel: '2026.10.13 16:40 · v1.28.1',
-  packageVersion: '20261013-1640',
-  updatedAt: '2026.10.13 16:40',
+  time: '16:53',
+  deployedAt: '2026.10.13 16:53',
+  semver: '1.28.2',
+  fullLabel: '2026.10.13 16:53 · v1.28.2',
+  packageVersion: '20261013-1653',
+  updatedAt: '2026.10.13 16:53',
   changelog:
-    'Vercel 서버리스 배포 환경 완벽 호환 — Python 의존성 완전 제거 및 순수 JS/TS 표준 HWPX 빌더 적용 (2026.10.13 16:40)',
+    '화면 내 불필요한 메타 표기 요소 완전 삭제 — [템플릿 표기 태그 보기] 버튼 및 [주황 {...} 데이터 연동 필터] 배지 제거 (2026.10.13 16:53)',
 };

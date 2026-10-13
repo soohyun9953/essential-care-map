@@ -83,6 +83,7 @@ export default function Home() {
   const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>('policy_ai');
   const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
   const [ai_hospital_id, set_ai_hospital_id] = useState<string>('HOSP_001'); // 영월의료원 기본
+  const [ai_hospital_subtab, set_ai_hospital_subtab] = useState<'diagnosis' | 'profile_report' | 'benchmark' | 'forecast' | 'simulation' | 'execution' | 'kpi' | 'national_view'>('diagnosis');
 
   // 전역 데이터셋 및 선택된 지역
   const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_진단_데이터);
@@ -231,6 +232,8 @@ export default function Home() {
       }
     } else if (workspace === 'medical_institution' && sub_feature) {
       set_medical_subtab(sub_feature as any);
+    } else if (workspace === 'hospital_ai_diagnosis' && sub_feature) {
+      set_ai_hospital_subtab(sub_feature as any);
     }
     set_current_workspace(workspace);
   };
@@ -245,7 +248,7 @@ export default function Home() {
   const handle_guide_navigate = (menu_id: string) => {
     set_is_guide_modal_open(false);
     const resolved_medical_tab = menu_id === 'hospital_crisis' ? 'crisis' : menu_id;
-    if (['cp_library', 'policy_incentive', 'cp_variance', 'crisis', 'discharge_care', 'aa_disclosure', 'hospitals', 'datacenter'].includes(resolved_medical_tab)) {
+    if (['cp_library', 'policy_incentive', 'cp_variance', 'crisis', 'discharge_care', 'aa_disclosure', 'hospitals', 'datacenter', 'profile_report'].includes(resolved_medical_tab)) {
       set_medical_subtab(resolved_medical_tab as 의료기관_서브탭_타입);
       set_current_workspace('medical_institution');
     } else if (['report_generator', 'compare_1to1', 'demand_forecast', 'evaluation'].includes(menu_id)) {
@@ -275,6 +278,8 @@ export default function Home() {
       if (['compare', 'forecast', 'policy_ai', 'report', 'evaluation'].includes(subFeature)) {
         set_policy_subtab(subFeature as any);
       }
+    } else if (workspace === 'hospital_ai_diagnosis' && subFeature) {
+      set_ai_hospital_subtab(subFeature as any);
     }
     set_current_workspace(workspace);
   };
@@ -339,6 +344,9 @@ export default function Home() {
           if (ws === 'policy_planning' && policy_subtab === 'evaluation') {
             set_policy_subtab('policy_ai');
           }
+          if (ws === 'hospital_ai_diagnosis' && ai_hospital_subtab === 'profile_report') {
+            set_ai_hospital_subtab('diagnosis');
+          }
           set_current_workspace(ws);
         }}
         on_open_plan_evaluation={() => {
@@ -346,6 +354,14 @@ export default function Home() {
           set_current_workspace('policy_planning');
         }}
         is_plan_evaluation_active={current_workspace === 'policy_planning' && policy_subtab === 'evaluation'}
+        on_open_profile_report={() => {
+          set_ai_hospital_subtab('profile_report');
+          set_current_workspace('hospital_ai_diagnosis');
+        }}
+        is_profile_report_active={
+          (current_workspace === 'hospital_ai_diagnosis' && ai_hospital_subtab === 'profile_report') ||
+          (current_workspace === 'medical_institution' && medical_subtab === 'profile_report')
+        }
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
@@ -433,11 +449,12 @@ export default function Home() {
           </div>
         )}
 
-        {/* ⭐ 워크스페이스 3-2: [AI 병원진단·개선] (신규 핵심: 41개 거점공공병원 AI 종합진단, 원인분석, Benchmarking, 수요예측, AI개선대안 및 시뮬레이션, ISP실행계획, 성과관리) */}
+        {/* ⭐ 워크스페이스 3-2: [AI 병원진단·개선] (신규 핵심: 41개 거점공공병원 AI 종합진단, 5종 진단보고서 작성, 원인분석, Benchmarking, 수요예측, AI개선대안 및 시뮬레이션, ISP실행계획, 성과관리) */}
         {current_workspace === 'hospital_ai_diagnosis' && (
           <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <AI_병원진단_통합_워크스페이스
               initial_hospital_id={ai_hospital_id}
+              initial_tab={ai_hospital_subtab}
               on_navigate_medical_view={(hId) => {
                 set_current_workspace('medical_institution');
                 set_medical_subtab('hospitals');

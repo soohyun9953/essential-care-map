@@ -256,30 +256,41 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           </button>
         </div>
 
-        {/* 배너 2: AI 공공병원 종합진단 & 개선 시뮬레이션 */}
+        {/* 배너 2: AI 공공병원 종합진단 & 5종 진단보고서 작성 */}
         <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden flex flex-col justify-between gap-5">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-black">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>핵심 분석 대상 개편: 지역 ➔ 공공병원 중심 AI 의사결정 플랫폼</span>
+              <span>NEW · 국립중앙의료원 의료기관 프로파일 5종 진단보고서 탑재</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              AI 공공병원 종합진단 &amp; 개선 시뮬레이션
+              AI 공공병원 종합진단 &amp; 5종 진단보고서 작성
             </h2>
             <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium">
-              단순 조회 중심의 「의료기관」 메뉴를 넘어, <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로 <strong>진단 ➔ 원인분석 ➔ 유사병원 Benchmarking ➔ 미래예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획</strong>까지 지원합니다.
+              <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로 <strong>①지역 의료자원 · ②진료기능 · ③진료실적 · ④기관비교 · ⑤지역비교 5종 진단보고서</strong>를 자동 작성하고, AI 개선 시뮬레이션 및 실행계획을 수립합니다.
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => on_navigate_workspace('hospital_ai_diagnosis')}
-            className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-blue-500 hover:bg-blue-400 text-white font-extrabold text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
-          >
-            <Building2 className="w-4 h-4 text-white" />
-            <span>41개 공공병원 AI 진단 시작하기</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => on_navigate_workspace('hospital_ai_diagnosis', 'profile_report')}
+              className="px-5 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
+            >
+              <FileText className="w-4 h-4 text-slate-950" />
+              <span>📄 5종 진단보고서 작성 바로가기</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => on_navigate_workspace('hospital_ai_diagnosis', 'diagnosis')}
+              className="px-4 py-3.5 rounded-2xl bg-blue-500/80 hover:bg-blue-500 text-white font-extrabold text-xs sm:text-sm shadow-md border border-blue-400/40 transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Building2 className="w-4 h-4 text-white" />
+              <span>AI 병원진단·시뮬레이션</span>
+            </button>
+          </div>
         </div>
       </div>
 

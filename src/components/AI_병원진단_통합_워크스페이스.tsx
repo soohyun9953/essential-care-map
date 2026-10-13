@@ -62,15 +62,17 @@ import {
   get_전국_공공병원_AI_종합통계,
   AI진단_가상데이터_안내,
 } from '@/lib/공공병원_AI진단_데이터셋';
+import { 기관프로파일_진단보고서_생성기 } from './기관프로파일_진단보고서_생성기';
 
 export type AI_병원진단_서브탭 =
-  | 'diagnosis'     // 1. AI 종합진단 & 원인분석
-  | 'benchmark'     // 2. 공공병원 비교분석 (Benchmarking)
-  | 'forecast'      // 3. AI 수요·성과 예측
-  | 'simulation'    // 4. AI 개선대안 & 시뮬레이션 (Human-in-the-loop)
-  | 'execution'     // 5. 세부 추진계획
-  | 'kpi'           // 6. 성과관리 & 환류
-  | 'national_view';// 7. 전국 41개 공공병원 통합현황
+  | 'diagnosis'      // 1. AI 종합진단 & 원인분석
+  | 'profile_report' // ⭐ 신규: 의료기관 프로파일 5종 진단보고서 작성 (①지역의료자원~⑤지역비교)
+  | 'benchmark'      // 2. 공공병원 비교분석 (Benchmarking)
+  | 'forecast'       // 3. AI 수요·성과 예측
+  | 'simulation'     // 4. AI 개선대안 & 시뮬레이션 (Human-in-the-loop)
+  | 'execution'      // 5. 세부 추진계획
+  | 'kpi'            // 6. 성과관리 & 환류
+  | 'national_view'; // 7. 전국 41개 공공병원 통합현황
 
 interface Props {
   initial_hospital_id?: string;
@@ -86,6 +88,10 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
   // 1. 상태 관리
   const [selectedHospitalId, setSelectedHospitalId] = useState<string>(initial_hospital_id);
   const [activeSubtab, setActiveSubtab] = useState<AI_병원진단_서브탭>(initial_tab);
+
+  React.useEffect(() => {
+    setActiveSubtab(initial_tab);
+  }, [initial_tab]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('전체');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('전체');
@@ -228,7 +234,17 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
           </div>
 
           {/* 우측: 차별화 툴팁 및 기존 의료기관 화면(조회 전용) 바로가기 버튼 */}
-          <div className="flex items-center gap-2 self-end lg:self-center">
+          <div className="flex flex-wrap items-center gap-2 self-end lg:self-center">
+            <button
+              type="button"
+              onClick={() => setActiveSubtab('profile_report')}
+              className="px-3.5 py-2 rounded-xl text-xs font-black text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition flex items-center gap-1.5 cursor-pointer shadow-sm ring-2 ring-blue-300 dark:ring-blue-800"
+              title="의료기관 프로파일 5종 진단보고서(①지역의료자원·②진료기능·③진료실적·④기관비교·⑤지역비교) 작성"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-300" />
+              <span>📄 5종 진단보고서 작성</span>
+            </button>
+
             {on_navigate_medical_view && (
               <button
                 type="button"
@@ -284,7 +300,7 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
 
       {/* ==================================================================== */}
       {/* 2. 7단계 워크플로우 탭 네비게이션 */}
-      {/* 진단 ➔ 원인분석 ➔ Benchmarking ➔ 예측 ➔ 대안/시뮬레이션 ➔ 실행계획 ➔ 성과관리 */}
+      {/* 진단 ➔ 5종 진단보고서 ➔ 원인분석 ➔ Benchmarking ➔ 예측 ➔ 대안/시뮬레이션 ➔ 실행계획 ➔ 성과관리 */}
       {/* ==================================================================== */}
       <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-800/90 rounded-2xl overflow-x-auto shadow-inner text-xs font-bold scrollbar-none">
         <button
@@ -298,6 +314,20 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
         >
           <span className="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-600 text-[10px] flex items-center justify-center font-black">1</span>
           <span>① AI 종합진단 & 원인분석</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubtab('profile_report')}
+          className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+            activeSubtab === 'profile_report'
+              ? 'bg-blue-600 text-white shadow-sm font-black ring-2 ring-blue-400/50'
+              : 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5 text-amber-400" />
+          <span>📄 기관프로파일 5종 진단보고서 작성</span>
+          <span className="px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-black">NEW</span>
         </button>
 
         <button
@@ -378,6 +408,13 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
           <span>전국 41개 공공병원 통합현황</span>
         </button>
       </div>
+
+      {/* ==================================================================== */}
+      {/* ⭐ 신규 서브탭: 의료기관 프로파일 5종 진단보고서 작성 */}
+      {/* ==================================================================== */}
+      {activeSubtab === 'profile_report' && (
+        <기관프로파일_진단보고서_생성기 initial_hospital_id={selectedHospitalId} />
+      )}
 
       {/* ==================================================================== */}
       {/* 3. 서브탭 1: AI 종합진단 & 주요 이슈 원인분석 */}

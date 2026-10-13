@@ -21,6 +21,7 @@ import {
   Lock,
   Unlock,
   Compass,
+  FileText,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { useIsp, PERSONA_LIST, PersonaType } from '@/context/ISP_컨텍스트';
@@ -75,6 +76,8 @@ interface 글로벌_공공_헤더_속성 {
   on_open_review_guide_modal?: () => void;
   on_open_plan_evaluation?: () => void;
   is_plan_evaluation_active?: boolean;
+  on_open_profile_report?: () => void;
+  is_profile_report_active?: boolean;
 }
 
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
@@ -105,6 +108,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   on_open_review_guide_modal,
   on_open_plan_evaluation,
   is_plan_evaluation_active = false,
+  on_open_profile_report,
+  is_profile_report_active = false,
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_persona_open, set_is_persona_open] = useState(false);
@@ -303,7 +308,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             <button
               onClick={() => handle_workspace_change('hospital_ai_diagnosis')}
               className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                current_active === 'hospital_ai_diagnosis'
+                current_active === 'hospital_ai_diagnosis' && !is_profile_report_active
                   ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
               }`}
@@ -311,6 +316,27 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>AI 병원진단·개선</span>
+            </button>
+
+            {/* ⭐ 신규 핵심 메뉴: 의료기관 프로파일 5종 진단보고서 작성 */}
+            <button
+              type="button"
+              onClick={() => {
+                if (on_open_profile_report) {
+                  on_open_profile_report();
+                } else {
+                  handle_workspace_change('hospital_ai_diagnosis');
+                }
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+                is_profile_report_active
+                  ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-500/30'
+                  : 'bg-amber-50/90 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-800/60'
+              }`}
+              title="국립중앙의료원 의료기관 프로파일 5종 진단보고서(①지역의료자원·②진료기능·③진료실적·④기관비교·⑤지역비교) 자동 작성"
+            >
+              <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+              <span>진단보고서 작성</span>
             </button>
 
             <button

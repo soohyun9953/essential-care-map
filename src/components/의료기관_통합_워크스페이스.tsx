@@ -22,6 +22,7 @@ import {
   Users,
   ChevronRight,
   TrendingUp,
+  FileText,
 } from 'lucide-react';
 import {
   전체_공공의료기관_상세목록,
@@ -41,12 +42,14 @@ import 신포괄_정책가산_평가_시뮬레이터 from './신포괄_정책가
 import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대시보드';
 import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';
 import { 지역거점_공공병원_공시검증_대시보드 } from './지역거점_공공병원_공시검증_대시보드';
+import { 기관프로파일_진단보고서_생성기 } from './기관프로파일_진단보고서_생성기';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
 import { 의료기관_질의응답_모달 } from './의료기관_질의응답_모달';
 
 export type 의료기관_서브탭_타입 =
   | 'hospitals'
+  | 'profile_report'
   | 'aa_disclosure'
   | 'datacenter'
   | 'crisis'
@@ -125,6 +128,19 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
         >
           <Building2 className="w-3.5 h-3.5" />
           <span>공공의료기관 탐색 (214개소)</span>
+        </button>
+
+        <button
+          onClick={() => handle_tab_change('profile_report')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'profile_report'
+              ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-400/50'
+              : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5 text-amber-400" />
+          <span>📄 기관프로파일 5종 진단보고서 작성</span>
+          <span className="px-1.5 py-0.5 rounded bg-amber-400 text-slate-950 text-[10px] font-black">NEW</span>
         </button>
 
         <button
@@ -462,6 +478,13 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
       {/* ============================================================== */}
       {active_subtab === 'aa_disclosure' && (
         <지역거점_공공병원_공시검증_대시보드 />
+      )}
+
+      {/* ============================================================== */}
+      {/* 10. SUBTAB 9: 의료기관 프로파일 5종 진단보고서 작성 */}
+      {/* ============================================================== */}
+      {active_subtab === 'profile_report' && (
+        <기관프로파일_진단보고서_생성기 />
       )}
 
       {/* 의료기관 데이터 자연어 AI 질의응답 모달 */}

@@ -26,7 +26,7 @@ import {
   Activity,
   Copy,
   Check,
-  Printer,
+  Download,
   Edit3,
   Eye,
   RefreshCw,
@@ -40,6 +40,8 @@ import {
   전국_41개_공공병원_AI_프로필,
   get_공공병원_ai_프로필,
 } from '@/lib/공공병원_AI진단_데이터셋';
+import { downloadHwpx, parseReportTextToSections } from '@/lib/hwpx_생성기';
+
 
 export type 프로파일_보고서_유형 = 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare';
 
@@ -116,6 +118,7 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
   const [showTemplateTags, setShowTemplateTags] = useState<boolean>(true);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
+  const [isHwpxDownloading, setIsHwpxDownloading] = useState<boolean>(false);
   const [isAiGenerating, setIsAiGenerating] = useState<boolean>(false);
   const [customAiNote, setCustomAiNote] = useState<string | null>(null);
 
@@ -361,6 +364,29 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
     }
   };
 
+  // HWP 다운로드 핸들러
+  const handleHwpxDownload = async () => {
+    const el = document.getElementById('profile-diagnosis-report-canvas');
+    if (!el || isHwpxDownloading) return;
+
+    setIsHwpxDownloading(true);
+    try {
+      const rawText = el.innerText;
+      const activeTab = 프로파일_5종_탭_목록.find((t) => t.id === activeReportTab);
+      const tabLabel = activeTab?.title ?? activeReportTab;
+      const docTitle = `${baseYear}년 의료기관 프로파일 ${tabLabel} 진단보고서 — ${hosp.기관명}`;
+      const sections = parseReportTextToSections(rawText, docTitle);
+      const safeHospName = hosp.기관명.replace(/[\\/:*?"<>|]/g, '_');
+      const fileName = `${baseYear}년_의료기관프로파일_${tabLabel.replace(/[^가-힣a-zA-Z0-9]/g, '')}_${safeHospName}.hwpx`;
+      await downloadHwpx(docTitle, sections, fileName);
+    } catch (err) {
+      console.error('[HWPX 다운로드 오류]', err);
+      alert('HWPX 파일 생성 중 오류가 발생했습니다. 다시 시도해 주세요.');
+    } finally {
+      setIsHwpxDownloading(false);
+    }
+  };
+
   // UI 헬퍼: 파랑 (요소 유형 설명) 배지
   const TypeTag: React.FC<{ label: string }> = ({ label }) =>
     showTemplateTags ? (
@@ -504,11 +530,17 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
 
             <button
               type="button"
-              onClick={() => typeof window !== 'undefined' && window.print()}
-              className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/15 transition flex items-center gap-1.5 cursor-pointer"
+              onClick={handleHwpxDownload}
+              disabled={isHwpxDownloading}
+              className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold border border-emerald-400/40 transition flex items-center gap-1.5 cursor-pointer"
+              title="현재 탭 보고서를 HWP(한글) 파일로 다운로드"
             >
-              <Printer className="w-3.5 h-3.5" />
-              <span>인쇄/PDF</span>
+              {isHwpxDownloading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Download className="w-3.5 h-3.5" />
+              )}
+              <span>{isHwpxDownloading ? '생성 중…' : 'HWP 다운로드'}</span>
             </button>
           </div>
         </div>

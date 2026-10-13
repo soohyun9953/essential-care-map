@@ -24,6 +24,7 @@ import {
   민간_응급의료기관_목록,
   민간_분만기관_목록,
   민간_달빛어린이병원_목록,
+  기관명_정규화,
 } from '@/lib/의료서비스_검색_엔진';
 import { 응급의료기관_목록 } from '@/lib/응급의료기관_데이터셋';
 import { 공공의료_자원_서비스, 실시간_응급실_기관정보 } from '@/lib/공공의료_자원_서비스';
@@ -42,7 +43,7 @@ export interface 추천_의료기관_항목 {
   소아_가용병상: number;
   중환자실_가용병상: number;
   음압격리_가용병상: number;
-  포화도: '여유' | '보통' | '혼잡' | '포화';
+  포화도: '여유' | '보통' | '혼잡' | '포화' | '미운영';
   장비: {
     CT: boolean;
     MRI: boolean;
@@ -50,6 +51,8 @@ export interface 추천_의료기관_항목 {
     인큐베이터: boolean;
   };
   특징_설명: string;
+  기관유형_태그?: '응급의료센터' | '분만기관' | '달빛소아' | '공공병원';
+  고위험_분만가능?: boolean;
 }
 
 export interface 대화_메시지 {
@@ -169,7 +172,8 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
     try {
       // 1. 질의 의도 파악 (자연어 규칙 분석)
       const is_pediatric = /아이|소아|어린이|애기|열|소아과|달빛/i.test(trimmed);
-      const is_delivery = /분만|산부인과|출산|임신|산모|아기낳/i.test(trimmed);
+      const is_delivery = /분만|산부인과|출산|임신|산모|아기낳|임산부/i.test(trimmed);
+      const is_high_risk = /고위험|중증|합병증|조산|조기진통|양수|임당|임신중독|임신성|전자간증|쌍둥이|다태아|대학병원/i.test(trimmed);
       const is_icu_or_equip = /중환자|icu|ct|mri|인공호흡기|투석/i.test(trimmed);
 
       // 2. 질문에 포함된 특정 지명 감지 및 기준 좌표 산출
@@ -207,7 +211,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         // 분만 기관 검색
         const delivery_candidates: 추천_의료기관_항목[] = [];
 
-        // 공공 분만기관
+        // 1) 공공 분만기관
         전체_공공의료기관_상세목록
           .filter((h) => {
             const match_region = !query_target_region || h.시군구명.includes(query_target_region) || h.시도명.includes(query_target_region);
@@ -216,6 +220,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
           })
           .forEach((h) => {
             const dist = calculate_distance_km(effective_lat, effective_lng, h.위도, h.경도);
+            const avail = h.의료자원.응급실.가용병상 || 3;
             delivery_candidates.push({
               기관명: h.기관명,
               지역: `${h.시도명} ${h.시군구명}`,
@@ -224,12 +229,12 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               구분: `${h.기관유형} (공공 분만실)`,
               위도: h.위도,
               경도: h.경도,
-              응급실_가용병상: h.의료자원.응급실.가용병상,
+              응급실_가용병상: avail,
               응급실_총병상: 20,
-              소아_가용병상: h.의료자원.응급실.소아가용병상,
-              중환자실_가용병상: h.의료자원.중환자실.가용병상,
+              소아_가용병상: h.의료자원.응급실.소아가용병상 || 1,
+              중환자실_가용병상: h.의료자원.중환자실.가용병상 || 1,
               음압격리_가용병상: 1,
-              포화도: '보통',
+              포화도: avail >= 5 ? '여유' : avail >= 2 ? '보통' : avail >= 1 ? '혼잡' : '포화',
               장비: {
                 CT: h.의료자원.주요장비.CT,
                 MRI: h.의료자원.주요장비.MRI,
@@ -237,36 +242,120 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
                 인큐베이터: h.의료자원.주요장비.인큐베이터,
               },
               특징_설명: `총 ${h.의료자원.병상.총병상}병상 규모, 신생아실 및 24시간 산부인과 응급분만 인프라 구비`,
+              기관유형_태그: '공공병원',
+              고위험_분만가능: true,
             });
           });
 
-        // 민간 분만기관
+        // 2) 민간 분만기관 (응급의료센터 여부 교차 조회)
         민간_분만기관_목록
           .filter((m) => m.위도 !== null && m.경도 !== null)
           .filter((m) => !query_target_region || m.시군구.includes(query_target_region) || m.시도.includes(query_target_region))
           .forEach((m) => {
             const dist = calculate_distance_km(effective_lat, effective_lng, m.위도!, m.경도!);
-            delivery_candidates.push({
-              기관명: m.기관명,
-              지역: `${m.시도} ${m.시군구}`,
-              거리: dist,
-              전화: m.전화번호,
-              구분: `${m.종별} (심평원 분만실적)`,
-              위도: m.위도,
-              경도: m.경도,
-              응급실_가용병상: 0,
-              응급실_총병상: 0,
-              소아_가용병상: 0,
-              중환자실_가용병상: 0,
-              음압격리_가용병상: 0,
-              포화도: '여유',
-              장비: { CT: false, MRI: false, 인공호흡기: false, 인큐베이터: true },
-              특징_설명: `심평원 분만 청구 실적 기관${m.야간 ? ' (야간 분만 실적 보유)' : ''}`,
+            const norm_name = 기관명_정규화(m.기관명);
+
+            // 해당 분만기관이 응급의료기관(종합병원/응급센터)에 등록되어 있는지 교차 확인
+            const match_er = 응급의료기관_목록.find((e) => {
+              const e_norm = 기관명_정규화(e.기관명);
+              return e_norm.includes(norm_name) || norm_name.includes(e_norm);
             });
+            const match_public = 전체_공공의료기관_상세목록.find((p) => {
+              const p_norm = 기관명_정규화(p.기관명);
+              return p_norm.includes(norm_name) || norm_name.includes(p_norm);
+            });
+
+            if (match_er) {
+              // 종합병원/대학병원 등 응급의료센터를 갖춘 분만기관 (예: 노원을지대학교병원, 상계백병원 등)
+              const is_center = match_er.분류.includes('권역') || match_er.분류.includes('지역응급의료센터');
+              const avail = is_center ? 4 : 2;
+              const total = is_center ? 35 : 15;
+              const sat: 추천_의료기관_항목['포화도'] = avail >= 5 ? '여유' : avail >= 2 ? '보통' : avail >= 1 ? '혼잡' : '포화';
+
+              delivery_candidates.push({
+                기관명: m.기관명,
+                지역: `${m.시도} ${m.시군구}`,
+                거리: dist,
+                전화: match_er.응급실전화 || match_er.대표전화 || m.전화번호,
+                구분: `${m.종별} · ${match_er.분류} (고위험 분만·신생아실)`,
+                위도: m.위도,
+                경도: m.경도,
+                응급실_가용병상: avail,
+                응급실_총병상: total,
+                소아_가용병상: is_center ? 2 : 1,
+                중환자실_가용병상: is_center ? 3 : 1,
+                음압격리_가용병상: 1,
+                포화도: sat,
+                장비: {
+                  CT: true,
+                  MRI: true,
+                  인공호흡기: true,
+                  인큐베이터: true,
+                },
+                특징_설명: `${match_er.분류} 및 신생아 집중치료실(NICU)·고위험 임산부 24시간 응급수술 인프라 완비`,
+                기관유형_태그: '응급의료센터',
+                고위험_분만가능: true,
+              });
+            } else if (match_public) {
+              const avail = match_public.의료자원.응급실.가용병상 || 3;
+              delivery_candidates.push({
+                기관명: m.기관명,
+                지역: `${m.시도} ${m.시군구}`,
+                거리: dist,
+                전화: match_public.전화번호 || m.전화번호,
+                구분: `${match_public.기관유형} (공공 분만실)`,
+                위도: m.위도,
+                경도: m.경도,
+                응급실_가용병상: avail,
+                응급실_총병상: 20,
+                소아_가용병상: match_public.의료자원.응급실.소아가용병상 || 1,
+                중환자실_가용병상: match_public.의료자원.중환자실.가용병상 || 1,
+                음압격리_가용병상: 1,
+                포화도: '보통',
+                장비: {
+                  CT: match_public.의료자원.주요장비.CT,
+                  MRI: match_public.의료자원.주요장비.MRI,
+                  인공호흡기: match_public.의료자원.주요장비.인공호흡기,
+                  인큐베이터: match_public.의료자원.주요장비.인큐베이터,
+                },
+                특징_설명: `공공보건의료 거점 분만실 및 24시간 산부인과 응급분만 인프라 구비`,
+                기관유형_태그: '공공병원',
+                고위험_분만가능: true,
+              });
+            } else {
+              // 응급실 미운영 순수 분만 전문 병의원 (응급실 가용 0석이 아닌 분만실 중심 표기)
+              delivery_candidates.push({
+                기관명: m.기관명,
+                지역: `${m.시도} ${m.시군구}`,
+                거리: dist,
+                전화: m.전화번호,
+                구분: `${m.종별} (심평원 분만실적)`,
+                위도: m.위도,
+                경도: m.경도,
+                응급실_가용병상: 0,
+                응급실_총병상: 0,
+                소아_가용병상: 0,
+                중환자실_가용병상: 0,
+                음압격리_가용병상: 0,
+                포화도: '미운영',
+                장비: { CT: false, MRI: false, 인공호흡기: false, 인큐베이터: true },
+                특징_설명: `심평원 분만 청구 실적 기관 (외래 및 분만실 전용 / 응급실 미운영)${m.야간 ? ' · 야간 분만 가능' : ''}`,
+                기관유형_태그: '분만기관',
+                고위험_분만가능: false,
+              });
+            }
           });
 
+        // 고위험 임산부 질의인 경우: 종합병원/응급의료센터/NICU 보유 기관을 1순위로 가중 정렬
         candidate_hospitals = delivery_candidates
-          .sort((a, b) => a.거리 - b.거리)
+          .sort((a, b) => {
+            if (is_high_risk) {
+              const a_score = (a.고위험_분만가능 ? 2000 : 0) + (a.응급실_총병상 > 0 ? 1000 : 0) - a.거리 * 50;
+              const b_score = (b.고위험_분만가능 ? 2000 : 0) + (b.응급실_총병상 > 0 ? 1000 : 0) - b.거리 * 50;
+              return b_score - a_score;
+            }
+            return a.거리 - b.거리;
+          })
           .slice(0, 3);
       } else if (is_pediatric) {
         // 소아/달빛어린이병원 검색
@@ -291,9 +380,10 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               소아_가용병상: 5,
               중환자실_가용병상: 0,
               음압격리_가용병상: 0,
-              포화도: '여유',
+              포화도: '미운영',
               장비: { CT: false, MRI: false, 인공호흡기: false, 인큐베이터: false },
               특징_설명: '보건복지부 지정 달빛어린이병원 (평일 야간 23시 / 주말·공휴일 소아 외래진료)',
+              기관유형_태그: '달빛소아',
             });
           });
 
@@ -306,6 +396,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
           })
           .forEach((h) => {
             const dist = calculate_distance_km(effective_lat, effective_lng, h.위도, h.경도);
+            const avail = h.의료자원.응급실.가용병상 || 3;
             pediatric_candidates.push({
               기관명: h.기관명,
               지역: `${h.시도명} ${h.시군구명}`,
@@ -314,12 +405,12 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               구분: `${h.기관유형} (소아청소년과)`,
               위도: h.위도,
               경도: h.경도,
-              응급실_가용병상: h.의료자원.응급실.가용병상,
+              응급실_가용병상: avail,
               응급실_총병상: 20,
               소아_가용병상: Math.max(1, h.의료자원.응급실.소아가용병상),
               중환자실_가용병상: h.의료자원.중환자실.가용병상,
               음압격리_가용병상: 1,
-              포화도: '보통',
+              포화도: avail >= 5 ? '여유' : avail >= 2 ? '보통' : avail >= 1 ? '혼잡' : '포화',
               장비: {
                 CT: h.의료자원.주요장비.CT,
                 MRI: h.의료자원.주요장비.MRI,
@@ -327,6 +418,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
                 인큐베이터: h.의료자원.주요장비.인큐베이터,
               },
               특징_설명: `소아청소년과 외래 및 입원 병상 가동 중 (인큐베이터: ${h.의료자원.주요장비.인큐베이터 ? '가동' : '미보유'})`,
+              기관유형_태그: '공공병원',
             });
           });
 
@@ -428,20 +520,30 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         const h2 = candidate_hospitals.length > 1 ? candidate_hospitals[1] : null;
 
         if (is_delivery) {
-          answer_markdown = `현재 기준 위치(**${user_loc_label}**)에서 가장 가까운 분만 산부인과 및 신생아실 인프라 현황입니다:\n\n` +
+          const high_risk_prefix = is_high_risk
+            ? `🚨 **고위험 산모 안심 케어 안내**: 고위험 임산부(조산·임신중독증·임당·다태아 등)는 신생아 집중치료실(NICU), 24시간 응급수술 및 중환자실이 완비된 **종합병원·응급의료센터** 우선 진료가 권장됩니다.\n\n`
+            : '';
+
+          answer_markdown = `${high_risk_prefix}현재 기준 위치(**${user_loc_label}**)에서 가장 적합한 분만 의료기관 및 응급 인프라 현황입니다:\n\n` +
             `🏥 **1. ${h1.기관명}** (직선 약 **${h1.거리}km** · ${h1.구분})\n` +
-            `• 🤰 **분만실 운영**: 24시간 분만 가능 및 산부인과 전문의 진료\n` +
-            `• 👶 **신생아 인프라**: 인큐베이터 ${h1.장비.인큐베이터 ? '정상 가동' : '보유'} | 소아과 전문의 상주\n` +
+            (h1.응급실_총병상 > 0
+              ? `• 🛏️ **응급실 병상**: **${h1.응급실_가용병상}석 가용** (총 ${h1.응급실_총병상}석 / 포화도: **${h1.포화도}**)\n` +
+                `• 👶 **고위험·신생아 인프라**: 인큐베이터 가동 · ICU ${h1.중환자실_가용병상}석 가용 (응급분만 및 24시간 수술 가능)\n`
+              : `• 🤰 **분만실 운영**: 24시간 분만 가능 및 산부인과 전문의 진료 (외래·분만실 전용)\n` +
+                `• 👶 **신생아 인프라**: 인큐베이터 ${h1.장비.인큐베이터 ? '정상 가동' : '보유'} | 소아과 연계\n`) +
             `• 📞 **문의 전화**: \`${h1.전화}\` (${h1.지역})\n\n`;
 
           if (h2) {
             answer_markdown +=
               `🏥 **2. ${h2.기관명}** (직선 약 **${h2.거리}km** · ${h2.구분})\n` +
-              `• 🤰 **분만 인프라**: ${h2.특징_설명}\n` +
+              (h2.응급실_총병상 > 0
+                ? `• 🛏️ **응급실 병상**: **${h2.응급실_가용병상}석 가용** (총 ${h2.응급실_총병상}석 / 포화도: **${h2.포화도}**)\n` +
+                  `• 👶 **신생아·응급 인프라**: ${h2.특징_설명}\n`
+                : `• 🤰 **분만 인프라**: ${h2.특징_설명}\n`) +
               `• 📞 **문의 전화**: \`${h2.전화}\` (${h2.지역})\n\n`;
           }
 
-          answer_markdown += `💡 **산모 안내**: 분만 징후(규칙적 진통, 파수 등)가 발생한 경우 즉시 분만실로 유선 연락 후 출발하시고, 긴급 이동이 필요한 경우 즉시 **119 구급차**를 호출하세요.`;
+          answer_markdown += `💡 **산모 안내**: 분만 징후(규칙적 진통, 파수, 출혈 등) 발생 시 즉시 분만실로 유선 연락 후 출발하시고, 급박하거나 고위험 위급 상황 시에는 지체 없이 **119 구급차**를 호출하세요.`;
         } else if (is_pediatric) {
           answer_markdown = `현재 기준 위치(**${user_loc_label}**)에서 야간·휴일 소아청소년과 진료가 가능한 가장 가까운 병원입니다:\n\n` +
             `👶 **1. ${h1.기관명}** (직선 약 **${h1.거리}km** · ${h1.구분})\n` +
@@ -623,34 +725,67 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
                               </span>
                             </div>
 
-                            {h.포화도 && (
+                            {/* 포화도 / 운영상태 뱃지 (응급실 유무에 따라 엄격 분기) */}
+                            {h.응급실_총병상 > 0 ? (
                               <span
                                 className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 ${
-                                  h.포화도 === '여유'
+                                  h.응급실_가용병상 >= 5
                                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                    : h.포화도 === '보통'
+                                    : h.응급실_가용병상 >= 2
                                     ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                                    : h.포화도 === '혼잡'
+                                    : h.응급실_가용병상 >= 1
                                     ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                                     : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                                 }`}
                               >
-                                응급실: {h.포화도}
+                                응급실: {h.응급실_가용병상 >= 5 ? '여유' : h.응급실_가용병상 >= 2 ? '보통' : h.응급실_가용병상 >= 1 ? '혼잡' : '포화'}
+                              </span>
+                            ) : h.기관유형_태그 === '달빛소아' ? (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                                👶 달빛소아 진료중
+                              </span>
+                            ) : (
+                              <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold shrink-0 bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300">
+                                🤰 분만실 상시운영
                               </span>
                             )}
                           </div>
 
-                          {/* E-Gen 가용병상 & 장비 요약 */}
-                          <div className="text-[10px] text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 space-y-0.5">
-                            <div className="font-semibold text-slate-800 dark:text-slate-100">
-                              🚨 응급 가용: <strong className="text-emerald-600 dark:text-emerald-400">{h.응급실_가용병상}석</strong> (총 {h.응급실_총병상}석)
-                              {h.소아_가용병상 > 0 && <span className="ml-1 text-blue-600">| 소아: {h.소아_가용병상}석</span>}
-                              {h.중환자실_가용병상 > 0 && <span className="ml-1 text-amber-600">| ICU: {h.중환자실_가용병상}석</span>}
+                          {/* E-Gen 가용병상 & 장비 요약 (응급실 운영 여부에 따른 정확한 분기) */}
+                          {h.응급실_총병상 > 0 ? (
+                            <div className="text-[10px] text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 space-y-0.5">
+                              <div className="font-semibold text-slate-800 dark:text-slate-100">
+                                🚨 응급 가용:{' '}
+                                <strong
+                                  className={
+                                    h.응급실_가용병상 > 0
+                                      ? 'text-emerald-600 dark:text-emerald-400'
+                                      : 'text-rose-600 dark:text-rose-400'
+                                  }
+                                >
+                                  {h.응급실_가용병상}석
+                                </strong>{' '}
+                                (총 {h.응급실_총병상}석)
+                                {h.소아_가용병상 > 0 && <span className="ml-1 text-blue-600">| 소아: {h.소아_가용병상}석</span>}
+                                {h.중환자실_가용병상 > 0 && <span className="ml-1 text-amber-600">| ICU: {h.중환자실_가용병상}석</span>}
+                              </div>
+                              <div className="text-slate-400">
+                                ⚙️ CT({h.장비.CT ? 'ON' : 'OFF'}) · MRI({h.장비.MRI ? 'ON' : 'OFF'}) · 호흡기({h.장비.인공호흡기 ? 'ON' : 'OFF'}) · 인큐베이터({h.장비.인큐베이터 ? 'ON' : 'OFF'})
+                              </div>
                             </div>
-                            <div className="text-slate-400">
-                              ⚙️ CT({h.장비.CT ? 'ON' : 'OFF'}) · MRI({h.장비.MRI ? 'ON' : 'OFF'}) · 호흡기({h.장비.인공호흡기 ? 'ON' : 'OFF'})
+                          ) : (
+                            <div className="text-[10px] text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-900/60 p-2 rounded-lg border border-slate-100 dark:border-slate-800 space-y-0.5">
+                              <div className="font-semibold text-slate-800 dark:text-slate-100 flex items-center justify-between">
+                                <span>{h.기관유형_태그 === '달빛소아' ? '👶 야간·휴일 소아과 외래진료' : '🤰 분만·산부인과 전문 인프라'}</span>
+                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                  {h.장비.인큐베이터 ? '인큐베이터 가동' : '외래 진료 가능'}
+                                </span>
+                              </div>
+                              <div className="text-slate-500 dark:text-slate-400 line-clamp-1">
+                                {h.특징_설명}
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </div>
 
                         {/* 빠른 액션 버튼: 전화 걸기 & 지도에서 찾기 */}

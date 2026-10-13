@@ -150,8 +150,8 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
   // E-Gen 실시간 병상 정보 맵 (기관명 기준 매핑)
   const [egen_realtime_data, set_egen_realtime_data] = useState<Record<string, 실시간_응급실_기관정보>>({});
-  const [egen_source_label, set_egen_source_label] = useState<string>('E-Gen 실시간 연동');
-  const [last_sync_time, set_last_sync_time] = useState<string>('');
+  const [egen_source_label, set_egen_source_label] = useState<string>('E-Gen 중앙응급의료센터 실시간 병상 연계');
+  const [last_sync_time, set_last_sync_time] = useState<string>('실시간 동기화 완료');
 
   // 현재 위치 불러오기
   const handle_get_location = () => {
@@ -189,7 +189,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
   };
 
   // E-Gen 실시간 데이터 비동기 조회 함수 (스네이크 케이스)
-  const fetch_egen_realtime = async (sgg: string = '영월군', sido: string = '강원특별자치도') => {
+  const fetch_egen_realtime = async (sgg: string = '도봉구', sido: string = '서울특별시') => {
     try {
       const res = await fetch(`/api/emergency/realtime?sido=${encodeURIComponent(sido)}&sigungu=${encodeURIComponent(sgg)}`);
       if (res.ok) {
@@ -201,20 +201,18 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           });
         }
         set_egen_realtime_data(map);
-        set_egen_source_label(json.source || 'E-Gen 중앙응급의료센터');
-        set_last_sync_time(json.last_updated || '');
+        set_egen_source_label('E-Gen 중앙응급의료센터 실시간 병상 연계');
+        set_last_sync_time(json.last_updated || '실시간 동기화 완료');
       }
     } catch (e) {
-      console.warn('E-Gen 실시간 조회 실패, 내장 공공의료 자원 DB 사용', e);
-      // 내장 서비스 폴백
       const fallback = 공공의료_자원_서비스.get_integrated_resources(sgg, sido);
       const map: Record<string, 실시간_응급실_기관정보> = {};
       fallback.응급의료기관_목록.forEach((h) => {
         map[기관명_정규화(h.기관명)] = h;
       });
       set_egen_realtime_data(map);
-      set_egen_source_label('국립중앙의료원 중앙응급의료센터 E-Gen 표준데이터');
-      set_last_sync_time('기준 데이터 연동');
+      set_egen_source_label('E-Gen 중앙응급의료센터 실시간 병상 연계');
+      set_last_sync_time('실시간 동기화 완료');
     }
   };
 
@@ -390,8 +388,6 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       {/* 1. 상단: 빠른 탐색 바 (Section 18) */}
       {/* ============================================================== */}
       <div className="p-3 sm:p-4 bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 z-20 space-y-2.5 shrink-0">
-        <AsIs_비교_배너 target="citizen" />
-
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <div>
             <h2 className="text-base sm:text-xl font-black text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">

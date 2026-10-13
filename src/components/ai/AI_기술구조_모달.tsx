@@ -47,7 +47,7 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
   is_open,
   on_close,
 }) => {
-  const [activeTab, setActiveTab] = useState<'runtime' | 'storage_build' | 'llmops'>('runtime');
+  const [activeTab, setActiveTab] = useState<'storage_build' | 'llmops' | 'runtime'>('storage_build');
 
   if (!is_open) return null;
 
@@ -78,18 +78,6 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
         <div className="px-6 pt-3 border-b border-slate-100 dark:border-slate-800 flex gap-2 bg-white dark:bg-[#15161b] overflow-x-auto">
           <button
             type="button"
-            onClick={() => setActiveTab('runtime')}
-            className={`pb-2.5 px-3 text-xs font-black transition border-b-2 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
-              activeTab === 'runtime'
-                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-            }`}
-          >
-            <GitBranch className="w-3.5 h-3.5" />
-            <span>질의 처리 흐름 (01~08단계 분기·합류)</span>
-          </button>
-          <button
-            type="button"
             onClick={() => setActiveTab('storage_build')}
             className={`pb-2.5 px-3 text-xs font-black transition border-b-2 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'storage_build'
@@ -111,6 +99,18 @@ export const AI_기술구조_모달: React.FC<AI_기술구조_모달_속성> = (
           >
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>공통 운영 기반 & LLMOps 지속 개선</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('runtime')}
+            className={`pb-2.5 px-3 text-xs font-black transition border-b-2 cursor-pointer flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'runtime'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+            }`}
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+            <span>질의 처리 흐름 (01~08단계 분기·합류)</span>
           </button>
         </div>
 

@@ -41,6 +41,7 @@ import {
   get_공공병원_ai_프로필,
 } from '@/lib/공공병원_AI진단_데이터셋';
 import { downloadHwpxDirect } from '@/lib/hwpx_생성기';
+import { buildDiagnosisReportItems } from '@/lib/hwpx_진단보고서_빌더';
 
 
 export type 프로파일_보고서_유형 = 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare';
@@ -372,26 +373,42 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
     }
   };
 
-  // HWP 다운로드 핸들러 (Vercel 및 브라우저 순수 실행 지원, 100% 호환)
+  // HWP 다운로드 핸들러 (화면에 나와 있는 실제 표·지표·소견 기반 HWPX 생성, Vercel 100% 호환)
   const handleHwpxDownload = async () => {
-    const el = document.getElementById('profile-diagnosis-report-canvas');
-    if (!el || isHwpxDownloading) return;
+    if (isHwpxDownloading) return;
 
     setIsHwpxDownloading(true);
     try {
-      const rawText = el.innerText;
       const activeTab = 프로파일_5종_탭_목록.find((t) => t.id === activeReportTab);
       const tabLabel = activeTab?.title ?? activeReportTab;
       const docTitle = `${baseYear}년 의료기관 프로파일 ${tabLabel} 진단보고서 — ${hosp.기관명}`;
       const safeHospName = hosp.기관명.replace(/[\\/:*?"<>|]/g, '_');
       const fileName = `${baseYear}년_의료기관프로파일_${tabLabel.replace(/[^가-힣a-zA-Z0-9]/g, '')}_${safeHospName}.hwpx`;
 
+      // 화면에 나와 있는 내용 그대로 정규 ReportItem 구조체로 빌드 (정규 한컴 표, 수치, AI 소견 100% 반영)
+      const reportItems = buildDiagnosisReportItems({
+        activeTab: activeReportTab,
+        baseYear,
+        hosp,
+        compHosp,
+        regionLevel,
+        regionDisplay,
+        compareRegion1,
+        compareRegion2,
+        metrics,
+        llmTexts,
+        customAiNote,
+        p1CharacteristicInput,
+        p2EnvCharacteristicInput,
+      });
+
       // 1순위: 클라이언트 브라우저 직접 생성 (서버/파이썬 불필요, Vercel 100% 성공)
-      await downloadHwpxDirect(docTitle, rawText, fileName);
+      await downloadHwpxDirect(docTitle, reportItems, fileName);
     } catch (err) {
       console.error('[HWPX 클라이언트 다운로드 오류, fallback 시도]', err);
       try {
-        const rawText = el.innerText;
+        const el = document.getElementById('profile-diagnosis-report-canvas');
+        const rawText = el?.innerText || '';
         const activeTab = 프로파일_5종_탭_목록.find((t) => t.id === activeReportTab);
         const tabLabel = activeTab?.title ?? activeReportTab;
         const docTitle = `${baseYear}년 의료기관 프로파일 ${tabLabel} 진단보고서 — ${hosp.기관명}`;
@@ -431,34 +448,17 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
     }
   };
 
-  // UI 헬퍼: 파랑 (요소 유형 설명) 배지
-  const TypeTag: React.FC<{ label: string }> = ({ label }) =>
-    showTemplateTags ? (
-      <span className="ml-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400 select-none">
-        ({label})
-      </span>
-    ) : null;
+  // UI 헬퍼: 파랑 (요소 유형 설명) 배지 (화면 표시 배제)
+  const TypeTag: React.FC<{ label: string }> = () => null;
 
-  // UI 헬퍼: 주황 {플레이스홀더} 배지 (showTemplateTags false 시 자연스러운 본문으로 렌더링)
+  // UI 헬퍼: 주황 {플레이스홀더} 배지 (화면상 자연스러운 볼드 본문으로 렌더링)
   const OrangePlaceholder: React.FC<{ placeholder: string; value: string | number }> = ({
-    placeholder,
     value,
-  }) =>
-    showTemplateTags ? (
-      <span
-        className="px-1.5 py-0.5 rounded-md bg-orange-100/90 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 font-black border border-orange-300/80 dark:border-orange-800/70"
-        title={`데이터 연동 플레이스홀더: {${placeholder}}`}
-      >
-        {value}
-        <span className="ml-1 text-[10px] font-normal text-orange-600/80 dark:text-orange-400/80">
-          {`{${placeholder}}`}
-        </span>
-      </span>
-    ) : (
-      <strong className="font-bold text-slate-900 dark:text-slate-100 underline decoration-slate-300 underline-offset-2">
-        {value}
-      </strong>
-    );
+  }) => (
+    <strong className="font-bold text-slate-900 dark:text-slate-100">
+      {value}
+    </strong>
+  );
 
   // UI 헬퍼: {LLM 해석} 블록 (편집 모드 지원)
   const LlmInterpretationBox: React.FC<{
@@ -743,10 +743,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 <OrangePlaceholder placeholder="기관명" value={hosp.기관명} />]
                 <TypeTag label="타이틀" />
               </h3>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
-                <div>※ [편집 안내] 본 문서는 &apos;의료기관 프로파일&apos; 대시보드 전용 보고서 &apos;템플릿&apos;입니다. 필터 선택에 따라 실제 지표값과 AI 진단이 자동 연동됩니다.</div>
-                <div>· 중제목의 ▶ 는 대시보드 화면상 ▶ 섹션 라벨과 동일하게 맞춰, 보고서 항목이 화면의 어느 영역인지 인지할 수 있게 한 표기입니다.</div>
-              </div>
             </div>
 
             {/* 대제목 1: 보고서 개요 */}
@@ -808,9 +804,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     현황 <TypeTag label="소제목" /> <TypeTag label="Table" />
                   </div>
-                  <div className="text-[11px] text-slate-500">
-                    • 지도 헤더: 의료기관명 | 종별(상급종합·종합·병원·보건의료원) | 위치(중진료권) — 지도 마커(상급종합 마름모 ◆ · 종합 삼각형 ▲ · 병원 별표 ★ · 보건의료원 ✕) <TypeTag label="Text" />
-                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                       <thead className="bg-slate-100 dark:bg-slate-900 font-bold">
@@ -870,9 +863,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     현황 <TypeTag label="소제목" /> <TypeTag label="Table" />
                   </div>
-                  <div className="text-[11px] text-slate-500">
-                    • 추이(라인) 헤더: X축 연도(2013~2040) / Y축 [인구수|노인인구수|총 입원일수|총 입원환자수] — 2023년 이후 점선(추계) <TypeTag label="Text" />
-                  </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-xs border border-slate-200 dark:border-slate-800">
                       <thead className="bg-slate-100 dark:bg-slate-900 font-bold">
@@ -931,26 +921,18 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 </div>
               </div>
 
-              {/* 섹션 3: ▶{시도} {지역} 의료기관 특성 (빨강 ⟦확인 필요⟧) */}
-              <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/60 space-y-2 text-xs">
-                <div className="font-black text-sm text-slate-900 dark:text-white flex items-center justify-between flex-wrap gap-2">
-                  <span>
-                    ▶<OrangePlaceholder placeholder="시도" value={sidoName} />{' '}
-                    <OrangePlaceholder placeholder="지역" value={regionDisplay} /> 의료기관 특성 <TypeTag label="중제목" />
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-rose-600 text-white text-[11px] font-black">
-                    ⟦원자료 확인 필요⟧
-                  </span>
+              {/* 섹션 3: ▶지역 의료기관 특성 메모 */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                <div className="font-black text-sm text-slate-900 dark:text-white">
+                  ▶<OrangePlaceholder placeholder="시도" value={sidoName} />{' '}
+                  <OrangePlaceholder placeholder="지역" value={regionDisplay} /> 의료기관 특성 메모 (선택사항)
                 </div>
-                <p className="text-rose-800 dark:text-rose-300 font-medium">
-                  ※ [편집 안내] 화면상 &apos;특성 정보 기입란&apos;이 비어 있어 현황·진단을 생성하지 않았습니다. 원자료 확인 후 작성하십시오 <strong className="text-rose-600">⟦확인 필요⟧</strong>.
-                </p>
                 <input
                   type="text"
                   value={p1CharacteristicInput}
                   onChange={(e) => setP1CharacteristicInput(e.target.value)}
-                  placeholder="(선택사항) 원자료 확인 후 지역 의료기관 특성 메모를 직접 기입하면 보고서에 포함됩니다..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-900 text-xs"
+                  placeholder="지역 의료기관 특성 및 추가 진단 의견을 기입하면 보고서에 반영됩니다..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs"
                 />
               </div>
 
@@ -973,9 +955,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 <div className="space-y-2 text-xs">
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     현황 <TypeTag label="소제목" /> <TypeTag label="Table" />
-                  </div>
-                  <div className="text-[11px] text-slate-500">
-                    • 막대 헤더: 지표 | 값(%) — 의료이용량(RI %) · 의료제공량(CI %) · 의료공급지수(%), 100% 기준선 병기 <TypeTag label="Text" />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
@@ -1034,11 +1013,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 <div className="space-y-2 text-xs">
                   <div className="font-bold text-slate-800 dark:text-slate-200">
                     현황 <TypeTag label="소제목" /> <TypeTag label="Table" />
-                  </div>
-                  <div className="text-[11px] text-slate-500 space-y-0.5">
-                    <div>• ① 종별 집계: 상급종합 0 / 종합 2 / 병원 4 / 보건의료원 1 <TypeTag label="Text" /></div>
-                    <div>• ② 기관 목록 표 헤더: 기관명 | 종별 | 응급의료기관 지정(권역센터·지역센터·지역기관·미지정) | 책임의료기관 지정(권역책임·지역책임·미지정) <TypeTag label="Text" /></div>
-                    <div>• ③ 자원 매트릭스 헤더(열=기관, 초점 기관 강조): 의료인력(의사·전문의·간호사) | 병상(성인·소아·신생아 중환자실·응급·수술·분만·인공신장·정신과) | 진료과목(●복수·○단수·△전문의없음·+미개설) <TypeTag label="Text" /></div>
                   </div>
 
                   {/* 자원 매트릭스 테이블 */}
@@ -1164,23 +1138,17 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 현황 및 진단 <TypeTag label="대제목" />
               </h4>
 
-              {/* ▶의료환경 특성-{기관명} */}
-              <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/60 space-y-2 text-xs">
-                <div className="font-black text-sm flex items-center justify-between">
-                  <span>
-                    ▶의료환경 특성-<OrangePlaceholder placeholder="기관명" value={hosp.기관명} /> <TypeTag label="중제목" />
-                  </span>
-                  <span className="px-2 py-0.5 rounded bg-rose-600 text-white text-[11px] font-black">⟦확인 필요⟧</span>
+              {/* ▶의료환경 특성 메모 */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs">
+                <div className="font-black text-sm text-slate-900 dark:text-white">
+                  ▶의료환경 특성 메모 — <OrangePlaceholder placeholder="기관명" value={hosp.기관명} /> (선택사항)
                 </div>
-                <p className="text-rose-800 dark:text-rose-300">
-                  ※ [편집 안내] 화면상 &apos;의료 환경 특성 기입란&apos;이 비어 있어 현황·진단을 생성하지 않았습니다 <strong className="text-rose-600">⟦확인 필요⟧</strong>.
-                </p>
                 <input
                   type="text"
                   value={p2EnvCharacteristicInput}
                   onChange={(e) => setP2EnvCharacteristicInput(e.target.value)}
-                  placeholder="(선택사항) 원자료 확인 후 기관의 의료환경 특성 메모를 기입하십시오..."
-                  className="w-full px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-900 text-xs"
+                  placeholder="기관의 의료환경 특성 및 보건의료 여건 메모를 기입하면 보고서에 반영됩니다..."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs"
                 />
               </div>
 
@@ -1242,10 +1210,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
               {/* ▶진료역량 비교 (7개 진료역량 지표) */}
               <div className="p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
                 <div className="font-black text-sm">▶진료역량 비교 (산점도 &amp; 7개 진료역량 지표) <TypeTag label="중제목" /></div>
-                <div className="text-[11px] text-slate-500">
-                  • ① 산점도 헤더: X축 평균 재원일수({metrics.avgLos}일) / Y축 DRG 개수({metrics.drgCount}개) — 동종·동규모 평균 대비 위치 확인 <TypeTag label="Text" />
-                  <br />• ② 7지표 표 헤더: 지표 | 당해값 | 전년대비 | 지역평균(중진료권·시도·전국) | 판정 <TypeTag label="Table" />
-                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs border border-slate-200 dark:border-slate-800">
                     <thead className="bg-slate-100 dark:bg-slate-900 font-bold">
@@ -1504,15 +1468,8 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 <OrangePlaceholder placeholder="비교기관명" value={compHosp.기관명} />
                 <TypeTag label="타이틀" />
               </h3>
-              <div className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 text-[11px] text-slate-700 dark:text-slate-300 flex items-center justify-between flex-wrap gap-2">
-                <span>
-                  · 화면은 <strong className="text-blue-600">◆선택기관(좌·파랑)</strong> /{' '}
-                  <strong className="text-emerald-600">◆비교기관(우·초록)</strong> 거울형 2패널이며, 격차는{' '}
-                  <strong>(선택 − 비교)</strong>로 정량화합니다. 종별·병상규모 차이는 보정 후 해석합니다.
-                </span>
-                <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-black">
-                  ⟦비교 공정성 확인 필요: {hosp.허가병상}병상 vs {compHosp.허가병상}병상⟧
-                </span>
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300">
+                · 선택기관과 비교기관 간 4대 성과변수 및 진료역량 격차를 거울형(Mirror) 2패널로 대조 분석합니다. (격차 = 선택 − 비교)
               </div>
             </div>
 
@@ -1616,9 +1573,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
               <LlmInterpretationBox label="강점 (Strength) — 비교기관 대비 우위 영역(강화·차별화) (중제목)" fieldKey="p4_syn_strength" />
               <LlmInterpretationBox label="취약점·리스크 (Weakness/Risk) — 열위 영역 원인·대응(목표=비교기관 수준) (중제목)" fieldKey="p4_syn_weakness" />
               <LlmInterpretationBox label="전략 방향 — 단기/중기/지속 목표 및 격차 단축 (중제목)" fieldKey="p4_syn_strategy" />
-              <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-900 text-[11px] text-slate-500">
-                ※ [편집 안내] 정량 지표만으로 의료의 질·환자 만족도·공공 기여도를 평가하기 어렵습니다. 종별·규모·기준연도 차이와 정성 요소를 함께 고려하십시오.
-              </div>
             </div>
           </div>
         )}
@@ -1639,9 +1593,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
                 <OrangePlaceholder placeholder="지역구분" value={regionLevel} />]
                 <TypeTag label="타이틀" />
               </h3>
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400">
-                · 강조 규칙: <strong>평균 이상 = 강점(더 발전)</strong> / <strong>평균 이하 = 집중 개선(지역평균 수렴)</strong>. 빈 항목은 서비스 미제공 신호입니다.
-              </div>
             </div>
 
             {/* 표1: 4개 변수 KPI · 다층 평균(시군구·중진료권·시도) 비교 */}

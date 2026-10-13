@@ -3,6 +3,7 @@
  * ============================================================================
  * - Vercel Serverless 및 클라이언트 브라우저 100% 호환 (Python 불필요)
  * - 한컴오피스 한글 2014~2024 완벽 호환 (application/hwp+zip)
+ * - 정규 한컴 표(<hp:tbl>), 제목, 문단, 소견 박스 정밀 렌더링 지원
  * ============================================================================
  */
 import JSZip from 'jszip';
@@ -13,8 +14,26 @@ import {
   HWPX_HEADER_XML,
 } from './hwpx_표준_템플릿';
 
+export interface HwpxTable {
+  headers: string[];
+  rows: string[][];
+  colWidths?: number[]; // 단위: HWPUNIT (전체 42520 기준)
+  alignments?: ('left' | 'center' | 'right')[];
+}
+
+export type ReportItem =
+  | { type: 'heading1'; text: string } // 대제목 (14pt 볼드, charPr="8", paraPr="29")
+  | { type: 'heading2'; text: string } // 중제목 (12pt 볼드, charPr="13", paraPr="29")
+  | { type: 'heading3'; text: string } // 소제목 (10pt 볼드, charPr="9", paraPr="0")
+  | { type: 'paragraph'; text: string } // 일반 본문 (10pt 바탕, charPr="0", paraPr="0")
+  | { type: 'bullet'; text: string } // 개조식 항목 (10pt 바탕, paraPr="0")
+  | { type: 'box'; title?: string; text: string } // 진단 소견 블록
+  | { type: 'table'; table: HwpxTable } // 정규 표
+  | { type: 'spacer' }; // 빈 줄
+
 function escapeXml(text: string): string {
-  return text
+  if (!text) return '';
+  return String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -53,11 +72,192 @@ function buildContentHpf(title: string): string {
 </opf:package>`;
 }
 
-function buildSection0Xml(title: string, rawText: string): string {
+/**
+ * 한컴오피스 정규 테이블 XML 생성
+ */
+function renderTableXml(table: HwpxTable, counter: { nextId: () => number }): string {
+  const numCols = Math.max(table.headers.length, 1);
+  const numRows = 1 + table.rows.length;
+  const bodyWidth = 42520; // 59528 - 2 * 8504 (A4 용지 기본 본문 너비)
+  const defaultColWidth = Math.floor(bodyWidth / numCols);
+
+  const colWidths = table.colWidths && table.colWidths.length === numCols
+    ? [...table.colWidths]
+    : Array(numCols).fill(defaultColWidth);
+
+  // 너비 오차 보정
+  const sumWidths = colWidths.reduce((a, b) => a + b, 0);
+  if (sumWidths !== bodyWidth) {
+    colWidths[numCols - 1] += (bodyWidth - sumWidths);
+  }
+
+  const rowHeight = 2400; // HWPUNIT
+  const totalHeight = rowHeight * numRows;
+  const tblId = counter.nextId();
+  const pid = counter.nextId();
+
+  const makeCell = (text: string, isHeader: boolean, colIdx: number, rowIdx: number) => {
+    const bf = isHeader ? '4' : '3'; // 4: 배경 채우기 #DAEEF3, 3: 기본 실선
+    const charPr = isHeader ? '9' : '0'; // 9: 볼드, 0: 기본
+    let paraPr = isHeader ? '21' : '22'; // 21: 표 헤더 가운데, 22: 표 본문 가운데
+    if (!isHeader && table.alignments && table.alignments[colIdx] === 'left') {
+      paraPr = '0'; // 왼쪽 정렬
+    }
+    const cellPid = counter.nextId();
+
+    return `        <hp:tc name="" header="${isHeader ? 1 : 0}" hasMargin="1" protect="0" editable="0" dirty="1" borderFillIDRef="${bf}">
+          <hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
+            <hp:p paraPrIDRef="${paraPr}" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0" id="${cellPid}">
+              <hp:run charPrIDRef="${charPr}"><hp:t>${escapeXml(text)}</hp:t></hp:run>
+            </hp:p>
+          </hp:subList>
+          <hp:cellAddr colAddr="${colIdx}" rowAddr="${rowIdx}"/>
+          <hp:cellSpan colSpan="1" rowSpan="1"/>
+          <hp:cellSz width="${colWidths[colIdx]}" height="${rowHeight}"/>
+          <hp:cellMargin left="340" right="340" top="140" bottom="140"/>
+        </hp:tc>`;
+  };
+
+  const headerCells = table.headers.map((h, i) => makeCell(h, true, i, 0)).join('\n');
+  const headerRow = `      <hp:tr>\n${headerCells}\n      </hp:tr>`;
+
+  const dataRows = table.rows.map((row, ri) => {
+    const padded = [...row];
+    while (padded.length < numCols) padded.push('');
+    const cells = padded.slice(0, numCols).map((val, ci) => makeCell(val, false, ci, ri + 1)).join('\n');
+    return `      <hp:tr>\n${cells}\n      </hp:tr>`;
+  }).join('\n');
+
+  return `  <hp:p id="${pid}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">
+      <hp:tbl id="${tblId}" zOrder="0" numberingType="TABLE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" pageBreak="CELL" repeatHeader="0" rowCnt="${numRows}" colCnt="${numCols}" cellSpacing="0" borderFillIDRef="3" noAdjust="0">
+        <hp:sz width="${bodyWidth}" widthRelTo="ABSOLUTE" height="${totalHeight}" heightRelTo="ABSOLUTE" protect="0"/>
+        <hp:pos treatAsChar="1" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="LEFT" vertOffset="0" horzOffset="0"/>
+        <hp:outMargin left="0" right="0" top="0" bottom="0"/>
+        <hp:inMargin left="0" right="0" top="0" bottom="0"/>
+${headerRow}
+${dataRows}
+      </hp:tbl>
+    </hp:run>
+  </hp:p>
+  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0"><hp:t/></hp:run>
+  </hp:p>`;
+}
+
+/**
+ * 마크다운 또는 텍스트에서 ReportItem 배열로 파싱
+ */
+export function parseRawTextToItems(rawText: string): ReportItem[] {
+  const lines = rawText.split('\n').map((l) => l.trim());
+  const items: ReportItem[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (!line) {
+      i++;
+      continue;
+    }
+
+    // 마크다운 표 감지 (| 로 시작하고 | 로 끝남)
+    if (line.startsWith('|') && line.endsWith('|')) {
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].startsWith('|') && lines[i].endsWith('|')) {
+        tableLines.push(lines[i]);
+        i++;
+      }
+
+      if (tableLines.length >= 2) {
+        const rawHeaders = tableLines[0]
+          .split('|')
+          .slice(1, -1)
+          .map((c) => c.trim());
+
+        // 구분선(|---|---|) 건너뛰기
+        const startDataIdx = tableLines[1].includes('---') ? 2 : 1;
+        const rows: string[][] = [];
+
+        for (let r = startDataIdx; r < tableLines.length; r++) {
+          const cells = tableLines[r]
+            .split('|')
+            .slice(1, -1)
+            .map((c) => c.trim());
+          rows.push(cells);
+        }
+
+        items.push({
+          type: 'table',
+          table: {
+            headers: rawHeaders,
+            rows,
+          },
+        });
+        continue;
+      }
+    }
+
+    // 대제목: ■, ●, 1. , 또는 ###
+    if (
+      line.startsWith('■') ||
+      line.startsWith('●') ||
+      /^#{1,2}\s/.test(line) ||
+      /^[1-5]\.\s/.test(line) ||
+      line.includes('【종합 진단')
+    ) {
+      const cleanText = line.replace(/^#{1,2}\s*/, '');
+      items.push({ type: 'spacer' });
+      items.push({ type: 'heading1', text: cleanText });
+      i++;
+      continue;
+    }
+
+    // 중제목: ▶, ◆, ▷, 가. , 또는 ###
+    if (
+      line.startsWith('▶') ||
+      line.startsWith('◆') ||
+      line.startsWith('▷') ||
+      /^#{3}\s/.test(line) ||
+      /^[가-다]\.\s/.test(line)
+    ) {
+      const cleanText = line.replace(/^#{3}\s*/, '');
+      items.push({ type: 'heading2', text: cleanText });
+      i++;
+      continue;
+    }
+
+    // 소제목: 1), 가), [진단 소견] 등
+    if (
+      line.startsWith('• ') ||
+      line.startsWith('- ') ||
+      line.startsWith('* ')
+    ) {
+      const cleanText = line.replace(/^[-*•]\s*/, '');
+      items.push({ type: 'bullet', text: `• ${cleanText}` });
+      i++;
+      continue;
+    }
+
+    // 일반 본문
+    items.push({ type: 'paragraph', text: line });
+    i++;
+  }
+
+  return items;
+}
+
+/**
+ * ReportItem 배열로부터 완성된 section0.xml 조립
+ */
+export function buildSection0FromItems(title: string, items: ReportItem[]): string {
   let paraIdCounter = 1000000001;
+  const counter = {
+    nextId: () => paraIdCounter++,
+  };
 
   // 1. 섹션 헤더 및 여백 설정 문단
-  const secPrPara = `  <hp:p id="${paraIdCounter++}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+  const secPrPara = `  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="0">
       <hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="1" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">
         <hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
@@ -98,58 +298,85 @@ function buildSection0Xml(title: string, rawText: string): string {
     <hp:run charPrIDRef="0"><hp:t/></hp:run>
   </hp:p>`;
 
-  // 2. 제목 문단
-  const titlePara = `  <hp:p id="${paraIdCounter++}" paraPrIDRef="28" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+  // 2. 문서 대제목 (20pt 볼드, 가운데 정렬)
+  const titlePara = `  <hp:p id="${counter.nextId()}" paraPrIDRef="20" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="7">
       <hp:t>${escapeXml(title)}</hp:t>
     </hp:run>
   </hp:p>
-  <hp:p id="${paraIdCounter++}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="0"><hp:t/></hp:run>
   </hp:p>`;
 
-  // 3. 본문 문단들 조립
-  const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+  // 3. 본문 조립
   const bodyParas: string[] = [];
 
-  for (const line of lines) {
-    // 이미 타이틀과 동일한 문구는 중복 방지
-    if (line === title) continue;
+  for (const item of items) {
+    switch (item.type) {
+      case 'heading1':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="29" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="8">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
 
-    if (
-      line.startsWith('■') ||
-      line.startsWith('●') ||
-      /^[1-5]\.\s/.test(line) ||
-      line.includes('【종합 진단')
-    ) {
-      // 대제목 (Heading 1) - 빈 줄 추가 후 제목 문단
-      bodyParas.push(`  <hp:p id="${paraIdCounter++}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+      case 'heading2':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="29" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="13">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
+
+      case 'heading3':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="9">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
+
+      case 'paragraph':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
+
+      case 'bullet':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
+
+      case 'box':
+        if (item.title) {
+          bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="9">
+      <hp:t>${escapeXml(item.title)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        }
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="24" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+    <hp:run charPrIDRef="0">
+      <hp:t>${escapeXml(item.text)}</hp:t>
+    </hp:run>
+  </hp:p>`);
+        break;
+
+      case 'table':
+        bodyParas.push(renderTableXml(item.table, counter));
+        break;
+
+      case 'spacer':
+        bodyParas.push(`  <hp:p id="${counter.nextId()}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
     <hp:run charPrIDRef="0"><hp:t/></hp:run>
   </hp:p>`);
-      bodyParas.push(`  <hp:p id="${paraIdCounter++}" paraPrIDRef="29" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="8">
-      <hp:t>${escapeXml(line)}</hp:t>
-    </hp:run>
-  </hp:p>`);
-    } else if (
-      line.startsWith('◆') ||
-      line.startsWith('▶') ||
-      line.startsWith('▷') ||
-      /^[가-다]\.\s/.test(line)
-    ) {
-      // 소제목 (Heading 2)
-      bodyParas.push(`  <hp:p id="${paraIdCounter++}" paraPrIDRef="29" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="9">
-      <hp:t>${escapeXml(line)}</hp:t>
-    </hp:run>
-  </hp:p>`);
-    } else {
-      // 일반 본문
-      bodyParas.push(`  <hp:p id="${paraIdCounter++}" paraPrIDRef="0" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
-    <hp:run charPrIDRef="0">
-      <hp:t>${escapeXml(line)}</hp:t>
-    </hp:run>
-  </hp:p>`);
+        break;
     }
   }
 
@@ -164,7 +391,13 @@ ${bodyParas.join('\n')}
 /**
  * HWPX Blob 생성 (Vercel 및 브라우저 환경 100% 호환)
  */
-export async function generateHwpxBlob(title: string, rawText: string): Promise<Blob> {
+export async function generateHwpxBlob(
+  title: string,
+  content: string | ReportItem[]
+): Promise<Blob> {
+  const items = typeof content === 'string' ? parseRawTextToItems(content) : content;
+  const section0Xml = buildSection0FromItems(title, items);
+
   const zip = new JSZip();
 
   // ★ 한컴오피스 규격 필수: mimetype 은 압축 없이(STORE), ZIP의 맨 첫 번째 항목이어야 함!
@@ -174,7 +407,7 @@ export async function generateHwpxBlob(title: string, rawText: string): Promise<
   zip.file('version.xml', HWPX_VERSION_XML);
   zip.file('Contents/header.xml', HWPX_HEADER_XML);
   zip.file('Contents/content.hpf', buildContentHpf(title));
-  zip.file('Contents/section0.xml', buildSection0Xml(title, rawText));
+  zip.file('Contents/section0.xml', section0Xml);
 
   return await zip.generateAsync({
     type: 'blob',
@@ -187,10 +420,10 @@ export async function generateHwpxBlob(title: string, rawText: string): Promise<
  */
 export async function downloadHwpxDirect(
   title: string,
-  rawText: string,
+  content: string | ReportItem[],
   fileName: string
 ): Promise<void> {
-  const blob = await generateHwpxBlob(title, rawText);
+  const blob = await generateHwpxBlob(title, content);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

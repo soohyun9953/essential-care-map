@@ -88,6 +88,9 @@ interface 정책기획_통합_워크스페이스_속성 {
   google_api_key?: string;
   initial_tab?: 'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast';
   on_change_tab?: (tab: 'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast') => void;
+  on_open_profile_report?: (
+    tab: 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare'
+  ) => void;
 }
 
 // 「정책분석 5단계」 정의
@@ -114,6 +117,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
   google_api_key,
   initial_tab = 'policy_ai',
   on_change_tab,
+  on_open_profile_report,
 }) => {
   const [active_tab, setActive_tab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>(initial_tab);
 
@@ -1794,14 +1798,45 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       {/* 4. TAB 3: 유사 지자체 1:1 비교 (일대일_비교_대시보드)           */}
       {/* ============================================================== */}
       {active_tab === 'compare' && (
-        <div className="bg-white dark:bg-[#15161b] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs">
-          <일대일_비교_대시보드
-            selected_region={selected_region}
-            diagnosed_list={diagnosed_list}
-            on_navigate_step={(step) => {
-              if (step === 'forecast') handle_tab_change('forecast');
-            }}
-          />
+        <div className="space-y-4">
+          {/* ⑤ 지역비교 진단보고서 빠른 작성 배너 */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-indigo-800/60 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-400/30 flex items-center justify-center font-black shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-black text-white flex items-center gap-2">
+                  <span>⑤ 지역비교 진단보고서 자동 작성</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-indigo-500 text-white font-bold">HWP 지원</span>
+                </div>
+                <div className="text-xs text-slate-300 mt-0.5">
+                  비교지역1({selected_region?.시군구명 || '영월군'}) vs 비교지역2 및 시군구·중진료권·시도 3층위 다층 지역평균 대비 HWP 진단보고서를 작성합니다.
+                </div>
+              </div>
+            </div>
+            {on_open_profile_report && (
+              <button
+                type="button"
+                onClick={() => on_open_profile_report('p5_region_compare')}
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+                title="비교지역1 vs 비교지역2 및 3층위 다층 지역평균 대비 ⑤ 지역비교 진단보고서 작성 및 HWP 다운로드"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>⑤ 지역비교 보고서 작성</span>
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white dark:bg-[#15161b] rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-xs">
+            <일대일_비교_대시보드
+              selected_region={selected_region}
+              diagnosed_list={diagnosed_list}
+              on_navigate_step={(step) => {
+                if (step === 'forecast') handle_tab_change('forecast');
+              }}
+            />
+          </div>
         </div>
       )}
 

@@ -45,6 +45,10 @@ interface 지역진단_통합_대시보드_속성 {
   selected_region: 필수의료_진단_결과 | null;
   on_select_region: (region: 필수의료_진단_결과) => void;
   on_navigate_policy: (feature: 'compare' | 'forecast' | 'policy_ai' | 'report') => void;
+  on_open_profile_report?: (
+    tab: 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare',
+    hospitalId?: string
+  ) => void;
 }
 
 export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대시보드_속성> = ({
@@ -52,6 +56,7 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   selected_region,
   on_select_region,
   on_navigate_policy,
+  on_open_profile_report,
 }) => {
   // 지도 시각화 모드 (기본: 종합취약도)
   const [view_mode, set_view_mode] = useState<지도_시각화_모드>('종합취약도');
@@ -162,8 +167,19 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             </div>
           </div>
 
-          {/* 우측: 다음 단계 CTA & 의료이용 AI 질의응답 */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* 우측: 다음 단계 CTA & 의료이용 AI 질의응답 & 진단보고서 작성 */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            {on_open_profile_report && (
+              <button
+                type="button"
+                onClick={() => on_open_profile_report('p1_resource')}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-xs hover:from-orange-600 hover:to-amber-600 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="현재 지역의 ① 지역 의료자원 표준 진단보고서 작성 및 HWP 다운로드"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>① 지역 의료자원 보고서 작성</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => handle_open_qa_modal('중진료권별 유출 Top10과 유출 재원일수 보여줘.')}

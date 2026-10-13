@@ -48,6 +48,7 @@ export type 성과변수_4종_타입 = '총 내원일수' | '건당 내원일수
 
 interface 기관프로파일_진단보고서_생성기_속성 {
   initial_hospital_id?: string;
+  initial_tab?: 프로파일_보고서_유형;
   google_api_key?: string;
 }
 
@@ -97,10 +98,11 @@ const 프로파일_5종_탭_목록: {
 
 export const 기관프로파일_진단보고서_생성기: React.FC<기관프로파일_진단보고서_생성기_속성> = ({
   initial_hospital_id = 'HOSP_001',
+  initial_tab = 'p1_resource',
   google_api_key,
 }) => {
   // 1. 필터 및 파라미터 상태
-  const [activeReportTab, setActiveReportTab] = useState<프로파일_보고서_유형>('p1_resource');
+  const [activeReportTab, setActiveReportTab] = useState<프로파일_보고서_유형>(initial_tab);
   const [baseYear, setBaseYear] = useState<string>('2024');
   const [regionLevel, setRegionLevel] = useState<'중진료권' | '시군구' | '시도'>('중진료권');
   const [selectedHospId, setSelectedHospId] = useState<string>(initial_hospital_id);
@@ -112,9 +114,9 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
   const [compareRegion2, setCompareRegion2] = useState<string>('속초권(속초·고성·양양)');
 
   // 표시 모드 상태:
-  // - showTemplateRuleTag: 파란색 (대제목)/(중제목)/(소제목)/(Table)/(Text) 및 주황색 {…} 태그 표시 여부
+  // - showTemplateTags: 화면에 (대제목)/(Table)/{...} 등 번잡한 템플릿 메타 태그를 표시할지 여부 (기본 false: 깔끔한 완성본 모드)
   // - isEditMode: {LLM 해석} 및 ⟦확인 필요⟧ 기입란 직접 수정 모드
-  const [showTemplateTags, setShowTemplateTags] = useState<boolean>(true);
+  const [showTemplateTags, setShowTemplateTags] = useState<boolean>(false);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [isCopied, setIsCopied] = useState<boolean>(false);
   const [isHwpxDownloading, setIsHwpxDownloading] = useState<boolean>(false);
@@ -130,6 +132,12 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
       setSelectedHospId(initial_hospital_id);
     }
   }, [initial_hospital_id]);
+
+  useEffect(() => {
+    if (initial_tab) {
+      setActiveReportTab(initial_tab);
+    }
+  }, [initial_tab]);
 
   // 선택기관 및 비교기관 데이터
   const hosp = useMemo(() => get_공공병원_ai_프로필(selectedHospId), [selectedHospId]);
@@ -417,23 +425,26 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
       </span>
     ) : null;
 
-  // UI 헬퍼: 주황 {플레이스홀더} 배지 (실제 값 + 원형 플레이스홀더 툴팁)
+  // UI 헬퍼: 주황 {플레이스홀더} 배지 (showTemplateTags false 시 자연스러운 본문으로 렌더링)
   const OrangePlaceholder: React.FC<{ placeholder: string; value: string | number }> = ({
     placeholder,
     value,
-  }) => (
-    <span
-      className="px-1.5 py-0.5 rounded-md bg-orange-100/90 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 font-black border border-orange-300/80 dark:border-orange-800/70"
-      title={`데이터 연동 플레이스홀더: {${placeholder}}`}
-    >
-      {value}
-      {showTemplateTags && (
+  }) =>
+    showTemplateTags ? (
+      <span
+        className="px-1.5 py-0.5 rounded-md bg-orange-100/90 dark:bg-orange-950/70 text-orange-800 dark:text-orange-300 font-black border border-orange-300/80 dark:border-orange-800/70"
+        title={`데이터 연동 플레이스홀더: {${placeholder}}`}
+      >
+        {value}
         <span className="ml-1 text-[10px] font-normal text-orange-600/80 dark:text-orange-400/80">
           {`{${placeholder}}`}
         </span>
-      )}
-    </span>
-  );
+      </span>
+    ) : (
+      <strong className="font-bold text-slate-900 dark:text-slate-100 underline decoration-slate-300 underline-offset-2">
+        {value}
+      </strong>
+    );
 
   // UI 헬퍼: {LLM 해석} 블록 (편집 모드 지원)
   const LlmInterpretationBox: React.FC<{
@@ -470,27 +481,24 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
   return (
     <div className="w-full space-y-6 animate-in fade-in duration-200">
       {/* ==================================================================== */}
-      {/* 1. 상단 컨트롤 헤더: 5종 기관프로파일 탭 & 표기규칙 안내 & 필터       */}
+      {/* 1. 상단 컨트롤 헤더: 5종 기관프로파일 탭 & 필터 및 HWP 다운로드      */}
       {/* ==================================================================== */}
       <div className="bg-gradient-to-br from-slate-900 via-[#151c2c] to-indigo-950 text-white p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-lg space-y-4">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-orange-500/20 text-orange-300 border border-orange-400/30">
-                국립중앙의료원 의료기관 프로파일 대시보드 전용
+                국립중앙의료원 의료기관 프로파일
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/20 text-blue-300 border border-blue-400/30">
-                5종 표준 진단보고서 자동 작성 시스템
+                5종 표준 진단보고서 자동 작성기
               </span>
             </div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              의료기관 프로파일 진단보고서 작성기 (①지역 의료자원 · ②진료기능 · ③진료실적 · ④기관비교 · ⑤지역비교)
+              의료기관 프로파일 진단보고서 작성기
             </h2>
             <p className="text-xs text-slate-300 leading-relaxed">
-              표기 규칙 — <span className="text-orange-300 font-bold">주황 {`{…}`}</span>: 필터/데이터 연동 플레이스홀더 ·{' '}
-              <span className="text-blue-300 font-bold">파랑 (…)</span>: 요소 유형 설명 ·{' '}
-              <span className="text-white font-bold">검정</span>: 고정 템플릿 문구 ·{' '}
-              <span className="text-rose-400 font-bold">빨강 ⟦ ⟧</span>: 검수·원자료 확인 필요
+              선택한 의료기관과 기준연도의 실데이터를 기반으로 5종 표준 진단보고서를 자동 작성하고, 한컴오피스 HWP 양식으로 즉시 다운로드합니다.
             </p>
           </div>
 
@@ -501,12 +509,13 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
               onClick={() => setShowTemplateTags(!showTemplateTags)}
               className={`px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
                 showTemplateTags
-                  ? 'bg-blue-600/30 border-blue-400 text-blue-200'
-                  : 'bg-white/10 border-white/15 text-slate-300'
+                  ? 'bg-blue-600/40 border-blue-400 text-blue-200'
+                  : 'bg-white/10 border-white/15 text-slate-300 hover:bg-white/15'
               }`}
+              title="보고서 내 템플릿 메타 태그 표시 여부 전환"
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>{showTemplateTags ? '템플릿 표기규칙 태그 표시 중' : '완성본 보고서만 보기'}</span>
+              <span>{showTemplateTags ? '표기 태그 숨기기' : '템플릿 표기 태그 보기'}</span>
             </button>
 
             <button

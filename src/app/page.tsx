@@ -84,6 +84,20 @@ export default function Home() {
   const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
   const [ai_hospital_id, set_ai_hospital_id] = useState<string>('HOSP_001'); // 영월의료원 기본
   const [ai_hospital_subtab, set_ai_hospital_subtab] = useState<'diagnosis' | 'profile_report' | 'benchmark' | 'forecast' | 'simulation' | 'execution' | 'kpi' | 'national_view'>('diagnosis');
+  // 5종 진단보고서 세부 탭 라우팅 ('p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare')
+  const [profile_report_tab, set_profile_report_tab] = useState<
+    'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare'
+  >('p1_resource');
+
+  const handle_open_profile_report = (
+    tab: 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare' = 'p1_resource',
+    hospId?: string
+  ) => {
+    if (hospId) set_ai_hospital_id(hospId);
+    set_profile_report_tab(tab);
+    set_ai_hospital_subtab('profile_report');
+    set_current_workspace('hospital_ai_diagnosis');
+  };
 
   // 전역 데이터셋 및 선택된 지역
   const [raw_dataset, set_raw_dataset] = useState<시군구_원천_데이터[]>(전국_시군구_진단_데이터);
@@ -417,6 +431,7 @@ export default function Home() {
               selected_region={selected_region}
               on_select_region={(reg) => set_selected_region(reg)}
               on_navigate_policy={handle_navigate_policy}
+              on_open_profile_report={handle_open_profile_report}
             />
           </div>
         )}
@@ -432,6 +447,7 @@ export default function Home() {
               sido_stat={sido_stat}
               national_stat={national_stat}
               google_api_key={google_api_key}
+              on_open_profile_report={handle_open_profile_report}
             />
           </div>
         )}
@@ -455,6 +471,7 @@ export default function Home() {
             <AI_병원진단_통합_워크스페이스
               initial_hospital_id={ai_hospital_id}
               initial_tab={ai_hospital_subtab}
+              initial_profile_tab={profile_report_tab}
               on_navigate_medical_view={(hId) => {
                 set_current_workspace('medical_institution');
                 set_medical_subtab('hospitals');

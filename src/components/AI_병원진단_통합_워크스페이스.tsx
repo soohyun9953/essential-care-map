@@ -62,7 +62,10 @@ import {
   get_전국_공공병원_AI_종합통계,
   AI진단_가상데이터_안내,
 } from '@/lib/공공병원_AI진단_데이터셋';
-import { 기관프로파일_진단보고서_생성기 } from './기관프로파일_진단보고서_생성기';
+import {
+  기관프로파일_진단보고서_생성기,
+  프로파일_보고서_유형,
+} from './기관프로파일_진단보고서_생성기';
 
 export type AI_병원진단_서브탭 =
   | 'diagnosis'      // 1. AI 종합진단 & 원인분석
@@ -77,21 +80,37 @@ export type AI_병원진단_서브탭 =
 interface Props {
   initial_hospital_id?: string;
   initial_tab?: AI_병원진단_서브탭;
+  initial_profile_tab?: 프로파일_보고서_유형;
   on_navigate_medical_view?: (hospitalId: string) => void;
 }
 
 export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
   initial_hospital_id = 'HOSP_001', // 영월의료원 기본
   initial_tab = 'diagnosis',
+  initial_profile_tab = 'p1_resource',
   on_navigate_medical_view,
 }) => {
   // 1. 상태 관리
   const [selectedHospitalId, setSelectedHospitalId] = useState<string>(initial_hospital_id);
   const [activeSubtab, setActiveSubtab] = useState<AI_병원진단_서브탭>(initial_tab);
+  const [targetProfileTab, setTargetProfileTab] = useState<프로파일_보고서_유형>(initial_profile_tab);
 
   React.useEffect(() => {
     setActiveSubtab(initial_tab);
   }, [initial_tab]);
+
+  React.useEffect(() => {
+    if (initial_profile_tab) {
+      setTargetProfileTab(initial_profile_tab);
+    }
+  }, [initial_profile_tab]);
+
+  // 특정 진단보고서 탭으로 직접 이동 핸들러
+  const handleOpenReport = (tab: 프로파일_보고서_유형) => {
+    setTargetProfileTab(tab);
+    setActiveSubtab('profile_report');
+  };
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegionFilter, setSelectedRegionFilter] = useState<string>('전체');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('전체');
@@ -413,7 +432,10 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
       {/* ⭐ 신규 서브탭: 의료기관 프로파일 5종 진단보고서 작성 */}
       {/* ==================================================================== */}
       {activeSubtab === 'profile_report' && (
-        <기관프로파일_진단보고서_생성기 initial_hospital_id={selectedHospitalId} />
+        <기관프로파일_진단보고서_생성기
+          initial_hospital_id={selectedHospitalId}
+          initial_tab={targetProfileTab}
+        />
       )}
 
       {/* ==================================================================== */}
@@ -421,6 +443,43 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
       {/* ==================================================================== */}
       {activeSubtab === 'diagnosis' && (
         <div className="space-y-6">
+          {/* 진단보고서 빠른 작성 연계 배너 */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-indigo-800/60 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-400/30 flex items-center justify-center font-black shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-black text-white flex items-center gap-2">
+                  <span>{currentHospital.기관명} 표준 진단보고서 작성</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-orange-500 text-white font-bold">HWP 지원</span>
+                </div>
+                <div className="text-xs text-slate-300 mt-0.5">
+                  현재 분석 중인 7대 진료기능 역량과 진료실적 지표를 표준 서식의 진단보고서로 즉시 작성합니다.
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleOpenReport('p2_function')}
+                className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="병원 성격 규정, 7대 진료역량, 병상·이용량 점유율 등 ② 진료기능 진단보고서 작성"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>② 진료기능 보고서 작성</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleOpenReport('p3_performance')}
+                className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                title="4개 성과변수 × 7개 환자 서브그룹 ③ 진료실적 진단보고서 작성"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>③ 진료실적 보고서 작성</span>
+              </button>
+            </div>
+          </div>
           {/* 6대 핵심 지표 카드 */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
             {/* 종합 진단 카드 */}
@@ -687,6 +746,33 @@ export const AI_병원진단_통합_워크스페이스: React.FC<Props> = ({
       {/* ==================================================================== */}
       {activeSubtab === 'benchmark' && (
         <div className="space-y-6">
+          {/* 기관비교 진단보고서 연계 배너 */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-indigo-800/60 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-400/30 flex items-center justify-center font-black shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-black text-white flex items-center gap-2">
+                  <span>④ 기관비교 진단보고서 자동 작성</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500 text-white font-bold">HWP 지원</span>
+                </div>
+                <div className="text-xs text-slate-300 mt-0.5">
+                  선택기관({currentHospital.기관명})과 비교기관 간의 거울형 1:1 격차 및 정량 지표를 HWP 보고서로 작성합니다.
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleOpenReport('p4_inst_compare')}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-slate-950 text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-xs shrink-0"
+              title="선택기관 vs 비교기관 1:1 거울형 격차 진단보고서 작성 및 HWP 다운로드"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>④ 기관비교 보고서 작성</span>
+            </button>
+          </div>
+
           <알리미_경영공시_카드 공시={currentHospital.경영공시} />
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">

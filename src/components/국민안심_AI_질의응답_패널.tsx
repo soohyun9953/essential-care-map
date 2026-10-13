@@ -27,6 +27,7 @@ import {
 } from '@/lib/의료서비스_검색_엔진';
 import { 응급의료기관_목록 } from '@/lib/응급의료기관_데이터셋';
 import { 공공의료_자원_서비스, 실시간_응급실_기관정보 } from '@/lib/공공의료_자원_서비스';
+import { 전국_시군구_대표_좌표 } from '@/lib/시군구_경계_데이터';
 
 export interface 추천_의료기관_항목 {
   기관명: string;
@@ -117,25 +118,31 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
     return parseFloat((R * c).toFixed(1));
   };
 
-  // 현재 사용자 좌표 기준 지역명 추정 함수
+  // 현재 사용자 좌표 기준 지역명 정밀 산출 함수 (전국 250개 시군구 대표 좌표와 비교)
   const get_user_location_name = (lat: number, lng: number): string => {
-    if (Math.abs(lat - 37.5665) < 0.2 && Math.abs(lng - 126.978) < 0.2) {
-      return '서울시청·광화문 중심';
-    }
-    if (Math.abs(lat - 37.1835) < 0.3 && Math.abs(lng - 128.4619) < 0.3) {
-      return '강원특별자치도 영월군';
-    }
-    // 가장 가까운 공공병원 소재지 기준
-    let nearest_name = '현재 위치';
-    let min_dist = 99999;
-    for (const h of 전체_공공의료기관_상세목록) {
-      const d = calculate_distance_km(lat, lng, h.위도, h.경도);
+    let nearest_sgg = '';
+    let min_dist = 999999;
+
+    for (const [sgg_name, coords] of Object.entries(전국_시군구_대표_좌표)) {
+      const d = calculate_distance_km(lat, lng, coords[0], coords[1]);
       if (d < min_dist) {
         min_dist = d;
-        nearest_name = `${h.시도명} ${h.시군구명}`;
+        nearest_sgg = sgg_name;
       }
     }
-    return nearest_name;
+
+    if (nearest_sgg) {
+      const seoul_gus = [
+        '종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구', '성북구',
+        '강북구', '도봉구', '노원구', '은평구', '서대문구', '마포구', '양천구', '강서구',
+        '구로구', '금천구', '영등포구', '동작구', '관악구', '서초구', '강남구', '송파구', '강동구'
+      ];
+      if (seoul_gus.includes(nearest_sgg)) {
+        return `서울특별시 ${nearest_sgg}`;
+      }
+      return nearest_sgg;
+    }
+    return '현재 위치';
   };
 
   // 자연어 질의 처리 및 답변 생성 함수 (스네이크 케이스)
@@ -164,19 +171,34 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
       const is_pediatric = /아이|소아|어린이|애기|열|소아과|달빛/i.test(trimmed);
       const is_delivery = /분만|산부인과|출산|임신|산모|아기낳/i.test(trimmed);
       const is_icu_or_equip = /중환자|icu|ct|mri|인공호흡기|투석/i.test(trimmed);
-      // const is_emergency = /응급|응급실|야간|다쳤|사고|골든타임|119|심야|휴일|병상/i.test(trimmed);
 
-      // 2. 질문에 포함된 특정 지역명 감지
+      // 2. 질문에 포함된 특정 지명 감지 및 기준 좌표 산출
       let query_target_region = '';
-      const matched_sgg = 전체_공공의료기관_상세목록.find(
-        (h) => trimmed.includes(h.시군구명) || (trimmed.includes(h.시도명) && h.시도명.length > 2)
-      );
-      if (matched_sgg) {
-        query_target_region = matched_sgg.시군구명;
+      let effective_lat = user_lat;
+      let effective_lng = user_lng;
+
+      // 전국 시군구 대표 좌표 전수 검사 (예: '도봉구', '도봉', '노원', '영월' 등)
+      for (const [sgg, coords] of Object.entries(전국_시군구_대표_좌표)) {
+        const short_name = sgg.replace(/(구|군|시)$/, '');
+        if (trimmed.includes(sgg) || (short_name.length >= 2 && trimmed.includes(short_name))) {
+          query_target_region = sgg;
+          effective_lat = coords[0];
+          effective_lng = coords[1];
+          break;
+        }
+      }
+
+      // 특별히 '도봉' 관련 언급이 있을 때 도봉구 좌표 우선 적용
+      if (!query_target_region && trimmed.includes('도봉')) {
+        query_target_region = '도봉구';
+        effective_lat = 37.6688;
+        effective_lng = 127.0471;
       }
 
       // 기준 위치 명칭
-      const user_loc_label = query_target_region ? `${query_target_region} 인근` : get_user_location_name(user_lat, user_lng);
+      const user_loc_label = query_target_region
+        ? (query_target_region.endsWith('구') ? `서울특별시 ${query_target_region}` : query_target_region)
+        : get_user_location_name(effective_lat, effective_lng);
 
       // 3. 통합 검색 후보군 구축 (실제 거리순 정렬)
       let candidate_hospitals: 추천_의료기관_항목[] = [];
@@ -193,7 +215,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
             return match_region && is_deliv;
           })
           .forEach((h) => {
-            const dist = calculate_distance_km(user_lat, user_lng, h.위도, h.경도);
+            const dist = calculate_distance_km(effective_lat, effective_lng, h.위도, h.경도);
             delivery_candidates.push({
               기관명: h.기관명,
               지역: `${h.시도명} ${h.시군구명}`,
@@ -223,7 +245,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
           .filter((m) => m.위도 !== null && m.경도 !== null)
           .filter((m) => !query_target_region || m.시군구.includes(query_target_region) || m.시도.includes(query_target_region))
           .forEach((m) => {
-            const dist = calculate_distance_km(user_lat, user_lng, m.위도!, m.경도!);
+            const dist = calculate_distance_km(effective_lat, effective_lng, m.위도!, m.경도!);
             delivery_candidates.push({
               기관명: m.기관명,
               지역: `${m.시도} ${m.시군구}`,
@@ -255,7 +277,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
           .filter((d) => d.위도 !== null && d.경도 !== null)
           .filter((d) => !query_target_region || d.주소.includes(query_target_region))
           .forEach((d) => {
-            const dist = calculate_distance_km(user_lat, user_lng, d.위도!, d.경도!);
+            const dist = calculate_distance_km(effective_lat, effective_lng, d.위도!, d.경도!);
             pediatric_candidates.push({
               기관명: d.기관명,
               지역: d.주소.split(' ').slice(0, 2).join(' '),
@@ -283,7 +305,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
             return match_region && is_ped;
           })
           .forEach((h) => {
-            const dist = calculate_distance_km(user_lat, user_lng, h.위도, h.경도);
+            const dist = calculate_distance_km(effective_lat, effective_lng, h.위도, h.경도);
             pediatric_candidates.push({
               기관명: h.기관명,
               지역: `${h.시도명} ${h.시군구명}`,
@@ -322,7 +344,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
             return match_region;
           })
           .forEach((h) => {
-            const dist = calculate_distance_km(user_lat, user_lng, h.위도, h.경도);
+            const dist = calculate_distance_km(effective_lat, effective_lng, h.위도, h.경도);
             const avail = h.의료자원.응급실.가용병상 || (h.기관유형.includes('권역') ? 5 : 3);
             const total = h.의료자원.병상.총병상 > 300 ? 30 : 15;
             let sat: 추천_의료기관_항목['포화도'] = '보통';
@@ -359,10 +381,9 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
           .filter((e) => e.위도 !== null && e.경도 !== null)
           .filter((e) => !query_target_region || e.주소.includes(query_target_region))
           .forEach((e) => {
-            // 이미 공공병원 목록에 들어간 기관은 중복 제외
             const already = emergency_candidates.some((c) => c.기관명.includes(e.기관명) || e.기관명.includes(c.기관명));
             if (!already) {
-              const dist = calculate_distance_km(user_lat, user_lng, e.위도!, e.경도!);
+              const dist = calculate_distance_km(effective_lat, effective_lng, e.위도!, e.경도!);
               const is_center = e.분류.includes('권역') || e.분류.includes('지역응급의료센터');
               const avail = is_center ? 4 : 2;
               const total = is_center ? 35 : 12;

@@ -38,6 +38,7 @@ import { 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기�
 import { 응급의료기관_출처 } from '@/lib/응급의료기관_데이터셋';
 import { 달빛어린이병원_출처 } from '@/lib/달빛어린이병원_데이터셋';
 import { 공공의료_자원_서비스, 실시간_응급실_기관정보 } from '@/lib/공공의료_자원_서비스';
+import { 전국_시군구_대표_좌표 } from '@/lib/시군구_경계_데이터';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { AsIs_비교_배너 } from './AsIs_비교_배너';
@@ -217,6 +218,57 @@ export const 국민안심_서비스_뷰: React.FC = () => {
     }
   };
 
+  // 현재 위치 좌표 기준 시군구명 정밀 산출 함수
+  const current_location_label = useMemo(() => {
+    let nearest_sgg = '';
+    let min_dist = 999999;
+    for (const [sgg_name, coords] of Object.entries(전국_시군구_대표_좌표)) {
+      const d = parseFloat(calculate_distance(user_location.lat, user_location.lng, coords[0], coords[1]));
+      if (d < min_dist) {
+        min_dist = d;
+        nearest_sgg = sgg_name;
+      }
+    }
+    const seoul_gus = [
+      '종로구', '중구', '용산구', '성동구', '광진구', '동대문구', '중랑구', '성북구',
+      '강북구', '도봉구', '노원구', '은평구', '서대문구', '마포구', '양천구', '강서구',
+      '구로구', '금천구', '영등포구', '동작구', '관악구', '서초구', '강남구', '송파구', '강동구'
+    ];
+    if (seoul_gus.includes(nearest_sgg)) {
+      return `서울특별시 ${nearest_sgg}`;
+    }
+    return nearest_sgg || '내 주변';
+  }, [user_location]);
+
+  // 마운트 시 브라우저 Geolocation 자동 1회 감지
+  useEffect(() => {
+    if (typeof window !== 'undefined' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUser_location({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+          });
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 6000 }
+      );
+    }
+  }, []);
+
+  // 검색창에 특정 시군구(예: 도봉구, 도봉, 노원 등) 입력 시 해당 좌표로 중심 위치 자동 이동
+  useEffect(() => {
+    const q = search_text.trim();
+    if (!q) return;
+    for (const [sgg, coords] of Object.entries(전국_시군구_대표_좌표)) {
+      const short_name = sgg.replace(/(구|군|시)$/, '');
+      if (q.includes(sgg) || sgg.includes(q) || (short_name.length >= 2 && q.includes(short_name))) {
+        setUser_location({ lat: coords[0], lng: coords[1] });
+        break;
+      }
+    }
+  }, [search_text]);
+
   useEffect(() => {
     fetch_egen_realtime('영월군', '강원특별자치도');
   }, []);
@@ -355,6 +407,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
               응급실·소아·분만 진료가 가능한 공공병원을 직선거리 및 E-Gen 실시간 병상 현황과 함께 안내합니다.
+              <span className="ml-1 text-emerald-600 dark:text-emerald-400 font-semibold">(현재 기준: {current_location_label})</span>
             </p>
           </div>
 
@@ -503,7 +556,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <국민안심_AI_질의응답_패널
             user_lat={user_location.lat}
             user_lng={user_location.lng}
-            current_region_name="선택 지역"
+            current_region_name={current_location_label}
             is_expanded={is_ai_expanded}
             on_toggle_expand={() => {
               set_is_ai_expanded((prev) => !prev);

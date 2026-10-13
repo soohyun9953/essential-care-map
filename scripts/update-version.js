@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.0';
+const SEMVER = '1.29.1';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '국민안심 서비스 뷰 고도화: 안심 지도 축소 및 자연어 AI 질의응답 패널 연동, E-Gen 실시간 모든 정보 상세 표시, 3열(한 줄에 3개) 그리드 배치 (${fullLabel})',
+    '국민안심 AI 질의응답 답변 화면 영역 대폭 확대: 바텀시트 기본 최소화(min), 우측 AI 패널 가로 너비 확장 및 [답변 넓게보기/전체화면] 모드 탑재 (${fullLabel})',
 };
 `;
 

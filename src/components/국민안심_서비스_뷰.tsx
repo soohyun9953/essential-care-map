@@ -138,8 +138,11 @@ export const 국민안심_서비스_뷰: React.FC = () => {
   // 선택된 활성 병원
   const [selected_hospital, setSelected_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
 
-  // 모바일 바텀시트 상태: 'min' | 'half' | 'full'
-  const [sheet_state, set_sheet_state] = useState<'min' | 'half' | 'full'>('half');
+  // 모바일 바텀시트 상태: 'min' | 'half' | 'full' (기본: min - 상단 지도 및 AI 답변 영역 최대 확보)
+  const [sheet_state, set_sheet_state] = useState<'min' | 'half' | 'full'>('min');
+
+  // AI 답변 영역 넓게보기/전체화면 모드
+  const [is_ai_expanded, set_is_ai_expanded] = useState(false);
 
   // 모바일 상단 탭 (지도 vs AI 질의응답)
   const [mobile_active_tab, set_mobile_active_tab] = useState<'map' | 'ai'>('map');
@@ -453,52 +456,59 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       </div>
 
       {/* ============================================================== */}
-      {/* 2. 메인 콘텐츠 영역: [좌측 축소 지도] + [우측 AI 자연어 질의응답] */}
+      {/* 2. 메인 콘텐츠 영역: [좌측 지도] + [우측 AI 자연어 질의응답 (넓은 답변 영역)] */}
       {/* ============================================================== */}
-      <div className="flex-1 w-full flex flex-col lg:flex-row relative overflow-hidden">
-        {/* 좌측: 안심 지도 (데스크톱에서는 축소된 비율 56% 유지) */}
-        <div
-          className={`h-full relative transition-all duration-200 ${
-            mobile_active_tab === 'map' ? 'flex-1' : 'hidden lg:block'
-          } lg:w-[57%] xl:w-[58%] border-r border-slate-200 dark:border-slate-800`}
-        >
-          <DecisionLeafletMap
-            hospitals={hospital_list}
-            active_hospital={active_target}
-            on_select_hospital={(h) => {
-              setSelected_hospital(h);
-              setSelected_extra_id(null);
-              set_sheet_state('half');
-            }}
-            extra_points={보조_지점}
-            active_extra_id={selected_extra_id}
-            on_select_extra={(p) => {
-              setSelected_extra_id(p.id);
-              setSelected_hospital(null);
-              set_sheet_state('half');
-            }}
-          />
+      <div className="flex-1 w-full flex flex-col lg:flex-row relative overflow-hidden min-h-0">
+        {/* 좌측: 안심 지도 (AI 확장 모드 시 숨김, 기본 상태에서는 45% 너비) */}
+        {!is_ai_expanded && (
+          <div
+            className={`h-full relative transition-all duration-200 ${
+              mobile_active_tab === 'map' ? 'flex-1' : 'hidden lg:block'
+            } lg:w-[46%] xl:w-[44%] border-r border-slate-200 dark:border-slate-800 shrink-0`}
+          >
+            <DecisionLeafletMap
+              hospitals={hospital_list}
+              active_hospital={active_target}
+              on_select_hospital={(h) => {
+                setSelected_hospital(h);
+                setSelected_extra_id(null);
+                set_sheet_state('half');
+              }}
+              extra_points={보조_지점}
+              active_extra_id={selected_extra_id}
+              on_select_extra={(p) => {
+                setSelected_extra_id(p.id);
+                setSelected_hospital(null);
+                set_sheet_state('half');
+              }}
+            />
 
-          {/* 지도 좌상단 실시간 연동 뱃지 */}
-          <div className="absolute top-3 left-3 z-[1000] pointer-events-none">
-            <div className="px-2.5 py-1 bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-md rounded-xl shadow-md border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 text-[10px] text-slate-700 dark:text-slate-300 font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{egen_source_label}</span>
-              {last_sync_time && <span className="text-slate-400 font-normal">({last_sync_time})</span>}
+            {/* 지도 좌상단 실시간 연동 뱃지 */}
+            <div className="absolute top-3 left-3 z-[1000] pointer-events-none">
+              <div className="px-2.5 py-1 bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-md rounded-xl shadow-md border border-slate-200 dark:border-slate-800 flex items-center gap-1.5 text-[10px] text-slate-700 dark:text-slate-300 font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{egen_source_label}</span>
+                {last_sync_time && <span className="text-slate-400 font-normal">({last_sync_time})</span>}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* 우측: 자연어 AI 질의응답 패널 (데스크톱 43%, 모바일 탭) */}
+        {/* 우측: 자연어 AI 질의응답 패널 (답변 영역 대폭 확대: 기본 54%~56%, 확장 시 100%) */}
         <div
           className={`h-full transition-all duration-200 ${
-            mobile_active_tab === 'ai' ? 'flex-1' : 'hidden lg:flex'
-          } lg:w-[43%] xl:w-[42%] flex flex-col`}
+            mobile_active_tab === 'ai' || is_ai_expanded ? 'flex-1 w-full' : 'hidden lg:flex lg:w-[54%] xl:w-[56%]'
+          } flex flex-col min-h-0`}
         >
           <국민안심_AI_질의응답_패널
             user_lat={user_location.lat}
             user_lng={user_location.lng}
             current_region_name="선택 지역"
+            is_expanded={is_ai_expanded}
+            on_toggle_expand={() => {
+              set_is_ai_expanded((prev) => !prev);
+              set_sheet_state('min');
+            }}
             on_select_hospital_name={(h_name) => {
               const matched = hospital_list.find((h) => h.기관명.includes(h_name));
               if (matched) {
@@ -515,11 +525,11 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       {/* 3. 하단 바텀시트: E-Gen 실시간 전체 정보 3열(한 줄에 3개) 그리드 */}
       {/* ============================================================== */}
       <div
-        className={`bg-white dark:bg-[#15161b] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 flex flex-col z-30 ${
+        className={`bg-white dark:bg-[#15161b] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 flex flex-col z-30 shrink-0 ${
           sheet_state === 'min'
-            ? 'h-14'
+            ? 'h-12 sm:h-14'
             : sheet_state === 'half'
-            ? 'h-[46%] sm:h-[42%]'
+            ? 'h-[36%] sm:h-[34%]'
             : 'h-[85%]'
         }`}
       >

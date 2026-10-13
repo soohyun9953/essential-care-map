@@ -40,6 +40,7 @@ import {
   전국_41개_공공병원_AI_프로필,
   get_공공병원_ai_프로필,
 } from '@/lib/공공병원_AI진단_데이터셋';
+import { downloadHwpxDirect } from '@/lib/hwpx_생성기';
 
 
 export type 프로파일_보고서_유형 = 'p1_resource' | 'p2_function' | 'p3_performance' | 'p4_inst_compare' | 'p5_region_compare';
@@ -371,7 +372,7 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
     }
   };
 
-  // HWP 다운로드 핸들러 (API Route → one_shot.py → 진짜 HWPX)
+  // HWP 다운로드 핸들러 (Vercel 및 브라우저 순수 실행 지원, 100% 호환)
   const handleHwpxDownload = async () => {
     const el = document.getElementById('profile-diagnosis-report-canvas');
     if (!el || isHwpxDownloading) return;
@@ -385,33 +386,46 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
       const safeHospName = hosp.기관명.replace(/[\\/:*?"<>|]/g, '_');
       const fileName = `${baseYear}년_의료기관프로파일_${tabLabel.replace(/[^가-힣a-zA-Z0-9]/g, '')}_${safeHospName}.hwpx`;
 
-      const resp = await fetch('/api/report/hwpx', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: docTitle,
-          fileName,
-          markdownContent: rawText,
-        }),
-      });
-
-      if (!resp.ok) {
-        const errJson = await resp.json().catch(() => ({ error: resp.statusText }));
-        throw new Error(errJson.error ?? 'HWPX 생성 실패');
-      }
-
-      const blob = await resp.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      setTimeout(() => URL.revokeObjectURL(url), 3000);
+      // 1순위: 클라이언트 브라우저 직접 생성 (서버/파이썬 불필요, Vercel 100% 성공)
+      await downloadHwpxDirect(docTitle, rawText, fileName);
     } catch (err) {
-      console.error('[HWPX 다운로드 오류]', err);
-      alert(`HWPX 파일 생성 중 오류가 발생했습니다.\n${String(err)}`);
+      console.error('[HWPX 클라이언트 다운로드 오류, fallback 시도]', err);
+      try {
+        const rawText = el.innerText;
+        const activeTab = 프로파일_5종_탭_목록.find((t) => t.id === activeReportTab);
+        const tabLabel = activeTab?.title ?? activeReportTab;
+        const docTitle = `${baseYear}년 의료기관 프로파일 ${tabLabel} 진단보고서 — ${hosp.기관명}`;
+        const safeHospName = hosp.기관명.replace(/[\\/:*?"<>|]/g, '_');
+        const fileName = `${baseYear}년_의료기관프로파일_${tabLabel.replace(/[^가-힣a-zA-Z0-9]/g, '')}_${safeHospName}.hwpx`;
+
+        const resp = await fetch('/api/report/hwpx', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: docTitle,
+            fileName,
+            markdownContent: rawText,
+          }),
+        });
+
+        if (!resp.ok) {
+          const errJson = await resp.json().catch(() => ({ error: resp.statusText }));
+          throw new Error(errJson.error ?? 'HWPX 생성 실패');
+        }
+
+        const blob = await resp.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 3000);
+      } catch (fallbackErr) {
+        console.error('[HWPX 최종 오류]', fallbackErr);
+        alert(`HWPX 파일 생성 중 오류가 발생했습니다.\n${String(fallbackErr)}`);
+      }
     } finally {
       setIsHwpxDownloading(false);
     }

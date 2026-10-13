@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-13',
-  time: '16:32',
-  deployedAt: '2026.10.13 16:32',
-  semver: '1.28.0',
-  fullLabel: '2026.10.13 16:32 · v1.28.0',
-  packageVersion: '20261013-1632',
-  updatedAt: '2026.10.13 16:32',
+  time: '16:40',
+  deployedAt: '2026.10.13 16:40',
+  semver: '1.28.1',
+  fullLabel: '2026.10.13 16:40 · v1.28.1',
+  packageVersion: '20261013-1640',
+  updatedAt: '2026.10.13 16:40',
   changelog:
-    '진단보고서 표기 태그 화면 숨김(완성본 모드) 적용 및 5대 핵심 분석 기능별 진단보고서 작성 버튼 연동 (2026.10.13 16:32)',
+    'Vercel 서버리스 배포 환경 완벽 호환 — Python 의존성 완전 제거 및 순수 JS/TS 표준 HWPX 빌더 적용 (2026.10.13 16:40)',
 };

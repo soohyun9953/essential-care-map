@@ -24,6 +24,7 @@ import { export_element_as_png } from '@/lib/유틸리티';
 import { 글로벌_공공_헤더, 워크스페이스_타입 } from '@/components/글로벌_공공_헤더';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
+import { 대상자별_좌측_사이드바 } from '@/components/대상자별_좌측_사이드바';
 import type { 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
 
 const 워크스페이스_로딩 = () => (
@@ -82,6 +83,28 @@ export default function Home() {
 
   // 🌟 3대 사용자 역할 상태 ('all' | 'citizen' | 'hospital' | 'nmc')
   const [current_user_role, set_current_user_role] = useState<사용자_역할_타입>('all');
+
+  // 🌟 좌측 대상자별 메뉴 접힘 여부 (데스크톱 기본 펼침: false)
+  const [is_sidebar_collapsed, set_is_sidebar_collapsed] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      set_is_sidebar_collapsed(true);
+    }
+  }, []);
+
+  const handle_navigate_from_sidebar = (ws: 워크스페이스_타입, subtab?: string) => {
+    if (ws === 'medical_institution' && subtab) {
+      set_medical_subtab(subtab as any);
+    }
+    if (ws === 'policy_planning' && subtab) {
+      set_policy_subtab(subtab as any);
+    }
+    if (ws === 'hospital_ai_diagnosis' && subtab) {
+      set_ai_hospital_subtab(subtab as any);
+    }
+    set_current_workspace(ws);
+  };
 
   const handle_select_user_role = (role: 사용자_역할_타입) => {
     set_current_user_role(role);
@@ -422,11 +445,23 @@ export default function Home() {
         on_select_step={handle_select_journey_step}
       />
 
-      {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
-      <div
-        id="main-workspace-content"
-        className="flex-1 flex flex-col min-w-0 relative"
-      >
+      {/* 2. 메인 바디 컨테이너: 좌측 3대 대상자별 접이식 사이드바 + 우측 메인 워크스페이스 */}
+      <div className="flex-1 flex flex-row min-w-0 overflow-hidden relative">
+        {/* 2-1. 좌측 3종 대상자별 사이드바 (접기/펼치기 가능) */}
+        <대상자별_좌측_사이드바
+          is_collapsed={is_sidebar_collapsed}
+          on_toggle_collapse={() => set_is_sidebar_collapsed((prev) => !prev)}
+          current_role={current_user_role}
+          on_select_role={handle_select_user_role}
+          current_workspace={current_workspace}
+          on_navigate_workspace={handle_navigate_from_sidebar}
+        />
+
+        {/* 2-2. 우측 본문 메인 워크스페이스 렌더링 영역 */}
+        <div
+          id="main-workspace-content"
+          className="flex-1 flex flex-col min-w-0 relative overflow-y-auto"
+        >
         {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
         {current_workspace === 'home' && (
           <div className="flex-1 w-full overflow-y-auto">
@@ -514,6 +549,7 @@ export default function Home() {
             <국민안심_서비스_뷰 />
           </div>
         )}
+        </div>
       </div>
 
       {/* ============================================================== */}

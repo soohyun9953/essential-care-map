@@ -36,7 +36,6 @@ import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { 지도_래퍼 } from './지도_래퍼';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
-import { AsIs_비교_배너 } from './AsIs_비교_배너';
 import { 환자_유출입_상세분석_카드 } from './환자_유출입_상세분석_카드';
 import { 환자_의료이용_질의응답_모달 } from './환자_의료이용_질의응답_모달';
 
@@ -208,9 +207,6 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
             </button>
           </div>
         </div>
-
-        {/* As-Is vs To-Be 지역진단 비교 배너 */}
-        <AsIs_비교_배너 target="diagnosis" />
       </div>
 
       {/* ============================================================== */}

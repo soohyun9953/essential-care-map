@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { useIsp, PERSONA_LIST, PersonaType } from '@/context/ISP_컨텍스트';
+import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
 
 export type 워크스페이스_타입 =
   | 'home'
@@ -49,6 +50,9 @@ export type 업무_도메인_타입 = 메인_도메인;
 interface 글로벌_공공_헤더_속성 {
   active_workspace?: 워크스페이스_타입;
   on_change_workspace?: (ws: 워크스페이스_타입) => void;
+  // 3대 사용자 역할 (국민 / 의료기관 / NMC)
+  active_user_role?: 사용자_역할_타입;
+  on_change_user_role?: (role: 사용자_역할_타입) => void;
   // 하위 호환성 속성
   active_main_view?: any;
   on_change_main_view?: (view: any) => void;
@@ -83,6 +87,8 @@ interface 글로벌_공공_헤더_속성 {
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
   active_workspace = 'home',
   on_change_workspace,
+  active_user_role = 'all',
+  on_change_user_role,
   active_main_view,
   on_change_main_view,
   active_domain,
@@ -140,6 +146,23 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     }
   };
 
+  // 🌟 3대 사용자 역할 전환 핸들러 (국민 / 의료기관 담당자 / NMC 업무 담당자 / 전체)
+  const handle_user_role_change = (role: 사용자_역할_타입) => {
+    if (on_change_user_role) {
+      on_change_user_role(role);
+    }
+    // 각 역할의 전용 기본 화면으로 즉시 전환
+    if (role === 'citizen') {
+      handle_workspace_change('national_safety');
+    } else if (role === 'hospital') {
+      handle_workspace_change('hospital_ai_diagnosis');
+    } else if (role === 'nmc') {
+      handle_workspace_change('regional_diagnosis');
+    } else if (role === 'all') {
+      handle_workspace_change('home');
+    }
+  };
+
   // 페르소나 변경 시 해당 역할의 핵심 워크스페이스로 자동 연계
   const handle_select_persona = (pId: PersonaType) => {
     setPersona(pId);
@@ -176,30 +199,95 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
         {/* 1800px 이상은 한 줄, 그보다 좁으면 메뉴가 두 번째 줄로 내려감 (글자 단위 줄바꿈 방지) */}
         <div className="min-h-14 py-2 min-[1800px]:py-0 min-[1800px]:h-14 flex flex-wrap min-[1800px]:flex-nowrap items-center justify-between gap-x-3 gap-y-2">
           
-          {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 (클릭 시 최초 초기 화면으로 이동) */}
-          <button
-            type="button"
-            onClick={() => handle_workspace_change('home')}
-            className="flex items-center gap-2.5 select-none shrink-0 whitespace-nowrap cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
-            title="최초 초기 화면으로 이동"
-          >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
-              <Activity className="w-4 h-4 text-white" />
-            </div>
-            <div className="flex flex-col justify-center">
-              <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                공공의료 의사결정 지원 플랫폼
-              </h1>
-              <div className="flex items-center mt-0.5">
-                <span
-                  className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight"
-                  title="플랫폼 최종 배포일시 및 버전"
-                >
-                  {PLATFORM_VERSION.fullLabel}
-                </span>
+          {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 + 🌟 3대 사용자 역할 선택 스위처 */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => handle_workspace_change('home')}
+              className="flex items-center gap-2.5 select-none shrink-0 whitespace-nowrap cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
+              title="최초 초기 화면으로 이동"
+            >
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
+                <Activity className="w-4 h-4 text-white" />
               </div>
+              <div className="flex flex-col justify-center">
+                <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  공공의료 의사결정 지원 플랫폼
+                </h1>
+                <div className="flex items-center mt-0.5">
+                  <span
+                    className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight"
+                    title="플랫폼 최종 배포일시 및 버전"
+                  >
+                    {PLATFORM_VERSION.fullLabel}
+                  </span>
+                </div>
+              </div>
+            </button>
+
+            {/* 🌟 3대 사용자 역할별 화면 선택 스위처 (국민 / 의료기관 담당자 / NMC 업무 담당자) */}
+            <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">
+              <span className="hidden min-[1600px]:inline text-[10px] font-black text-slate-400 dark:text-slate-500 pl-2 pr-1 select-none">
+                사용자:
+              </span>
+
+              {/* ① 국민 */}
+              <button
+                type="button"
+                onClick={() => handle_user_role_change('citizen')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+                  active_user_role === 'citizen'
+                    ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-xs ring-2 ring-rose-400/30'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+                }`}
+                title="일반시민·환자용 화면 (내 주변 응급실·분만병원·소아과 실시간 병상 및 AI 증상 비서)"
+              >
+                <span>👨‍👩‍👧 국민</span>
+              </button>
+
+              {/* ② 의료기관 담당자 */}
+              <button
+                type="button"
+                onClick={() => handle_user_role_change('hospital')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+                  active_user_role === 'hospital'
+                    ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-xs ring-2 ring-blue-400/30'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+                }`}
+                title="공공병원 담당자용 화면 (41개 거점공공병원 AI 종합진단, 5종 보고서, 신포괄 정책가산, 71개 CP)"
+              >
+                <span>🏥 의료기관 담당자</span>
+              </button>
+
+              {/* ③ NMC 업무 담당자 */}
+              <button
+                type="button"
+                onClick={() => handle_user_role_change('nmc')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
+                  active_user_role === 'nmc'
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs ring-2 ring-indigo-400/30'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/60'
+                }`}
+                title="국립중앙의료원(NMC)·복지부 업무 담당자용 화면 (전국 250개 시군구 헬스맵 취약지 관제, 환자 유출입, 법정 사업계획서)"
+              >
+                <span>🏛️ NMC 업무 담당자</span>
+              </button>
+
+              {/* ④ 전체보기 */}
+              <button
+                type="button"
+                onClick={() => handle_user_role_change('all')}
+                className={`px-2 py-1.5 rounded-xl text-[11px] font-bold transition cursor-pointer ${
+                  active_user_role === 'all'
+                    ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-xs'
+                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                }`}
+                title="모든 워크스페이스 메뉴 전체보기"
+              >
+                <span>전체</span>
+              </button>
             </div>
-          </button>
+          </div>
 
           {/* 2. 중앙: 5대 핵심 워크스페이스 네비게이션 */}
           <nav className="order-last min-[1800px]:order-none w-full min-[1800px]:w-auto flex flex-wrap min-[1800px]:flex-nowrap justify-center items-center gap-0.5 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
@@ -209,9 +297,12 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 current_active === 'regional_diagnosis'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
+              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
             >
               <span>지역진단</span>
+              {active_user_role === 'nmc' && (
+                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
+              )}
             </button>
 
             <button
@@ -220,9 +311,12 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 current_active === 'policy_planning' && !is_plan_evaluation_active
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
+              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
             >
               <span>정책기획</span>
+              {active_user_role === 'nmc' && (
+                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
+              )}
             </button>
 
             {/* ⭐ 신규 핵심 메뉴: 시행계획 AI 평가 (100점 평가표 & 6단계 AI 심사) */}
@@ -260,9 +354,12 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                   current_active === 'medical_institution'
                     ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-                }`}
+                } ${active_user_role === 'hospital' ? 'ring-1 ring-blue-400/40 bg-blue-50/40 dark:bg-blue-950/30' : ''}`}
               >
                 <span>의료기관</span>
+                {active_user_role === 'hospital' && (
+                  <span className="text-[9px] font-black px-1 py-0.2 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">병원</span>
+                )}
               </button>
 
               {/* API 키 등록됨: 호버 시 키 사용 범위 안내 */}
@@ -311,11 +408,14 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 current_active === 'hospital_ai_diagnosis' && !is_profile_report_active
                   ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
-              }`}
+              } ${active_user_role === 'hospital' ? 'ring-2 ring-blue-500/40' : ''}`}
               title="공공병원 AI 종합진단, 원인분석, 유사병원 Benchmarking, 미래예측, 시뮬레이션 및 세부 실행계획"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>AI 병원진단·개선</span>
+              {active_user_role === 'hospital' && (
+                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-400 text-slate-950">추천</span>
+              )}
             </button>
 
             {/* ⭐ 신규 핵심 메뉴: 의료기관 프로파일 5종 진단보고서 작성 */}
@@ -345,20 +445,26 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 current_active === 'ai_analysis'
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
+              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
             >
-              AI 분석
+              <span>AI 분석</span>
+              {active_user_role === 'nmc' && (
+                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
+              )}
             </button>
 
             <button
               onClick={() => handle_workspace_change('national_safety')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
                 current_active === 'national_safety'
-                  ? 'bg-white dark:bg-[#1a1d24] text-emerald-700 dark:text-emerald-400 shadow-sm border border-emerald-100 dark:border-emerald-900/50'
+                  ? 'bg-white dark:bg-[#1a1d24] text-rose-700 dark:text-rose-400 shadow-sm border border-rose-100 dark:border-rose-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
+              } ${active_user_role === 'citizen' ? 'ring-2 ring-rose-500/50 bg-rose-50/70 dark:bg-rose-950/40 font-black text-rose-700 dark:text-rose-300' : ''}`}
             >
-              국민안심
+              <span>국민안심</span>
+              {active_user_role === 'citizen' && (
+                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-rose-500 text-white">국민추천</span>
+              )}
             </button>
           </nav>
 

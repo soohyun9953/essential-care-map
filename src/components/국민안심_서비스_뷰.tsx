@@ -41,7 +41,6 @@ import { 공공의료_자원_서비스, 실시간_응급실_기관정보 } from 
 import { 전국_시군구_대표_좌표 } from '@/lib/시군구_경계_데이터';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
-import { AsIs_비교_배너 } from './AsIs_비교_배너';
 import { 국민안심_AI_질의응답_패널 } from './국민안심_AI_질의응답_패널';
 
 // 공공병원 외 공개 데이터 기관의 표시용 공통 인터페이스

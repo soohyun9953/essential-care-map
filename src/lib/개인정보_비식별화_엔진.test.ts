@@ -15,25 +15,25 @@ describe('수시공시 첨부문서 환자 개인정보(PII) 비식별화 및 �
     // 주민등록번호 마스킹 확인
     const rrnFound = result.탐지목록.find((t) => t.유형 === '주민등록번호');
     expect(rrnFound).toBeDefined();
-    expect(rrnFound?.원본텍스트).toBe('620514-1849201');
-    expect(rrnFound?.마스킹텍스트).toBe('620514-1******');
-    expect(result.마스킹_결과텍스트).not.toContain('620514-1849201');
-    expect(result.마스킹_결과텍스트).toContain('620514-1******');
+    expect(rrnFound?.원본텍스트).toBe('800101-1000001');
+    expect(rrnFound?.마스킹텍스트).toBe('800101-1******');
+    expect(result.마스킹_결과텍스트).not.toContain('800101-1000001');
+    expect(result.마스킹_결과텍스트).toContain('800101-1******');
 
     // 병록번호 마스킹 확인
     const chartFound = result.탐지목록.find((t) => t.유형 === '병록번호');
     expect(chartFound).toBeDefined();
-    expect(result.마스킹_결과텍스트).not.toContain('202410887');
+    expect(result.마스킹_결과텍스트).not.toContain('202500001');
 
     // 성명 마스킹 확인
     const nameFound = result.탐지목록.find((t) => t.유형 === '환자성명');
     expect(nameFound).toBeDefined();
-    expect(result.마스킹_결과텍스트).toContain('김*수');
+    expect(result.마스킹_결과텍스트).toContain('홍*동');
 
     // 연락처 마스킹 확인
     const phoneFound = result.탐지목록.find((t) => t.유형 === '연락처');
     expect(phoneFound).toBeDefined();
-    expect(result.마스킹_결과텍스트).toContain('010-****-5432');
+    expect(result.마스킹_결과텍스트).toContain('010-****-1234');
   });
 
   it('진료비 감면대장 샘플에서 다수의 환자 식별정보가 감지되어야 함', () => {
@@ -41,8 +41,8 @@ describe('수시공시 첨부문서 환자 개인정보(PII) 비식별화 및 �
 
     expect(result.총_탐지건수).toBeGreaterThanOrEqual(5);
     expect(result.위험등급).toBe('심각(유출위험)');
-    expect(result.마스킹_결과텍스트).not.toContain('880210-2391024');
-    expect(result.마스킹_결과텍스트).not.toContain('541005-1029384');
+    expect(result.마스킹_결과텍스트).not.toContain('900101-1000002');
+    expect(result.마스킹_결과텍스트).not.toContain('950505-2000003');
   });
 
   it('개인정보가 없는 클린 공시 문서는 안전 등급을 반환해야 함', () => {

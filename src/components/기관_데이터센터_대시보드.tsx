@@ -243,7 +243,7 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
           </div>
         </div>
 
-        {/* 4대 액션 버튼 툴바: [전체 업데이트] [선택 기관 갱신] [데이터 상세] [오류 신고] */}
+        {/* 액션 버튼 툴바: [전체 업데이트] [선택 기관 갱신] [데이터 상세] */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
             <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
@@ -287,22 +287,6 @@ export const 기관_데이터센터_대시보드: React.FC<기관_데이터센�
               <FileText className="w-3.5 h-3.5 text-blue-600" />
               <span>{is_detail_view_open ? '데이터 상세 닫기' : '데이터 상세'}</span>
             </button>
-
-            {/* 4. 오류 신고 버튼 (정식 연동 전 비활성 안내 툴팁 및 클릭 메시지) */}
-            <div className="relative group">
-              <button
-                type="button"
-                onClick={() => {
-                  set_action_notice('의료기관 데이터 오류 신고 및 정정 요청 기능은 보건복지부 및 국립중앙의료원(NMC) 전산망 정식 연동 후 제공될 예정입니다.');
-                }}
-                className="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800 text-xs font-bold transition flex items-center gap-1 cursor-not-allowed select-none"
-                title="공공의료 전산망 정식 연동 후 제공 예정"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-slate-400" />
-                <span>오류 신고</span>
-                <span className="text-[10px] px-1 py-0.2 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400 rounded-md font-semibold">준비중</span>
-              </button>
-            </div>
           </div>
         </div>
 

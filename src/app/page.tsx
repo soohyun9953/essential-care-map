@@ -74,10 +74,27 @@ import { ISP_과제_드로어 } from '@/components/ISP_과제_드로어';
 import { Lock, Unlock, ShieldAlert } from 'lucide-react';
 
 import { API키_불러오기 } from '@/lib/API키_저장소';
+import { 사용자_역할_타입 } from '@/lib/사용자_역할_타입';
 
 export default function Home() {
   // 5대 Global Workspace 상태 (기본: 'home')
   const [current_workspace, set_current_workspace] = useState<워크스페이스_타입>('home');
+
+  // 🌟 3대 사용자 역할 상태 ('all' | 'citizen' | 'hospital' | 'nmc')
+  const [current_user_role, set_current_user_role] = useState<사용자_역할_타입>('all');
+
+  const handle_select_user_role = (role: 사용자_역할_타입) => {
+    set_current_user_role(role);
+    if (role === 'citizen') {
+      set_current_workspace('national_safety');
+    } else if (role === 'hospital') {
+      set_current_workspace('hospital_ai_diagnosis');
+    } else if (role === 'nmc') {
+      set_current_workspace('regional_diagnosis');
+    } else if (role === 'all') {
+      set_current_workspace('home');
+    }
+  };
 
   // 정책기획 서브탭 및 의료기관 서브탭 딥링크 상태
   const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>('policy_ai');
@@ -376,6 +393,8 @@ export default function Home() {
           (current_workspace === 'hospital_ai_diagnosis' && ai_hospital_subtab === 'profile_report') ||
           (current_workspace === 'medical_institution' && medical_subtab === 'profile_report')
         }
+        active_user_role={current_user_role}
+        on_change_user_role={handle_select_user_role}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
@@ -406,11 +425,7 @@ export default function Home() {
       {/* 2. 본문 메인 워크스페이스 렌더링 영역 */}
       <div
         id="main-workspace-content"
-        className={`flex-1 flex flex-col min-w-0 relative ${
-          is_auth_initialized && !is_authenticated
-            ? 'filter blur-md select-none pointer-events-none'
-            : ''
-        }`}
+        className="flex-1 flex flex-col min-w-0 relative"
       >
         {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
         {current_workspace === 'home' && (
@@ -418,6 +433,8 @@ export default function Home() {
             <공공의료_결정지도_홈
               on_search_region={handle_search_region}
               on_navigate_workspace={handle_navigate_from_home}
+              on_select_user_role={handle_select_user_role}
+              active_user_role={current_user_role}
               on_open_guide_modal={() => set_is_guide_modal_open(true)}
             />
           </div>
@@ -498,41 +515,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      {/* 2-1. 비인가자 화면 차단 및 보안 게이트 오버레이 (미인증 시 표시) */}
-      {is_auth_initialized && !is_authenticated && (
-        <div className="fixed inset-0 top-14 z-40 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-md w-full bg-white dark:bg-[#18181b] rounded-3xl p-6 sm:p-7 border border-slate-200 dark:border-white/[0.1] shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95">
-            <div className="w-14 h-14 mx-auto rounded-3xl bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center ring-8 ring-amber-500/5">
-              <Lock className="w-7 h-7" />
-            </div>
-            <div className="space-y-1">
-              <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 tracking-wider uppercase">
-                국립중앙의료원 공공보건의료지원센터
-              </span>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                인가자 전용 보안 시스템
-              </h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                본 시스템은 국가 필수의료 취약지 진단 및 공문서 작성을 위한 업무 플랫폼으로, 일반인의 무단 접근을 방지하고 있습니다.
-              </p>
-            </div>
-
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-200 font-medium">
-              우측 상단의 <strong className="text-amber-700 dark:text-amber-300 font-bold">[🔒 로그인]</strong> 아이콘을 누르거나 아래 버튼을 클릭하여 보안 패스워드를 입력해주세요.
-            </div>
-
-            <button
-              type="button"
-              onClick={() => set_is_auth_modal_open(true)}
-              className="w-full py-3.5 px-5 rounded-2xl bg-[#0071e3] hover:bg-[#0077ed] text-white text-xs sm:text-sm font-bold shadow-apple-sm transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Unlock className="w-4 h-4" />
-              <span>보안 패스워드 입력하고 입장하기</span>
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ============================================================== */}
       {/* 전역 공통 팝업 모달 레이어 */}

@@ -58,7 +58,6 @@ import { 일대일_비교_대시보드 } from './일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from './의료수요_추계_차트';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
-import { AsIs_비교_배너 } from './AsIs_비교_배너';
 
 // 모달 컴포넌트들
 import { AI_활용_데이터_모달 } from './ai/AI_활용_데이터_모달';
@@ -458,9 +457,6 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
           </div>
         </div>
       </div>
-
-      {/* As-Is vs To-Be 활성 탭별 비교 배너 */}
-      <AsIs_비교_배너 target={active_tab === 'report' ? 'report' : active_tab === 'compare' ? 'diagnosis' : 'general'} />
 
       {/* ============================================================== */}
       {/* 2. TAB 1: AI 정책기획 핵심 Workspace (사용자 요구사항 2~6번)    */}

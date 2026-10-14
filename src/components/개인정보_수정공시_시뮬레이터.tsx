@@ -58,8 +58,8 @@ export const 개인정보_수정공시_시뮬레이터: React.FC = () => {
     );
   }, [selectedHospitalName]);
 
-  const [managerName, setManagerName] = useState<string>('김공시 주임');
-  const [managerPhone, setManagerPhone] = useState<string>('033-370-9114');
+  const [managerName, setManagerName] = useState<string>('공시담당자(예시)');
+  const [managerPhone, setManagerPhone] = useState<string>('02-0000-0000');
   const [errorCause, setErrorCause] = useState<string>(
     '공시 담당자의 회계 프로그램 출력물과 알리미 시스템 입력 단위 간 단순 착오 및 결산서 확정 후 소급 수정분 미반영'
   );
@@ -162,7 +162,7 @@ export const 개인정보_수정공시_시뮬레이터: React.FC = () => {
                 }`}
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
-                <span>영월의료원 회의록 (유출사례)</span>
+                <span>이사회 회의록 (가상 시연용)</span>
               </button>
               <button
                 onClick={() => handleSelectPreset('진료비_감면_대장_누출')}

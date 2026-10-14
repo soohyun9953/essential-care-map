@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.7';
+const SEMVER = '1.29.8';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '화면 내용 1:1 반영 정규 한컴 표(<hp:tbl>) 진단보고서(HWPX) 생성기 구축: 5종 진단보고서 실제 수치 표 및 AI 소견 완벽 반영, 화면 템플릿 메타 주석 완전 제거 (${fullLabel})',
+    '기관프로파일 진단보고서 상단 액션 버튼 정리: 진단 소견 직접 편집 및 AI 심층 진단 재생성 버튼 삭제, 보고서 복사 및 HWP 다운로드 중심 간소화 (${fullLabel})',
 };
 `;
 

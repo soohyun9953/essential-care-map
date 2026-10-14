@@ -518,37 +518,6 @@ export const 기관프로파일_진단보고서_생성기: React.FC<기관프로
 
           {/* 액션 버튼 그룹 */}
           <div className="flex items-center gap-2 flex-wrap shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsEditMode(!isEditMode)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
-                isEditMode
-                  ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
-                  : 'bg-white/10 border-white/15 text-slate-200 hover:bg-white/20'
-              }`}
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>{isEditMode ? '진단 소견 편집 완료' : '진단 소견 직접 편집'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleRunAiEnrich}
-              disabled={isAiGenerating}
-              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-slate-950 text-xs font-black transition flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-60"
-            >
-              {isAiGenerating ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>AI 진단 생성 중...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI 심층 진단 재생성</span>
-                </>
-              )}
-            </button>
 
             <button
               type="button"

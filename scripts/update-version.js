@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.10';
+const SEMVER = '1.29.11';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '좌측 3대 대상자(국민·의료기관 담당자·NMC 업무 담당자) 맞춤 아코디언 메뉴 사이드바 탑재 및 접기/펼치기(Collapsible Rail) 토글 기능 구현 (${fullLabel})',
+    '대상자별 메뉴 이동: 경영위기 조기경보 및 알리미 공시 사전검증(NMC 담당자), 환자 이용 유출입 및 AI 정책기획 & 미래수요 및 12대 항목 법정 사업계획서(의료기관 담당자) 재배치 (${fullLabel})',
 };
 `;
 

@@ -152,6 +152,31 @@ export const 대상자별_메뉴_데이터: 대상자_그룹[] = [
         desc: 'NMC 공식 의료기관 프로파일 5종 보고서 생성',
       },
       {
+        id: 'hosp_patient_flow',
+        label: '환자 이용 유출입',
+        icon: <GitCompare className="w-4 h-4 text-blue-600" />,
+        workspace: 'regional_diagnosis',
+        desc: '시군구·중진료권 유출입 순위 Top5 & AI 질의',
+      },
+      {
+        id: 'hosp_policy_planning',
+        label: 'AI 정책기획 & 미래수요',
+        icon: <TrendingUp className="w-4 h-4 text-indigo-600" />,
+        workspace: 'policy_planning',
+        subtab: 'policy_ai',
+        desc: '유사지역 비교, 2030 의료수요 추계, AI 정책대안',
+      },
+      {
+        id: 'hosp_legal_report',
+        label: '12대 항목 법정 사업계획서',
+        icon: <FileText className="w-4 h-4 text-purple-600" />,
+        badge: 'HWPX',
+        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+        workspace: 'policy_planning',
+        subtab: 'report',
+        desc: '복지부 12대 법정 목차 공문서 원클릭 생성',
+      },
+      {
         id: 'hosp_policy_incentive',
         label: '신포괄 정책가산 계산기',
         icon: <BarChart3 className="w-4 h-4 text-emerald-600" />,
@@ -178,24 +203,6 @@ export const 대상자별_메뉴_데이터: 대상자_그룹[] = [
         desc: '표준재원일수 초과 변이 및 병상회전율 재정효과',
       },
       {
-        id: 'hosp_crisis',
-        label: '경영위기 조기경보',
-        icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
-        badge: '35개소',
-        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-        workspace: 'medical_institution',
-        subtab: 'crisis',
-        desc: '지방의료원 부채비율·의업수지 4단계 경보',
-      },
-      {
-        id: 'hosp_disclosure',
-        label: '알리미 공시 사전검증',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
-        workspace: 'medical_institution',
-        subtab: 'aa_disclosure',
-        desc: '14대 회계산출식 검증, PII 비식별화, 소명서 생성',
-      },
-      {
         id: 'hosp_discharge_care',
         label: '퇴원환자 돌봄 매칭',
         icon: <Users className="w-4 h-4 text-purple-500" />,
@@ -210,7 +217,7 @@ export const 대상자별_메뉴_데이터: 대상자_그룹[] = [
     title: 'NMC 업무 담당자 (중앙·지원단)',
     shortTitle: 'NMC 담당자',
     icon: '🏛️',
-    desc: '전국 250개 시군구 헬스맵 관제 & 정책기획',
+    desc: '전국 250개 시군구 헬스맵 관제 & 경영·공시',
     themeColor: {
       bg: 'bg-indigo-600',
       border: 'border-indigo-200 dark:border-indigo-900/60',
@@ -231,29 +238,22 @@ export const 대상자별_메뉴_데이터: 대상자_그룹[] = [
         desc: '응급·분만·소아 3대 필수의료 취약도 지도',
       },
       {
-        id: 'nmc_patient_flow',
-        label: '환자 의료이용 유출입(OD)',
-        icon: <GitCompare className="w-4 h-4 text-blue-600" />,
-        workspace: 'regional_diagnosis',
-        desc: '시군구·중진료권 유출입 순위 Top5 & AI 질의',
+        id: 'nmc_crisis',
+        label: '경영위기 조기경보',
+        icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
+        badge: '35개소',
+        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
+        workspace: 'medical_institution',
+        subtab: 'crisis',
+        desc: '지방의료원 부채비율·의업수지 4단계 경보',
       },
       {
-        id: 'nmc_policy_planning',
-        label: 'AI 정책기획 & 미래수요',
-        icon: <TrendingUp className="w-4 h-4 text-indigo-600" />,
-        workspace: 'policy_planning',
-        subtab: 'policy_ai',
-        desc: '유사지역 비교, 2030 의료수요 추계, AI 정책대안',
-      },
-      {
-        id: 'nmc_legal_report',
-        label: '12대 항목 법정 사업계획서',
-        icon: <FileText className="w-4 h-4 text-purple-600" />,
-        badge: 'HWPX',
-        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-        workspace: 'policy_planning',
-        subtab: 'report',
-        desc: '복지부 12대 법정 목차 공문서 원클릭 생성',
+        id: 'nmc_disclosure',
+        label: '알리미 공시 사전검증',
+        icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
+        workspace: 'medical_institution',
+        subtab: 'aa_disclosure',
+        desc: '14대 회계산출식 검증, PII 비식별화, 소명서 생성',
       },
       {
         id: 'nmc_plan_eval',
@@ -290,6 +290,7 @@ interface 대상자별_좌측_사이드바_속성 {
   current_role: 사용자_역할_타입;
   on_select_role: (role: 사용자_역할_타입) => void;
   current_workspace: 워크스페이스_타입;
+  current_subtab?: string;
   on_navigate_workspace: (
     workspace: 워크스페이스_타입,
     subtab?: string
@@ -302,6 +303,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
   current_role,
   on_select_role,
   current_workspace,
+  current_subtab,
   on_navigate_workspace,
 }) => {
   // 열려있는 아코디언 그룹들 (기본적으로 모두 열림)
@@ -487,8 +489,9 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                   <div className="px-2 pb-2.5 space-y-1 border-t border-slate-100 dark:border-slate-800/60 pt-2">
                     {group.menus.map((item) => {
                       const isMenuSelected =
+                        current_role === group.role &&
                         current_workspace === item.workspace &&
-                        (!item.subtab || (group.role === 'hospital' && item.subtab));
+                        (!item.subtab || (current_subtab ? item.subtab === current_subtab : true));
 
                       return (
                         <button

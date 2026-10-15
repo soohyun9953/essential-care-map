@@ -388,6 +388,13 @@ export default function Home() {
     }
   };
 
+  const current_active_subtab = useMemo(() => {
+    if (current_workspace === 'medical_institution') return medical_subtab;
+    if (current_workspace === 'policy_planning') return policy_subtab;
+    if (current_workspace === 'hospital_ai_diagnosis') return ai_hospital_subtab;
+    return undefined;
+  }, [current_workspace, medical_subtab, policy_subtab, ai_hospital_subtab]);
+
   return (
     <IspProvider onPersonaChange={handle_persona_change}>
       <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
@@ -454,6 +461,7 @@ export default function Home() {
           current_role={current_user_role}
           on_select_role={handle_select_user_role}
           current_workspace={current_workspace}
+          current_subtab={current_active_subtab}
           on_navigate_workspace={handle_navigate_from_sidebar}
         />
 

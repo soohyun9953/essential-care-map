@@ -334,7 +334,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                   공공병원 AI 진단 &amp; 자원관리
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  41개 거점공공병원 AI 종합진단, 5종 보고서 &amp; 신포괄 정책가산
+                  41개 거점공공병원 AI 종합진단, 환자 이용 유출입 &amp; 법정 사업계획서
                 </p>
               </div>
 
@@ -345,11 +345,11 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>신포괄 정책가산(1.0%) 계산기 &amp; 71개 표준 CP</span>
+                  <span>환자 이용 유출입(OD) &amp; AI 정책기획·미래수요</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>35개 지방의료원 경영위기 조기경보 &amp; 공시 사전검증</span>
+                  <span>12대 항목 법정 사업계획서(HWPX) 원클릭 생성</span>
                 </div>
               </div>
             </div>
@@ -387,10 +387,10 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
               <div>
                 <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  전국 헬스맵 &amp; AI 정책기획
+                  전국 헬스맵 &amp; 공공병원 경영·공시 관제
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  전국 250개 시군구 GIS 취약지 관제, 유출입 &amp; 법정 사업계획서
+                  전국 250개 시군구 GIS 취약지 관제, 경영위기 조기경보 &amp; 공시 사전검증
                 </p>
               </div>
 
@@ -401,11 +401,11 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span>시군구·중진료권 환자 의료이용 유출입(OD) 네트워크</span>
+                  <span>35개 지방의료원 경영위기 조기경보 &amp; 공시 사전검증</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span>12대 항목 법정 사업계획서(HWPX) &amp; 시행계획 평가</span>
+                  <span>시행계획·추진실적 AI 평가 (100점 평가표) &amp; 데이터센터</span>
                 </div>
               </div>
             </div>

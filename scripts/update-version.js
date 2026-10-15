@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.14';
+const SEMVER = '1.29.15';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '헤더 하단 2번째 줄(페르소나 및 ISP 모드 인디케이터 띠) 삭제 및 헤더 레이아웃 최적화 (${fullLabel})',
+    '국민안심 화면 정책 워크플로우 띠 숨김 및 지도/AI챗봇 뷰포트 맞춤과 바텀시트 레이아웃 안정화 (${fullLabel})',
 };
 `;
 

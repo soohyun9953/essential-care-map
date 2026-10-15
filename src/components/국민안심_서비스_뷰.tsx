@@ -519,7 +519,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           <div
             className={`h-full relative transition-all duration-200 ${
               mobile_active_tab === 'map' ? 'flex-1' : 'hidden lg:block'
-            } lg:w-[46%] xl:w-[44%] border-r border-slate-200 dark:border-slate-800 shrink-0`}
+            } lg:w-[46%] xl:w-[44%] border-r border-slate-200 dark:border-slate-800 shrink-0 min-h-[300px]`}
           >
             <DecisionLeafletMap
               hospitals={hospital_list}
@@ -580,7 +580,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       {/* 3. 하단 바텀시트: E-Gen 실시간 전체 정보 3열(한 줄에 3개) 그리드 */}
       {/* ============================================================== */}
       <div
-        className={`bg-white dark:bg-[#15161b] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 flex flex-col z-30 shrink-0 ${
+        className={`bg-white dark:bg-[#15161b] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 flex flex-col z-30 shrink-0 overflow-hidden ${
           sheet_state === 'min'
             ? 'h-12 sm:h-14'
             : sheet_state === 'half'
@@ -617,8 +617,9 @@ export const 국민안심_서비스_뷰: React.FC = () => {
           </div>
         </div>
 
-        {/* 바텀시트 스크롤 카드 목록: 3열 그리드 (한 줄에 3개) */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
+        {/* 바텀시트 스크롤 카드 목록: 3열 그리드 (한 줄에 3개) - min 상태에서는 렌더링 생략하여 높이 왜곡 방지 */}
+        {sheet_state !== 'min' && (
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
           {/* E-Gen 실시간 데이터 안내 배너 */}
           <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-900 dark:text-blue-200">
             <Activity className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
@@ -957,6 +958,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             </div>
           )}
         </div>
+      )}
       </div>
     </div>
   );

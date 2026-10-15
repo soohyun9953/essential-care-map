@@ -50,6 +50,35 @@ const MapCameraController: React.FC<{ target_lat?: number; target_lng?: number; 
   return null;
 };
 
+// 지도 렌더링 직후 및 창 크기 변경 시 Leaflet 컨테이너 크기 자동 갱신
+const MapResizeHandler: React.FC = () => {
+  const map = useMap();
+  useEffect(() => {
+    // 마운트 직후 레이아웃 확정 대기 후 invalidateSize 실행
+    const timer = setTimeout(() => {
+      try {
+        map.invalidateSize();
+      } catch (err) {
+        console.warn('지도 크기 갱신 경고:', err);
+      }
+    }, 150);
+
+    const handleResize = () => {
+      try {
+        map.invalidateSize();
+      } catch (err) {
+        // 무시
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
+  return null;
+};
+
 export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의사결정_지도_내부_속성> = ({
   hospitals,
   active_hospital,
@@ -66,13 +95,15 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
     : [36.3, 127.8];
 
   return (
-    <div className="w-full h-full relative" id="decision-map-canvas-container">
+    <div className="w-full h-full relative min-h-[300px]" id="decision-map-canvas-container">
       <MapContainer
         center={default_center}
         zoom={active_hospital ? 11 : 7}
         scrollWheelZoom={true}
         className="w-full h-full"
+        style={{ width: '100%', height: '100%', minHeight: '300px' }}
       >
+        <MapResizeHandler />
         {/* Esri World Light Gray Base 무료 타일 */}
         <TileLayer
           attribution='&copy; <a href="https://www.esri.com/">Esri</a>'

@@ -421,7 +421,7 @@ export default function Home() {
 
   return (
     <IspProvider onPersonaChange={handle_persona_change}>
-      <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
+      <main className="h-screen max-h-screen overflow-hidden bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
         {/* 1. 최상단 글로벌 공공 헤더 (5대 워크스페이스 통합 네비게이션) */}
       <글로벌_공공_헤더
         active_workspace={current_workspace}
@@ -478,15 +478,19 @@ export default function Home() {
         on_open_review_guide_modal={() => set_is_review_guide_open(true)}
       />
 
-      {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (요구사항 1번: 모든 주요 화면 상단 고정) */}
-      <전체_여정_프로그레스_바
-        current_step={current_journey_step}
-        selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : undefined}
-        on_select_step={handle_select_journey_step}
-      />
+      {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (NMC / 보건복지부 정책 기획 화면에서만 조건부 노출) */}
+      {(current_workspace === 'regional_diagnosis' ||
+        current_workspace === 'policy_planning' ||
+        current_workspace === 'ai_analysis') && (
+        <전체_여정_프로그레스_바
+          current_step={current_journey_step}
+          selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : undefined}
+          on_select_step={handle_select_journey_step}
+        />
+      )}
 
       {/* 2. 메인 바디 컨테이너: 좌측 3대 대상자별 접이식 사이드바 + 우측 메인 워크스페이스 */}
-      <div className="flex-1 flex flex-row min-w-0 overflow-hidden relative">
+      <div className="flex-1 flex flex-row min-w-0 overflow-hidden relative min-h-0">
         {/* 2-1. 좌측 3종 대상자별 사이드바 (접기/펼치기 가능) */}
         <대상자별_좌측_사이드바
           is_collapsed={is_sidebar_collapsed}
@@ -502,7 +506,7 @@ export default function Home() {
         <div
           id="main-workspace-content"
           ref={main_content_ref}
-          className={`flex-1 flex flex-col min-w-0 relative ${
+          className={`flex-1 flex flex-col min-w-0 min-h-0 relative ${
             current_workspace === 'national_safety' ? 'overflow-hidden h-full' : 'overflow-y-auto'
           }`}
         >

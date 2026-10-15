@@ -24,7 +24,6 @@ import {
   FileText,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
-import { useIsp } from '@/context/ISP_컨텍스트';
 import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
 
 export type 워크스페이스_타입 =
@@ -121,10 +120,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   const [is_hovering_medical, set_is_hovering_medical] = useState(false);
   const admin_ref = useRef<HTMLDivElement>(null);
   const medical_ref = useRef<HTMLDivElement>(null);
-
-  // ISP 컨텍스트 연동 (Before/After 토글, 페르소나)
-  const { ispViewMode, setIspViewMode, toggleIspViewMode, persona, setPersona, currentPersonaInfo } = useIsp();
-
   // Gemini API 키 등록 현황 및 멀티 키 카운트
   const raw_gemini_keys = (google_api_key || '')
     .split(/[\n,;]+/)
@@ -712,37 +707,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
         </div>
       </div>
 
-      {/* 2줄 헤더: 페르소나 및 ISP 모드 상태 인디케이터 띠 */}
-      <div
-        className={`px-4 sm:px-6 py-1.5 border-t text-xs transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1.5 ${
-          ispViewMode === 'as_is'
-            ? 'bg-rose-100/90 dark:bg-rose-950/70 border-rose-300 dark:border-rose-900 text-rose-950 dark:text-rose-200'
-            : 'bg-slate-50/90 dark:bg-slate-900/70 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
-        }`}
-      >
-        <div className="flex items-center gap-2 overflow-hidden flex-wrap">
-          <span className="font-black flex items-center gap-1 shrink-0 text-blue-700 dark:text-blue-400">
-            <span>{currentPersonaInfo.icon}</span>
-            <span>[{currentPersonaInfo.label} 관점]</span>
-          </span>
-          <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">|</span>
-          <span className="truncate">
-            {ispViewMode === 'as_is' ? (
-              <span className="font-extrabold text-rose-800 dark:text-rose-200">
-                ⚠️ [과거 수작업 As-Is 모드] 345쪽 지침서 수기 대조 (2주 소요) · 기획서 작성 3주 · 신포괄 정책가산 누락 비효율 시뮬레이션 중
-              </span>
-            ) : (
-              <span className="font-medium">{currentPersonaInfo.description}</span>
-            )}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto text-[11px]">
-          <span className="font-semibold text-slate-500 dark:text-slate-400 hidden md:inline">
-            중점 지표: <strong className="text-slate-900 dark:text-white">{currentPersonaInfo.keyMetric}</strong>
-          </span>
-        </div>
-      </div>
     </header>
   );
 };

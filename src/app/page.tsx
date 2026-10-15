@@ -8,7 +8,7 @@
 // 4. [AI 분석] AI분석_통합_워크스페이스 (Cloud AI vs Local sLLM 듀얼 AI 스튜디오)
 // 5. [국민안심] 국민안심_서비스_뷰 (Mobile-First 5대 안심의료, 3단계 바텀시트)
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import {
   시군구_원천_데이터,
@@ -78,6 +78,8 @@ import { API키_불러오기 } from '@/lib/API키_저장소';
 import { 사용자_역할_타입 } from '@/lib/사용자_역할_타입';
 
 export default function Home() {
+  const main_content_ref = useRef<HTMLDivElement>(null);
+
   // 5대 Global Workspace 상태 (기본: 'home')
   const [current_workspace, set_current_workspace] = useState<워크스페이스_타입>('home');
 
@@ -395,6 +397,28 @@ export default function Home() {
     return undefined;
   }, [current_workspace, medical_subtab, policy_subtab, ai_hospital_subtab]);
 
+  // 메뉴, 워크스페이스, 서브탭, 역할 변경 시 메인 콘텐츠 및 사이드바, 윈도우 스크롤을 최상단(위쪽)으로 리셋
+  useEffect(() => {
+    if (main_content_ref.current) {
+      main_content_ref.current.scrollTop = 0;
+    }
+    const mainEl = document.getElementById('main-workspace-content');
+    if (mainEl) {
+      mainEl.scrollTop = 0;
+      const innerScrolls = mainEl.querySelectorAll('.overflow-y-auto, .overflow-auto');
+      innerScrolls.forEach((el) => {
+        el.scrollTop = 0;
+      });
+    }
+    const sidebarEl = document.getElementById('sidebar-scroll-container');
+    if (sidebarEl) {
+      sidebarEl.scrollTop = 0;
+    }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [current_workspace, policy_subtab, medical_subtab, ai_hospital_subtab, current_user_role]);
+
   return (
     <IspProvider onPersonaChange={handle_persona_change}>
       <main className="min-h-screen bg-slate-50 dark:bg-[#0c0d10] flex flex-col text-slate-900 dark:text-slate-100 selection:bg-blue-600/20 transition-colors duration-200 font-sans">
@@ -407,6 +431,15 @@ export default function Home() {
           }
           if (ws === 'hospital_ai_diagnosis' && ai_hospital_subtab === 'profile_report') {
             set_ai_hospital_subtab('diagnosis');
+          }
+          if (ws === 'national_safety') {
+            set_current_user_role('citizen');
+          } else if (ws === 'hospital_ai_diagnosis') {
+            set_current_user_role('hospital');
+          } else if (ws === 'regional_diagnosis' || ws === 'policy_planning') {
+            if (current_user_role === 'citizen') {
+              set_current_user_role('nmc');
+            }
           }
           set_current_workspace(ws);
         }}
@@ -468,7 +501,10 @@ export default function Home() {
         {/* 2-2. 우측 본문 메인 워크스페이스 렌더링 영역 */}
         <div
           id="main-workspace-content"
-          className="flex-1 flex flex-col min-w-0 relative overflow-y-auto"
+          ref={main_content_ref}
+          className={`flex-1 flex flex-col min-w-0 relative ${
+            current_workspace === 'national_safety' ? 'overflow-hidden h-full' : 'overflow-y-auto'
+          }`}
         >
         {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
         {current_workspace === 'home' && (
@@ -553,7 +589,7 @@ export default function Home() {
 
         {/* 워크스페이스 5: [국민안심] (Mobile-First 5대 안심의료 검색, 즉시 전화/길찾기, 3단계 바텀시트) */}
         {current_workspace === 'national_safety' && (
-          <div className="flex-1 w-full min-h-[calc(100vh-3.5rem)] overflow-hidden">
+          <div className="flex-1 w-full h-full min-h-0 overflow-hidden">
             <국민안심_서비스_뷰 />
           </div>
         )}

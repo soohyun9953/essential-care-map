@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -313,6 +313,20 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
     nmc: true,
   });
 
+  // 역할 또는 워크스페이스 변경 시 해당 역할 그룹을 펼치고 사이드바 스크롤을 최상단으로 리셋
+  useEffect(() => {
+    if (current_role && current_role !== 'all') {
+      set_open_groups((prev) => ({
+        ...prev,
+        [current_role]: true,
+      }));
+    }
+    const sidebar = document.getElementById('sidebar-scroll-container');
+    if (sidebar) {
+      sidebar.scrollTop = 0;
+    }
+  }, [current_role, current_workspace]);
+
   const toggle_group = (roleKey: string) => {
     set_open_groups((prev) => ({
       ...prev,
@@ -416,7 +430,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
         </div>
       ) : (
         /* 3. 펼쳐졌을 때 (Expanded Detailed Sidebar View) */
-        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        <div id="sidebar-scroll-container" className="flex-1 overflow-y-auto p-3 space-y-4">
           {/* 전체보기 복귀 바로가기 */}
           <button
             type="button"

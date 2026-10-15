@@ -239,6 +239,13 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
   // 마운트 시 브라우저 Geolocation 자동 1회 감지
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
+      const parent = document.getElementById('main-workspace-content');
+      if (parent) {
+        parent.scrollTop = 0;
+      }
+    }
     if (typeof window !== 'undefined' && navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -382,7 +389,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-4.5rem)] flex flex-col relative overflow-hidden bg-slate-100 dark:bg-[#0c0d10]">
+    <div className="w-full h-full min-h-0 flex flex-col relative overflow-hidden bg-slate-100 dark:bg-[#0c0d10]">
       {/* ============================================================== */}
       {/* 1. 상단: 빠른 탐색 바 (Section 18) */}
       {/* ============================================================== */}

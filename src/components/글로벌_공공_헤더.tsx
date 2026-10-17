@@ -22,6 +22,7 @@ import {
   Unlock,
   Compass,
   FileText,
+  HelpCircle,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
@@ -181,29 +182,102 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           
           {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 + 🌟 3대 사용자 역할 선택 스위처 */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('home')}
-              className="flex items-center gap-2.5 select-none shrink-0 whitespace-nowrap cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
-              title="최초 초기 화면으로 이동"
-            >
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
-                <Activity className="w-4 h-4 text-white" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  공공의료 의사결정 지원 플랫폼
-                </h1>
-                <div className="flex items-center mt-0.5">
-                  <span
-                    className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight"
-                    title="플랫폼 최종 배포일시 및 버전"
-                  >
-                    {PLATFORM_VERSION.fullLabel}
-                  </span>
+            <div className="flex items-center gap-2 select-none shrink-0 whitespace-nowrap">
+              <button
+                type="button"
+                onClick={() => handle_workspace_change('home')}
+                className="flex items-center gap-2.5 cursor-pointer group text-left transition hover:opacity-90 focus:outline-none"
+                title="최초 초기 화면으로 이동"
+              >
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-700 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-sm ring-1 ring-white/20 shrink-0 group-hover:scale-105 transition-transform">
+                  <Activity className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex flex-col justify-center">
+                  <h1 className="text-sm sm:text-base font-black tracking-tight text-slate-900 dark:text-white leading-tight flex items-center group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    공공의료 의사결정 지원 플랫폼
+                  </h1>
+                  <div className="flex items-center mt-0.5 gap-1.5">
+                    <span
+                      className="text-[11px] px-1.5 py-0.2 rounded bg-blue-50/90 dark:bg-blue-950/80 text-[#0071e3] dark:text-[#38bdf8] font-bold border border-blue-200/80 dark:border-blue-800/80 shadow-2xs inline-flex items-center justify-center leading-tight"
+                      title="플랫폼 최종 배포일시 및 버전"
+                    >
+                      {PLATFORM_VERSION.fullLabel}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* ⭐ 좌측 상단: 프로토타입 명칭 뱃지 및 커서 호버 시 ISP 의미 상세 팝오버 툴팁 */}
+              <div className="relative group/proto inline-block">
+                <div
+                  className="px-2 py-0.5 rounded-lg bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-[11px] font-black shadow-xs flex items-center gap-1 cursor-help hover:shadow-md hover:scale-105 transition-all ring-1 ring-white/25 select-none"
+                  tabIndex={0}
+                  role="tooltip"
+                  aria-label="ISP 프로토타입의 의미 안내"
+                >
+                  <Sparkles className="w-3 h-3 text-amber-300 animate-pulse" />
+                  <span>ISP 프로토타입</span>
+                  <HelpCircle className="w-3 h-3 text-white/80" />
+                </div>
+
+                {/* 마우스 커서 호버 시 표시되는 ISP 프로토타입 상세 의미 카드 */}
+                <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 p-3.5 bg-slate-900/95 dark:bg-slate-900/98 text-white backdrop-blur-md rounded-2xl shadow-2xl border border-blue-500/40 opacity-0 invisible group-hover/proto:opacity-100 group-hover/proto:visible transition-all duration-200 z-[100] pointer-events-none group-hover/proto:pointer-events-auto">
+                  <div className="flex items-start gap-2.5 pb-2 border-b border-slate-700/80 mb-2.5">
+                    <div className="w-7 h-7 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-sm">
+                      <Sparkles className="w-4 h-4 text-amber-300" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-xs sm:text-sm text-blue-300 flex items-center gap-1.5">
+                        <span>ISP(정보화전략계획) 프로토타입의 의미</span>
+                      </h4>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        Information Strategy Planning · Prototype Verification Model
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-[11px] leading-relaxed text-slate-200">
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                      <p className="font-bold text-emerald-400 mb-0.5 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                        <span>1. 요구사항 가시화 및 사전 검증 (PoC)</span>
+                      </p>
+                      <p className="text-slate-300 text-[10.5px]">
+                        텍스트·서식 위주의 추상적 ISP 기획을 넘어, 250개 시군구 35:65 GIS 맵, 실시간 병상 연계, 41개 거점공공병원 AI 종합진단 등의 핵심 기능을 실제 동작 모델로 사전 검증합니다.
+                      </p>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                      <p className="font-bold text-sky-400 mb-0.5 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-sky-400 shrink-0" />
+                        <span>2. 본 사업 실패 리스크 및 예산 낭비 원천 차단</span>
+                      </p>
+                      <p className="text-slate-300 text-[10.5px]">
+                        복지부 12대 HWPX 사업계획서 자동 생성, 14대 공시 산출식 사전검증 등 본 구축 시 발생할 수 있는 데이터 연계 오류와 서식 불일치를 기획 단계에서 선제 제거하여 예산 타당성을 확보합니다.
+                      </p>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
+                      <p className="font-bold text-amber-300 mb-0.5 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-amber-300 shrink-0" />
+                        <span>3. 발주 제안요청서(RFP) 기능규격서 정밀화</span>
+                      </p>
+                      <p className="text-slate-300 text-[10.5px]">
+                        본 사업 발주 시 사업자가 즉시 구현할 수 있는 명확한 소프트웨어 기능요구사항(SFR)과 화면 UI/UX의 실증 기준 모델(Reference Model)을 제공합니다.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-2.5 pt-2 border-t border-slate-700/70 flex items-center justify-between text-[10px] text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>보건복지부 · 국립중앙의료원(NMC) ISP 실증</span>
+                    </span>
+                    <span className="text-blue-400 font-bold">공식 검증 모델</span>
+                  </div>
                 </div>
               </div>
-            </button>
+            </div>
 
             {/* 🌟 3대 사용자 역할별 화면 선택 스위처 (국민 / 의료기관 담당자 / NMC 업무 담당자) */}
             <div className="flex items-center gap-1 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xs">

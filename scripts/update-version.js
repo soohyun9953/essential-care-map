@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.16';
+const SEMVER = '1.29.17';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '좌측 상단 ISP 프로토타입 뱃지 및 마우스 호버 시 ISP 프로토타입 3대 가치·의미 팝오버 툴팁 추가 (${fullLabel})',
+    'ISP 프로토타입 팝오버 문구 간결화(요구사항 가시화·리스크 차단·기능규격서 정밀화) 및 하단 인증 라벨 제거 (${fullLabel})',
 };
 `;
 

@@ -221,59 +221,36 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
 
                 {/* 마우스 커서 호버 시 표시되는 ISP 프로토타입 상세 의미 카드 */}
-                <div className="absolute left-0 top-full mt-2 w-80 sm:w-96 p-3.5 bg-slate-900/95 dark:bg-slate-900/98 text-white backdrop-blur-md rounded-2xl shadow-2xl border border-blue-500/40 opacity-0 invisible group-hover/proto:opacity-100 group-hover/proto:visible transition-all duration-200 z-[100] pointer-events-none group-hover/proto:pointer-events-auto">
-                  <div className="flex items-start gap-2.5 pb-2 border-b border-slate-700/80 mb-2.5">
-                    <div className="w-7 h-7 rounded-xl bg-blue-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-sm">
-                      <Sparkles className="w-4 h-4 text-amber-300" />
+                <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 p-3 bg-slate-900/95 dark:bg-slate-900/98 text-white backdrop-blur-md rounded-2xl shadow-2xl border border-blue-500/40 opacity-0 invisible group-hover/proto:opacity-100 group-hover/proto:visible transition-all duration-200 z-[100] pointer-events-none group-hover/proto:pointer-events-auto">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-700/80 mb-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white shrink-0 shadow-sm">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                     </div>
-                    <div>
-                      <h4 className="font-extrabold text-xs sm:text-sm text-blue-300 flex items-center gap-1.5">
-                        <span>ISP(정보화전략계획) 프로토타입의 의미</span>
-                      </h4>
-                      <p className="text-[10px] text-slate-400 mt-0.5">
-                        Information Strategy Planning · Prototype Verification Model
-                      </p>
-                    </div>
+                    <h4 className="font-extrabold text-xs sm:text-sm text-blue-300">
+                      ISP 프로토타입의 의미
+                    </h4>
                   </div>
 
-                  <div className="space-y-2 text-[11px] leading-relaxed text-slate-200">
-                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
-                      <p className="font-bold text-emerald-400 mb-0.5 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                        <span>1. 요구사항 가시화 및 사전 검증 (PoC)</span>
-                      </p>
-                      <p className="text-slate-300 text-[10.5px]">
-                        텍스트·서식 위주의 추상적 ISP 기획을 넘어, 250개 시군구 35:65 GIS 맵, 실시간 병상 연계, 41개 거점공공병원 AI 종합진단 등의 핵심 기능을 실제 동작 모델로 사전 검증합니다.
-                      </p>
+                  <div className="space-y-1.5 text-xs text-slate-200">
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-start gap-1.5">
+                      <span className="shrink-0 text-sm">🎯</span>
+                      <div>
+                        <span className="font-bold text-white">1. 요구사항 가시화</span>
+                        <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                          (텍스트·서식 위주의 추상적 ISP 기획을 탈피)
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
-                      <p className="font-bold text-sky-400 mb-0.5 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-sky-400 shrink-0" />
-                        <span>2. 본 사업 실패 리스크 및 예산 낭비 원천 차단</span>
-                      </p>
-                      <p className="text-slate-300 text-[10.5px]">
-                        복지부 12대 HWPX 사업계획서 자동 생성, 14대 공시 산출식 사전검증 등 본 구축 시 발생할 수 있는 데이터 연계 오류와 서식 불일치를 기획 단계에서 선제 제거하여 예산 타당성을 확보합니다.
-                      </p>
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center gap-1.5">
+                      <span className="shrink-0 text-sm">🛡️</span>
+                      <span className="font-bold text-white">2. 본 사업 실패 리스크 차단</span>
                     </div>
 
-                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60">
-                      <p className="font-bold text-amber-300 mb-0.5 flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3 text-amber-300 shrink-0" />
-                        <span>3. 발주 제안요청서(RFP) 기능규격서 정밀화</span>
-                      </p>
-                      <p className="text-slate-300 text-[10.5px]">
-                        본 사업 발주 시 사업자가 즉시 구현할 수 있는 명확한 소프트웨어 기능요구사항(SFR)과 화면 UI/UX의 실증 기준 모델(Reference Model)을 제공합니다.
-                      </p>
+                    <div className="p-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center gap-1.5">
+                      <span className="shrink-0 text-sm">📋</span>
+                      <span className="font-bold text-white">3. 발주 제안요청서(RFP) 기능규격서 정밀화</span>
                     </div>
-                  </div>
-
-                  <div className="mt-2.5 pt-2 border-t border-slate-700/70 flex items-center justify-between text-[10px] text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>보건복지부 · 국립중앙의료원(NMC) ISP 실증</span>
-                    </span>
-                    <span className="text-blue-400 font-bold">공식 검증 모델</span>
                   </div>
                 </div>
               </div>

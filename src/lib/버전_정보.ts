@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-18',
-  time: '21:22',
-  deployedAt: '2026.10.18 21:22',
-  semver: '1.29.19',
-  fullLabel: '2026.10.18 21:22 · v1.29.19',
-  packageVersion: '20261018-2122',
-  updatedAt: '2026-10-18 21:22',
+  time: '21:35',
+  deployedAt: '2026.10.18 21:35',
+  semver: '1.29.20',
+  fullLabel: '2026.10.18 21:35 · v1.29.20',
+  packageVersion: '20261018-2135',
+  updatedAt: '2026-10-18 21:35',
   changelog:
-    '공공보건의료 사업계획서 12대 항목 편집기 PDF 인쇄를 한컴 한글(HWP/HWPX) 파일 즉시 저장으로 변경 (2026.10.18 21:22)',
+    '공공보건의료 시행계획 추진실적 평가 결과보고서 PDF 인쇄를 한컴 한글(hwp 저장) 파일 다운로드로 변경 (2026.10.18 21:35)',
 };

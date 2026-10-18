@@ -41,6 +41,7 @@ import {
   Info,
   Loader2,
   Layers,
+  Download,
 } from 'lucide-react';
 
 import {
@@ -51,6 +52,7 @@ import {
   성과지표_성격유형,
   제2차_기본계획_과제체계,
 } from '@/lib/시행계획_평가_엔진';
+import { downloadHwpxDirect, ReportItem } from '@/lib/hwpx_생성기';
 
 interface 시행계획_추진실적_AI평가_시스템_속성 {
   selected_region_name?: string;
@@ -419,6 +421,106 @@ export const 시행계획_추진실적_AI평가_시스템: React.FC<시행계획
       setIs_copied(true);
       setTimeout(() => setIs_copied(false), 2500);
       showToast('📋 공식 평가 결과보고서 전문이 클립보드에 복사되었습니다.');
+    }
+  };
+
+  // 공식 평가 결과보고서 한컴 한글(HWP/HWPX) 파일 다운로드 핸들러
+  const [is_exporting_hwp, setIs_exporting_hwp] = useState(false);
+
+  const handleDownloadHwpReport = async () => {
+    try {
+      setIs_exporting_hwp(true);
+      const title = `『${eval_pkg.institutionName} 공공보건의료 시행계획 추진실적 평가』 공식 결과보고서 (환류 통보문)`;
+      const safeName = eval_pkg.institutionName.replace(/[/\\:*?"<>|]/g, '_');
+      const fileName = `${safeName}_공공보건의료_시행계획_평가결과보고서.hwpx`;
+
+      // 10대 세부 평가지표 테이블 행 생성
+      const scoreRows: string[][] = [
+        ...eval_result.itemScores.map((item, idx) => [
+          item.indicator.category,
+          `${idx + 1}. ${item.indicator.title}`,
+          `${item.totalMax}점`,
+          `${item.totalScore.toFixed(1)}점`,
+          item.aiDeductionReason ? '감점 요인 확인' : '기준 충족',
+        ]),
+        [
+          '합계 총점',
+          '공식 평가지표 10대 항목 종합 합산',
+          '100점',
+          `${eval_result.totalScore100}점`,
+          `최종 ${eval_result.finalGrade}등급`,
+        ],
+      ];
+
+      const items: ReportItem[] = [
+        { type: 'heading1', text: title },
+        { type: 'spacer' },
+        {
+          type: 'box',
+          title: '보건복지부 공공보건의료 시행계획 및 추진실적 공식 평가 결과',
+          text: `평가 기관: ${eval_pkg.institutionName} | 최종 등급: ${eval_result.finalGrade}등급 | 획득 점수: ${eval_result.totalScore100}점 / 100점 만점\n소관 공공의료기관: ${eval_pkg.affiliatedHospitalsCount}개소 (${eval_pkg.affiliatedHospitalsSummary})\n평가 근거: 보건복지부·국립중앙의료원 공공보건의료 시행계획 수립 및 추진실적 평가 지침`,
+        },
+        { type: 'spacer' },
+        { type: 'heading2', text: '【 1. 종합 평가점수 및 등급표 】' },
+        {
+          type: 'table',
+          table: {
+            headers: ['평가 영역', '세부 평가 항목', '배점', '취득 점수', '평가 상태'],
+            rows: scoreRows,
+            colWidths: [7000, 16000, 5000, 6520, 8000],
+            alignments: ['center', 'left', 'center', 'center', 'center'],
+          },
+        },
+        { type: 'spacer' },
+        { type: 'heading2', text: '【 2. 종합 평가 총평 】' },
+        {
+          type: 'paragraph',
+          text: eval_result.generatedOfficialReport.overallSummary,
+        },
+        { type: 'spacer' },
+        { type: 'heading2', text: '【 3. 주요 우수 사항 (강점) 】' },
+        ...eval_result.generatedOfficialReport.strengths.map((s) => ({
+          type: 'bullet' as const,
+          text: s,
+        })),
+        { type: 'spacer' },
+        { type: 'heading2', text: '【 4. 미흡한 점 및 감점 요인 】' },
+        ...(eval_result.generatedOfficialReport.weaknessesAndDeductions.length > 0
+          ? eval_result.generatedOfficialReport.weaknessesAndDeductions.map((w) => ({
+              type: 'bullet' as const,
+              text: w,
+            }))
+          : [
+              {
+                type: 'paragraph' as const,
+                text: '• 지침상 필수 요건 및 성과지표 기준을 모두 충족하여 주요 감점 사항 없음',
+              },
+            ]),
+        { type: 'spacer' },
+        { type: 'heading2', text: '【 5. 차년도 시행계획 수립 환류 권고안 (법정 환류) 】' },
+        ...eval_result.generatedOfficialReport.nextYearRecommendations.map((r) => ({
+          type: 'bullet' as const,
+          text: r,
+        })),
+      ];
+
+      if (gemini_live_review) {
+        items.push({ type: 'spacer' });
+        items.push({ type: 'heading2', text: '【 6. Google Gemini 수석 심사위원 실시간 심층 심사 의견서 】' });
+        items.push({
+          type: 'box',
+          title: 'Google Gemini AI 심층 심사평 전문',
+          text: gemini_live_review,
+        });
+      }
+
+      await downloadHwpxDirect(title, items, fileName);
+      showToast('📥 HWP 결과보고서 파일이 성공적으로 다운로드되었습니다.');
+    } catch (err) {
+      console.error('[HWP 결과보고서 저장 실패]', err);
+      alert('HWP 파일 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIs_exporting_hwp(false);
     }
   };
 
@@ -1957,11 +2059,22 @@ export const 시행계획_추진실적_AI평가_시스템: React.FC<시행계획
 
               <button
                 type="button"
-                onClick={() => typeof window !== 'undefined' && window.print()}
-                className="px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 text-xs font-bold transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                onClick={handleDownloadHwpReport}
+                disabled={is_exporting_hwp}
+                className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                title="공식 결과보고서(환류 통보문)를 한컴 한글(HWP/HWPX) 파일로 즉시 다운로드"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>PDF 인쇄</span>
+                {is_exporting_hwp ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>HWP 생성 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>hwp 저장</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

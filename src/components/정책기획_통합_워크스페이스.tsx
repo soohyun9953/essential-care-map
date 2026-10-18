@@ -58,6 +58,7 @@ import { 일대일_비교_대시보드 } from './일대일_비교_대시보드';
 import { 의료수요_추계_차트 } from './의료수요_추계_차트';
 import { 지역_의료자원_집계 } from '@/lib/지역_의료자원_집계';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
+import { downloadHwpxDirect, ReportItem } from '@/lib/hwpx_생성기';
 
 // 모달 컴포넌트들
 import { AI_활용_데이터_모달 } from './ai/AI_활용_데이터_모달';
@@ -305,9 +306,82 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
     setTimeout(() => setIs_saved_toast(false), 2500);
   };
 
-  // PDF 인쇄
-  const handle_print_pdf = () => {
-    if (typeof window !== 'undefined') window.print();
+  // HWP/HWPX 문서 저장 핸들러
+  const [is_exporting_hwpx, setIs_exporting_hwpx] = useState(false);
+
+  const handle_save_hwpx = async () => {
+    try {
+      setIs_exporting_hwpx(true);
+      const title = proposal_form.사업명 || '공공보건의료 사업계획서 (12대 법정 항목)';
+      const safe_region = selected_region ? `${selected_region.시도명}_${selected_region.시군구명}` : '공공의료';
+      const file_name = `${safe_region}_공공보건의료_사업계획서_12대항목.hwpx`;
+
+      const items: ReportItem[] = [
+        { type: 'heading1', text: title },
+        { type: 'spacer' },
+        {
+          type: 'box',
+          title: '보건복지부 법정 12대 항목 표준 사업계획서 요약',
+          text: `작성 대상: ${selected_region?.시도명 || ''} ${selected_region?.시군구명 || ''} | 기반 대안: Option ${selected_option} | 생성 시스템: 공공의료 의사결정 지원 플랫폼 (ISP 실증 모델)`,
+        },
+        { type: 'spacer' },
+        {
+          type: 'table',
+          table: {
+            headers: ['항목 번호', '법정 항목명', '사업계획 수립 내용'],
+            rows: [
+              ['01', '사업명', proposal_form.사업명 || '-'],
+              ['02', '추진배경', proposal_form.추진배경 || '-'],
+              ['03', '현황 및 문제점', proposal_form.현황및문제점 || '-'],
+              ['04', '사업목표', proposal_form.사업목표 || '-'],
+              ['05', '추진전략', proposal_form.추진전략 || '-'],
+              ['06', '세부사업 내용', proposal_form.세부사업 || '-'],
+              ['07', '추진체계', proposal_form.추진체계 || '-'],
+              ['08', '추진일정', proposal_form.추진일정 || '-'],
+              ['09', '소요예산 및 재원조달', proposal_form.예산 || '-'],
+              ['10', '성과지표 및 평가방법', proposal_form.성과지표 || '-'],
+              ['11', '기대효과', proposal_form.기대효과 || '-'],
+              ['12', '사후관리 계획', proposal_form.사후관리 || '-'],
+            ],
+            colWidths: [4500, 7500, 30520],
+            alignments: ['center', 'center', 'left'],
+          },
+        },
+        { type: 'spacer' },
+        { type: 'heading2', text: '【세부 항목별 기술서】' },
+        { type: 'heading3', text: '1. 사업명' },
+        { type: 'paragraph', text: proposal_form.사업명 || '-' },
+        { type: 'heading3', text: '2. 추진배경' },
+        { type: 'paragraph', text: proposal_form.추진배경 || '-' },
+        { type: 'heading3', text: '3. 현황 및 문제점' },
+        { type: 'paragraph', text: proposal_form.현황및문제점 || '-' },
+        { type: 'heading3', text: '4. 사업목표' },
+        { type: 'paragraph', text: proposal_form.사업목표 || '-' },
+        { type: 'heading3', text: '5. 추진전략' },
+        { type: 'paragraph', text: proposal_form.추진전략 || '-' },
+        { type: 'heading3', text: '6. 세부사업 내용' },
+        { type: 'paragraph', text: proposal_form.세부사업 || '-' },
+        { type: 'heading3', text: '7. 추진체계' },
+        { type: 'paragraph', text: proposal_form.추진체계 || '-' },
+        { type: 'heading3', text: '8. 추진일정' },
+        { type: 'paragraph', text: proposal_form.추진일정 || '-' },
+        { type: 'heading3', text: '9. 소요예산 및 재원조달' },
+        { type: 'paragraph', text: proposal_form.예산 || '-' },
+        { type: 'heading3', text: '10. 성과지표 및 평가방법' },
+        { type: 'paragraph', text: proposal_form.성과지표 || '-' },
+        { type: 'heading3', text: '11. 기대효과' },
+        { type: 'paragraph', text: proposal_form.기대효과 || '-' },
+        { type: 'heading3', text: '12. 사후관리 계획' },
+        { type: 'paragraph', text: proposal_form.사후관리 || '-' },
+      ];
+
+      await downloadHwpxDirect(title, items, file_name);
+    } catch (error) {
+      console.error('[HWP 저장 실패]', error);
+      alert('HWP 파일 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIs_exporting_hwpx(false);
+    }
   };
 
   // 선택 지역의 기관 목록 집계
@@ -1470,11 +1544,22 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
 
                 <button
                   type="button"
-                  onClick={handle_print_pdf}
-                  className="px-3.5 py-2 rounded-xl bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-100 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs border border-blue-200 dark:border-blue-800"
+                  onClick={handle_save_hwpx}
+                  disabled={is_exporting_hwpx}
+                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                  title="보건복지부 법정 12대 항목 사업계획서를 한컴 한글(HWP/HWPX) 파일로 즉시 다운로드"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>PDF 인쇄 / 저장</span>
+                  {is_exporting_hwpx ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>HWP 생성 중...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-3.5 h-3.5" />
+                      <span>HWP 저장</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

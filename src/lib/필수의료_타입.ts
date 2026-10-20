@@ -138,6 +138,61 @@ export type 페르소나_역할 = '중앙정책가' | '지역코디네이터' | 
 /**
  * 퇴원환자 지역사회 돌봄자원 AI 매칭 인터페이스
  */
+
+/** ADL(일상생활수행능력) 세부 항목 - Barthel Index 기준 */
+export interface ADL_세부항목 {
+  식사: 0 | 5 | 10;
+  이동: 0 | 5 | 10 | 15;
+  개인위생: 0 | 5;
+  용변처리: 0 | 5 | 10;
+  목욕: 0 | 5;
+  계단오르기: 0 | 5 | 10;
+  옷입기: 0 | 5 | 10;
+  대변조절: 0 | 5 | 10;
+  소변조절: 0 | 5 | 10;
+  보행: 0 | 5 | 10 | 15;
+}
+
+/** IADL(도구적 일상생활수행능력) 세부 항목 - Lawton IADL 기준 */
+export interface IADL_세부항목 {
+  전화사용: 1 | 2 | 3 | 4;
+  물건구매: 1 | 2 | 3 | 4;
+  식사준비: 1 | 2 | 3;
+  가사활동: 1 | 2 | 3 | 4;
+  세탁: 1 | 2;
+  이동수단: 1 | 2 | 3 | 4;
+  약물복용: 1 | 2 | 3;
+  재정관리: 1 | 2;
+}
+
+/** 퇴원환자 심층 평가표 */
+export interface 심층평가_항목 {
+  평가일: string;
+  평가자: string;
+  ADL: ADL_세부항목;
+  ADL_총점: number;
+  IADL: IADL_세부항목;
+  IADL_총점: number;
+  MoCA_총점: number;
+  MoCA_기억력: number;
+  MoCA_주의력: number;
+  MoCA_언어능력: number;
+  MoCA_시공간: number;
+  MoCA_추상사고: number;
+  MoCA_지남력: number;
+  인지장애_의심: boolean;
+  낙상위험_점수: number;
+  낙상위험_등급: '낮음' | '중간' | '높음';
+  낙상이력_6개월: boolean;
+  욕창위험_점수: number;
+  욕창위험_등급: '낮음' | '중간' | '높음';
+  통증_NRS: number;
+  영양위험_MNA: number;
+  영양상태: '정상' | '위험' | '영양불량';
+  우울_GDS: number;
+  우울_의심: boolean;
+  종합소견: string;
+}
 export interface 퇴원환자_정보 {
   환자번호: string;
   이름: string;
@@ -151,6 +206,8 @@ export interface 퇴원환자_정보 {
   ADL점수: number; // 0~100 (낮을수록 도움 필요)
   퇴원예정일: string;
   필요돌봄유형: string[];
+  /** 심층 평가표 - 환자 선택 시 자동 로딩 */
+  심층평가?: 심층평가_항목;
 }
 
 export interface 돌봄_자원_추천항목 {

@@ -2,7 +2,7 @@
 
 // 공공보건의료 협력·연계 및 퇴원환자 케어체계: 퇴원환자 지역사회 돌봄자원 AI 매칭 & 원클릭 연계 시뮬레이터
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   User,
   HeartHandshake,
@@ -18,8 +18,138 @@ import {
   ShieldCheck,
   RefreshCw,
   X,
+  ClipboardList,
+  ChevronDown,
+  ChevronUp,
+  Brain,
+  Footprints,
+  Utensils,
+  Heart,
+  AlertTriangle,
 } from 'lucide-react';
-import { 퇴원환자_정보, 돌봄_자원_추천항목 } from '@/lib/필수의료_타입';
+import { 퇴원환자_정보, 돌봄_자원_추천항목, 심층평가_항목, ADL_세부항목, IADL_세부항목 } from '@/lib/필수의료_타입';
+
+// ─────────────────────────────────────────
+// 심층 평가 샘플 데이터
+// ─────────────────────────────────────────
+
+const 심층평가_김공공: 심층평가_항목 = {
+  평가일: '2026-09-18',
+  평가자: '김재활 (작업치료사)',
+
+  ADL: {
+    식사: 10,
+    이동: 10,
+    개인위생: 5,
+    용변처리: 5,
+    목욕: 0,
+    계단오르기: 5,
+    옷입기: 5,
+    대변조절: 10,
+    소변조절: 5,
+    보행: 5,
+  } as ADL_세부항목,
+  ADL_총점: 60,
+
+  IADL: {
+    전화사용: 2,
+    물건구매: 3,
+    식사준비: 2,
+    가사활동: 3,
+    세탁: 2,
+    이동수단: 3,
+    약물복용: 2,
+    재정관리: 1,
+  } as IADL_세부항목,
+  IADL_총점: 3,
+
+  MoCA_총점: 22,
+  MoCA_기억력: 3,
+  MoCA_주의력: 4,
+  MoCA_언어능력: 2,
+  MoCA_시공간: 4,
+  MoCA_추상사고: 2,
+  MoCA_지남력: 7,
+  인지장애_의심: true,
+
+  낙상위험_점수: 55,
+  낙상위험_등급: '높음',
+  낙상이력_6개월: true,
+
+  욕창위험_점수: 16,
+  욕창위험_등급: '중간',
+
+  통증_NRS: 4,
+
+  영양위험_MNA: 10,
+  영양상태: '위험',
+
+  우울_GDS: 7,
+  우울_의심: true,
+
+  종합소견: '뇌졸중 후 우측 편마비로 ADL 부분 의존 상태. 인지기능 저하(MoCA 22점)로 독거 생활 시 안전 위협. 낙상 고위험으로 환경 수정 및 보조기구 지급 필요. 우울증 의심(GDS 7점)으로 정신건강 서비스 연계 권고.',
+};
+
+const 심층평가_박돌봄: 심층평가_항목 = {
+  평가일: '2026-09-22',
+  평가자: '이간호 (전담간호사)',
+
+  ADL: {
+    식사: 10,
+    이동: 5,
+    개인위생: 0,
+    용변처리: 5,
+    목욕: 0,
+    계단오르기: 0,
+    옷입기: 5,
+    대변조절: 5,
+    소변조절: 5,
+    보행: 5,
+  } as ADL_세부항목,
+  ADL_총점: 40,
+
+  IADL: {
+    전화사용: 3,
+    물건구매: 4,
+    식사준비: 3,
+    가사활동: 4,
+    세탁: 2,
+    이동수단: 4,
+    약물복용: 2,
+    재정관리: 2,
+  } as IADL_세부항목,
+  IADL_총점: 2,
+
+  MoCA_총점: 24,
+  MoCA_기억력: 4,
+  MoCA_주의력: 5,
+  MoCA_언어능력: 2,
+  MoCA_시공간: 4,
+  MoCA_추상사고: 2,
+  MoCA_지남력: 7,
+  인지장애_의심: false,
+
+  낙상위험_점수: 75,
+  낙상위험_등급: '높음',
+  낙상이력_6개월: true,
+
+  욕창위험_점수: 11,
+  욕창위험_등급: '높음',
+
+  통증_NRS: 6,
+
+  영양위험_MNA: 8,
+  영양상태: '위험',
+
+  우울_GDS: 4,
+  우울_의심: false,
+
+  종합소견: '대퇴골 골절 수술 후 휠체어 이동 상태로 ADL 고도 의존. 욕창 고위험(Braden 11점)으로 체위변경 및 욕창예방 매트 즉시 지원 필요. 당뇨 합병증 관리 목적 방문간호 주 3회 이상 권고. 낙상 재발 방지를 위한 침대 난간·욕실 안전바 설치 우선.',
+};
+
+// ─────────────────────────────────────────
+// 샘플 환자 데이터 (심층평가 포함)
+// ─────────────────────────────────────────
 
 const SAMPLE_PATIENTS: 퇴원환자_정보[] = [
   {
@@ -35,6 +165,7 @@ const SAMPLE_PATIENTS: 퇴원환자_정보[] = [
     ADL점수: 55,
     퇴원예정일: '2026-09-20',
     필요돌봄유형: ['가정방문 재활운동', '장기요양 등급신청', '일상식사 지원'],
+    심층평가: 심층평가_김공공,
   },
   {
     환자번호: 'P-2026-0412',
@@ -49,6 +180,7 @@ const SAMPLE_PATIENTS: 퇴원환자_정보[] = [
     ADL점수: 40,
     퇴원예정일: '2026-09-24',
     필요돌봄유형: ['방문간호 욕창관리', '낙상방지 보조기기', '긴급 안심벨 설치'],
+    심층평가: 심층평가_박돌봄,
   },
 ];
 
@@ -88,11 +220,294 @@ const INITIAL_RECOMMENDED_RESOURCES: 돌봄_자원_추천항목[] = [
   },
 ];
 
+// ─────────────────────────────────────────
+// 유틸리티 함수
+// ─────────────────────────────────────────
+
+function get_adl_label(score: number): { label: string; color: string } {
+  if (score >= 80) return { label: '경도 의존', color: 'text-emerald-600 dark:text-emerald-400' };
+  if (score >= 60) return { label: '중등도 의존', color: 'text-amber-600 dark:text-amber-400' };
+  if (score >= 40) return { label: '고도 의존', color: 'text-orange-600 dark:text-orange-400' };
+  return { label: '완전 의존', color: 'text-red-600 dark:text-red-400' };
+}
+
+function get_등급_badge(등급: '낮음' | '중간' | '높음'): string {
+  if (등급 === '낮음') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400';
+  if (등급 === '중간') return 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400';
+  return 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400';
+}
+
+function get_moca_label(score: number): { label: string; color: string } {
+  if (score >= 26) return { label: '정상', color: 'text-emerald-600 dark:text-emerald-400' };
+  if (score >= 18) return { label: '경도 인지장애', color: 'text-amber-600 dark:text-amber-400' };
+  return { label: '중등도 이상 인지장애', color: 'text-red-600 dark:text-red-400' };
+}
+
+// ─────────────────────────────────────────
+// 심층 평가표 서브 컴포넌트
+// ─────────────────────────────────────────
+
+const 심층평가_섹션: React.FC<{ 평가: 심층평가_항목; 로딩중: boolean }> = ({ 평가, 로딩중 }) => {
+  const adl_info = get_adl_label(평가.ADL_총점);
+  const moca_info = get_moca_label(평가.MoCA_총점);
+
+  const adl_항목들: { key: keyof ADL_세부항목; label: string; max: number }[] = [
+    { key: '식사', label: '식사', max: 10 },
+    { key: '이동', label: '이동', max: 15 },
+    { key: '개인위생', label: '개인위생', max: 5 },
+    { key: '용변처리', label: '용변처리', max: 10 },
+    { key: '목욕', label: '목욕', max: 5 },
+    { key: '계단오르기', label: '계단오르기', max: 10 },
+    { key: '옷입기', label: '옷입기', max: 10 },
+    { key: '대변조절', label: '대변조절', max: 10 },
+    { key: '소변조절', label: '소변조절', max: 10 },
+    { key: '보행', label: '보행', max: 15 },
+  ];
+
+  const moca_항목들 = [
+    { label: '기억력', score: 평가.MoCA_기억력, max: 5 },
+    { label: '주의력', score: 평가.MoCA_주의력, max: 6 },
+    { label: '언어능력', score: 평가.MoCA_언어능력, max: 3 },
+    { label: '시공간', score: 평가.MoCA_시공간, max: 5 },
+    { label: '추상사고', score: 평가.MoCA_추상사고, max: 2 },
+    { label: '지남력', score: 평가.MoCA_지남력, max: 6 },
+  ];
+
+  return (
+    <div
+      className={`space-y-5 transition-all duration-500 ${
+        로딩중 ? 'opacity-40 blur-sm pointer-events-none' : 'opacity-100'
+      }`}
+    >
+      {/* 평가 메타 정보 */}
+      <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 pb-2 border-b border-slate-200 dark:border-slate-800">
+        <span>📋 평가일: <strong className="text-slate-700 dark:text-slate-200">{평가.평가일}</strong></span>
+        <span>평가자: <strong className="text-slate-700 dark:text-slate-200">{평가.평가자}</strong></span>
+      </div>
+
+      {/* 상단 요약 뱃지 */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {/* ADL */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col items-center text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">ADL (Barthel)</span>
+          <span className={`text-2xl font-black ${adl_info.color}`}>{평가.ADL_총점}</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">/100</span>
+          <span className={`mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${adl_info.color} bg-current/10`}>
+            {adl_info.label}
+          </span>
+        </div>
+        {/* IADL */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col items-center text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">IADL (Lawton)</span>
+          <span className={`text-2xl font-black ${평가.IADL_총점 <= 3 ? 'text-red-600 dark:text-red-400' : 평가.IADL_총점 <= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+            {평가.IADL_총점}
+          </span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">/8</span>
+          <span className={`mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${평가.IADL_총점 <= 3 ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400' : 평가.IADL_총점 <= 5 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'}`}>
+            {평가.IADL_총점 <= 3 ? '고도 의존' : 평가.IADL_총점 <= 5 ? '중등도 의존' : '경도 의존'}
+          </span>
+        </div>
+        {/* MoCA */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col items-center text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">MoCA 인지</span>
+          <span className={`text-2xl font-black ${moca_info.color}`}>{평가.MoCA_총점}</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">/30</span>
+          <span className={`mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${평가.인지장애_의심 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'}`}>
+            {평가.인지장애_의심 ? '⚠ 인지장애 의심' : '정상'}
+          </span>
+        </div>
+        {/* 낙상 */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex flex-col items-center text-center">
+          <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1">낙상위험 (Morse)</span>
+          <span className={`text-2xl font-black ${평가.낙상위험_등급 === '높음' ? 'text-red-600 dark:text-red-400' : 평가.낙상위험_등급 === '중간' ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+            {평가.낙상위험_점수}
+          </span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">점</span>
+          <span className={`mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${get_등급_badge(평가.낙상위험_등급)}`}>
+            {평가.낙상위험_등급} 위험
+          </span>
+        </div>
+      </div>
+
+      {/* ADL 세부 항목 바차트 */}
+      <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Activity className="w-4 h-4 text-[#0071e3] dark:text-blue-400" />
+          <span className="text-xs font-bold text-slate-900 dark:text-white">ADL 세부 항목 (Barthel Index)</span>
+          <span className={`ml-auto text-xs font-bold ${adl_info.color}`}>{평가.ADL_총점}점</span>
+        </div>
+        <div className="space-y-1.5">
+          {adl_항목들.map(({ key, label, max }) => {
+            const val = 평가.ADL[key] as number;
+            const pct = Math.round((val / max) * 100);
+            return (
+              <div key={key} className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 w-16 shrink-0">{label}</span>
+                <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${
+                      pct >= 80 ? 'bg-emerald-500' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400'
+                    }`}
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 w-10 text-right shrink-0">
+                  {val}/{max}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MoCA 세부 + 부가 지표 2열 */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* MoCA 세부 */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Brain className="w-4 h-4 text-[#af52de] dark:text-purple-400" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">MoCA 인지기능 세부</span>
+            <span className={`ml-auto text-xs font-bold ${moca_info.color}`}>{평가.MoCA_총점}/30</span>
+          </div>
+          <div className="space-y-1.5">
+            {moca_항목들.map(({ label, score, max }) => {
+              const pct = Math.round((score / max) * 100);
+              return (
+                <div key={label} className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 w-16 shrink-0">{label}</span>
+                  <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        pct >= 80 ? 'bg-purple-500' : pct >= 50 ? 'bg-amber-400' : 'bg-red-400'
+                      }`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 w-10 text-right shrink-0">
+                    {score}/{max}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 부가 지표 */}
+        <div className="bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle className="w-4 h-4 text-amber-500" />
+            <span className="text-xs font-bold text-slate-900 dark:text-white">위험 지표 요약</span>
+          </div>
+
+          {/* 욕창 */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400">욕창위험 (Braden)</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{평가.욕창위험_점수}점</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${get_등급_badge(평가.욕창위험_등급)}`}>
+                {평가.욕창위험_등급}
+              </span>
+            </div>
+          </div>
+
+          {/* 통증 NRS */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400">통증 (NRS)</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{평가.통증_NRS}/10</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${평가.통증_NRS >= 7 ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400' : 평가.통증_NRS >= 4 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'}`}>
+                {평가.통증_NRS >= 7 ? '중증' : 평가.통증_NRS >= 4 ? '중등도' : '경도'}
+              </span>
+            </div>
+          </div>
+
+          {/* 영양 MNA */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400">영양 (MNA-SF)</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{평가.영양위험_MNA}/14</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${평가.영양상태 === '영양불량' ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400' : 평가.영양상태 === '위험' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'}`}>
+                {평가.영양상태}
+              </span>
+            </div>
+          </div>
+
+          {/* 우울 GDS */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400">우울 (GDS-SF)</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{평가.우울_GDS}/15</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${평가.우울_의심 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'}`}>
+                {평가.우울_의심 ? '⚠ 우울 의심' : '정상'}
+              </span>
+            </div>
+          </div>
+
+          {/* 낙상 이력 */}
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-slate-600 dark:text-slate-400">6개월 내 낙상 이력</span>
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${평가.낙상이력_6개월 ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'}`}>
+              {평가.낙상이력_6개월 ? '있음' : '없음'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 종합소견 */}
+      <div className="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-2xl">
+        <p className="text-[11px] font-semibold text-blue-800 dark:text-blue-300 mb-1 flex items-center gap-1">
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          종합소견 및 퇴원 후 권고사항
+        </p>
+        <p className="text-xs text-blue-900 dark:text-blue-200 leading-relaxed">{평가.종합소견}</p>
+      </div>
+    </div>
+  );
+};
+
+// ─────────────────────────────────────────
+// 메인 컴포넌트
+// ─────────────────────────────────────────
+
 export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
   const [selected_patient, set_selected_patient] = useState<퇴원환자_정보>(SAMPLE_PATIENTS[0]);
   const [resources, set_resources] = useState<돌봄_자원_추천항목[]>(INITIAL_RECOMMENDED_RESOURCES);
   const [is_matching, set_is_matching] = useState(false);
   const [referral_notice, set_referral_notice] = useState<string | null>(null);
+
+  // 심층 평가 자동 로딩 관련 상태
+  const [is_assessment_open, set_is_assessment_open] = useState(false);
+  const [is_assessment_loading, set_is_assessment_loading] = useState(false);
+  const [loaded_assessment, set_loaded_assessment] = useState<심층평가_항목 | null>(
+    SAMPLE_PATIENTS[0].심층평가 ?? null
+  );
+
+  const assessment_ref = useRef<HTMLDivElement>(null);
+
+  // ── 환자 변경 시 심층 평가 자동 로딩 ──
+  useEffect(() => {
+    if (!selected_patient.심층평가) {
+      set_loaded_assessment(null);
+      return;
+    }
+    // 로딩 애니메이션 → 데이터 로드
+    set_is_assessment_loading(true);
+    set_loaded_assessment(null);
+    const timer = setTimeout(() => {
+      set_loaded_assessment(selected_patient.심층평가 ?? null);
+      set_is_assessment_loading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [selected_patient]);
+
+  // ── 평가 섹션 열릴 때 스크롤 ──
+  useEffect(() => {
+    if (is_assessment_open && assessment_ref.current) {
+      setTimeout(() => {
+        assessment_ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 100);
+    }
+  }, [is_assessment_open]);
 
   // AI 매칭 재실행
   const handle_run_ai_match = () => {
@@ -103,10 +518,21 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
     }, 600);
   };
 
+  // 환자 변경
+  const handle_patient_change = (번호: string) => {
+    const p = SAMPLE_PATIENTS.find((item) => item.환자번호 === 번호);
+    if (p) {
+      set_selected_patient(p);
+      handle_run_ai_match();
+    }
+  };
+
   // 원클릭 일괄 연계의뢰서 전송 안내
   const handle_send_all_referrals = () => {
     set_referral_notice('퇴원환자 연계의뢰서 전자 전송 기능은 보건복지부 차세대 사회보장정보시스템(행복e음) 및 지자체 돌봄망 정식 연동 후 제공될 예정입니다.');
   };
+
+  const has_assessment = !!selected_patient.심층평가;
 
   return (
     <div className="bg-white dark:bg-[#15161b] p-6 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs space-y-6">
@@ -131,18 +557,12 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
           </div>
         </div>
 
-        {/* 환자 선택 셀렉터 (가상 환자) */}
+        {/* 환자 선택 셀렉터 */}
         <div className="flex items-center space-x-2">
           <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">대상 환자:</span>
           <select
             value={selected_patient.환자번호}
-            onChange={(e) => {
-              const p = SAMPLE_PATIENTS.find((item) => item.환자번호 === e.target.value);
-              if (p) {
-                set_selected_patient(p);
-                handle_run_ai_match();
-              }
-            }}
+            onChange={(e) => handle_patient_change(e.target.value)}
             className="text-xs font-semibold bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full px-3 py-1.5 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30"
           >
             {SAMPLE_PATIENTS.map((p) => (
@@ -154,7 +574,7 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
         </div>
       </div>
 
-      {/* 환자 프로필 요약 카드 (다크모드 완벽 지원) */}
+      {/* 환자 프로필 요약 카드 */}
       <div className="bg-slate-50 dark:bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <span className="text-[11px] text-slate-500 dark:text-slate-400 block font-medium">환자 인적사항</span>
@@ -202,7 +622,78 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
         </div>
       </div>
 
-      {/* 예시 데이터 안내 (실제 기관·환자 현황 아님) */}
+      {/* ── 심층 평가표 자동 로딩 섹션 ── */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+        {/* 헤더 토글 버튼 */}
+        <button
+          type="button"
+          onClick={() => set_is_assessment_open((v) => !v)}
+          className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+            is_assessment_open
+              ? 'bg-indigo-50 dark:bg-indigo-950/30 border-b border-indigo-200 dark:border-indigo-800/50'
+              : 'bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-900'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <ClipboardList className={`w-4 h-4 ${is_assessment_open ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'}`} />
+            <span className={`text-xs font-bold ${is_assessment_open ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}`}>
+              심층 평가표 자동 로딩
+            </span>
+            {/* 로딩 뱃지 / 완료 뱃지 */}
+            {is_assessment_loading ? (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-400 text-[10px] font-bold animate-pulse">
+                <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                로딩 중…
+              </span>
+            ) : has_assessment && loaded_assessment ? (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 text-[10px] font-bold">
+                <CheckCircle2 className="w-2.5 h-2.5" />
+                평가 완료 — {loaded_assessment.평가일}
+              </span>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-[10px] font-medium">
+                ADL · IADL · MoCA · 낙상 · 욕창 · 영양 · 우울
+              </span>
+            )}
+          </div>
+          {is_assessment_open ? (
+            <ChevronUp className="w-4 h-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          )}
+        </button>
+
+        {/* 펼쳐지는 평가 내용 */}
+        {is_assessment_open && (
+          <div ref={assessment_ref} className="p-4 sm:p-5 bg-white dark:bg-[#15161b]">
+            {is_assessment_loading ? (
+              // 스켈레톤 로더
+              <div className="space-y-3 animate-pulse">
+                <div className="grid grid-cols-4 gap-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+                  ))}
+                </div>
+                <div className="h-32 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+                  <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+                </div>
+                <div className="h-16 bg-blue-50 dark:bg-blue-950/30 rounded-2xl" />
+              </div>
+            ) : loaded_assessment ? (
+              <심층평가_섹션 평가={loaded_assessment} 로딩중={is_assessment_loading} />
+            ) : (
+              <div className="py-8 text-center text-slate-400 dark:text-slate-600 text-sm">
+                <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                이 환자의 심층 평가 데이터가 아직 등록되지 않았습니다.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 예시 데이터 안내 */}
       <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-[11px] text-amber-800 dark:text-amber-300">
         <strong>예시 화면:</strong> 가상 환자와 예시 돌봄자원 목록입니다. 환자별 AI 매칭과 기관 전자연계는 아직 구현되지 않았으며, 추천 목록과 적합도는 고정된 예시값입니다.
       </div>
@@ -216,7 +707,6 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
             </span>
             <span className="text-[10px] text-slate-500 dark:text-slate-400">고정 예시 목록 (실제 매칭 아님)</span>
           </div>
-
           <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
             전자연계망 연동 준비 중
           </span>
@@ -233,7 +723,6 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
               }`}
             >
               <div className="space-y-2">
-                {/* 상단 뱃지 & 적합도 */}
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0071e3]/10 dark:bg-blue-500/20 text-[#0071e3] dark:text-blue-400">
                     {res.분류}
@@ -258,13 +747,11 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
                 </p>
               </div>
 
-              {/* 하단 연계 상태 */}
               <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
                   <Phone className="w-3 h-3" />
                   <span>{res.담당자연락처}</span>
                 </span>
-
                 <span
                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                     res.연계상태 === '접수완료'
@@ -280,7 +767,7 @@ export const 퇴원환자_돌봄자원_AI매칭: React.FC = () => {
         </div>
       </div>
 
-      {/* 하단 액션 바: 연계의뢰서 전송 (준비 중 안내) */}
+      {/* 하단 액션 바 */}
       <div className="space-y-3">
         <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">

@@ -16,6 +16,7 @@ import {
   퇴원환자_정보, 돌봄_자원_추천항목,
   심층평가_항목, ADL_세부항목, IADL_세부항목,
 } from '@/lib/필수의료_타입';
+import { downloadHwpxDirect, ReportItem } from '@/lib/hwpx_생성기';
 
 // ═══════════════════════════════════════════════════
 // 샘플 데이터
@@ -453,12 +454,101 @@ const Step의뢰서: React.FC<{
   const [생성됨, set생성됨] = useState(false);
   const [생성중, set생성중] = useState(false);
   const [전송알림, set전송알림] = useState(false);
+  const [hwp저장중, set_hwp저장중] = useState(false);
   const 오늘 = new Date().toISOString().slice(0, 10);
   const 연계자원 = resources.filter(r => r.연계상태 !== '미의뢰');
 
   const handle생성 = () => {
     set생성중(true);
     setTimeout(() => { set생성됨(true); set생성중(false); }, 900);
+  };
+
+  const handle_hwp저장 = async () => {
+    set_hwp저장중(true);
+    try {
+      const 문서번호 = `REF-${환자.환자번호}-${오늘.replace(/-/g, '')}`;
+      const items: ReportItem[] = [
+        { type: 'heading1', text: '퇴원환자 지역사회 연계 의뢰서' },
+        { type: 'paragraph', text: `문서번호: ${문서번호}  |  작성일: ${오늘}` },
+        { type: 'paragraph', text: '보건복지부 공공병원 퇴원환자 지역사회 연계사업 표준서식' },
+        { type: 'spacer' },
+
+        { type: 'heading2', text: '1. 환자 기본 정보' },
+        {
+          type: 'table',
+          table: {
+            headers: ['항목', '내용', '항목', '내용'],
+            rows: [
+              ['성명', 환자.이름, '생년/성별', `${환자.연령}세 / ${환자.성별}`],
+              ['가구 형태', 환자.가구특성, '거동 상태', 환자.거동상태],
+              ['주거지', 환자.거주지, '퇴원 예정일', 환자.퇴원예정일],
+              ['주요 진단', 환자.진단명, '질병코드', 환자.질병코드],
+            ],
+            colWidths: [7000, 14000, 7000, 14000],
+          },
+        },
+        { type: 'spacer' },
+
+        { type: 'heading2', text: '2. 심층평가 결과 요약' },
+        {
+          type: 'table',
+          table: {
+            headers: ['평가 도구', '점수', '판정', '평가 도구', '점수', '판정'],
+            rows: [
+              ['ADL (Barthel)', `${평가.ADL_총점}점`, 평가.ADL_총점 < 60 ? '고도 의존' : '중등도 의존',
+               'IADL (Lawton)', `${평가.IADL_총점}/8점`, 평가.IADL_총점 <= 3 ? '고도 의존' : '중등도 의존'],
+              ['MoCA 인지기능', `${평가.MoCA_총점}/30점`, 평가.인지장애_의심 ? '인지장애 의심' : '정상범위',
+               '낙상위험 (Morse)', `${평가.낙상위험_점수}점`, `${평가.낙상위험_등급} 위험`],
+              ['욕창위험 (Braden)', `${평가.욕창위험_점수}점`, `${평가.욕창위험_등급} 위험`,
+               '통증 (NRS)', `${평가.통증_NRS}/10`, 평가.통증_NRS >= 7 ? '중증' : '중등도'],
+              ['영양 (MNA-SF)', `${평가.영양위험_MNA}/14점`, 평가.영양상태,
+               '우울 (GDS-SF)', `${평가.우울_GDS}/15점`, 평가.우울_의심 ? '우울 의심' : '정상'],
+            ],
+            colWidths: [7000, 5000, 6000, 7000, 5000, 6000],
+          },
+        },
+        { type: 'spacer' },
+        { type: 'box', title: '종합소견 및 퇴원 후 권고사항', text: 평가.종합소견 },
+        { type: 'spacer' },
+
+        { type: 'heading2', text: '3. 연계 기관 및 요청 서비스' },
+        {
+          type: 'table',
+          table: {
+            headers: ['순번', '서비스명', '연계 기관', '지원 내용', '의뢰 상태'],
+            rows: resources.map((r, i) => [
+              String(i + 1),
+              r.자원명,
+              r.기관명,
+              r.지원내용,
+              r.연계상태,
+            ]),
+            colWidths: [2000, 8000, 9000, 14000, 5000],
+          },
+        },
+        { type: 'spacer' },
+
+        { type: 'heading2', text: '4. 서명 및 확인' },
+        {
+          type: 'table',
+          table: {
+            headers: ['의뢰기관 (지방의료원)', '담당 코디네이터', '수신기관 확인'],
+            rows: [['', '', ''], ['(서명)', '(서명)', '(서명)']],
+            colWidths: [14000, 14000, 14000],
+          },
+        },
+        { type: 'spacer' },
+        { type: 'paragraph', text: `※ 본 의뢰서는 보건복지부 공공병원 퇴원환자 지역사회 연계사업 표준서식에 따라 자동 생성되었습니다. (${오늘})` },
+      ];
+
+      const 파일명 = `퇴원환자_연계의뢰서_${환자.이름}_${오늘}.hwpx`;
+      await downloadHwpxDirect('퇴원환자 지역사회 연계 의뢰서', items, 파일명);
+    } catch (e) {
+      console.error('HWP 저장 오류:', e);
+      alert('HWP 파일 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+    } finally {
+      set_hwp저장중(false);
+    }
   };
 
   return (
@@ -613,9 +703,14 @@ const Step의뢰서: React.FC<{
               <Printer className="w-3.5 h-3.5" />인쇄
             </button>
             <button
-              className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-700 transition active:scale-[0.99] cursor-pointer"
+              onClick={handle_hwp저장}
+              disabled={hwp저장중}
+              className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-teal-600 hover:bg-teal-700 disabled:opacity-60 text-white text-xs font-bold border border-teal-700 transition active:scale-[0.99] cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />PDF 저장
+              {hwp저장중
+                ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" />생성 중…</>
+                : <><Download className="w-3.5 h-3.5" />HWP 저장</>
+              }
             </button>
           </div>
 

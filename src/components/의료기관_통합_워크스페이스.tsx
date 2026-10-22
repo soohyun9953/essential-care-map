@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 // Essential Care Map - 의료기관 통합 워크스페이스
 // Section 14 (공공의료기관 Card & 검색), Section 15 (기관 상세 5대 탭), Section 16 (기관 담당자 Dashboard)
@@ -23,6 +23,7 @@ import {
   ChevronRight,
   TrendingUp,
   FileText,
+  Award,
 } from 'lucide-react';
 import {
   전체_공공의료기관_상세목록,
@@ -43,11 +44,13 @@ import CP_변이분석_및_ROI_대시보드 from './CP_변이분석_및_ROI_대�
 import { 퇴원환자_돌봄자원_AI매칭 } from './퇴원환자_돌봄자원_AI매칭';
 import { 지역거점_공공병원_공시검증_대시보드 } from './지역거점_공공병원_공시검증_대시보드';
 import { 기관프로파일_진단보고서_생성기 } from './기관프로파일_진단보고서_생성기';
+import { 지역거점_운영평가_통합_대시보드 } from './지역거점_운영평가_통합_대시보드';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { 의료기관_질의응답_모달 } from './의료기관_질의응답_모달';
 
 export type 의료기관_서브탭_타입 =
   | 'hospitals'
+  | 'operation_eval'
   | 'profile_report'
   | 'aa_disclosure'
   | 'datacenter'
@@ -116,7 +119,22 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
       {/* ============================================================== */}
       {/* 1. 상단 서브탭 네비게이션 */}
       {/* ============================================================== */}
-      <div className="bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-1.5 flex-wrap">
+      <div className="bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center gap-1.5 flex-wrap">        <button
+          onClick={() => handle_tab_change('operation_eval')}
+          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+            active_subtab === 'operation_eval'
+              ? 'bg-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+        >
+          <Award className="w-3.5 h-3.5 text-amber-400" />
+          <span>2025 지역거점 운영평가</span>
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold">
+            77.9점
+          </span>
+        </button>
+
+
         <button
           onClick={() => handle_tab_change('hospitals')}
           className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
@@ -179,18 +197,21 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           <span>지방의료원 경영위기 조기경보 (예시)</span>
         </button>
 
-        <button
-          onClick={() => handle_tab_change('cp_library')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-            active_subtab === 'cp_library'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>71개 표준진료지침(CP) 라이브러리</span>
-          <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
-        </button>
+        {/* ❌ IA v1.24.0 삭제 요청: CP 라이브러리 (MN-04-03) 숨김 처리 */}
+        {false && (
+          <button
+            onClick={() => handle_tab_change('cp_library')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              active_subtab === 'cp_library'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>71개 표준진료지침(CP) 라이브러리</span>
+            <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
+          </button>
+        )}
 
         <button
           onClick={() => handle_tab_change('policy_incentive')}
@@ -205,18 +226,21 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
         </button>
 
-        <button
-          onClick={() => handle_tab_change('cp_variance')}
-          className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-            active_subtab === 'cp_variance'
-              ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-        >
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span>CP 변이 분석 &amp; ROI</span>
-          <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
-        </button>
+        {/* ❌ IA v1.24.0 삭제 요청: CP 변이 분석 & ROI (MN-04-05) 숨김 처리 */}
+        {false && (
+          <button
+            onClick={() => handle_tab_change('cp_variance')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+              active_subtab === 'cp_variance'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>CP 변이 분석 &amp; ROI</span>
+            <ISP_과제_뱃지 taskId="3.3" customLabel="과제 3.3 CP 전주기 시스템" />
+          </button>
+        )}
 
         <button
           onClick={() => handle_tab_change('discharge_care')}

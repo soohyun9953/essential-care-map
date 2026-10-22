@@ -24,6 +24,7 @@ import {
   FileText,
   HelpCircle,
   Check,
+  Building2,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
@@ -396,182 +397,87 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
             </div>
           </div>
 
-          {/* 2. 중앙: 5대 핵심 워크스페이스 네비게이션 */}
-          <nav className="order-last min-[1800px]:order-none w-full min-[1800px]:w-auto flex flex-wrap min-[1800px]:flex-nowrap justify-center items-center gap-0.5 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+          {/* 2. 중앙: 신규 IA v1.24.0 기준 통합 워크스페이스 네비게이션 */}
+          <nav className="order-last min-[1800px]:order-none w-full min-[1800px]:w-auto flex flex-wrap min-[1800px]:flex-nowrap justify-center items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
+            {/* [내부용] 전국 214개 공공병원 통합 관제 & 알리미 공시 */}
             <button
+              type="button"
+              onClick={() => handle_workspace_change('medical_institution')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+                current_active === 'medical_institution'
+                  ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
+              }`}
+              title="[내부용] 전국 214개 공공병원 통합 관제 및 알리미 경영공시 검증"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>병원 통합관제</span>
+              <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                내부용
+              </span>
+            </button>
+
+            {/* [외부용: 지역진단] GIS 헬스맵 & 취약지 진단 */}
+            <button
+              type="button"
               onClick={() => handle_workspace_change('regional_diagnosis')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
                 current_active === 'regional_diagnosis'
                   ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
+              }`}
+              title="[외부용 > 지역진단] 전국 250개 시군구 GIS 헬스맵 및 환자 유출입(OD) 분석"
             >
+              <Compass className="w-3.5 h-3.5" />
               <span>지역진단</span>
-              {active_user_role === 'nmc' && (
-                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
-              )}
             </button>
 
+            {/* [외부용: 계획수립] AI 정책기획, 2030 수요추계, 사업계획서 & 시행계획 AI 평가 */}
             <button
+              type="button"
               onClick={() => handle_workspace_change('policy_planning')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
-                current_active === 'policy_planning' && !is_plan_evaluation_active
+                current_active === 'policy_planning'
                   ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
+              }`}
+              title="[외부용 > 계획수립] 2030 수요추계, AI 정책대안, 사업계획서 자동생성 & 시행계획 100점 AI 평가"
             >
-              <span>정책기획</span>
-              {active_user_role === 'nmc' && (
-                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
-              )}
+              <FileText className="w-3.5 h-3.5" />
+              <span>계획수립</span>
             </button>
 
-            {/* ⭐ 신규 핵심 메뉴: 시행계획 AI 평가 (100점 평가표 & 6단계 AI 심사) */}
+            {/* [외부용: 경영개선] 우리 공공병원 대시보드, 2025 운영평가, 5종 진단보고서, 경영위기 조기경보 */}
             <button
               type="button"
-              onClick={() => {
-                if (on_open_plan_evaluation) {
-                  on_open_plan_evaluation();
-                } else {
-                  handle_workspace_change('policy_planning');
-                }
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                current_active === 'policy_planning' && is_plan_evaluation_active
-                  ? 'bg-indigo-600 text-white shadow-sm ring-2 ring-indigo-500/30'
-                  : 'bg-indigo-50/90 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/70 dark:border-indigo-800/60'
-              }`}
-              title="공공보건의료 시행계획 및 추진실적 100점 평가표 산출 & 6단계 AI 심사"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-              <span>시행계획 AI 평가</span>
-            </button>
-
-            {/* 의료기관: 공공데이터 API 키 등록 여부를 호버 툴팁으로 안내 */}
-            <div
-              className="relative"
-              ref={medical_ref}
-              onMouseEnter={() => set_is_hovering_medical(true)}
-              onMouseLeave={() => set_is_hovering_medical(false)}
-            >
-              <button
-                type="button"
-                onClick={() => handle_workspace_change('medical_institution')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1 cursor-pointer ${
-                  current_active === 'medical_institution'
-                    ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-                } ${active_user_role === 'hospital' ? 'ring-1 ring-blue-400/40 bg-blue-50/40 dark:bg-blue-950/30' : ''}`}
-              >
-                <span>의료기관</span>
-                {active_user_role === 'hospital' && (
-                  <span className="text-[9px] font-black px-1 py-0.2 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">병원</span>
-                )}
-              </button>
-
-              {/* API 키 등록됨: 호버 시 키 사용 범위 안내 */}
-              {data_go_kr_key_registered && is_hovering_medical && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-3 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-emerald-200 dark:border-emerald-800/60 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-none">
-                  <div className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold text-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>공공데이터 API 키 등록됨</span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                    기관 데이터센터에서 공공데이터포털 응급실 API 연결을 확인할 수 있습니다. 의료기관 화면의 수치는 내장 기준 데이터입니다.
-                  </p>
-                </div>
-              )}
-
-              {/* API 키 미등록: 호버 시 안내 팝오버 */}
-              {!data_go_kr_key_registered && is_hovering_medical && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 p-3.5 bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 z-50 text-left animate-in fade-in zoom-in-95 pointer-events-auto">
-                  <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs mb-1">
-                    <AlertCircle className="w-4 h-4 shrink-0" />
-                    <span>공공데이터 API 키 미등록</span>
-                  </div>
-                  <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed mb-3">
-                    의료기관 화면의 수치는 내장 기준 데이터입니다. 공공데이터포털(data.go.kr) 인증키를 등록하면 기관 데이터센터에서 응급실 API 연결을 확인할 수 있습니다.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      set_is_hovering_medical(false);
-                      on_open_data_go_kr_modal();
-                    }}
-                    className="w-full py-2 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
-                  >
-                    <Key className="w-3.5 h-3.5" />
-                    <span>공공데이터포털 API 키 등록하기 ➔</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* ⭐ 신규 핵심 메뉴: AI 병원진단·개선 */}
-            <button
               onClick={() => handle_workspace_change('hospital_ai_diagnosis')}
               className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                current_active === 'hospital_ai_diagnosis' && !is_profile_report_active
+                current_active === 'hospital_ai_diagnosis'
                   ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
                   : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
-              } ${active_user_role === 'hospital' ? 'ring-2 ring-blue-500/40' : ''}`}
-              title="공공병원 AI 종합진단, 원인분석, 유사병원 Benchmarking, 미래예측, 시뮬레이션 및 세부 실행계획"
+              }`}
+              title="[외부용 > 경영개선] 우리 공공병원 현황 대시보드, 2025 거점병원 운영평가(77.9점), 5종 진단보고서, 경영위기 조기경보"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>AI 병원진단·개선</span>
-              {active_user_role === 'hospital' && (
-                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-400 text-slate-950">추천</span>
-              )}
+              <span>경영개선</span>
+              <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-400 text-slate-950">
+                AI 진단
+              </span>
             </button>
 
-            {/* ⭐ 신규 핵심 메뉴: 의료기관 프로파일 5종 진단보고서 작성 */}
+            {/* [대국민] 국민안심 안심의료 서비스 */}
             <button
               type="button"
-              onClick={() => {
-                if (on_open_profile_report) {
-                  on_open_profile_report();
-                } else {
-                  handle_workspace_change('hospital_ai_diagnosis');
-                }
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                is_profile_report_active
-                  ? 'bg-blue-700 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-amber-50/90 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-800/60'
-              }`}
-              title="국립중앙의료원 의료기관 프로파일 5종 진단보고서(①지역의료자원·②진료기능·③진료실적·④기관비교·⑤지역비교) 자동 작성"
-            >
-              <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-              <span>진단보고서 작성</span>
-            </button>
-
-            <button
-              onClick={() => handle_workspace_change('ai_analysis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                current_active === 'ai_analysis'
-                  ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              } ${active_user_role === 'nmc' ? 'ring-1 ring-indigo-400/40 bg-indigo-50/40 dark:bg-indigo-950/30' : ''}`}
-            >
-              <span>AI 분석</span>
-              {active_user_role === 'nmc' && (
-                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">NMC</span>
-              )}
-            </button>
-
-            <button
               onClick={() => handle_workspace_change('national_safety')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                 current_active === 'national_safety'
-                  ? 'bg-white dark:bg-[#1a1d24] text-rose-700 dark:text-rose-400 shadow-sm border border-rose-100 dark:border-rose-900/50'
+                  ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              } ${active_user_role === 'citizen' ? 'ring-2 ring-rose-500/50 bg-rose-50/70 dark:bg-rose-950/40 font-black text-rose-700 dark:text-rose-300' : ''}`}
+              }`}
+              title="[대국민] 시민 맞춤 포털, 내 주변 필수의료 찾기, E-Gen 실시간 응급실·중환자실 관제"
             >
-              <span>국민안심</span>
-              {active_user_role === 'citizen' && (
-                <span className="text-[9px] font-black px-1 py-0.2 rounded bg-rose-500 text-white">국민추천</span>
-              )}
+              <Activity className="w-3.5 h-3.5 text-rose-500" />
+              <span>대국민 안심</span>
             </button>
           </nav>
 

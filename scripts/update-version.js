@@ -1,8 +1,8 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.29.21';
+const SEMVER = '1.30.0';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '공공보건의료 시행계획 추진실적 평가 결과보고서 PDF 인쇄를 한컴 한글(hwp 저장) 파일 다운로드로 변경 (${fullLabel})',
+    '공공보건의료 AI 빅데이터 통합 플랫폼(헬스맵2) 신규 메뉴구조도(IA v1.24.0) 4대 대분류 개편 및 상단 헤더·좌측 사이드바 재구성 (${fullLabel})',
 };
 `;
 

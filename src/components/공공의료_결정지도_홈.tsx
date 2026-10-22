@@ -20,6 +20,7 @@ import {
   Users,
   Building2,
   CheckCircle2,
+  Award,
 } from 'lucide-react';
 import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
@@ -230,6 +231,44 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           </div>
         </div>
       </div>
+
+      {/* ================================================================== */}
+      {/* 🏆 신규 반영: 2025년 지역거점 공공병원 운영평가 결과보고서 배너      */}
+      {/* ================================================================== */}
+      <div
+        onClick={() => on_navigate_workspace('medical_institution', 'operation_eval')}
+        className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all cursor-pointer border border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+      >
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-400 text-slate-950 flex items-center gap-1 shadow-xs">
+              <Award className="w-3.5 h-3.5" /> 2025.12.31 공식 결과보고서 탑재
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/30 text-blue-200 border border-blue-400/30">
+              지방의료원법 제21조 근거
+            </span>
+            <span className="text-xs text-blue-300">국립중앙의료원 평가주관</span>
+          </div>
+          <h3 className="text-lg sm:text-xl font-black tracking-tight text-white group-hover:text-amber-300 transition-colors flex items-center gap-2">
+            <span>2025년 전국 41개 지역거점 공공병원 운영평가 종합결과 &amp; 자가진단</span>
+            <ArrowRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
+          </h3>
+          <p className="text-xs text-blue-200 leading-relaxed max-w-2xl">
+            전국 종합평균 77.9점(+4.3점) · A등급 15개소(김천·서귀포·이천 등) · 4대 영역 101개 지표 B-set 점수종합 체계 및 병원별 맞춤형 A등급 개선 처방전을 확인하세요.
+          </p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
+          <div className="bg-white/10 backdrop-blur-xs rounded-2xl px-4 py-2.5 text-center border border-white/10">
+            <div className="text-[10px] text-blue-200 font-bold">2025 종합평균</div>
+            <div className="text-xl font-black text-amber-300">77.9점</div>
+          </div>
+          <div className="bg-white/10 backdrop-blur-xs rounded-2xl px-4 py-2.5 text-center border border-white/10">
+            <div className="text-[10px] text-blue-200 font-bold">A등급 기관</div>
+            <div className="text-xl font-black text-emerald-300">15개소</div>
+          </div>
+        </div>
+      </div>
+
 
       {/* ================================================================== */}
       {/* 🌟 3대 사용자 역할별 맞춤 화면 바로가기 (국민 / 의료기관 / NMC)     */}

@@ -102,6 +102,15 @@ export const IspProvider: React.FC<{
     setSelectedTaskId(null);
   };
 
+  React.useEffect(() => {
+    const handleOpenDrawerEvent = (e: any) => {
+      const taskId = e?.detail?.taskId || '3.8';
+      setSelectedTaskId(taskId);
+    };
+    window.addEventListener('open-isp-drawer', handleOpenDrawerEvent);
+    return () => window.removeEventListener('open-isp-drawer', handleOpenDrawerEvent);
+  }, []);
+
   const currentPersonaInfo =
     PERSONA_LIST.find((p) => p.id === persona) || PERSONA_LIST[0];
 

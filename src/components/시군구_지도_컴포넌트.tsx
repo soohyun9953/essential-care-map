@@ -292,9 +292,8 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
         >
           {/* Esri World Light Gray Base 무료 타일 (API 키 불필요, 데이터 시각화에 최적화) */}
           <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}{r}.png"
-          subdomains="abcd"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
         />
 

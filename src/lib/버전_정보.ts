@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-22',
-  time: '22:45',
-  deployedAt: '2026.10.22 22:45',
-  semver: '1.30.1',
-  fullLabel: '2026.10.22 22:45 · v1.30.1',
-  packageVersion: '20261022-2245',
-  updatedAt: '2026-10-22 22:45',
+  time: '22:51',
+  deployedAt: '2026.10.22 22:51',
+  semver: '1.30.2',
+  fullLabel: '2026.10.22 22:51 · v1.30.2',
+  packageVersion: '20261022-2251',
+  updatedAt: '2026-10-22 22:51',
   changelog:
-    '지도 타일 레이어 개선: 결손 타일("Map data not yet available")이 발생하던 Esri 베이스맵을 한국 전역 고화질 줌(0~19)을 완벽 지원하는 CartoDB Positron 타일로 전면 교체하여 지도 정상 표출 (2026.10.22 22:45)',
+    '지도 시각화 완전 복구: 회색/백지 현상을 해결하기 위해 도로망·지명·건물이 또렷한 OpenStreetMap 표준 풀컬러 타일로 전면 교체 (2026.10.22 22:51)',
 };

@@ -106,8 +106,10 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
         <MapResizeHandler />
         {/* Esri World Light Gray Base 무료 타일 */}
         <TileLayer
-          attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}{r}.png"
+          subdomains="abcd"
+          maxZoom={19}
         />
 
         {active_hospital && (

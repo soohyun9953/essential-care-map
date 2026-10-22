@@ -16,39 +16,20 @@ import {
   GitCompare,
   TrendingUp,
   AlertTriangle,
-  Database,
-  Baby,
-  Pill,
   MapPin,
   Compass,
   Award,
-  Upload,
-  Download,
-  Key,
   Share2,
   Sliders,
   Cpu,
-  Lock,
-  MessageSquare,
-  Clock,
-  Layers,
 } from 'lucide-react';
 import { 워크스페이스_타입 } from './글로벌_공공_헤더';
 import { 사용자_역할_타입 } from '@/lib/사용자_역할_타입';
 
-export type 사이드바_액션_타입 =
-  | 'excel'
-  | 'upload'
-  | 'grounding'
-  | 'key'
-  | 'isp'
-  | 'auth';
-
-export type 사이드바_대분류_키 = 'internal' | 'external' | 'citizen' | 'admin';
+export type 사이드바_대분류_키 = 'internal' | 'external' | 'citizen';
 
 export interface 대상자별_메뉴_항목 {
   id: string;
-  menuCode?: string; // 예: MN-01-01
   category?: string; // 중분류 (예: 전반, 통합공시, 지역진단, 계획수립, 경영개선, 연계망)
   label: string;
   icon: React.ReactNode;
@@ -57,7 +38,6 @@ export interface 대상자별_메뉴_항목 {
   workspace: 워크스페이스_타입;
   subtab?: string;
   desc?: string;
-  actionType?: 사이드바_액션_타입;
 }
 
 export interface 대상자_그룹 {
@@ -79,7 +59,7 @@ export interface 대상자_그룹 {
 }
 
 // ============================================================================
-// 신규 IA v1.24.0 기준 4대 영역 메뉴 구조 데이터 (삭제 대상 4종 숨김 처리 완료)
+// 사용자 요청 반영 메뉴 구조 (내부용 / 외부용 / 대국민 3대 분류, 관리기능 제거, 메뉴번호 제거, 대국민 1개 통합)
 // ============================================================================
 export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
   // 1. 내부용 (전반 / 통합공시)
@@ -101,7 +81,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     menus: [
       {
         id: 'mn_04_01',
-        menuCode: 'MN-04-01',
         category: '전반',
         label: '전국 214개 공공병원 통합 관제',
         icon: <Building2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
@@ -113,7 +92,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_04_02',
-        menuCode: 'MN-04-02',
         category: '전반',
         label: '의료기관 AI 자연어 질의응답',
         icon: <Sparkles className="w-4 h-4 text-amber-500" />,
@@ -125,7 +103,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_04_08',
-        menuCode: 'MN-04-08',
         category: '통합공시',
         label: '공공의료 알리미 경영공시 검증',
         icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
@@ -158,7 +135,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       // 2-1. [지역진단]
       {
         id: 'mn_01_01',
-        menuCode: 'MN-01-01',
         category: '지역진단',
         label: '전국 필수의료 취약지 지도',
         icon: <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
@@ -169,7 +145,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_01_02',
-        menuCode: 'MN-01-02',
         category: '지역진단',
         label: '지역별 취약지 등급 필터 & 검색',
         icon: <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
@@ -178,7 +153,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_01_03',
-        menuCode: 'MN-01-03',
         category: '지역진단',
         label: '취약지 종합 지표 매트릭스',
         icon: <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
@@ -187,7 +161,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_01_04',
-        menuCode: 'MN-01-04',
         category: '지역진단',
         label: '환자 의료이용 유출입(OD) 분석',
         icon: <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
@@ -200,7 +173,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       // 2-2. [계획수립]
       {
         id: 'mn_02_02',
-        menuCode: 'MN-02-02',
         category: '계획수립',
         label: '2030 미래 의료수요 AI 추계',
         icon: <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
@@ -212,7 +184,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_02_03',
-        menuCode: 'MN-02-03',
         category: '계획수립',
         label: '인프라 확충 효과 시뮬레이터',
         icon: <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
@@ -222,7 +193,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_01_05',
-        menuCode: 'MN-01-05',
         category: '계획수립',
         label: '지자체 1:1 비교 갭(Gap) 분석',
         icon: <GitCompare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
@@ -232,7 +202,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_03_01',
-        menuCode: 'MN-03-01',
         category: '계획수립',
         label: '근거 기반 AI 정책대안 패키지',
         icon: <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
@@ -244,7 +213,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_03_02',
-        menuCode: 'MN-03-02',
         category: '계획수립',
         label: '시행계획 사업계획서 자동생성기',
         icon: <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
@@ -255,9 +223,8 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         desc: '정부 공식 서식(사업개요, 성과지표, 소요예산) 12대 항목 자동 생성',
       },
       {
-        // ⭐ 사용자 요구사항 1: 시행계획 AI 평가를 사업계획서 생성 하위 탭으로 귀속
+        // ⭐ 시행계획 AI 평가: 사업계획서 생성 하위 탭 귀속
         id: 'mn_03_02_eval',
-        menuCode: 'MN-03-02(평가)',
         category: '계획수립',
         label: '↳ 시행계획·추진실적 AI 평가',
         icon: <ShieldCheck className="w-4 h-4 text-amber-500" />,
@@ -269,7 +236,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_02_04',
-        menuCode: 'MN-02-04',
         category: '계획수립',
         label: 'AI 처리 8단계 파이프라인 관제',
         icon: <Cpu className="w-4 h-4 text-indigo-500" />,
@@ -280,7 +246,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       // 2-3. [경영개선]
       {
         id: 'mn_06_01',
-        menuCode: 'MN-06-01',
         category: '경영개선',
         label: '우리 의료기관 현황 대시보드',
         icon: <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
@@ -291,9 +256,8 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         desc: '소속 공공병원의 병상가동률, 의사인력, 외래·입원환자 요약 모니터링',
       },
       {
-        // ⭐ 사용자 요구사항 2: 2025 지역거점 공공병원 운영평가를 기관 맞춤 대시보드 서브탭으로 유지
+        // ⭐ 2025 지역거점 공공병원 운영평가: 기관 맞춤 대시보드 서브탭 유지
         id: 'mn_06_01_eval',
-        menuCode: 'MN-06-01(운영평가)',
         category: '경영개선',
         label: '↳ 2025 거점공공병원 운영평가',
         icon: <Award className="w-4 h-4 text-amber-500" />,
@@ -304,9 +268,8 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         desc: '4대 영역 11개 부문 평가결과 및 A등급 개선 시뮬레이터',
       },
       {
-        // ⭐ 사용자 요구사항 3: NMC 기관프로파일 5종 진단보고서 자동 생성기를 경영개선 하위 기능으로 유지
+        // ⭐ NMC 기관프로파일 5종 진단보고서 자동 생성기: 경영개선 하위 기능 유지
         id: 'mn_06_01_report',
-        menuCode: 'MN-06-01(보고서)',
         category: '경영개선',
         label: '↳ 기관프로파일 5종 진단보고서',
         icon: <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
@@ -318,7 +281,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_04_06',
-        menuCode: 'MN-04-06',
         category: '경영개선',
         label: '지방의료원 경영위기 조기경보',
         icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
@@ -330,7 +292,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_06_02',
-        menuCode: 'MN-06-02',
         category: '경영개선',
         label: 'AI 진료 병목진단 및 개선 제언',
         icon: <BarChart3 className="w-4 h-4 text-blue-500" />,
@@ -340,7 +301,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       },
       {
         id: 'mn_04_04',
-        menuCode: 'MN-04-04',
         category: '경영개선',
         label: '신포괄수가 정책가산 인센티브 계산기',
         icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
@@ -354,7 +314,6 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       // 2-4. [연계망]
       {
         id: 'mn_04_07',
-        menuCode: 'MN-04-07',
         category: '연계망',
         label: '퇴원환자 돌봄자원 AI 매칭',
         icon: <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
@@ -367,7 +326,7 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     ],
   },
 
-  // 3. 대국민 (시민포털 / 필수의료 찾기 / 실시간 응급실 관제)
+  // 3. 대국민 (요구사항 3번: 3가지 메뉴를 대표 메뉴 1개로 단일화)
   {
     role: 'citizen',
     title: '3. 대국민 (안심의료)',
@@ -385,128 +344,14 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     },
     menus: [
       {
-        id: 'mn_05_01',
-        menuCode: 'MN-05-01',
+        id: 'citizen_main_portal',
         category: '대국민',
-        label: '일반국민 공공병원 맞춤형 뷰',
+        label: '일반국민 공공병원 맞춤형 포털',
         icon: <HeartPulse className="w-4 h-4 text-rose-500" />,
-        badge: '시민포털',
+        badge: '안심포털',
         badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
         workspace: 'national_safety',
-        desc: '시민 눈높이 쉬운 설명, 인근 공공병원 진료과 및 편의시설 안내',
-      },
-      {
-        id: 'mn_05_02',
-        menuCode: 'MN-05-02',
-        category: '대국민',
-        label: '내 주변 필수의료 자원 원클릭 찾기',
-        icon: <Compass className="w-4 h-4 text-rose-500" />,
-        workspace: 'national_safety',
-        desc: '현재 위치 기반 야간·휴일 응급실, 달빛어린이병원, 안심분만센터 탐색',
-      },
-      {
-        id: 'mn_05_03',
-        menuCode: 'MN-05-03',
-        category: '대국민',
-        label: 'E-Gen 실시간 응급실·중환자실 관제',
-        icon: <Activity className="w-4 h-4 text-rose-500" />,
-        badge: '실시간 가용병상',
-        badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
-        workspace: 'national_safety',
-        desc: '중앙응급의료센터 연계 가용 성인/소아 중환자실, 장비 가동 현황 안내',
-      },
-    ],
-  },
-
-  // 4. 관리기능 (공통/관리자)
-  {
-    role: 'admin',
-    title: '4. 관리기능 (시스템·데이터)',
-    shortTitle: '관리기능',
-    icon: '⚙️',
-    desc: '3종 엑셀 추출, 원천 데이터 업로드, API 설정 및 보안 통제',
-    themeColor: {
-      bg: 'bg-slate-700 dark:bg-slate-600',
-      border: 'border-slate-300 dark:border-slate-700',
-      text: 'text-slate-700 dark:text-slate-300',
-      activeText: 'text-slate-900 dark:text-white font-black',
-      ring: 'ring-slate-400/30',
-      cardBg: 'from-slate-50/90 to-gray-50/50 dark:from-slate-900/60 dark:to-gray-950/20',
-      badgeBg: 'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-    },
-    menus: [
-      {
-        id: 'mn_02_01',
-        menuCode: 'MN-02-01',
-        category: '관리기능',
-        label: '듀얼 AI 추론 스튜디오 (Gemini × sLLM)',
-        icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
-        badge: '전문가 도구',
-        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'ai_analysis',
-        desc: 'Google Gemini 온라인 추론 및 온디바이스 경량 sLLM 듀얼 교차 검증',
-      },
-      {
-        id: 'mn_cm_01',
-        menuCode: 'MN-CM-01',
-        category: '관리기능',
-        label: '3종 크로스탭 다차원 엑셀 다운로드',
-        icon: <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-        workspace: 'regional_diagnosis',
-        actionType: 'excel',
-        desc: '지자체별, 공공병원별, 취약지표별 정형화된 공공기관 보고용 Excel 추출',
-      },
-      {
-        id: 'mn_cm_02',
-        menuCode: 'MN-CM-02',
-        category: '관리기능',
-        label: '공공데이터 업로더 및 전처리 검증',
-        icon: <Upload className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-        workspace: 'regional_diagnosis',
-        actionType: 'upload',
-        desc: '신규 지자체 통계, 병원 현황 파일 업로드 시 결측치/이상치 자동 검증',
-      },
-      {
-        id: 'mn_cm_03',
-        menuCode: 'MN-CM-03',
-        category: '관리기능',
-        label: '원문대조 출처 신뢰 팝업 뷰',
-        icon: <ShieldCheck className="w-4 h-4 text-teal-600 dark:text-teal-400" />,
-        workspace: 'regional_diagnosis',
-        actionType: 'grounding',
-        desc: '대시보드의 모든 통계 수치에 대한 복지부 고시·공시 문서 원문 및 산출 근거',
-      },
-      {
-        id: 'mn_cm_04',
-        menuCode: 'MN-CM-04',
-        category: '관리기능',
-        label: 'Google Gemini API 키 관리 설정',
-        icon: <Key className="w-4 h-4 text-amber-500" />,
-        workspace: 'regional_diagnosis',
-        actionType: 'key',
-        desc: '사용자 고유 Google Gemini API Key 입력 및 실시간 연결 유효성 테스트',
-      },
-      {
-        id: 'mn_cm_05',
-        menuCode: 'MN-CM-05',
-        category: '관리기능',
-        label: '공공보건의료 ISP 15대 전략과제',
-        icon: <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
-        badge: '15개 과제',
-        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-        workspace: 'regional_diagnosis',
-        actionType: 'isp',
-        desc: '보건의료 ISP 15개 세부과제 정의서 및 이행 로드맵 연계 현황',
-      },
-      {
-        id: 'mn_cm_06',
-        menuCode: 'MN-CM-06',
-        category: '관리기능',
-        label: '역할 기반 사용자 권한 및 로그인 관리',
-        icon: <Lock className="w-4 h-4 text-slate-600 dark:text-slate-400" />,
-        workspace: 'regional_diagnosis',
-        actionType: 'auth',
-        desc: '복지부 총괄, 지자체 공무원, 공공병원 관리자, 일반 시민의 역할별(RBAC) 제어',
+        desc: '내 주변 필수의료(응급실·분만·소아) 원클릭 찾기 & E-Gen 실시간 가용병상 관제',
       },
     ],
   },
@@ -526,13 +371,6 @@ interface 대상자별_좌측_사이드바_속성 {
     workspace: 워크스페이스_타입,
     subtab?: string
   ) => void;
-  // 관리기능 액션 모달 콜백들
-  on_open_key_modal?: () => void;
-  on_open_upload_modal?: () => void;
-  on_open_grounding_modal?: () => void;
-  on_download_nmc_excel?: () => void;
-  on_open_auth_modal?: () => void;
-  on_open_isp_drawer?: () => void;
 }
 
 export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사이드바_속성> = ({
@@ -543,19 +381,12 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
   current_workspace,
   current_subtab,
   on_navigate_workspace,
-  on_open_key_modal,
-  on_open_upload_modal,
-  on_open_grounding_modal,
-  on_download_nmc_excel,
-  on_open_auth_modal,
-  on_open_isp_drawer,
 }) => {
   // 열려있는 아코디언 그룹들 (기본적으로 모두 열림)
   const [open_groups, set_open_groups] = useState<Record<string, boolean>>({
     internal: true,
     external: true,
     citizen: true,
-    admin: true,
   });
 
   // 역할 또는 워크스페이스 변경 시 해당 그룹 자동 확장
@@ -581,30 +412,6 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
   };
 
   const handle_item_click = (item: 대상자별_메뉴_항목) => {
-    if (item.actionType) {
-      switch (item.actionType) {
-        case 'excel':
-          on_download_nmc_excel?.();
-          break;
-        case 'upload':
-          on_open_upload_modal?.();
-          break;
-        case 'grounding':
-          on_open_grounding_modal?.();
-          break;
-        case 'key':
-          on_open_key_modal?.();
-          break;
-        case 'isp':
-          on_open_isp_drawer?.();
-          break;
-        case 'auth':
-          on_open_auth_modal?.();
-          break;
-      }
-      return;
-    }
-
     on_navigate_workspace(item.workspace, item.subtab);
   };
 
@@ -620,10 +427,10 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
           <div className="flex items-center gap-2 overflow-hidden">
             <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tight flex items-center gap-1.5 whitespace-nowrap">
               <span className="text-base">📋</span>
-              <span>플랫폼 정보구조 (IA)</span>
+              <span>플랫폼 메뉴</span>
             </span>
             <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold whitespace-nowrap">
-              4대 분류
+              3대 분류
             </span>
           </div>
         ) : (
@@ -683,7 +490,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                   onClick={() => {
                     on_toggle_collapse();
                   }}
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:scale-105`}
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:scale-105"
                   title={`${group.title} (클릭 시 펼치기)`}
                 >
                   <span>{group.icon}</span>
@@ -719,7 +526,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
             <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
-          {/* 4대 영역 아코디언 그룹 목록 */}
+          {/* 3대 영역 아코디언 그룹 목록 (관리기능 제외) */}
           {신규_메뉴_구조_데이터.map((group) => {
             const isGroupOpen = open_groups[group.role] !== false;
 
@@ -773,7 +580,6 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                       }
 
                       const isMenuSelected =
-                        !item.actionType &&
                         current_workspace === item.workspace &&
                         (!item.subtab || (current_subtab ? item.subtab === current_subtab : true));
 
@@ -799,16 +605,9 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                             <div className="flex items-center gap-2 min-w-0">
                               <span className="shrink-0">{item.icon}</span>
                               <div className="min-w-0">
-                                <div className="flex items-center gap-1">
-                                  {item.menuCode && (
-                                    <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-slate-500">
-                                      {item.menuCode}
-                                    </span>
-                                  )}
-                                  <span className="text-xs font-bold block truncate">
-                                    {item.label}
-                                  </span>
-                                </div>
+                                <span className="text-xs font-bold block truncate">
+                                  {item.label}
+                                </span>
                                 {item.desc && (
                                   <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate leading-tight">
                                     {item.desc}

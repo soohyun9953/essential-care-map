@@ -491,7 +491,7 @@ export default function Home() {
 
       {/* 2. 메인 바디 컨테이너: 좌측 3대 대상자별 접이식 사이드바 + 우측 메인 워크스페이스 */}
       <div className="flex-1 flex flex-row min-w-0 overflow-hidden relative min-h-0">
-        {/* 2-1. 좌측 4대 정보구조(IA) 사이드바 (접기/펼치기 가능) */}
+        {/* 2-1. 좌측 3대 정보구조(IA) 사이드바 (내부용 / 외부용 / 대국민) */}
         <대상자별_좌측_사이드바
           is_collapsed={is_sidebar_collapsed}
           on_toggle_collapse={() => set_is_sidebar_collapsed((prev) => !prev)}
@@ -500,16 +500,6 @@ export default function Home() {
           current_workspace={current_workspace}
           current_subtab={current_active_subtab}
           on_navigate_workspace={handle_navigate_from_sidebar}
-          on_open_key_modal={() => set_is_key_modal_open(true)}
-          on_open_upload_modal={() => set_is_upload_modal_open(true)}
-          on_open_grounding_modal={() => set_is_grounding_open(true)}
-          on_download_nmc_excel={handle_export_report_png}
-          on_open_auth_modal={() => set_is_auth_modal_open(true)}
-          on_open_isp_drawer={() => {
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('open-isp-drawer', { detail: { taskId: '3.8' } }));
-            }
-          }}
         />
 
         {/* 2-2. 우측 본문 메인 워크스페이스 렌더링 영역 */}

@@ -24,7 +24,9 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Info,
 } from 'lucide-react';
+import { 의료기관_상세_정보_모달 } from './의료기관_상세_정보_모달';
 import {
   전체_공공의료기관_상세목록,
   공공의료기관_상세_프로필,
@@ -108,6 +110,67 @@ const 야간_외부기관: 외부_기관[] = [
   ...달빛_외부기관.filter((h) => !응급_이름.has(기관명_정규화(h.기관명))),
 ];
 
+// 공공병원 빠른 조회를 위한 이름 매핑 (정규화 포함)
+const 공공병원_이름_맵 = new Map<string, 공공의료기관_상세_프로필>();
+전체_공공의료기관_상세목록.forEach((h) => {
+  공공병원_이름_맵.set(h.기관명, h);
+  공공병원_이름_맵.set(기관명_정규화(h.기관명), h);
+});
+
+// 외부 민간 기관용 상세 프로필 변환 폴백 함수
+const create_fallback_profile = (p: 외부_기관): 공공의료기관_상세_프로필 => {
+  const parts = p.지역.split(' ');
+  return {
+    id: p.id,
+    기관명: p.기관명,
+    기관유형: p.종류 || '의료기관',
+    공공의료기관_여부: false,
+    시도명: parts[0] || '',
+    시군구명: parts[1] || '',
+    진료권명: p.지역,
+    주소: p.주소,
+    전화번호: p.응급실전화 || p.전화,
+    홈페이지: '',
+    운영시간: '24시간 응급 진료 / 진료시간 문의 요망',
+    위도: p.위도 ?? 37.5665,
+    경도: p.경도 ?? 126.978,
+    거리_km: undefined,
+    운영_상태: '정상운영',
+    주요_의료서비스: [p.종류, p.설명].filter(Boolean),
+    서비스_상세: [
+      {
+        코드: 'emergency',
+        서비스명: '응급의료',
+        상태: p.응급실전화 ? '운영' : '확인필요',
+        비고: p.응급실전화 ? `응급실 직통: ${p.응급실전화}` : '대표전화 문의',
+        근거: '지정현황',
+      },
+    ],
+    의료자원: {
+      병상: { 총병상: 0, 사용병상: 0, 가용병상: 0, 가동률: 0 },
+      중환자실: { 총병상: 0, 가용병상: 0 },
+      수술실: { 총실: 0, 가동실: 0 },
+      응급실: { 구분: p.종류 || '응급의료', 가용병상: 0, 소아가용병상: 0, 상태: '보통' },
+      의료인력: { 전체의사수: 0, 전문의수: 0, 간호사수: 0, 충원율: 0 },
+      주요장비: { CT: false, MRI: false, 인공호흡기: false, 인큐베이터: false, 혈액투석기: 0 },
+    },
+    공공역할: {
+      지역책임의료기관_여부: false,
+      응급의료기관_종별: p.종류,
+      취약계층_지원사업: [],
+      퇴원환자_연계_협력: false,
+      특화_공공보건사업: [],
+    },
+    데이터_신뢰성: {
+      기준시점: '실시간 연계',
+      출처: p.설명 || '공공데이터포털 / E-Gen',
+      최종수집: '실시간',
+      갱신주기: '수시',
+      상태: '정상',
+    },
+  };
+};
+
 // Leaflet 지도 동적 로드 (SSR 오류 방지)
 const DecisionLeafletMap = dynamic(
   () => import('./공공의료_의사결정_지도_내부').then((mod) => mod.공공의료_의사결정_지도_내부),
@@ -137,6 +200,9 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
   // 선택된 활성 병원
   const [selected_hospital, setSelected_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
+
+  // 병원 상세정보 모달 상태
+  const [detail_modal_hospital, set_detail_modal_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
 
   // 모바일 바텀시트 상태: 'min' | 'half' | 'full' (기본: min - 상단 지도 및 AI 답변 영역 최대 확보)
   const [sheet_state, set_sheet_state] = useState<'min' | 'half' | 'full'>('min');
@@ -749,15 +815,28 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                         <p className="text-[11px] text-slate-400 line-clamp-1">{p.주소}</p>
                       </div>
 
-                      {/* 하단 전화 & 길찾기 액션 */}
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      {/* 하단 상세정보 & 전화 & 길찾기 액션 */}
+                      <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const matched = 공공병원_이름_맵.get(기관명_정규화(p.기관명)) || 공공병원_이름_맵.get(p.기관명);
+                            set_detail_modal_hospital(matched || create_fallback_profile(p));
+                          }}
+                          className="py-1.5 px-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                          title="병원 상세정보 보기"
+                        >
+                          <Info className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">상세정보</span>
+                        </button>
                         <a
                           href={`tel:${p.응급실전화 || p.전화}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="py-1.5 px-2 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs"
+                          className="py-1.5 px-1.5 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs"
                         >
-                          <Phone className="w-3.5 h-3.5" />
-                          <span>전화 연결</span>
+                          <Phone className="w-3.5 h-3.5 shrink-0" />
+                          <span className="truncate">전화</span>
                         </a>
                         <a
                           href={
@@ -768,10 +847,10 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1"
+                          className="py-1.5 px-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1"
                         >
-                          <Navigation className="w-3.5 h-3.5 text-blue-600" />
-                          <span>길찾기</span>
+                          <Navigation className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                          <span className="truncate">길찾기</span>
                         </a>
                       </div>
                     </div>
@@ -931,25 +1010,37 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* 하단 전화 & 길찾기 버튼 */}
-                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    {/* 하단 상세정보 & 전화 & 길찾기 버튼 */}
+                    <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          set_detail_modal_hospital(h);
+                        }}
+                        className="py-1.5 px-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs cursor-pointer"
+                        title={`${h.기관명} 상세정보 보기`}
+                      >
+                        <Info className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">상세정보</span>
+                      </button>
                       <a
                         href={`tel:${h.전화번호}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="py-1.5 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs"
+                        className="py-1.5 px-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-xs"
                       >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>전화 걸기 ({h.전화번호})</span>
+                        <Phone className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">전화</span>
                       </a>
                       <a
                         href={`https://map.kakao.com/link/to/${encodeURIComponent(h.기관명)},${h.위도},${h.경도}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="py-1.5 px-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1"
+                        className="py-1.5 px-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 font-bold text-xs text-center transition flex items-center justify-center gap-1"
                       >
-                        <Navigation className="w-3.5 h-3.5 text-blue-600" />
-                        <span>길찾기</span>
+                        <Navigation className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        <span className="truncate">길찾기</span>
                       </a>
                     </div>
                   </div>
@@ -960,6 +1051,13 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         </div>
       )}
       </div>
+
+      {/* 5대 탭 병원 상세정보 모달 */}
+      <의료기관_상세_정보_모달
+        hospital={detail_modal_hospital}
+        is_open={!!detail_modal_hospital}
+        on_close={() => set_detail_modal_hospital(null)}
+      />
     </div>
   );
 };

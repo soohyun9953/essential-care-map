@@ -46,37 +46,37 @@ export interface 대상자_그룹 {
   shortTitle: string;
   icon: string;
   desc: string;
-  themeColor: {
-    bg: string;
-    border: string;
-    text: string;
-    activeText: string;
-    ring: string;
-    cardBg: string;
+  headerStyle: {
+    container: string;
+    iconBg: string;
+    titleColor: string;
     badgeBg: string;
+    border: string;
   };
   menus: 대상자별_메뉴_항목[];
 }
 
 // ============================================================================
-// 사용자 요청 반영 메뉴 구조 (내부용 / 외부용 / 대국민 3대 분류, 관리기능 제거, 메뉴번호 제거, 대국민 1개 통합)
+// 사용자 요청 반영 메뉴 구조:
+// 1. 숫자(1., 2., 3.) 제거
+// 2. 플랫폼 종합 결정지도 홈 버튼 삭제
+// 3. 고대비 다크 캡슐 헤더 디자인으로 내부용/외부용/대국민 명확한 시각 구분
 // ============================================================================
 export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
   // 1. 내부용 (전반 / 통합공시)
   {
     role: 'internal',
-    title: '1. 내부용 (총괄·지원단)',
+    title: '내부용 (총괄·지원단)',
     shortTitle: '내부용',
     icon: '🏛️',
     desc: '214개 공공병원 통합 관제 및 알리미 공시 검증',
-    themeColor: {
-      bg: 'bg-indigo-600',
-      border: 'border-indigo-200 dark:border-indigo-900/60',
-      text: 'text-indigo-600 dark:text-indigo-400',
-      activeText: 'text-indigo-700 dark:text-indigo-300 font-black',
-      ring: 'ring-indigo-400/30',
-      cardBg: 'from-indigo-50/80 to-slate-50/40 dark:from-indigo-950/30 dark:to-slate-950/10',
-      badgeBg: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+    headerStyle: {
+      container:
+        'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/50 hover:border-indigo-400 shadow-sm',
+      iconBg: 'bg-indigo-600/30 border border-indigo-400/40 text-indigo-300',
+      titleColor: 'text-white',
+      badgeBg: 'bg-indigo-500/25 text-indigo-200 border border-indigo-400/30',
+      border: 'border-indigo-200/80 dark:border-indigo-900/60',
     },
     menus: [
       {
@@ -118,18 +118,17 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
   // 2. 외부용 (지역진단 / 계획수립 / 경영개선 / 연계망)
   {
     role: 'external',
-    title: '2. 외부용 (지자체·공공병원)',
+    title: '외부용 (지자체·공공병원)',
     shortTitle: '외부용',
     icon: '🏥',
     desc: '지역진단, 계획수립, 경영개선 및 연계망 통합 솔루션',
-    themeColor: {
-      bg: 'bg-blue-600',
-      border: 'border-blue-200 dark:border-blue-900/60',
-      text: 'text-blue-600 dark:text-blue-400',
-      activeText: 'text-blue-700 dark:text-blue-300 font-black',
-      ring: 'ring-blue-400/30',
-      cardBg: 'from-blue-50/80 to-cyan-50/40 dark:from-blue-950/30 dark:to-cyan-950/10',
-      badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300',
+    headerStyle: {
+      container:
+        'bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-blue-500/50 hover:border-blue-400 shadow-sm',
+      iconBg: 'bg-blue-600/30 border border-blue-400/40 text-blue-300',
+      titleColor: 'text-white',
+      badgeBg: 'bg-blue-500/25 text-blue-200 border border-blue-400/30',
+      border: 'border-blue-200/80 dark:border-blue-900/60',
     },
     menus: [
       // 2-1. [지역진단]
@@ -326,21 +325,20 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     ],
   },
 
-  // 3. 대국민 (요구사항 3번: 3가지 메뉴를 대표 메뉴 1개로 단일화)
+  // 3. 대국민 (대표 메뉴 1개로 단일화)
   {
     role: 'citizen',
-    title: '3. 대국민 (안심의료)',
+    title: '대국민 (안심의료)',
     shortTitle: '대국민',
     icon: '👨‍👩‍👧',
     desc: '일반시민 눈높이 맞춤 포털 및 실시간 안심의료 검색',
-    themeColor: {
-      bg: 'bg-rose-500',
-      border: 'border-rose-200 dark:border-rose-900/60',
-      text: 'text-rose-600 dark:text-rose-400',
-      activeText: 'text-rose-700 dark:text-rose-300 font-black',
-      ring: 'ring-rose-400/30',
-      cardBg: 'from-rose-50/80 to-pink-50/40 dark:from-rose-950/30 dark:to-pink-950/10',
-      badgeBg: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300',
+    headerStyle: {
+      container:
+        'bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white border-rose-500/50 hover:border-rose-400 shadow-sm',
+      iconBg: 'bg-rose-600/30 border border-rose-400/40 text-rose-300',
+      titleColor: 'text-white',
+      badgeBg: 'bg-rose-500/25 text-rose-200 border border-rose-400/30',
+      border: 'border-rose-200/80 dark:border-rose-900/60',
     },
     menus: [
       {
@@ -459,29 +457,6 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       {/* 2. 접혔을 때 (Collapsed Icon Rail View) */}
       {is_collapsed ? (
         <div className="flex-1 py-3 px-1.5 flex flex-col items-center gap-2 overflow-y-auto">
-          {/* 전체보기 홈 아이콘 바로가기 */}
-          <div className="w-full flex flex-col items-center gap-1">
-            <button
-              type="button"
-              onClick={() => {
-                on_select_role('all');
-                on_navigate_workspace('home');
-              }}
-              className={`w-10 h-10 rounded-2xl flex items-center justify-center text-base transition-all cursor-pointer shadow-xs ${
-                current_workspace === 'home'
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 ring-2 ring-slate-400/40 scale-105'
-                  : 'bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-              }`}
-              title="플랫폼 종합 홈 (전체보기)"
-            >
-              <span>🌐</span>
-            </button>
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 text-center leading-tight">
-              전체홈
-            </span>
-            <div className="w-6 h-px bg-slate-200 dark:bg-slate-800 my-1" />
-          </div>
-
           {신규_메뉴_구조_데이터.map((group) => {
             return (
               <div key={group.role} className="w-full flex flex-col items-center gap-1">
@@ -490,7 +465,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                   onClick={() => {
                     on_toggle_collapse();
                   }}
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 hover:scale-105"
+                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs bg-slate-900 text-white hover:scale-105 border border-slate-700"
                   title={`${group.title} (클릭 시 펼치기)`}
                 >
                   <span>{group.icon}</span>
@@ -506,27 +481,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       ) : (
         /* 3. 펼쳐졌을 때 (Expanded Detailed Sidebar View) */
         <div id="sidebar-scroll-container" className="flex-1 overflow-y-auto p-3 space-y-3.5">
-          {/* 전체보기 복귀 바로가기 */}
-          <button
-            type="button"
-            onClick={() => {
-              on_select_role('all');
-              on_navigate_workspace('home');
-            }}
-            className={`w-full p-2.5 rounded-2xl border text-xs font-bold transition flex items-center justify-between cursor-pointer ${
-              current_workspace === 'home'
-                ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 border-slate-900 shadow-xs'
-                : 'bg-slate-50 dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-base">🌐</span>
-              <span>플랫폼 종합 결정지도 홈</span>
-            </div>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-
-          {/* 3대 영역 아코디언 그룹 목록 (관리기능 제외) */}
+          {/* 3대 영역 아코디언 그룹 목록 (플랫폼 종합 결정지도 홈 버튼 삭제 완료) */}
           {신규_메뉴_구조_데이터.map((group) => {
             const isGroupOpen = open_groups[group.role] !== false;
 
@@ -536,30 +491,34 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
             return (
               <div
                 key={group.role}
-                className="rounded-3xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#151720] shadow-xs overflow-hidden transition-all"
+                className={`rounded-2xl border ${group.headerStyle.border} bg-white dark:bg-[#151720] shadow-sm overflow-hidden transition-all`}
               >
-                {/* 대분류 헤더 */}
+                {/* 🌟 사용자 지정 디자인: 고대비 다크 캡슐 헤더 (내부용, 외부용, 대국민 명확한 시각 구분) */}
                 <div
                   onClick={() => toggle_group(group.role)}
-                  className="p-3 flex items-center justify-between cursor-pointer select-none group bg-slate-50/60 dark:bg-slate-900/40 hover:bg-slate-100/70 transition-colors"
+                  className={`p-3 flex items-center justify-between cursor-pointer select-none group border-b ${group.headerStyle.container} transition-all`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-lg shrink-0 group-hover:scale-110 transition-transform">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div
+                      className={`w-7 h-7 rounded-xl flex items-center justify-center text-base shrink-0 group-hover:scale-110 transition-transform ${group.headerStyle.iconBg}`}
+                    >
                       {group.icon}
-                    </span>
+                    </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-black text-slate-900 dark:text-white truncate">
+                        <span
+                          className={`text-xs font-black tracking-tight truncate ${group.headerStyle.titleColor}`}
+                        >
                           {group.title}
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      <p className="text-[10px] text-slate-300 dark:text-slate-400 truncate mt-0.5 font-medium leading-tight opacity-90">
                         {group.desc}
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-1 rounded-lg text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 shrink-0">
+                  <div className="p-1 rounded-lg text-slate-300 group-hover:text-white shrink-0">
                     <ChevronDown
                       className={`w-4 h-4 transition-transform duration-200 ${
                         isGroupOpen ? 'rotate-180' : ''
@@ -570,7 +529,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
 
                 {/* 그룹 내 세부 메뉴 목록 */}
                 {isGroupOpen && (
-                  <div className="px-2 pb-2.5 pt-1.5 space-y-1 border-t border-slate-100 dark:border-slate-800/60">
+                  <div className="px-2 pb-2.5 pt-1.5 space-y-1 bg-slate-50/50 dark:bg-slate-900/30">
                     {group.menus.map((item) => {
                       // 중분류 소제목 표시
                       let showCategoryHeader = false;
@@ -589,7 +548,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                             <div className="pt-2 pb-1 px-2 flex items-center gap-1.5 text-[10px] font-black text-slate-400 dark:text-slate-500">
                               <span className="w-1.5 h-1.5 rounded-full bg-blue-500/70" />
                               <span className="uppercase tracking-wider">[{item.category}]</span>
-                              <div className="flex-1 h-px bg-slate-100 dark:bg-slate-800/80 ml-1" />
+                              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800 ml-1" />
                             </div>
                           )}
 

@@ -132,7 +132,6 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
   const initKakaoMap = useCallback(() => {
     const key = 카카오_지도_API키_불러오기();
     if (!key) {
-      set_engine('leaflet');
       set_kakao_ready(false);
       set_load_error(null);
       set_error_code(null);
@@ -186,8 +185,8 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
             : err?.message || '카카오 지도 SDK를 불러오지 못했습니다.';
         set_load_error(msg);
         set_error_code(err?.code || 'SCRIPT_ERROR');
-        // 실패 시 Leaflet으로 fallback하되, 사용자에게 명확한 에러 안내 제공
-        set_engine('leaflet');
+        // 카카오가 기본 지도이므로 engine은 'kakao'를 유지하고 kakao_ready를 false로 두어 백그라운드 오픈스트리트맵이 안전하게 동작
+        set_kakao_ready(false);
       });
   }, [active_hospital]);
 
@@ -451,7 +450,7 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
-            <span>카카오맵</span>
+            <span>카카오맵 (기본)</span>
             {is_kakao_loading && <span className="w-2.5 h-2.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin ml-0.5" />}
           </button>
           <button
@@ -466,7 +465,7 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
-            기본지도
+            오픈스트리트맵
           </button>
         </div>
 

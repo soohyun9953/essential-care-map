@@ -59,11 +59,11 @@ export const 지도_래퍼: React.FC<지도_래퍼_속성> = (props) => {
     const savedEngine = localStorage.getItem('preferred_map_engine') as 'kakao' | 'leaflet' | null;
     const kakaoKey = 카카오_지도_API키_불러오기();
 
-    if (savedEngine === 'kakao' || savedEngine === 'leaflet') {
-      set_map_engine(savedEngine);
+    if (savedEngine === 'leaflet') {
+      set_map_engine('leaflet');
     } else {
-      // 기본적으로 카카오 키가 있거나 카카오맵을 우선 시도
-      set_map_engine(kakaoKey ? 'kakao' : 'kakao');
+      // 카카오맵을 기본 지도(Default)로 항시 지정
+      set_map_engine('kakao');
     }
     set_engine_initialized(true);
   }, []);

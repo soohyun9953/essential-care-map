@@ -163,16 +163,16 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
         {/* 지도 엔진 스위처 */}
         <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1">
           <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-apple-sm">
-            기본지도
+            오픈스트리트맵
           </span>
           {on_switch_to_kakao && (
             <button
               onClick={on_switch_to_kakao}
               className="px-2.5 py-1 text-xs font-bold rounded-full text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer flex items-center gap-1"
-              title="카카오맵 Web API로 전환"
+              title="카카오맵 (기본)으로 전환"
             >
               <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span>카카오맵</span>
+              <span>카카오맵 (기본)</span>
             </button>
           )}
         </div>

@@ -1,9 +1,17 @@
 'use client';
 
-import React, { useEffect } from 'react';
+// 국민안심 서비스 전용 하이브리드 의사결정 지도 컴포넌트
+// - 카카오 지도 Web API (kakao.maps) 및 Leaflet(오픈스트리트맵) 듀얼 엔진 지원
+// - 실시간 공공병원(214개소) 및 보조 의료기관(민간 분만/소아/응급) 위치 핀 렌더링
+// - 스카이뷰(위성사진)/일반지도 전환 및 병원 선택 시 부드러운 카메라 이동(panTo) 지원
+
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 공공의료기관_상세_프로필 } from '@/lib/의료서비스_검색_엔진';
+import { loadKakaoMap, isKakaoMapLoaded } from '@/lib/카카오_지도_로더';
+import { 카카오_지도_API키_불러오기 } from '@/lib/API키_저장소';
+import { Map as MapIcon, Satellite } from 'lucide-react';
 
 // 공공병원 외 보조 지점 (예: 심평원 분만가능 민간 의료기관). 병상 등 상세 정보 없이 위치와 기본 정보만 표시
 export interface 보조_지도_지점 {
@@ -26,6 +34,9 @@ interface 공공의료_의사결정_지도_내부_속성 {
   on_select_extra?: (point: 보조_지도_지점) => void;
 }
 
+// ==============================================================
+// Leaflet 전용 카메라 컨트롤러 및 리사이저
+// ==============================================================
 const MapCameraController: React.FC<{ target_lat?: number; target_lng?: number; zoom?: number }> = ({
   target_lat,
   target_lng,
@@ -34,8 +45,6 @@ const MapCameraController: React.FC<{ target_lat?: number; target_lng?: number; 
   const map = useMap();
   useEffect(() => {
     if (!Number.isFinite(target_lat) || !Number.isFinite(target_lng)) return;
-    // 지도 영역 크기가 0(숨김·레이아웃 전)일 때 flyTo 애니메이션은 NaN 좌표 오류로 앱 전체를 중단시키므로
-    // 크기가 있을 때만 애니메이션하고, 그 외에는 위치만 이동
     try {
       const size = map.getSize();
       if (size.x > 0 && size.y > 0) {
@@ -50,25 +59,19 @@ const MapCameraController: React.FC<{ target_lat?: number; target_lng?: number; 
   return null;
 };
 
-// 지도 렌더링 직후 및 창 크기 변경 시 Leaflet 컨테이너 크기 자동 갱신
 const MapResizeHandler: React.FC = () => {
   const map = useMap();
   useEffect(() => {
-    // 마운트 직후 레이아웃 확정 대기 후 invalidateSize 실행
     const timer = setTimeout(() => {
       try {
         map.invalidateSize();
-      } catch (err) {
-        console.warn('지도 크기 갱신 경고:', err);
-      }
+      } catch {}
     }, 150);
 
     const handleResize = () => {
       try {
         map.invalidateSize();
-      } catch (err) {
-        // 무시
-      }
+      } catch {}
     };
     window.addEventListener('resize', handleResize);
     return () => {
@@ -79,6 +82,9 @@ const MapResizeHandler: React.FC = () => {
   return null;
 };
 
+// ==============================================================
+// 메인 컴포넌트: 카카오맵 우선 / Leaflet fallback 듀얼 엔진
+// ==============================================================
 export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의사결정_지도_내부_속성> = ({
   hospitals,
   active_hospital,
@@ -90,125 +96,446 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
 }) => {
   const handle_select = on_select_hospital || on_select_marker || (() => {});
   const active_extra = extra_points.find((p) => p.id === active_extra_id) || null;
+
+  // 지도 엔진 선택: 카카오 키가 있으면 'kakao', 없으면 'leaflet'
+  const [engine, set_engine] = useState<'kakao' | 'leaflet'>('kakao');
+  const [kakao_ready, set_kakao_ready] = useState<boolean>(false);
+  const [map_type, set_map_type] = useState<'roadmap' | 'skyview'>('roadmap');
+
+  const kakaoContainerRef = useRef<HTMLDivElement>(null);
+  const kakaoMapRef = useRef<kakao.maps.Map | null>(null);
+  const kakaoOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
+  const tooltipOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
+
+  // 초기 엔진 판별 및 카카오맵 로드
+  useEffect(() => {
+    const key = 카카오_지도_API키_불러오기();
+    if (!key) {
+      set_engine('leaflet');
+      return;
+    }
+
+    let is_mounted = true;
+    loadKakaoMap(key)
+      .then((kakaoMaps) => {
+        if (!is_mounted || !kakaoContainerRef.current) return;
+
+        if (!kakaoMapRef.current) {
+          const defaultLat = active_hospital ? active_hospital.위도 : 37.5665; // 서울 중심 기본
+          const defaultLng = active_hospital ? active_hospital.경도 : 126.9780;
+
+          const options: kakao.maps.MapOptions = {
+            center: new kakaoMaps.LatLng(defaultLat, defaultLng),
+            level: active_hospital ? 5 : 8,
+          };
+          const map = new kakaoMaps.Map(kakaoContainerRef.current, options);
+          const zoomControl = new kakaoMaps.ZoomControl();
+          map.addControl(zoomControl, kakaoMaps.ControlPosition.RIGHT);
+          kakaoMapRef.current = map;
+        } else {
+          kakaoMapRef.current.relayout();
+        }
+
+        set_kakao_ready(true);
+        set_engine('kakao');
+      })
+      .catch((err) => {
+        console.warn('카카오 지도 로드 실패, Leaflet으로 fallback:', err);
+        if (is_mounted) {
+          set_engine('leaflet');
+        }
+      });
+
+    return () => {
+      is_mounted = false;
+    };
+  }, [active_hospital]);
+
+  // 창 크기 변경 시 카카오 지도 relayout
+  useEffect(() => {
+    const handleResize = () => {
+      if (kakaoMapRef.current) {
+        kakaoMapRef.current.relayout();
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // 스카이뷰/일반지도 토글
+  const toggle_map_type = (type: 'roadmap' | 'skyview') => {
+    if (!kakaoMapRef.current || !window.kakao?.maps) return;
+    set_map_type(type);
+    if (type === 'skyview') {
+      kakaoMapRef.current.setMapTypeId(window.kakao.maps.MapTypeId.SKYVIEW);
+    } else {
+      kakaoMapRef.current.setMapTypeId(window.kakao.maps.MapTypeId.ROADMAP);
+    }
+  };
+
+  // 선택된 병원/보조지점으로 카카오 지도 이동
+  useEffect(() => {
+    if (!kakaoMapRef.current || !window.kakao?.maps) return;
+    const target = active_hospital || active_extra;
+    if (!target) return;
+
+    try {
+      const latlng = new window.kakao.maps.LatLng(target.위도, target.경도);
+      kakaoMapRef.current.panTo(latlng);
+      if (kakaoMapRef.current.getLevel() > 6) {
+        kakaoMapRef.current.setLevel(5, { animate: { duration: 400 } });
+      }
+    } catch (e) {
+      console.warn('카카오 지도 이동 실패:', e);
+    }
+  }, [active_hospital, active_extra]);
+
+  // 카카오 맵 툴팁 표시 헬퍼
+  const show_kakao_tooltip = useCallback((lat: number, lng: number, htmlContent: string) => {
+    if (!kakaoMapRef.current || !window.kakao?.maps) return;
+    const kakaoMaps = window.kakao.maps;
+
+    if (!tooltipOverlayRef.current) {
+      tooltipOverlayRef.current = new kakaoMaps.CustomOverlay({
+        position: new kakaoMaps.LatLng(lat, lng),
+        content: '',
+        yAnchor: 1.3,
+        zIndex: 100,
+      });
+    }
+
+    const overlay = tooltipOverlayRef.current;
+    overlay.setPosition(new kakaoMaps.LatLng(lat, lng));
+    overlay.setContent(`
+      <div class="pointer-events-none bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-2 rounded-xl shadow-xl border border-black/10 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-100 min-w-[190px] animate-in fade-in zoom-in-95">
+        ${htmlContent}
+      </div>
+    `);
+    overlay.setMap(kakaoMapRef.current);
+  }, []);
+
+  const hide_kakao_tooltip = useCallback(() => {
+    if (tooltipOverlayRef.current) {
+      tooltipOverlayRef.current.setMap(null);
+    }
+  }, []);
+
+  // 카카오 지도 위에 병원 및 보조 지점 마커 렌더링
+  useEffect(() => {
+    if (!kakaoMapRef.current || !window.kakao?.maps || !kakao_ready || engine !== 'kakao') return;
+    const kakaoMaps = window.kakao.maps;
+    const map = kakaoMapRef.current;
+
+    // 기존 오버레이 제거
+    kakaoOverlaysRef.current.forEach((o) => o.setMap(null));
+    kakaoOverlaysRef.current = [];
+
+    const newOverlays: kakao.maps.CustomOverlay[] = [];
+
+    // 1. 공공의료기관 마커 (214개소)
+    hospitals.forEach((h) => {
+      const is_active = active_hospital?.id === h.id;
+      const is_regional = h.기관유형.includes('권역');
+      const is_local = h.기관유형.includes('지역');
+
+      const base_color = is_regional ? '#0071e3' : is_local ? '#10b981' : '#8b5cf6';
+      const fill_color = is_active ? '#ff3b30' : base_color;
+
+      const markerEl = document.createElement('div');
+      markerEl.className = 'cursor-pointer group flex items-center justify-center transition-transform hover:scale-125';
+      markerEl.style.zIndex = is_active ? '30' : '10';
+
+      markerEl.innerHTML = `
+        <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+          ${
+            is_active
+              ? '<div style="position: absolute; width: 34px; height: 34px; border-radius: 9999px; background-color: #ff3b30; opacity: 0.3; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>'
+              : ''
+          }
+          <div style="width: ${is_active ? '20px' : '14px'}; height: ${
+        is_active ? '20px' : '14px'
+      }; border-radius: 9999px; background-color: ${fill_color}; border: 2.5px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.35);"></div>
+        </div>
+      `;
+
+      markerEl.onclick = () => handle_select(h);
+
+      markerEl.onmouseenter = () => {
+        show_kakao_tooltip(
+          h.위도,
+          h.경도,
+          `
+          <div class="space-y-1 text-left">
+            <div class="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-0.5">
+              <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                ${h.기관유형}
+              </span>
+              <strong class="text-xs font-bold text-slate-900 dark:text-white">${h.기관명}</strong>
+            </div>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">
+              총 병상 <strong>${h.의료자원.병상.총병상}</strong>병상 · ${h.의료자원.응급실.구분}
+            </div>
+            <div class="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
+              클릭 시 상세 정보 및 길찾기 연결
+            </div>
+          </div>
+          `
+        );
+      };
+
+      markerEl.onmouseleave = () => {
+        hide_kakao_tooltip();
+      };
+
+      const overlay = new kakaoMaps.CustomOverlay({
+        position: new kakaoMaps.LatLng(h.위도, h.경도),
+        content: markerEl,
+        zIndex: is_active ? 35 : 15,
+      });
+
+      overlay.setMap(map);
+      newOverlays.push(overlay);
+    });
+
+    // 2. 보조 지점 (민간 분만/소아/응급)
+    extra_points.forEach((p) => {
+      const is_active = p.id === active_extra_id;
+      const markerEl = document.createElement('div');
+      markerEl.className = 'cursor-pointer hover:scale-125 transition-transform';
+      markerEl.innerHTML = `
+        <div style="width: ${is_active ? '18px' : '11px'}; height: ${
+        is_active ? '18px' : '11px'
+      }; border-radius: 9999px; background-color: ${
+        is_active ? '#ff3b30' : '#ec4899'
+      }; border: 2px solid #ffffff; box-shadow: 0 1px 5px rgba(0,0,0,0.3);"></div>
+      `;
+
+      markerEl.onclick = () => on_select_extra?.(p);
+
+      markerEl.onmouseenter = () => {
+        show_kakao_tooltip(
+          p.위도,
+          p.경도,
+          `
+          <div class="space-y-0.5 text-left">
+            <strong class="text-xs font-bold text-slate-900 dark:text-white">${p.기관명}</strong>
+            <div class="text-[11px] text-slate-600 dark:text-slate-300">${p.종별} · ${p.설명}</div>
+          </div>
+          `
+        );
+      };
+
+      markerEl.onmouseleave = () => {
+        hide_kakao_tooltip();
+      };
+
+      const overlay = new kakaoMaps.CustomOverlay({
+        position: new kakaoMaps.LatLng(p.위도, p.경도),
+        content: markerEl,
+        zIndex: is_active ? 30 : 12,
+      });
+      overlay.setMap(map);
+      newOverlays.push(overlay);
+    });
+
+    kakaoOverlaysRef.current = newOverlays;
+  }, [
+    hospitals,
+    extra_points,
+    active_hospital,
+    active_extra_id,
+    kakao_ready,
+    engine,
+    handle_select,
+    on_select_extra,
+    show_kakao_tooltip,
+    hide_kakao_tooltip,
+  ]);
+
   const default_center: [number, number] = active_hospital
     ? [active_hospital.위도, active_hospital.경도]
-    : [36.3, 127.8];
+    : [37.5665, 126.9780];
 
   return (
-    <div className="w-full h-full relative min-h-[300px]" id="decision-map-canvas-container">
-      <MapContainer
-        center={default_center}
-        zoom={active_hospital ? 11 : 7}
-        scrollWheelZoom={true}
-        className="w-full h-full"
-        style={{ width: '100%', height: '100%', minHeight: '300px' }}
-      >
-        <MapResizeHandler />
-        {/* Esri World Light Gray Base 무료 타일 */}
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maxZoom={19}
-        />
+    <div className="w-full h-full relative min-h-[300px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800" id="decision-map-canvas-container">
+      {/* 상단 컨트롤러: 지도 엔진 및 스카이뷰 토글 */}
+      <div className="absolute top-3 left-3 z-[400] flex items-center gap-1.5 pointer-events-auto">
+        <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1 text-xs">
+          <button
+            type="button"
+            onClick={() => set_engine('kakao')}
+            className={`px-2.5 py-1 text-xs font-bold rounded-full transition flex items-center gap-1 cursor-pointer ${
+              engine === 'kakao'
+                ? 'bg-amber-400 text-slate-900 shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
+            <span>카카오맵</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => set_engine('leaflet')}
+            className={`px-2.5 py-1 text-xs font-semibold rounded-full transition cursor-pointer ${
+              engine === 'leaflet'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+            }`}
+          >
+            기본지도
+          </button>
+        </div>
 
-        {active_hospital && (
-          <MapCameraController
-            target_lat={active_hospital.위도}
-            target_lng={active_hospital.경도}
-            zoom={13}
-          />
-        )}
-        {active_extra && (
-          <MapCameraController target_lat={active_extra.위도} target_lng={active_extra.경도} zoom={13} />
-        )}
-
-        {/* 보조 지점 (민간 분만기관 등): 분홍색, 시군구 중심 근사 좌표는 점선 테두리 */}
-        {extra_points.map((p) => {
-          const is_active = p.id === active_extra_id;
-          const 근사 = p.좌표_정밀도 === '시군구';
-          return (
-            <CircleMarker
-              key={`extra-${p.id}`}
-              center={[p.위도, p.경도]}
-              radius={is_active ? 9 : 5}
-              pathOptions={{
-                color: is_active ? '#ff3b30' : '#ffffff',
-                weight: 2,
-                dashArray: 근사 ? '3 3' : undefined,
-                fillColor: is_active ? '#ff3b30' : '#ec4899',
-                fillOpacity: 근사 ? 0.55 : 0.9,
-              }}
-              eventHandlers={{ click: () => on_select_extra?.(p) }}
+        {engine === 'kakao' && (
+          <div className="bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-md p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1 text-xs">
+            <button
+              type="button"
+              onClick={() => toggle_map_type('roadmap')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1 cursor-pointer ${
+                map_type === 'roadmap'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
             >
-              <Tooltip direction="top" offset={[0, -8]} opacity={0.98}>
-                <div className="p-1 space-y-0.5 text-left">
-                  <strong className="text-xs text-slate-900">{p.기관명}</strong>
-                  <div className="text-[11px] text-slate-600">{p.종별} · {p.설명}</div>
-                  {근사 && <div className="text-[10px] text-amber-600">위치: 시군구 중심 근사 (정확한 위치 아님)</div>}
-                </div>
-              </Tooltip>
-            </CircleMarker>
-          );
-        })}
+              <MapIcon className="w-3 h-3" />
+              <span>일반</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => toggle_map_type('skyview')}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-full transition flex items-center gap-1 cursor-pointer ${
+                map_type === 'skyview'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <Satellite className="w-3 h-3" />
+              <span>위성</span>
+            </button>
+          </div>
+        )}
+      </div>
 
-        {/* 214개 공공의료기관 마커 렌더링 */}
-        {hospitals.map((h) => {
-          const is_active = active_hospital?.id === h.id;
-          const is_regional = h.기관유형.includes('권역');
-          const is_local = h.기관유형.includes('지역');
+      {/* 1. 카카오 지도 Canvas (engine === 'kakao') */}
+      <div
+        ref={kakaoContainerRef}
+        className={`w-full h-full min-h-[300px] ${engine === 'kakao' ? 'block' : 'hidden'}`}
+      />
 
-          const base_color = is_regional ? '#0071e3' : is_local ? '#10b981' : '#8b5cf6';
-          const fill_color = is_active ? '#ff3b30' : base_color;
-          const radius = is_active ? 10 : is_regional ? 8 : 6;
+      {/* 2. Leaflet 지도 Canvas (engine === 'leaflet') */}
+      {engine === 'leaflet' && (
+        <MapContainer
+          center={default_center}
+          zoom={active_hospital ? 11 : 8}
+          scrollWheelZoom={true}
+          className="w-full h-full min-h-[300px]"
+          style={{ width: '100%', height: '100%', minHeight: '300px' }}
+        >
+          <MapResizeHandler />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+          />
 
-          return (
-            <React.Fragment key={`marker-${h.id}`}>
-              {/* 활성 선택 시 하이라이트 펄스 링 */}
-              {is_active && (
-                <CircleMarker
-                  center={[h.위도, h.경도]}
-                  radius={18}
-                  pathOptions={{
-                    color: '#ff3b30',
-                    weight: 2,
-                    fillColor: '#ff3b30',
-                    fillOpacity: 0.25,
-                  }}
-                />
-              )}
+          {active_hospital && (
+            <MapCameraController
+              target_lat={active_hospital.위도}
+              target_lng={active_hospital.경도}
+              zoom={13}
+            />
+          )}
+          {active_extra && (
+            <MapCameraController target_lat={active_extra.위도} target_lng={active_extra.경도} zoom={13} />
+          )}
 
+          {/* 보조 지점 마커 */}
+          {extra_points.map((p) => {
+            const is_active = p.id === active_extra_id;
+            const 근사 = p.좌표_정밀도 === '시군구';
+            return (
               <CircleMarker
-                center={[h.위도, h.경도]}
-                radius={radius}
+                key={`extra-${p.id}`}
+                center={[p.위도, p.경도]}
+                radius={is_active ? 9 : 5}
                 pathOptions={{
-                  color: '#ffffff',
+                  color: is_active ? '#ff3b30' : '#ffffff',
                   weight: 2,
-                  fillColor: fill_color,
-                  fillOpacity: 0.95,
+                  dashArray: 근사 ? '3 3' : undefined,
+                  fillColor: is_active ? '#ff3b30' : '#ec4899',
+                  fillOpacity: 근사 ? 0.55 : 0.9,
                 }}
-                eventHandlers={{
-                  click: () => handle_select(h),
-                }}
+                eventHandlers={{ click: () => on_select_extra?.(p) }}
               >
-                <Tooltip direction="top" offset={[0, -10]} opacity={0.98}>
-                  <div className="p-1 space-y-1 text-left">
-                    <div className="flex items-center gap-1.5 border-b border-slate-100 pb-0.5">
-                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-800">
-                        {h.기관유형}
-                      </span>
-                      <strong className="text-xs text-slate-900">{h.기관명}</strong>
-                    </div>
-                    <div className="text-[11px] text-slate-600">
-                      총 병상 <strong>{h.의료자원.병상.총병상}</strong>병상 · {h.의료자원.응급실.구분}
-                    </div>
-                    <div className="text-[10px] text-slate-400">기준 데이터 (실시간 병상 현황 아님)</div>
+                <Tooltip direction="top" offset={[0, -8]} opacity={0.98}>
+                  <div className="p-1 space-y-0.5 text-left">
+                    <strong className="text-xs text-slate-900">{p.기관명}</strong>
+                    <div className="text-[11px] text-slate-600">{p.종별} · {p.설명}</div>
+                    {근사 && <div className="text-[10px] text-amber-600">위치: 시군구 중심 근사 (정확한 위치 아님)</div>}
                   </div>
                 </Tooltip>
               </CircleMarker>
-            </React.Fragment>
-          );
-        })}
-      </MapContainer>
+            );
+          })}
+
+          {/* 공공의료기관 마커 */}
+          {hospitals.map((h) => {
+            const is_active = active_hospital?.id === h.id;
+            const is_regional = h.기관유형.includes('권역');
+            const is_local = h.기관유형.includes('지역');
+
+            const base_color = is_regional ? '#0071e3' : is_local ? '#10b981' : '#8b5cf6';
+            const fill_color = is_active ? '#ff3b30' : base_color;
+            const radius = is_active ? 10 : is_regional ? 8 : 6;
+
+            return (
+              <React.Fragment key={`marker-${h.id}`}>
+                {is_active && (
+                  <CircleMarker
+                    center={[h.위도, h.경도]}
+                    radius={18}
+                    pathOptions={{
+                      color: '#ff3b30',
+                      weight: 2,
+                      fillColor: '#ff3b30',
+                      fillOpacity: 0.25,
+                    }}
+                  />
+                )}
+
+                <CircleMarker
+                  center={[h.위도, h.경도]}
+                  radius={radius}
+                  pathOptions={{
+                    color: '#ffffff',
+                    weight: 2,
+                    fillColor: fill_color,
+                    fillOpacity: 0.95,
+                  }}
+                  eventHandlers={{
+                    click: () => handle_select(h),
+                  }}
+                >
+                  <Tooltip direction="top" offset={[0, -10]} opacity={0.98}>
+                    <div className="p-1 space-y-1 text-left">
+                      <div className="flex items-center gap-1.5 border-b border-slate-100 pb-0.5">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-100 text-blue-800">
+                          {h.기관유형}
+                        </span>
+                        <strong className="text-xs text-slate-900">{h.기관명}</strong>
+                      </div>
+                      <div className="text-[11px] text-slate-600">
+                        총 병상 <strong>{h.의료자원.병상.총병상}</strong>병상 · {h.의료자원.응급실.구분}
+                      </div>
+                      <div className="text-[10px] text-slate-400">기준 데이터 (실시간 병상 현황 아님)</div>
+                    </div>
+                  </Tooltip>
+                </CircleMarker>
+              </React.Fragment>
+            );
+          })}
+        </MapContainer>
+      )}
     </div>
   );
 };

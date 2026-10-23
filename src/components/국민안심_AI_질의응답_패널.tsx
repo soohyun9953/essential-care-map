@@ -152,6 +152,9 @@ const AI_질의_자동완성_사전: 자동완성_아이템[] = [
   { text: '일요일 및 공휴일 당직 진료 병원 알려줘', category: '야간', keywords: ['일요일', '공휴일', '당직', '휴일진료', '공휴일병원'] }
 ];
 
+// 기본 플레이스홀더 및 Tab 즉시 질의 대표 질문
+const DEFAULT_PLACEHOLDER_QUERY = '가장 가까운 24시간 응급실과 현재 잔여 병상 알려줘';
+
 export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질의응답_패널_속성> = ({
   user_lat,
   user_lng,
@@ -209,8 +212,9 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
 
   // 키보드 네비게이션 및 Tab 수락 핸들러
   const handle_input_keydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // 1. Tab 키 또는 오른쪽 화살표: 인라인 제안 채택
+    // 1. Tab 키 또는 오른쪽 화살표: 인라인 제안 채택 및 빈 입력창 기본 미리보기 질의
     if (e.key === 'Tab' || (e.key === 'ArrowRight' && input_ref.current?.selectionStart === query_input.length)) {
+      // 1-1) 고스트 텍스트가 있을 때 (타이핑 중 제안 채택)
       if (ghost_text) {
         e.preventDefault();
         set_query_input((prev) => prev + ghost_text);
@@ -218,12 +222,23 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         setIs_suggestion_open(false);
         return;
       }
+      // 1-2) 추천 드롭다운 목록이 열려 있을 때
       if (is_suggestion_open && matched_suggestions.length > 0) {
         e.preventDefault();
         const chosen = selected_suggestion_idx >= 0 ? matched_suggestions[selected_suggestion_idx] : matched_suggestions[0];
         set_query_input(chosen.text);
         set_ghost_text('');
         setIs_suggestion_open(false);
+        handle_submit_query(chosen.text);
+        return;
+      }
+      // 1-3) 빈 입력창 상태에서 Tab 키 클릭 시 회색 미리보기 질문으로 즉시 질의
+      if (!query_input.trim()) {
+        e.preventDefault();
+        set_query_input(DEFAULT_PLACEHOLDER_QUERY);
+        set_ghost_text('');
+        setIs_suggestion_open(false);
+        handle_submit_query(DEFAULT_PLACEHOLDER_QUERY);
         return;
       }
     }
@@ -1233,12 +1248,12 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               onBlur={() => {
                 setTimeout(() => setIs_suggestion_open(false), 200);
               }}
-              placeholder={ghost_text ? '' : '예: 가장 가까운 24시간 응급실과 현재 잔여 병상 알려줘'}
+              placeholder={ghost_text ? '' : `예: ${DEFAULT_PLACEHOLDER_QUERY}`}
               disabled={is_loading}
-              className="relative z-10 w-full px-3.5 py-2 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition disabled:opacity-50 pr-16"
+              className="relative z-10 w-full px-3.5 py-2 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition disabled:opacity-50 pr-20"
             />
 
-            {/* Tab 수락 안내 배지 (고스트 텍스트가 있을 때만 우측에 표시) */}
+            {/* 1. 고스트 텍스트 수락 배지 (타이핑 중 인라인 제안 채택) */}
             {ghost_text && (
               <button
                 type="button"
@@ -1251,6 +1266,21 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
                 title="Tab 키를 누르면 자동완성됩니다"
               >
                 <span>Tab ⇥</span>
+              </button>
+            )}
+
+            {/* 2. 빈 입력창 미리보기 빠른 질의 배지 (회색 미리보기 내용으로 즉시 질의) */}
+            {!query_input.trim() && (
+              <button
+                type="button"
+                onClick={() => {
+                  set_query_input(DEFAULT_PLACEHOLDER_QUERY);
+                  handle_submit_query(DEFAULT_PLACEHOLDER_QUERY);
+                }}
+                className="absolute right-2.5 z-20 px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-700/80 hover:bg-emerald-100 dark:hover:bg-emerald-950/80 text-slate-600 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300 text-[10px] font-bold border border-slate-300 dark:border-slate-600 hover:border-emerald-400 flex items-center gap-1 shadow-2xs transition cursor-pointer"
+                title="Tab 키를 누르거나 클릭하면 회색 미리보기 질문으로 즉시 질의합니다"
+              >
+                <span>Tab ⇥ 질의</span>
               </button>
             )}
           </div>

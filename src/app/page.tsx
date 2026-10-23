@@ -529,6 +529,8 @@ export default function Home() {
               on_select_user_role={handle_select_user_role}
               active_user_role={current_user_role}
               on_open_guide_modal={() => set_is_guide_modal_open(true)}
+              on_open_kakao_modal={() => set_is_kakao_modal_open(true)}
+              kakao_map_key_registered={Boolean(kakao_map_api_key || process.env.NEXT_PUBLIC_KAKAO_MAP_KEY)}
             />
           </div>
         )}

@@ -556,6 +556,23 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               {is_dark_mode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
             </button>
 
+            {/* 5-1. 카카오맵 Web API 키 설정 버튼 (상시 노출) */}
+            {on_open_kakao_modal && (
+              <button
+                type="button"
+                onClick={on_open_kakao_modal}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition shadow-sm cursor-pointer ${
+                  kakao_map_key_registered
+                    ? "bg-amber-100/90 hover:bg-amber-200 text-amber-950 border border-amber-300 dark:bg-amber-950/70 dark:text-amber-200 dark:border-amber-800"
+                    : "bg-amber-400 hover:bg-amber-500 text-slate-900 border border-amber-500 ring-2 ring-amber-300 dark:ring-amber-600 animate-pulse"
+                }`}
+                title="카카오맵 Web API JavaScript 키 등록 및 설정"
+              >
+                <span className="w-2 h-2 rounded-full bg-slate-900" />
+                <span>{kakao_map_key_registered ? "카카오맵 연동됨" : "카카오맵 키 입력"}</span>
+              </button>
+            )}
+
             {/* 6. 관리자 & 데이터 설정 드롭다운 (가장 우측) */}
             <div className="relative" ref={admin_ref}>
               <button

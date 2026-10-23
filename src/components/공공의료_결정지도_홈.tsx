@@ -39,6 +39,8 @@ interface 공공의료_결정지도_홈_속성 {
   // 하위 호환성 핸들러
   on_search_submit?: (keyword: string, selected_services: 의료서비스_코드[]) => void;
   on_navigate_map?: (service?: 의료서비스_코드) => void;
+  on_open_kakao_modal?: () => void;
+  kakao_map_key_registered?: boolean;
 }
 
 const SAMPLE_REGIONS = ['영월군', '태백시', '강원특별자치도', '정선군'];
@@ -144,6 +146,8 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
   on_open_guide_modal,
   on_search_submit,
   on_navigate_map,
+  on_open_kakao_modal,
+  kakao_map_key_registered = false,
 }) => {
   const [search_input, setSearch_input] = useState('');
   const [active_step, set_active_step] = useState<number | null>(null);

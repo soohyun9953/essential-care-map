@@ -24,8 +24,23 @@ import {
   Key,
   RefreshCw,
   ExternalLink,
+  Bot,
+  Laptop,
 } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
+
+const 공공의료_sLLM_업무비서 = dynamic(
+  () => import('./공공의료_sLLM_업무비서').then((mod) => mod.공공의료_sLLM_업무비서),
+  {
+    loading: () => (
+      <div className="p-8 text-center text-slate-500 font-bold">
+        로컬 LLM vs Gemini 비교 스튜디오 로딩 중...
+      </div>
+    ),
+    ssr: false,
+  }
+);
 
 interface 관리자_통합_모달_속성 {
   is_open: boolean;
@@ -36,9 +51,10 @@ interface 관리자_통합_모달_속성 {
   on_open_gemini_modal?: () => void;
   on_open_data_modal?: () => void;
   on_open_guide_modal?: () => void;
+  on_open_llm_compare?: () => void;
 }
 
-type 관리자_탭_유형 = 'dashboard' | 'data' | 'ai' | 'quality';
+type 관리자_탭_유형 = 'dashboard' | 'data' | 'ai' | 'quality' | 'llm_compare';
 
 export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> = ({
   is_open,
@@ -49,14 +65,15 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
   on_open_gemini_modal,
   on_open_data_modal,
   on_open_guide_modal,
+  on_open_llm_compare,
 }) => {
   const [active_tab, setActive_tab] = useState<관리자_탭_유형>('dashboard');
 
   if (!is_open) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-4xl bg-white dark:bg-[#15161b] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+      <div className="w-full max-w-6xl bg-white dark:bg-[#15161b] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* 모달 헤더 */}
         <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-2.5">
@@ -87,6 +104,7 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
         <div className="flex items-center gap-2 px-5 py-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 text-xs font-bold overflow-x-auto">
           {[
             { id: 'dashboard' as const, label: 'Dashboard 요약', icon: BarChart3 },
+            { id: 'llm_compare' as const, label: '로컬 LLM vs Gemini 비교', icon: Bot },
             { id: 'data' as const, label: '데이터 관리 (5대 자산)', icon: Database },
             { id: 'ai' as const, label: 'AI 프롬프트/템플릿 관리', icon: Cpu },
             { id: 'quality' as const, label: '품질 & 검증 관리', icon: ShieldCheck },
@@ -194,7 +212,54 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
                       키 설정
                     </button>
                   </div>
+
+                  {/* Local sLLM vs Google Gemini Dual AI */}
+                  <div className="p-3.5 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 flex items-center justify-between sm:col-span-2">
+                    <div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <div className="w-2.5 h-2.5 rounded-full bg-purple-500" />
+                        <span className="text-purple-950 dark:text-purple-200">Local sLLM (원내 폐쇄망 보안) vs Google Gemini 듀얼 스튜디오</span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400 block mt-0.5">
+                        클라우드 API vs 로컬 모델(Qwen2.5 / Ollama) 1:1 비교 질의, 답변 속도 및 보안성 실시간 검증
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setActive_tab('llm_compare')}
+                      className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-bold text-[11px] transition cursor-pointer flex items-center gap-1 shadow-xs shrink-0"
+                    >
+                      <Bot className="w-3.5 h-3.5" />
+                      <span>1:1 비교 실행</span>
+                    </button>
+                  </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* ============================================================== */}
+          {/* TAB: 로컬 LLM vs Gemini 비교 스튜디오                          */}
+          {/* ============================================================== */}
+          {active_tab === 'llm_compare' && (
+            <div className="space-y-4">
+              <div className="p-4 rounded-2xl bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-black text-purple-950 dark:text-purple-200 flex items-center gap-2">
+                    <Bot className="w-4 h-4 text-purple-600" />
+                    <span>로컬 LLM(sLLM) vs Google Gemini 1:1 비교 스튜디오</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                      Dual AI
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    동일한 공공의료 정책 질의 및 사업계획서 생성 요청에 대해 원내 폐쇄망 sLLM(Qwen2.5)과 클라우드 Gemini의 응답 품질, 답변 속도, 비용, 보안성을 1:1로 비교 분석합니다.
+                  </p>
+                </div>
+              </div>
+
+              {/* 비교 스튜디오 본체 임베드 */}
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#15161b] p-2">
+                <공공의료_sLLM_업무비서 />
               </div>
             </div>
           )}
@@ -289,6 +354,25 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
                   <p className="text-[11px] text-slate-500 leading-relaxed">
                     재생성 시 직전 파라미터 로컬 보존 및 시뮬레이션 결과 캐싱 지원
                   </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800 space-y-1.5 flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-purple-950 dark:text-purple-200 flex items-center gap-1.5">
+                      <Bot className="w-3.5 h-3.5 text-purple-600" />
+                      <span>4. 로컬 sLLM vs Google Gemini 비교 검증</span>
+                    </span>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mt-0.5">
+                      원내 폐쇄망 특화 sLLM과 클라우드 대규모 모델의 1:1 비교 스튜디오 실행
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setActive_tab('llm_compare')}
+                    className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs transition cursor-pointer shrink-0"
+                  >
+                    비교 탭 열기
+                  </button>
                 </div>
               </div>
             </div>

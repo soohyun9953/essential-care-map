@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Check,
   Building2,
+  Bot,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
 import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
@@ -68,6 +69,7 @@ interface 글로벌_공공_헤더_속성 {
   on_open_grounding_modal: () => void;
   on_open_guide_modal?: () => void;
   on_open_admin_dashboard?: () => void;
+  on_open_llm_compare?: () => void;
   on_download_nmc_excel?: () => void;
 
   on_export_capture?: () => void;
@@ -140,6 +142,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   on_open_grounding_modal,
   on_open_guide_modal,
   on_open_admin_dashboard,
+  on_open_llm_compare,
   on_download_nmc_excel,
   on_export_capture,
   google_key_registered,
@@ -634,6 +637,20 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                       <span className="text-blue-900 dark:text-blue-200 font-bold">데이터·사업가이드 총람</span>
                     </div>
                     <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-blue-200/50 dark:border-blue-800/50">안내</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      on_open_llm_compare?.();
+                      set_is_admin_open(false);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-purple-50/70 dark:bg-purple-950/40 hover:bg-purple-100/80 dark:hover:bg-purple-900/50 text-left transition mb-1 border border-purple-200/60 dark:border-purple-800/60 cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <Bot className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                      <span className="text-purple-950 dark:text-purple-200 font-bold">로컬 LLM vs Gemini 비교</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-purple-600 dark:text-purple-300 bg-white dark:bg-purple-950 px-1.5 py-0.5 rounded border border-purple-200 dark:border-purple-800">Dual AI</span>
                   </button>
 
                   <button

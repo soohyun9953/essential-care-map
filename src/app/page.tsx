@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 // Essential Care Map - 공공의료 의사결정 지원 플랫폼
 // 5대 Global Workspace 통합 라우팅 및 상태 관리:
@@ -68,6 +68,7 @@ import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_�
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
+import { 로컬_LLM_제미나이_비교_모달 } from '@/components/로컬_LLM_제미나이_비교_모달';
 import { 보안_로그인_모달 } from '@/components/보안_로그인_모달';
 import { 담당자별_검토_가이드_모달 } from '@/components/담당자별_검토_가이드_모달';
 import { IspProvider, PersonaInfo } from '@/context/ISP_컨텍스트';
@@ -153,6 +154,7 @@ export default function Home() {
   const [is_key_modal_open, set_is_key_modal_open] = useState(false);
   const [is_data_go_kr_modal_open, set_is_data_go_kr_modal_open] = useState(false);
   const [is_admin_dashboard_open, set_is_admin_dashboard_open] = useState(false);
+  const [is_llm_compare_modal_open, set_is_llm_compare_modal_open] = useState(false);
   const [is_review_guide_open, set_is_review_guide_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
@@ -464,6 +466,7 @@ export default function Home() {
         on_open_grounding_modal={() => set_is_grounding_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
         on_open_admin_dashboard={() => set_is_admin_dashboard_open(true)}
+        on_open_llm_compare={() => set_is_llm_compare_modal_open(true)}
         on_download_nmc_excel={handle_download_nmc_excel}
         on_export_capture={handle_export_report_png}
         is_dark_mode={is_dark_mode}
@@ -650,6 +653,17 @@ export default function Home() {
         on_open_gemini_modal={() => set_is_key_modal_open(true)}
         on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
+        on_open_llm_compare={() => set_is_llm_compare_modal_open(true)}
+      />
+
+      {/* 로컬 LLM vs Google Gemini 1:1 비교 스튜디오 전용 팝업 모달 */}
+      <로컬_LLM_제미나이_비교_모달
+        is_open={is_llm_compare_modal_open}
+        on_close={() => set_is_llm_compare_modal_open(false)}
+        selected_region={selected_region}
+        on_navigate_ai_workspace={() => {
+          set_current_workspace('ai_analysis');
+        }}
       />
 
       {/* 보안 로그인 및 인가 패스워드 검증 모달 */}

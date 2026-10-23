@@ -229,7 +229,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         set_query_input(chosen.text);
         set_ghost_text('');
         setIs_suggestion_open(false);
-        handle_submit_query(chosen.text);
+        input_ref.current?.focus();
         return;
       }
       // 1-3) 빈 입력창 상태에서 Tab 키 클릭 시 회색 미리보기 질문으로 즉시 질의
@@ -238,7 +238,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         set_query_input(DEFAULT_PLACEHOLDER_QUERY);
         set_ghost_text('');
         setIs_suggestion_open(false);
-        handle_submit_query(DEFAULT_PLACEHOLDER_QUERY);
+        input_ref.current?.focus();
         return;
       }
     }
@@ -1275,12 +1275,14 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
                 type="button"
                 onClick={() => {
                   set_query_input(DEFAULT_PLACEHOLDER_QUERY);
-                  handle_submit_query(DEFAULT_PLACEHOLDER_QUERY);
+                  set_ghost_text('');
+                  setIs_suggestion_open(false);
+                  input_ref.current?.focus();
                 }}
                 className="absolute right-2.5 z-20 px-2 py-0.5 rounded-lg bg-slate-200/80 dark:bg-slate-700/80 hover:bg-emerald-100 dark:hover:bg-emerald-950/80 text-slate-600 hover:text-emerald-700 dark:text-slate-300 dark:hover:text-emerald-300 text-[10px] font-bold border border-slate-300 dark:border-slate-600 hover:border-emerald-400 flex items-center gap-1 shadow-2xs transition cursor-pointer"
-                title="Tab 키를 누르거나 클릭하면 회색 미리보기 질문으로 즉시 질의합니다"
+                title="Tab 키를 누르거나 클릭하면 회색 미리보기 질문이 입력창에 채워집니다"
               >
-                <span>Tab ⇥ 질의</span>
+                <span>Tab ⇥ 입력</span>
               </button>
             )}
           </div>

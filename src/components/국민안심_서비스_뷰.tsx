@@ -352,12 +352,30 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       }))
       .filter((h) => {
         const query = search_text.trim().toLowerCase();
+        if (!query) {
+          if (selected_service === 'all') return true;
+          const 운영_추정 = (code: string) => h.서비스_상세.some((s) => s.코드 === code && s.상태 === '운영');
+          if (selected_service === 'emergency') return 운영_추정('emergency');
+          if (selected_service === 'pediatric') return 운영_추정('pediatric');
+          if (selected_service === 'delivery') return 운영_추정('delivery');
+          if (selected_service === 'night') return 운영_추정('emergency');
+          if (selected_service === 'inpatient') return 운영_추정('inpatient');
+          return true;
+        }
+
+        const tokens = query.split(/\s+/).filter(Boolean);
         const match_search =
-          !query ||
           h.기관명.toLowerCase().includes(query) ||
           h.시군구명.toLowerCase().includes(query) ||
           h.시도명.toLowerCase().includes(query) ||
-          h.진료권명.toLowerCase().includes(query);
+          h.진료권명.toLowerCase().includes(query) ||
+          query.includes(h.시군구명.toLowerCase()) ||
+          tokens.some(
+            (token) =>
+              h.기관명.toLowerCase().includes(token) ||
+              h.시군구명.toLowerCase().includes(token) ||
+              h.시도명.toLowerCase().includes(token)
+          );
 
         if (!match_search) return false;
         if (selected_service === 'all') return true;
@@ -397,19 +415,38 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
   const 민간_목록 = useMemo(() => {
     const query = search_text.trim().toLowerCase();
+    if (!query) {
+      return 외부_원본.map((h) => ({
+        h,
+        거리:
+          h.위도 !== null && h.경도 !== null
+            ? parseFloat(calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도))
+            : null,
+      }));
+    }
+    const tokens = query.split(/\s+/).filter(Boolean);
     return 외부_원본
       .filter(
         (h) =>
-          !query ||
           h.기관명.toLowerCase().includes(query) ||
           h.지역.toLowerCase().includes(query) ||
-          h.주소.toLowerCase().includes(query)
+          h.주소.toLowerCase().includes(query) ||
+          query.includes(h.지역.toLowerCase()) ||
+          tokens.some(
+            (token) =>
+              h.기관명.toLowerCase().includes(token) ||
+              h.지역.toLowerCase().includes(token) ||
+              h.주소.toLowerCase().includes(token)
+          )
       )
       .map((h) => ({
         h,
-        거리: h.위도 !== null && h.경도 !== null ? parseFloat(calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도)) : null,
+        거리:
+          h.위도 !== null && h.경도 !== null
+            ? parseFloat(calculate_distance(user_location.lat, user_location.lng, h.위도, h.경도))
+            : null,
       }));
-  }, [user_location, selected_service, search_text]);
+  }, [user_location, selected_service, search_text, 외부_원본]);
 
   // 공공병원 + 민간 기관 통합 거리순 목록
   type 표시_항목 =

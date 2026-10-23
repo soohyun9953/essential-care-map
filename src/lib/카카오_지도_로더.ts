@@ -61,9 +61,11 @@ export function loadKakaoMap(overrideKey?: string): Promise<typeof window.kakao.
     const onScriptLoaded = () => {
       if (!window.kakao || !window.kakao.maps) {
         loadPromise = null;
+        script?.remove(); // 실패한 스크립트 태그를 DOM에서 반드시 제거하여 다음 시도 시 재로드 가능하게 함
+        const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
         reject(
           new KakaoMapLoadError(
-            '카카오 지도 SDK 스크립트가 로드되었으나 window.kakao.maps 객체를 찾을 수 없습니다. 도메인 등록(http://localhost:3000)을 확인해주세요.',
+            `카카오 지도 SDK 스크립트가 로드되었으나 kakao.maps 객체를 찾을 수 없습니다. 카카오 개발자 콘솔의 사이트 도메인에 [${origin}]이 등록되어 있는지 확인해주세요. (끝 슬래시 없이 프로토콜 포함)`,
             'INIT_FAILED'
           )
         );
@@ -77,6 +79,7 @@ export function loadKakaoMap(overrideKey?: string): Promise<typeof window.kakao.
         });
       } catch (err: any) {
         loadPromise = null;
+        script?.remove();
         reject(
           new KakaoMapLoadError(
             `카카오 지도 초기화(kakao.maps.load) 중 오류가 발생했습니다: ${err?.message || err}`,
@@ -92,8 +95,9 @@ export function loadKakaoMap(overrideKey?: string): Promise<typeof window.kakao.
         resolve(window.kakao.maps);
         return;
       }
-      script.addEventListener('load', onScriptLoaded, { once: true });
-      return;
+      // 아직 초기화되지 않았거나 실패한 기존 스크립트 엘리먼트는 제거하고 깨끗하게 새로 삽입
+      script.remove();
+      script = null;
     }
 
     script = document.createElement('script');

@@ -9,7 +9,10 @@
 - 담당자 성명·연락처, 임원 성명·경력 등 개인정보 표는 수집하지 않는다
 - robots.txt 없음(404, 2026-10-10 확인). 결산서 페이지가 약 8MB(압축 미지원)여서 요청 간격을 3초로 둔다
 
+  · 세입·세출 결산서 > 감면액 (진료비 감면율·감면액, 최근 1개년) — `--감면액` 으로 따로 수집
+
 사용법: python scripts/collect_alimi_disclosure.py [기관번호 ...]
+        python scripts/collect_alimi_disclosure.py --감면액   (기존 스냅샷에 감면액만 추가)
 출력: data/alimi/지역거점공공병원_공시.json
 """
 import datetime
@@ -146,7 +149,53 @@ def 페이지_파싱(html):
     return 표들, 기준일
 
 
+감면액_경로 = 'View04.do?hospitalNumber={no}&searchYearMonth=&pageNum=02&subNum=08'
+
+
+def 감면액_파싱(html):
+    """감면액 표: 구분별 진찰료·일반 진료비·종합 검진비 감면율(%)·금액(원)과 감면총액(원)"""
+    soup = BeautifulSoup(html, 'html.parser')
+    out = {'구분': {}, '기준일': None}
+    for t in soup.find_all('table'):
+        cap = re.sub(r'\s+', ' ', t.caption.get_text(' ', strip=True)) if t.caption else ''
+        if any(k in cap for k in 제외_표):
+            continue
+        if '기준일' in cap:
+            d = 기준일_파싱(t)
+            out['기준일'] = d[0] if d else None
+            continue
+        if '감면액' not in cap:
+            continue
+        for tr in t.find_all('tr'):
+            cells = [re.sub(r'\s+', ' ', c.get_text(' ', strip=True)) for c in tr.find_all(['th', 'td'])]
+            if len(cells) == 8 and 숫자(cells[-1]) is not None:
+                out['구분'][cells[0]] = {
+                    '진찰료_율': 숫자(cells[1]), '진찰료_원': 숫자(cells[2]),
+                    '일반진료비_율': 숫자(cells[3]), '일반진료비_원': 숫자(cells[4]),
+                    '종합검진비_율': 숫자(cells[5]), '종합검진비_원': 숫자(cells[6]),
+                    '감면총액_원': 숫자(cells[7]),
+                }
+            elif cells and cells[0] == '계' and len(cells) >= 5:
+                out['총계_원'] = 숫자(cells[-1])
+    return out
+
+
+def 감면액만_수집():
+    snap = json.load(open(OUT, encoding='utf-8'))
+    for idx, h in enumerate(snap['기관'], 1):
+        html = fetch(f'{BASE}/{감면액_경로.format(no=h["기관번호"])}')
+        h['감면액'] = 감면액_파싱(html)
+        print(f'[{idx}/{len(snap["기관"])}] {h["기관명"]}: {len(h["감면액"]["구분"])}개 구분, 기준일 {h["감면액"]["기준일"]}')
+        time.sleep(간격_초)
+    snap['감면액_수집일시'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    with open(OUT, 'w', encoding='utf-8') as f:
+        json.dump(snap, f, ensure_ascii=False, indent=1)
+
+
 def main():
+    if '--감면액' in sys.argv:
+        감면액만_수집()
+        return
     only = set(sys.argv[1:])
     targets = [(n, no) for n, no in 기관_목록 if not only or no in only]
     old = {}

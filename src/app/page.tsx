@@ -23,7 +23,7 @@ import { export_element_as_png } from '@/lib/유틸리티';
 // 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
 import { 글로벌_공공_헤더, 워크스페이스_타입, type 헤더_화면_모드 } from '@/components/글로벌_공공_헤더';
 import { PersonaSwitcherBar } from '@/components/PersonaSwitcherBar';
-import { 페르소나_찾기, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
+import { 페르소나_찾기, 서브탭_찾기, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
 import { 대상자별_좌측_사이드바 } from '@/components/대상자별_좌측_사이드바';
@@ -58,6 +58,22 @@ const AI분석_통합_워크스페이스 = dynamic(
 );
 const 대국민_알리미_비교 = dynamic(
   () => import('@/components/대국민_알리미_비교').then((m) => m.대국민_알리미_비교),
+  { loading: 워크스페이스_로딩 }
+);
+const 대국민_필수의료_모니터링 = dynamic(
+  () => import('@/components/대국민_필수의료_모니터링').then((m) => m.대국민_필수의료_모니터링),
+  { loading: 워크스페이스_로딩 }
+);
+const 대국민_공개정보_AI_안내 = dynamic(
+  () => import('@/components/대국민_공개정보_AI_안내').then((m) => m.대국민_공개정보_AI_안내),
+  { loading: 워크스페이스_로딩 }
+);
+const 공공보건의료계획_작성도우미 = dynamic(
+  () => import('@/components/공공보건의료계획_작성도우미').then((m) => m.공공보건의료계획_작성도우미),
+  { loading: 워크스페이스_로딩 }
+);
+const 퇴원환자_연계_업무화면 = dynamic(
+  () => import('@/components/퇴원환자_연계_업무화면').then((m) => m.퇴원환자_연계_업무화면),
   { loading: 워크스페이스_로딩 }
 );
 const 오분류_교정_내역_뷰 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.오분류_교정_내역_뷰), {
@@ -440,6 +456,12 @@ export default function Home() {
     handle_open_persona_subtab(페르소나_찾기(persona).서브탭[0]);
   };
 
+  // 전용 화면 종류 (persona_page일 때)
+  const persona_page_화면 = useMemo(() => {
+    const 대상 = persona_page_id ? 서브탭_찾기(persona_page_id)?.서브탭.대상 : undefined;
+    return 대상?.종류 === '전용화면' ? 대상.화면 : null;
+  }, [persona_page_id]);
+
   // 현재 화면과 일치하는 서브탭 (같은 화면을 쓰는 서브탭이 여럿이면 첫 번째)
   const active_persona_subtab_id = useMemo(() => {
     if (!active_persona) return null;
@@ -587,15 +609,27 @@ export default function Home() {
         {화면_모드 === '구조도' && <메뉴_구조도_뷰 on_open_subtab={handle_open_persona_subtab} />}
 
         {화면_모드 === '프로토타입' && (<>
-        {/* 사용자 그룹 전용 화면: 대국민 알리미 비교 / 준비 중 서브탭 안내 */}
-        {current_workspace === 'persona_page' && persona_page_id === '1-2' && <대국민_알리미_비교 />}
-        {current_workspace === 'persona_page' && persona_page_id && persona_page_id !== '1-2' && (
+        {/* 사용자 그룹 전용 화면 (1-1·1-2·1-3·2-1·2-2, 준비 중 서브탭 안내) */}
+        {current_workspace === 'persona_page' && persona_page_화면 === '대국민_필수의료_지도' && (
+          <div className="flex-1 w-full overflow-y-auto">
+            <대국민_필수의료_모니터링 />
+            <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 pb-6">
+              <div className="h-[80vh] min-h-[560px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                <국민안심_서비스_뷰 />
+              </div>
+            </div>
+          </div>
+        )}
+        {current_workspace === 'persona_page' && persona_page_화면 === '대국민_알리미_비교' && <대국민_알리미_비교 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '대국민_AI_안내' && <대국민_공개정보_AI_안내 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '작성도우미' && (
+          <공공보건의료계획_작성도우미 on_navigate={handle_navigate_from_sidebar} />
+        )}
+        {current_workspace === 'persona_page' && persona_page_화면 === '퇴원연계' && <퇴원환자_연계_업무화면 />}
+        {current_workspace === 'persona_page' && persona_page_id && persona_page_화면 === '준비중' && (
           <페르소나_준비중_화면
             subtab_id={persona_page_id}
-            on_open_citizen_map={() => {
-              set_current_user_role('citizen');
-              set_current_workspace('national_safety');
-            }}
+            on_open_citizen_map={() => handle_open_persona_subtab(서브탭_찾기('1-1')!.서브탭)}
           />
         )}
 

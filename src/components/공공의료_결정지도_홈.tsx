@@ -45,78 +45,6 @@ interface 공공의료_결정지도_홈_속성 {
 
 const SAMPLE_REGIONS = ['영월군', '태백시', '강원특별자치도', '정선군'];
 
-// 정책 의사결정 여정 정의 (※ 「정책분석 5단계」와 별개인 화면 이동 흐름)
-const JOURNEY_STEPS = [
-  {
-    step: '01',
-    title: '지역 진단',
-    desc: '필수의료 취약도를\n분석합니다',
-    workspace: 'regional_diagnosis' as const,
-    sub: undefined,
-    color: 'blue',
-    taskId: '3.8',
-    taskLabel: '과제 3.8 헬스맵 고도화',
-  },
-  {
-    step: '02',
-    title: '지역 비교',
-    desc: '유사 지역과 격차를\n확인합니다',
-    workspace: 'policy_planning' as const,
-    sub: 'compare',
-    color: 'indigo',
-    taskId: '3.8',
-    taskLabel: '과제 3.8 헬스맵 고도화',
-  },
-  {
-    step: '03',
-    title: '수요 예측',
-    desc: '2030년 의료수요를\n예측합니다',
-    workspace: 'policy_planning' as const,
-    sub: 'forecast',
-    color: 'amber',
-    taskId: '3.8',
-    taskLabel: '과제 3.8 AI 의사결정',
-  },
-  {
-    step: '04',
-    title: 'AI 정책기획',
-    desc: '정책대안을\n도출합니다',
-    workspace: 'policy_planning' as const,
-    sub: 'policy_ai',
-    color: 'emerald',
-    taskId: '3.8',
-    taskLabel: '과제 3.8 AI 의사결정',
-  },
-  {
-    step: '05',
-    title: '사업계획서',
-    desc: '실행계획을\n작성합니다',
-    workspace: 'policy_planning' as const,
-    sub: 'report',
-    color: 'purple',
-    taskId: '3.4',
-    taskLabel: '과제 3.4 기능보강 PMS',
-  },
-  {
-    step: '06',
-    title: '시행계획 평가',
-    desc: '100점 평가표 산출\n및 AI 6단계 심사',
-    workspace: 'policy_planning' as const,
-    sub: 'evaluation',
-    color: 'indigo',
-    taskId: '3.4',
-    taskLabel: '과제 3.4 시행계획 AI 평가',
-  },
-];
-
-const STEP_COLOR_MAP: Record<string, { ring: string; text: string; bg: string; border: string; badge: string }> = {
-  blue:    { ring: 'ring-blue-600',   text: 'text-blue-600',   bg: 'bg-blue-600',   border: 'border-blue-200', badge: 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300' },
-  indigo:  { ring: 'ring-indigo-600', text: 'text-indigo-600', bg: 'bg-indigo-600', border: 'border-indigo-200', badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300' },
-  amber:   { ring: 'ring-amber-500',  text: 'text-amber-600',  bg: 'bg-amber-500',  border: 'border-amber-200', badge: 'bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300' },
-  emerald: { ring: 'ring-emerald-600',text: 'text-emerald-600',bg: 'bg-emerald-600',border: 'border-emerald-200',badge: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300' },
-  purple:  { ring: 'ring-purple-600', text: 'text-purple-600', bg: 'bg-purple-600', border: 'border-purple-200', badge: 'bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300' },
-};
-
 // 미리보기 데이터 (영월군 예시 - DEMO DATA 명시)
 const PREVIEW_REGION = {
   name: '영월군',
@@ -150,7 +78,6 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
   kakao_map_key_registered = false,
 }) => {
   const [search_input, setSearch_input] = useState('');
-  const [active_step, set_active_step] = useState<number | null>(null);
 
   const handle_submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,9 +94,6 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
     on_search_region(region);
   };
 
-  const handle_step_click = (step: typeof JOURNEY_STEPS[0]) => {
-    on_navigate_workspace(step.workspace, step.sub);
-  };
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-10 sm:py-14 space-y-14 animate-in fade-in duration-300">
@@ -532,66 +456,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
         </div>
       </div>
 
-      {/* ================================================================== */}
-      {/* 2. 정책 의사결정 여정 Stepper (화면 이동 흐름)                         */}
-      {/* ================================================================== */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-2 px-1">
-          <div className="w-1 h-5 rounded-full bg-blue-700" />
-          <span className="text-sm font-bold text-slate-700 dark:text-slate-200">정책 의사결정 여정 · 진단부터 사업계획서 및 시행계획 평가까지</span>
-          <span className="text-xs text-slate-400">각 단계를 클릭해 바로 이동할 수 있습니다</span>
-        </div>
-
-        {/* 스텝 컨테이너 */}
-        <div className="relative">
-          {/* 연결선 (데스크탑) */}
-          <div className="hidden lg:block absolute top-[2.4rem] left-[8%] right-[8%] h-0.5 bg-slate-200 dark:bg-slate-700 z-0" />
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 relative z-10">
-            {JOURNEY_STEPS.map((step, idx) => {
-              const colors = STEP_COLOR_MAP[step.color];
-              const isActive = active_step === idx;
-              return (
-                <button
-                  key={step.step}
-                  type="button"
-                  onClick={() => { set_active_step(idx); handle_step_click(step); }}
-                  className={`flex flex-col items-center gap-2.5 p-3.5 sm:p-4 rounded-2xl border bg-white dark:bg-[#15161b] transition-all cursor-pointer group text-center
-                    ${isActive
-                      ? `border-${step.color}-400 shadow-lg ring-2 ${colors.ring}/30`
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 hover:shadow-md'
-                    }`}
-                >
-
-                  {/* 단계 번호 원 */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-2 transition-all
-                    ${isActive
-                      ? `${colors.bg} text-white border-transparent shadow-md`
-                      : `bg-slate-50 dark:bg-slate-900 ${colors.text} border-slate-200 dark:border-slate-700 group-hover:${colors.bg} group-hover:text-white group-hover:border-transparent`
-                    }`}>
-                    {step.step}
-                  </div>
-
-                  {/* 단계 제목 */}
-                  <div className="space-y-1">
-                    <div className={`text-sm font-bold ${isActive ? colors.text : 'text-slate-800 dark:text-slate-200'}`}>
-                      {step.title}
-                    </div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400 leading-snug whitespace-pre-line hidden sm:block">
-                      {step.desc}
-                    </div>
-                  </div>
-
-                  {/* 연결 화살표 (모바일용) */}
-                  {idx < JOURNEY_STEPS.length - 1 && (
-                    <ArrowRight className={`w-4 h-4 absolute right-[-10px] top-[2.4rem] text-slate-300 hidden lg:block`} />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
+      {/* 정책 의사결정 여정 5단계 스테퍼는 ② 의료기관 담당자 › 2-1 작성 도우미로 이동 (정책_의사결정_여정_스테퍼.tsx) */}
 
       {/* ================================================================== */}
       {/* 3. 미리보기 카드 + 4대 Quick Action 카드                               */}

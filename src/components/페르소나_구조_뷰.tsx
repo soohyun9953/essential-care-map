@@ -178,7 +178,7 @@ export function 페르소나_준비중_화면({ subtab_id, on_open_citizen_map }
             onClick={on_open_citizen_map}
             className="mt-2 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold cursor-pointer"
           >
-            분만 가능 기관·NICU 검색 (국민안심 지도) 열기
+            분만 가능 기관 지도 열기 (① 1-1)
           </button>
         )}
       </div>

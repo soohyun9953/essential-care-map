@@ -81,19 +81,35 @@ def main():
                 연도별[y][field] = v
         # 결산 기준일·제출일 (첫 번째 기준일 표)
         결산_기준 = next(iter(h['기준일'].get('결산서', {}).values()), [])
+        # 진료비 감면액 (최근 1개년): 취약계층(기타감면) 행과 전체 감면총액
+        감면 = h.get('감면액') or {}
+        취약 = next((v for k, v in 감면.get('구분', {}).items() if '취약' in k), None)
+        감면액 = (
+            {
+                '기준일': 감면.get('기준일'),
+                '취약계층_감면총액_원': 취약['감면총액_원'],
+                '취약계층_진찰료_율': 취약['진찰료_율'],
+                '취약계층_일반진료비_율': 취약['일반진료비_율'],
+                '취약계층_종합검진비_율': 취약['종합검진비_율'],
+                '전체_감면총액_원': 감면.get('총계_원'),
+            }
+            if 취약
+            else None
+        )
         items.append({
             '기관명': h['기관명'],
             '기관번호': h['기관번호'],
             '유형': 유형(h['기관명']),
             '결산_기준일': 결산_기준[0] if len(결산_기준) > 0 else None,
             '결산_제출일': 결산_기준[1] if len(결산_기준) > 1 else None,
+            '감면액': 감면액,
             '연도별': [연도별[y] for y in years],
         })
 
     fields = '\n'.join(f'  {k}: number | null;' for k in 항목_정의)
     ts = f"""// 자동 생성 파일: scripts/generate_alimi_dataset.py 로 생성 (직접 수정 금지)
 // 출처: {snap['출처']}
-// 수집일시: {snap['수집일시']} (scripts/collect_alimi_disclosure.py), 단위: {snap['단위']}
+// 수집일시: {snap['수집일시']} (감면액 {snap.get('감면액_수집일시') or '-'}) (scripts/collect_alimi_disclosure.py), 단위: {snap['단위']} (감면액은 원)
 // 공시값을 그대로 옮김 (보정·추정 없음). 공시가 비어 있으면 null
 
 export interface 알리미_연도별_공시 {{
@@ -107,6 +123,15 @@ export interface 알리미_기관_공시 {{
   유형: '지방의료원' | '적십자병원' | '분원';
   결산_기준일: string | null;
   결산_제출일: string | null;
+  // 진료비 감면액 공시 (최근 1개년, 금액 원, 율 %) — 없으면 null
+  감면액: {{
+    기준일: string | null;
+    취약계층_감면총액_원: number | null;
+    취약계층_진찰료_율: number | null;
+    취약계층_일반진료비_율: number | null;
+    취약계층_종합검진비_율: number | null;
+    전체_감면총액_원: number | null;
+  }} | null;
   연도별: 알리미_연도별_공시[];
 }}
 
@@ -115,6 +140,7 @@ export const 알리미_공시_출처 = {{
   자료명: '지역거점공공병원 알리미 기관별 통합공시',
   URL: 'https://rhs.mohw.go.kr',
   수집일시: '{snap['수집일시']}',
+  감면액_수집일시: '{snap.get('감면액_수집일시') or ''}',
   공시연도: '{years[0]}~{years[-1]}년',
   단위: '금액 천원, 인원 명',
 }} as const;

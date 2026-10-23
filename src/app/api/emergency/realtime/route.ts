@@ -131,6 +131,7 @@ function parse_xml_items(xml: string, time_str: string): 실시간_응급실_기
     const hv2 = parseInt(get_val('hv2') || '0', 10);   // 내과중환자실
     const hvcc = parseInt(get_val('hvcc') || '0', 10); // 신경과중환자실
     const hvncc = parseInt(get_val('hvncc') || '0', 10); // 신생아중환자실
+    const hv28 = parseInt(get_val('hv28') || '0', 10); // 응급실 소아 병상
     const dutyTel3 = get_val('dutyTel3') || '033-370-9114';
 
     const ct_yn = get_val('hvctayn') === 'Y';
@@ -156,7 +157,8 @@ function parse_xml_items(xml: string, time_str: string): 실시간_응급실_기
         전화번호: dutyTel3,
         응급실_가용병상: Math.max(0, hvec),
         응급실_총병상: 20,
-        소아_가용병상: Math.max(0, hvncc),
+        소아_가용병상: Math.max(0, hv28), // E-Gen hv28 (응급실 소아). 이전에는 신생아중환자실(hvncc)을 잘못 넣고 있었음
+        신생아중환자실_가용병상: Math.max(0, hvncc),
         음압격리_가용병상: 1,
         중환자실_가용병상: Math.max(0, hv2 + hvcc),
         장비가동상태: {

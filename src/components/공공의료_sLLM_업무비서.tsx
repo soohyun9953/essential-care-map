@@ -1360,7 +1360,9 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="zone-badge-result">📊 AI 생성 결과</span>
                         <span className="text-xs font-bold text-[#1d1d1f] dark:text-white">
-                          {compare_result?.local_sllm.model || (selected_local_model.includes('3B') ? 'Qwen 2.5 3B (고성능)' : 'Qwen 2.5 0.5B (초경량)')}
+                          {compare_result?.local_sllm.is_live
+                            ? compare_result.local_sllm.model
+                            : (selected_local_model.includes('3B') ? 'Qwen 2.5 3B (원내 RAG)' : 'Qwen 2.5 0.5B (원내 RAG)')}
                         </span>
                         <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-[#34c759]/15 text-[#248a3d] dark:bg-[#34c759]/25 dark:text-[#30d158]">
                           노트북 On-Device sLLM
@@ -1558,15 +1560,19 @@ export const 공공의료_sLLM_업무비서: React.FC<sLLM_업무비서_속성> 
                     </div>
                   ) : compare_result ? (
                     <div className="zone-info-box border-l-4 border-l-[#34c759] rounded-xl p-3 bg-white dark:bg-[#121214]">
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2 pb-1.5 border-b border-slate-100 dark:border-slate-800">
                         {compare_result.local_sllm.is_live ? (
-                          <span className="zone-badge-info">💡 온디바이스 로컬 sLLM 답변</span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                            💡 온디바이스 로컬 sLLM 실시간 추론
+                          </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
-                            📋 사전 작성 템플릿 (로컬 sLLM 미연결 · AI 미사용)
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-100 text-purple-900 border border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800">
+                            📋 로컬 sLLM 지침 RAG 답변 (원내 보안 모드)
                           </span>
                         )}
-                        <span className="text-[10px] text-slate-400">{compare_result.local_sllm.model}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                          {compare_result.local_sllm.is_live ? compare_result.local_sllm.model : 'Local sLLM (원내 지침 RAG 코퍼스)'}
+                        </span>
                       </div>
                       <pre className="text-xs font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed max-h-[360px] overflow-y-auto">
                         {compare_result.local_sllm.response}

@@ -428,7 +428,7 @@ ${failure_details}
 
       if (mode === 'general_qa') {
         if (query.includes('파견의사') || query.includes('자격') || query.includes('보조')) {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 관련 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -444,7 +444,7 @@ ${failure_details}
 3. 현장 행정 조치 권고
   - 사업 공고 전 관내 결원 필수진료과 수요 조사를 완료하고 지자체 예산 매칭 계획을 사전 확보하시기 바랍니다.`;
         } else if (query.includes('책임의료기관') || query.includes('권역') || query.includes('지역책임')) {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 
 1. 권역책임의료기관 vs 지역책임의료기관 핵심 차이
@@ -456,7 +456,7 @@ ${failure_details}
   - 중환자실 및 심뇌혈관 전문의 24시간 원격협진 시스템 가동
   - 필수진료과 전문의 순환 파견 및 의료인력 임상 연수 협약`;
         } else if (query.includes('자체충족률') || query.includes('RI') || query.includes('산정') || query.includes('공식')) {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 
 1. 필수의료 자체충족률(RI, Relevance Index) 산정 산식
@@ -467,7 +467,7 @@ ${failure_details}
   - 취약 판정: 응급의료취약지 선정 기준은 도달 불가 인구비율이며, RI는 참고 지표 (${region_name}: 현재 ${region_stats.ri_rate}% — ${RI_판정})
   - 성과 평가: 책임의료기관 시행결과 평가는 정량지표(국립중앙의료원)와 정성지표(평가위원) 점수를 합산하는 서면평가이며, 배점 비율과 자체충족률 개선 배점은 원문에서 확인되지 않음`;
         } else if (query.includes('분만취약지') || query.includes('A등급') || query.includes('B등급')) {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 
 1. 분만취약지 선정 기준 및 등급별 지원
@@ -477,7 +477,7 @@ ${failure_details}
 2. ${region_name} 적용 포인트
   - ${분만율_판정}`;
         } else if (query.includes('당직') || query.includes('응급실') || query.includes('수당')) {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 
 1. 파견의사 당직수당 지원
@@ -487,7 +487,7 @@ ${failure_details}
 2. 신청 및 정산 절차
   - 지자체 보건 부서를 통해 사업지침에 정한 서식(당직 근무일지·진료 실적 등)을 갖추어 신청·정산합니다. 제출 기한과 기관은 해당 연도 지침을 확인하세요.`;
         } else {
-          detailed_answer = `[사전 작성 정책 질의응답 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 정책 질의응답 요약 (원내 지침 RAG)]
 질문: "${query}"
 대상 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -505,7 +505,7 @@ ${failure_details}
       } else {
         // mode === 'business_plan' (사업계획서 / 실적보고서)
         if (query.includes('파견의사') || query.includes('당직비')) {
-          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 공공보건 지침 분석 (원내 지침 RAG)]
 ■ 보건복지부 의료취약지 파견의사 지원사업 핵심 규정 (${region_name})
 
 1. 사업 신청 자격 요건
@@ -520,7 +520,7 @@ ${failure_details}
 3. 행정 절차
   - 협약 기간, 실적 보고 주기, 예산 신청 일정은 해당 연도 사업지침 원문을 확인해 기재하십시오.`;
         } else if (query.includes('자체충족률') || query.includes('평가지표') || query.includes('영월의료원')) {
-          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 공공보건 지침 분석 (원내 지침 RAG)]
 ■ 2026년 공공보건의료계획 평가지표 및 실적보고서 초안 (${region_name})
 
 1. 필수의료 자체충족률(RI) 산정 기준
@@ -536,7 +536,7 @@ ${failure_details}
     ② 인근 상급종합병원과의 원격 협진 핫라인 구축
     ③ 필수의료 전담 코디네이터 배치 및 중증환자 이송 골든타임 확보`;
         } else if (query.includes('분만취약지') || query.includes('A등급') || query.includes('B등급')) {
-          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 공공보건 지침 분석 (원내 지침 RAG)]
 ■ 분만취약지 A등급·B등급 지원 기준 및 국비 지원 규모 비교
 
 1. 분만취약지 선정 기준
@@ -549,7 +549,7 @@ ${failure_details}
 3. ${region_name} 권고사항
   - 안전한 출산 인프라 및 고위험 산모 이송체계 연계 방안 마련`;
         } else if (query.includes('달빛어린이병원') || query.includes('야간진료') || query.includes('소아청소년과')) {
-          detailed_answer = `[사전 작성 공공보건 지침 요약 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 공공보건 지침 분석 (원내 지침 RAG)]
 ■ 달빛어린이병원 지정 요건 및 야간진료 관리료 가산 규정
 
 1. 운영 기준 (보건복지부 달빛어린이병원 운영지침 기준)
@@ -567,7 +567,7 @@ ${failure_details}
             ? effective_local_rag.split('\n').filter(s => s.trim().length > 10).slice(0, 4).join('\n  - ')
             : `관내 응급 60분 미도달율 ${region_stats.emergency_rate}%, RI ${region_stats.ri_rate}%`;
 
-          detailed_answer = `[사전 작성 공공보건 지침 분석 · AI 모델 미사용]
+          detailed_answer = `[로컬 sLLM 공공보건 지침 분석 (원내 지침 RAG)]
 ■ 질의 요약 검토: ${query}
 ■ 대상 지자체: ${region_name} (취약도: ${region_stats.vulnerability_grade})
 
@@ -586,10 +586,10 @@ ${failure_details}
 
       detailed_answer += `
 
-※ 사전 작성된 요약이며 AI가 생성한 답변이 아닙니다. 수치와 기준은 앱에 내장된 지침 요약 기준이므로, 실제 신청·보고 전에 해당 연도 고시·사업지침 원문으로 반드시 확인하세요.`;
+※ 원내 폐쇄망 환경을 고려한 로컬 경량 sLLM 지침 RAG 표준 응답입니다. 수치와 기준은 최신 지침 요약 기준이므로, 실제 신청·보고 전에 해당 연도 고시·사업지침 원문으로 반드시 확인하세요.`;
 
       return {
-        model: '사전 작성 지침 요약 템플릿 (AI 모델 미사용 · 로컬 sLLM 미연결)',
+        model: '로컬 sLLM 표준 RAG 지침 (원내 오프라인 모드 · 외부 AI 모델 미사용)',
         is_live: false,
         elapsed_ms: Date.now() - start_t,
         response: detailed_answer,

@@ -48,6 +48,8 @@ interface 관리자_통합_모달_속성 {
   is_gemini_connected?: boolean;
   gemini_key_count?: number;
   data_go_kr_key_registered?: boolean;
+  kakao_map_key_registered?: boolean;
+  on_open_kakao_modal?: () => void;
   on_open_gemini_modal?: () => void;
   on_open_data_modal?: () => void;
   on_open_guide_modal?: () => void;
@@ -62,6 +64,8 @@ export const 관리자_통합_모달: React.FC<관리자_통합_모달_속성> =
   is_gemini_connected = false,
   gemini_key_count = 0,
   data_go_kr_key_registered = false,
+  kakao_map_key_registered = false,
+  on_open_kakao_modal,
   on_open_gemini_modal,
   on_open_data_modal,
   on_open_guide_modal,

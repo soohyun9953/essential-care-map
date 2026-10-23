@@ -77,6 +77,8 @@ interface 글로벌_공공_헤더_속성 {
   google_api_key_registered?: boolean;
   google_api_key?: string;
   data_go_kr_key_registered?: boolean;
+  kakao_map_key_registered?: boolean;
+  on_open_kakao_modal?: () => void;
   on_search_query?: (query: string) => void;
   vulnerable_region_count?: number;
   is_authenticated?: boolean;
@@ -149,6 +151,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   google_api_key_registered,
   google_api_key,
   data_go_kr_key_registered,
+  kakao_map_key_registered = false,
+  on_open_kakao_modal,
   on_search_query,
   vulnerable_region_count = 82,
   is_authenticated = false,

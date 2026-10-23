@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { API키_불러오기, API키_기기저장_여부, API키_저장하기, API키_삭제하기 } from './API키_저장소';
+import { API키_불러오기, API키_기기저장_여부, API키_저장하기, API키_삭제하기, 카카오_지도_API키_불러오기 } from './API키_저장소';
 
 // 브라우저 Storage 최소 구현 (node 환경에서 sessionStorage/localStorage 대체)
 class 메모리_저장소 {
@@ -77,5 +77,19 @@ describe('API키_저장소', () => {
   it('서버 렌더링(window 없음)에서는 빈 값', () => {
     vi.stubGlobal('window', undefined);
     expect(API키_불러오기('google_gemini_api_key')).toBe('');
+  });
+
+  it('카카오_지도_API키_불러오기는 저장소 키를 최우선으로 읽고, 저장소 키가 없으면 환경변수를 읽는다', () => {
+    process.env.NEXT_PUBLIC_KAKAO_MAP_KEY = 'ENV_KAKAO_KEY';
+    expect(카카오_지도_API키_불러오기()).toBe('ENV_KAKAO_KEY');
+
+    API키_저장하기('kakao_map_api_key', 'STORED_KAKAO_KEY', false);
+    expect(카카오_지도_API키_불러오기()).toBe('STORED_KAKAO_KEY');
+
+    API키_삭제하기('kakao_map_api_key');
+    expect(카카오_지도_API키_불러오기()).toBe('ENV_KAKAO_KEY');
+
+    delete process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
+    expect(카카오_지도_API키_불러오기()).toBe('');
   });
 });

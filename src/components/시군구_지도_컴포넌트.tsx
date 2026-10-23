@@ -25,6 +25,8 @@ interface 시군구_지도_컴포넌트_속성 {
   on_change_view_mode: (mode: 지도_시각화_모드) => void;
   region_unit: 지역_구분_단위;
   on_change_region_unit: (unit: 지역_구분_단위) => void;
+  on_switch_to_kakao?: () => void;
+  on_open_key_modal?: () => void;
 }
 
 const MapCenterController: React.FC<{ target_lat?: number; target_lng?: number; zoom?: number }> = ({
@@ -58,6 +60,8 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
   on_change_view_mode,
   region_unit,
   on_change_region_unit,
+  on_switch_to_kakao,
+  on_open_key_modal,
 }) => {
   // 환자 이동선(Flow Arc) 레이어 표시 여부
   const [show_flow_arcs, set_show_flow_arcs] = useState<boolean>(true);
@@ -156,6 +160,23 @@ export const 시군구_지도_컴포넌트: React.FC<시군구_지도_컴포넌�
     <div className="relative w-full h-full min-h-[580px] bg-[#eef0f3] rounded-3xl overflow-hidden border border-black/[0.05] shadow-apple-card flex flex-col">
       {/* 애플 스타일 플로팅 컨트롤러 (지역 단위 및 시각화 모드) */}
       <div className="absolute top-4 left-4 z-[400] flex flex-wrap items-center gap-2 max-w-[calc(100%-2rem)]">
+        {/* 지도 엔진 스위처 */}
+        <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1">
+          <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200 shadow-apple-sm">
+            기본지도
+          </span>
+          {on_switch_to_kakao && (
+            <button
+              onClick={on_switch_to_kakao}
+              className="px-2.5 py-1 text-xs font-bold rounded-full text-slate-700 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 transition cursor-pointer flex items-center gap-1"
+              title="카카오맵 Web API로 전환"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400" />
+              <span>카카오맵</span>
+            </button>
+          )}
+        </div>
+
         {/* 단위 스위처: 시군구 vs 중진료권 */}
         <div className="bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1">
           <button

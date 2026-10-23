@@ -66,6 +66,8 @@ const 파일_업로더_모달 = dynamic(
 import { 원문대조_신뢰뷰_모달 } from '@/components/원문대조_신뢰뷰_모달';
 import { 구글_api키_설정_모달 } from '@/components/구글_api키_설정_모달';
 import { 공공데이터_api키_설정_모달 } from '@/components/공공데이터_api키_설정_모달';
+import { 카카오_api키_설정_모달 } from '@/components/카카오_api키_설정_모달';
+import { 카카오_지도_API키_불러오기 } from '@/lib/API키_저장소';
 import { 데이터_사업가이드_안내_모달 } from '@/components/데이터_사업가이드_안내_모달';
 import { 관리자_통합_모달 } from '@/components/관리자_통합_모달';
 import { 로컬_LLM_제미나이_비교_모달 } from '@/components/로컬_LLM_제미나이_비교_모달';
@@ -158,6 +160,8 @@ export default function Home() {
   const [is_review_guide_open, set_is_review_guide_open] = useState(false);
   const [google_api_key, set_google_api_key] = useState('');
   const [data_go_kr_api_key, set_data_go_kr_api_key] = useState('');
+  const [kakao_map_api_key, set_kakao_map_api_key] = useState('');
+  const [is_kakao_modal_open, set_is_kakao_modal_open] = useState(false);
 
   // 시스템 기본 탑재 API 상태 (고객 별도 설정 없이 바로 확인 가능)
   const [system_status, set_system_status] = useState<{
@@ -192,6 +196,7 @@ export default function Home() {
       const stored_gemini = API키_불러오기('google_gemini_api_key');
       const stored_data_go_kr = API키_불러오기('data_go_kr_api_key');
       set_google_api_key(stored_gemini);
+      set_kakao_map_api_key(카카오_지도_API키_불러오기());
       set_data_go_kr_api_key(stored_data_go_kr);
 
       // 서버의 기본 탑재 API 키 상태 비동기 동기화
@@ -474,6 +479,8 @@ export default function Home() {
         google_api_key_registered={Boolean(google_api_key || system_status.gemini_connected)}
         google_api_key={google_api_key}
         data_go_kr_key_registered={Boolean(data_go_kr_api_key || system_status.data_go_kr_connected)}
+        kakao_map_key_registered={Boolean(kakao_map_api_key || process.env.NEXT_PUBLIC_KAKAO_MAP_KEY)}
+        on_open_kakao_modal={() => set_is_kakao_modal_open(true)}
         vulnerable_region_count={vulnerable_region_count}
         on_search_query={handle_search_region}
         is_authenticated={is_authenticated}
@@ -643,6 +650,13 @@ export default function Home() {
         on_navigate={handle_guide_navigate}
       />
 
+      {/* 카카오 지도 Web API 키 설정 모달 */}
+      <카카오_api키_설정_모달
+        is_open={is_kakao_modal_open}
+        on_close={() => set_is_kakao_modal_open(false)}
+        on_key_saved={(new_key) => set_kakao_map_api_key(new_key)}
+      />
+
       {/* 관리자 전용 통제센터 (데이터·품질·보안 통합 관리) 모달 */}
       <관리자_통합_모달
         is_open={is_admin_dashboard_open}
@@ -650,8 +664,10 @@ export default function Home() {
         is_gemini_connected={Boolean(google_api_key || system_status.gemini_connected)}
         gemini_key_count={google_api_key ? (google_api_key.split(/[\n,;]+/).filter(Boolean).length || 1) : 1}
         data_go_kr_key_registered={Boolean(data_go_kr_api_key || system_status.data_go_kr_connected)}
+        kakao_map_key_registered={Boolean(kakao_map_api_key || process.env.NEXT_PUBLIC_KAKAO_MAP_KEY)}
         on_open_gemini_modal={() => set_is_key_modal_open(true)}
         on_open_data_modal={() => set_is_data_go_kr_modal_open(true)}
+        on_open_kakao_modal={() => set_is_kakao_modal_open(true)}
         on_open_guide_modal={() => set_is_guide_modal_open(true)}
         on_open_llm_compare={() => set_is_llm_compare_modal_open(true)}
       />

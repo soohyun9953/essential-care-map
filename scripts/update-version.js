@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 // 기능 배포 시 이 버전 번호를 올립니다. (배포일시는 빌드 때 자동 갱신)
-const SEMVER = '1.30.3';
+const SEMVER = '1.31.0';
 
 // 배포일시 갱신은 Vercel·CI 빌드(VERCEL 또는 CI 환경변수)에서만 수행한다.
 // 로컬 빌드에서는 파일을 바꾸지 않아 작업 트리에 불필요한 변경이 생기지 않음.
@@ -48,7 +48,7 @@ export const PLATFORM_VERSION = {
   packageVersion: '${packageVersion}',
   updatedAt: '${dateStr} ${timeStr}',
   changelog:
-    '지도 시각화 완전 복구: 회색/백지 현상을 해결하기 위해 도로망·지명·건물이 또렷한 OpenStreetMap 표준 풀컬러 타일로 전면 교체 (${fullLabel})',
+    '카카오맵 Web API 연동: 카카오 공식 지도 SDK 기반 250개 시군구·70개 중진료권 GIS 폴리곤 렌더링, 일반지도/스카이뷰(위성) 전환 및 듀얼 지도 엔진 지원 (${fullLabel})',
 };
 `;
 

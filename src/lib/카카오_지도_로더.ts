@@ -100,24 +100,40 @@ export function loadKakaoMap(overrideKey?: string): Promise<typeof window.kakao.
       script = null;
     }
 
+    const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
+      appKey
+    )}&autoload=false&libraries=services,clusterer,drawing`;
+
     script = document.createElement('script');
     script.id = KAKAO_SDK_SCRIPT_ID;
     script.type = 'text/javascript';
     script.async = true;
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${encodeURIComponent(
-      appKey
-    )}&autoload=false&libraries=services,clusterer,drawing`;
+    script.src = sdkUrl;
 
     script.onload = onScriptLoaded;
-    script.onerror = () => {
+    script.onerror = async () => {
       loadPromise = null;
       script?.remove();
-      reject(
-        new KakaoMapLoadError(
-          '카카오 지도 SDK 스크립트 다운로드에 실패했습니다. JavaScript 키 및 네트워크 연결을 확인해주세요.',
-          'SCRIPT_ERROR'
-        )
-      );
+
+      let detailMsg = '카카오 지도 SDK 스크립트 다운로드에 실패했습니다. JavaScript 키 및 네트워크를 확인해주세요.';
+      let errorCode = 'SCRIPT_ERROR';
+
+      try {
+        const testRes = await fetch(sdkUrl, { mode: 'cors' });
+        if (testRes.status === 403) {
+          const body = await testRes.json().catch(() => null);
+          const rawMsg = body?.message || '';
+          if (rawMsg.includes('OPEN_MAP_AND_LOCAL') || rawMsg.includes('disabled')) {
+            detailMsg = `카카오 개발자 콘솔에서 [지도/로컬] API가 비활성화(OFF)되어 있습니다. [제품 설정] > [지도/로컬]에서 활성화(ON)를 켜주세요. (${rawMsg})`;
+            errorCode = 'SERVICE_DISABLED';
+          } else {
+            detailMsg = `카카오 API 인증 실패 (403 Forbidden): ${rawMsg || 'JavaScript 키 권한을 확인해주세요.'}`;
+            errorCode = 'FORBIDDEN';
+          }
+        }
+      } catch {}
+
+      reject(new KakaoMapLoadError(detailMsg, errorCode));
     };
 
     document.head.appendChild(script);

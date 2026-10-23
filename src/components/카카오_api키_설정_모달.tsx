@@ -119,6 +119,9 @@ export const 카카오_api키_설정_모달: React.FC<카카오_api키_설정_�
                 <strong>애플리케이션 추가</strong> 후 [앱 설정] &gt; [앱 키]에서 <span className="text-amber-600 dark:text-amber-400 font-bold">JavaScript 키</span> 복사
               </li>
               <li>
+                좌측 메뉴 <strong>[제품 설정] &gt; [지도/로컬]</strong> 클릭 후 <strong>[활성화 설정]</strong>을 <span className="text-emerald-600 dark:text-emerald-400 font-bold">[ON (활성화)]</span>으로 변경 (★필수)
+              </li>
+              <li>
                 [앱 설정] &gt; [플랫폼] &gt; <strong>[Web]</strong> 클릭 후 <strong>사이트 도메인</strong> 등록:
                 <div className="mt-1 flex items-center gap-2 bg-white dark:bg-slate-800 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
                   <code className="text-blue-600 dark:text-blue-400 font-mono font-bold flex-1">

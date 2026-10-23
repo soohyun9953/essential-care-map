@@ -76,6 +76,18 @@ const 퇴원환자_연계_업무화면 = dynamic(
   () => import('@/components/퇴원환자_연계_업무화면').then((m) => m.퇴원환자_연계_업무화면),
   { loading: 워크스페이스_로딩 }
 );
+const 경영벤치마킹_사전검증_화면 = dynamic(
+  () => import('@/components/경영벤치마킹_사전검증_화면').then((m) => m.경영벤치마킹_사전검증_화면),
+  { loading: 워크스페이스_로딩 }
+);
+const 고위험_모자_전원매칭_화면 = dynamic(
+  () => import('@/components/고위험_모자_전원매칭_화면').then((m) => m.고위험_모자_전원매칭_화면),
+  { loading: 워크스페이스_로딩 }
+);
+const 교육_인력매칭_스마트병원_화면 = dynamic(
+  () => import('@/components/교육_인력매칭_스마트병원_화면').then((m) => m.교육_인력매칭_스마트병원_화면),
+  { loading: 워크스페이스_로딩 }
+);
 const 오분류_교정_내역_뷰 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.오분류_교정_내역_뷰), {
   loading: 워크스페이스_로딩,
 });
@@ -626,6 +638,9 @@ export default function Home() {
           <공공보건의료계획_작성도우미 on_navigate={handle_navigate_from_sidebar} />
         )}
         {current_workspace === 'persona_page' && persona_page_화면 === '퇴원연계' && <퇴원환자_연계_업무화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '경영사전검증' && <경영벤치마킹_사전검증_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '모자전원' && <고위험_모자_전원매칭_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '교육인력' && <교육_인력매칭_스마트병원_화면 />}
         {current_workspace === 'persona_page' && persona_page_id && persona_page_화면 === '준비중' && (
           <페르소나_준비중_화면
             subtab_id={persona_page_id}

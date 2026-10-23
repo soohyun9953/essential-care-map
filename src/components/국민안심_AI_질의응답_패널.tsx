@@ -109,6 +109,49 @@ interface 국민안심_AI_질의응답_패널_속성 {
   on_toggle_expand?: () => void;
 }
 
+
+// ==============================================================
+// 국민안심 AI 인라인 제안 & 자동완성 지식 사전
+// ==============================================================
+interface 자동완성_아이템 {
+  text: string;
+  category: '응급' | '소아' | '분만' | '야간' | '장비' | '지역';
+  keywords: string[];
+}
+
+const AI_질의_자동완성_사전: 자동완성_아이템[] = [
+  // 1. 응급 및 권역센터
+  { text: '가장 가까운 24시간 응급실과 현재 잔여 병상 알려줘', category: '응급', keywords: ['가장', '가까운', '응급', '응급실', '잔여', '가용', '24시간', '병상'] },
+  { text: '지금 바로 진료 가능한 권역응급의료센터 어디야?', category: '응급', keywords: ['권역', '응급센터', '진료', '어디', '중증응급', '권역응급'] },
+  { text: '응급실 대기시간 짧고 병상 여유 있는 곳 찾아줘', category: '응급', keywords: ['대기시간', '여유', '혼잡', '응급실', '대기'] },
+  { text: '야간 응급 진료 가능한 거점 공공병원 알려줘', category: '응급', keywords: ['야간', '응급', '공공병원', '거점', '야간응급'] },
+  { text: '심근경색 및 뇌졸중 골든타임 응급 처치 가능한 병원 찾아줘', category: '응급', keywords: ['심근경색', '뇌졸중', '골든타임', '심뇌혈관', '중증'] },
+
+  // 2. 소아 및 달빛어린이병원
+  { text: '지금 아이가 열이 나는데 야간 소아과 갈 수 있는 곳 있어?', category: '소아', keywords: ['아이', '열', '소아과', '야간', '소아', '발열', '아기'] },
+  { text: '달빛어린이병원 야간·휴일 진료 가능한 곳 알려줘', category: '소아', keywords: ['달빛', '달빛어린이', '달빛병원', '휴일소아', '야간소아'] },
+  { text: '소아청소년과 전문의가 상주하는 인근 응급실 찾아줘', category: '소아', keywords: ['소아청소년', '전문의', '상주', '소아응급', '소아전문의'] },
+  { text: '주말 및 공휴일에 진료하는 소아과 알려줘', category: '소아', keywords: ['주말', '공휴일', '소아과', '일요일소아과', '휴일진료'] },
+  { text: '소아 전용 입원 병상 있는 종합병원 어디야?', category: '소아', keywords: ['소아입원', '소아병상', '어린이입원', '소아전문'] },
+
+  // 3. 분만 및 산부인과
+  { text: '분만실이 24시간 운영 중인 인근 산부인과 병원 찾아줘', category: '분만', keywords: ['분만', '분만실', '산부인과', '출산', '임산부', '24시간분만'] },
+  { text: '고위험 산모 집중치료실(MFICU) 있는 병원 어디야?', category: '분만', keywords: ['고위험', '산모', '집중치료실', 'MFICU', '고위험산모'] },
+  { text: '응급 제왕절개 수술 가능한 산부인과 알려줘', category: '분만', keywords: ['제왕절개', '수술', '응급분만', '응급수술'] },
+  { text: '야간 응급 분만 진료 가능한 종합병원 찾아줘', category: '분만', keywords: ['야간분만', '응급분만', '산부인과종합'] },
+
+  // 4. 장비 및 중환자실(ICU)
+  { text: 'CT나 중환자실(ICU) 이용 가능한 거점 공공병원 어디야?', category: '장비', keywords: ['CT', 'ICU', '중환자실', '공공병원', '거점병원'] },
+  { text: 'CT 및 MRI 야간 응급 검사 가능한 응급의료기관 알려줘', category: '장비', keywords: ['CT', 'MRI', '야간검사', '촬영', '정밀검사'] },
+  { text: '인공호흡기 가용 병상 있는 인근 병원 찾아줘', category: '장비', keywords: ['인공호흡기', '호흡기', '중환자', '산소'] },
+  { text: '음압격리병상 가용 현황 및 입원 가능한 병원 알려줘', category: '장비', keywords: ['음압', '격리', '감염병', '음압병상', '격리입원'] },
+
+  // 5. 야간 및 휴일
+  { text: '오늘 밤 늦게까지 문 여는 야간진료 병원 알려줘', category: '야간', keywords: ['오늘밤', '늦게', '야간진료', '문여는', '야간병원'] },
+  { text: '일반 입원 및 격리입원 가능한 공공병원 찾아줘', category: '야간', keywords: ['입원', '일반입원', '격리입원', '병상현황'] },
+  { text: '일요일 및 공휴일 당직 진료 병원 알려줘', category: '야간', keywords: ['일요일', '공휴일', '당직', '휴일진료', '공휴일병원'] }
+];
+
 export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질의응답_패널_속성> = ({
   user_lat,
   user_lng,
@@ -118,6 +161,124 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
   on_toggle_expand,
 }) => {
   const [query_input, set_query_input] = useState('');
+
+  // 인라인 자동완성 & 제안 상태
+  const [ghost_text, set_ghost_text] = useState<string>('');
+  const [matched_suggestions, set_matched_suggestions] = useState<자동완성_아이템[]>([]);
+  const [selected_suggestion_idx, setSelected_suggestion_idx] = useState<number>(-1);
+  const [is_suggestion_open, setIs_suggestion_open] = useState<boolean>(false);
+  const input_ref = useRef<HTMLInputElement>(null);
+
+  // query_input 입력 변화에 따른 인라인 고스트 텍스트 및 추천 계산
+  useEffect(() => {
+    const trimmed = query_input.trim();
+    if (!trimmed) {
+      set_ghost_text('');
+      set_matched_suggestions([]);
+      setIs_suggestion_open(false);
+      setSelected_suggestion_idx(-1);
+      return;
+    }
+
+    const lower = trimmed.toLowerCase();
+
+    // 1) 앞글자 일치 (startsWith) 최우선
+    const startsWithMatches = AI_질의_자동완성_사전.filter((item) =>
+      item.text.toLowerCase().startsWith(lower)
+    );
+
+    // 2) 키워드 또는 문맥 포함 일치
+    const includesMatches = AI_질의_자동완성_사전.filter(
+      (item) =>
+        !item.text.toLowerCase().startsWith(lower) &&
+        (item.text.toLowerCase().includes(lower) ||
+          item.keywords.some((k) => k.toLowerCase().includes(lower) || lower.includes(k.toLowerCase())))
+    );
+
+    const allMatches = [...startsWithMatches, ...includesMatches].slice(0, 4);
+    set_matched_suggestions(allMatches);
+    setIs_suggestion_open(allMatches.length > 0);
+    setSelected_suggestion_idx(-1);
+
+    if (startsWithMatches.length > 0) {
+      set_ghost_text(startsWithMatches[0].text.slice(query_input.length));
+    } else {
+      set_ghost_text('');
+    }
+  }, [query_input]);
+
+  // 키보드 네비게이션 및 Tab 수락 핸들러
+  const handle_input_keydown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 1. Tab 키 또는 오른쪽 화살표: 인라인 제안 채택
+    if (e.key === 'Tab' || (e.key === 'ArrowRight' && input_ref.current?.selectionStart === query_input.length)) {
+      if (ghost_text) {
+        e.preventDefault();
+        set_query_input((prev) => prev + ghost_text);
+        set_ghost_text('');
+        setIs_suggestion_open(false);
+        return;
+      }
+      if (is_suggestion_open && matched_suggestions.length > 0) {
+        e.preventDefault();
+        const chosen = selected_suggestion_idx >= 0 ? matched_suggestions[selected_suggestion_idx] : matched_suggestions[0];
+        set_query_input(chosen.text);
+        set_ghost_text('');
+        setIs_suggestion_open(false);
+        return;
+      }
+    }
+
+    // 2. 방향키 위/아래: 추천 목록 탐색
+    if (is_suggestion_open && matched_suggestions.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelected_suggestion_idx((prev) => {
+          const next = prev + 1 >= matched_suggestions.length ? 0 : prev + 1;
+          const chosen = matched_suggestions[next];
+          if (chosen.text.toLowerCase().startsWith(query_input.toLowerCase())) {
+            set_ghost_text(chosen.text.slice(query_input.length));
+          } else {
+            set_ghost_text('');
+          }
+          return next;
+        });
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelected_suggestion_idx((prev) => {
+          const next = prev - 1 < 0 ? matched_suggestions.length - 1 : prev - 1;
+          const chosen = matched_suggestions[next];
+          if (chosen.text.toLowerCase().startsWith(query_input.toLowerCase())) {
+            set_ghost_text(chosen.text.slice(query_input.length));
+          } else {
+            set_ghost_text('');
+          }
+          return next;
+        });
+        return;
+      }
+    }
+
+    // 3. Enter 키
+    if (e.key === 'Enter') {
+      if (selected_suggestion_idx >= 0 && matched_suggestions[selected_suggestion_idx]) {
+        e.preventDefault();
+        const text = matched_suggestions[selected_suggestion_idx].text;
+        set_query_input(text);
+        set_ghost_text('');
+        setIs_suggestion_open(false);
+        handle_submit_query(text);
+        return;
+      }
+    }
+
+    // 4. Escape: 닫기
+    if (e.key === 'Escape') {
+      setIs_suggestion_open(false);
+      set_ghost_text('');
+    }
+  };
   const [is_loading, set_is_loading] = useState(false);
   const [chat_history, set_chat_history] = useState<대화_메시지[]>([
     {
@@ -987,30 +1148,123 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
         </div>
       </div>
 
-      {/* 4. 질의 입력창 */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handle_submit_query(query_input);
-        }}
-        className="p-2.5 sm:p-3 bg-white dark:bg-[#16171d] border-t border-slate-200 dark:border-slate-800 flex items-center gap-2 shrink-0"
-      >
-        <input
-          type="text"
-          value={query_input}
-          onChange={(e) => set_query_input(e.target.value)}
-          placeholder="예: 가장 가까운 24시간 응급실과 현재 잔여 병상 알려줘"
-          disabled={is_loading}
-          className="flex-1 px-3.5 py-2 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition disabled:opacity-50"
-        />
-        <button
-          type="submit"
-          disabled={!query_input.trim() || is_loading}
-          className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white transition cursor-pointer shadow-xs shrink-0"
+      {/* 4. 질의 입력창 & 인라인 스마트 자동완성 팝업 */}
+      <div className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-[#16171d] shrink-0">
+        {/* 스마트 추천 팝업 (키워드 입력 시 상단 팝업 카드) */}
+        {is_suggestion_open && matched_suggestions.length > 0 && (
+          <div className="absolute bottom-full left-0 right-0 mb-1.5 mx-2 p-2 bg-white/95 dark:bg-[#1c1d24]/95 backdrop-blur-xl rounded-2xl border border-emerald-500/30 shadow-2xl z-50 space-y-1 animate-in fade-in slide-in-from-bottom-2">
+            <div className="flex items-center justify-between px-2 py-1 border-b border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-semibold">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <Sparkles className="w-3 h-3" />
+                <span>AI 추천 질문 (인라인 제안)</span>
+              </span>
+              <span className="text-[9px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500">
+                Tab 키 또는 클릭으로 완성
+              </span>
+            </div>
+            <div className="space-y-0.5 max-h-48 overflow-y-auto">
+              {matched_suggestions.map((item, idx) => {
+                const is_active = idx === selected_suggestion_idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      set_query_input(item.text);
+                      setIs_suggestion_open(false);
+                      set_ghost_text('');
+                      handle_submit_query(item.text);
+                    }}
+                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs flex items-center justify-between gap-2 transition cursor-pointer ${
+                      is_active
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 font-bold'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 shrink-0">
+                        {item.category}
+                      </span>
+                      <span className="truncate">{item.text}</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 shrink-0">선택 ↵</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setIs_suggestion_open(false);
+            set_ghost_text('');
+            handle_submit_query(query_input);
+          }}
+          className="p-2.5 sm:p-3 flex items-center gap-2"
         >
-          <Send className="w-4 h-4" />
-        </button>
-      </form>
+          {/* 입력창 + 인라인 고스트 텍스트 오버레이 컨테이너 */}
+          <div className="relative flex-1 flex items-center">
+            {/* 고스트 텍스트 레이어 (입력 텍스트 바로 뒤에 회색으로 표시) */}
+            <div
+              className="absolute inset-0 px-3.5 py-2 pointer-events-none flex items-center whitespace-pre overflow-hidden text-xs sm:text-sm font-sans select-none"
+              aria-hidden="true"
+            >
+              <span className="opacity-0">{query_input}</span>
+              {ghost_text && (
+                <span className="text-slate-400 dark:text-slate-500 font-normal">
+                  {ghost_text}
+                </span>
+              )}
+            </div>
+
+            {/* 실제 사용자 입력 인풋 */}
+            <input
+              ref={input_ref}
+              type="text"
+              value={query_input}
+              onChange={(e) => set_query_input(e.target.value)}
+              onKeyDown={handle_input_keydown}
+              onFocus={() => {
+                if (matched_suggestions.length > 0) setIs_suggestion_open(true);
+              }}
+              onBlur={() => {
+                setTimeout(() => setIs_suggestion_open(false), 200);
+              }}
+              placeholder={ghost_text ? '' : '예: 가장 가까운 24시간 응급실과 현재 잔여 병상 알려줘'}
+              disabled={is_loading}
+              className="relative z-10 w-full px-3.5 py-2 bg-slate-100/90 dark:bg-slate-800/80 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition disabled:opacity-50 pr-16"
+            />
+
+            {/* Tab 수락 안내 배지 (고스트 텍스트가 있을 때만 우측에 표시) */}
+            {ghost_text && (
+              <button
+                type="button"
+                onClick={() => {
+                  set_query_input((prev) => prev + ghost_text);
+                  set_ghost_text('');
+                  input_ref.current?.focus();
+                }}
+                className="absolute right-2.5 z-20 px-2 py-0.5 rounded-lg bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-300 dark:border-emerald-800 flex items-center gap-1 shadow-2xs hover:bg-emerald-200 transition cursor-pointer"
+                title="Tab 키를 누르면 자동완성됩니다"
+              >
+                <span>Tab ⇥</span>
+              </button>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            disabled={!query_input.trim() || is_loading}
+            className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white transition cursor-pointer shadow-xs shrink-0"
+            title="질문 전송"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

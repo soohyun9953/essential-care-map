@@ -37,7 +37,11 @@ export type 워크스페이스_타입 =
   | 'medical_institution'   // ③ 의료기관
   | 'hospital_ai_diagnosis' // ⭐ 신규: AI 병원진단·개선
   | 'ai_analysis'           // ④ AI 분석
-  | 'national_safety';      // ⑤ 국민안심
+  | 'national_safety'       // ⑤ 국민안심
+  | 'persona_page';         // 사용자 그룹 전용 화면 (대국민 알리미 비교, 준비 중 서브탭 안내)
+
+/** 헤더 우측 화면 전환: 프로토타입 체험 / 오분류 교정 내역 / 메뉴 구조도 */
+export type 헤더_화면_모드 = '프로토타입' | '교정내역' | '구조도';
 
 export type 메인_도메인 =
   | 'status_diag'    // 1. 현황진단
@@ -84,6 +88,8 @@ interface 글로벌_공공_헤더_속성 {
   is_authenticated?: boolean;
   on_open_auth_modal?: () => void;
   on_open_review_guide_modal?: () => void;
+  화면_모드?: 헤더_화면_모드;
+  on_change_화면_모드?: (mode: 헤더_화면_모드) => void;
   on_open_plan_evaluation?: () => void;
   is_plan_evaluation_active?: boolean;
   on_open_profile_report?: () => void;
@@ -158,6 +164,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
   is_authenticated = false,
   on_open_auth_modal,
   on_open_review_guide_modal,
+  화면_모드 = '프로토타입',
+  on_change_화면_모드,
   on_open_plan_evaluation,
   is_plan_evaluation_active = false,
   on_open_profile_report,
@@ -490,6 +498,37 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
 
           {/* 3. 우측: 데이터·사업가이드 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0 whitespace-nowrap">
+
+            {/* 3-0. 화면 전환: 사용자별 프로토타입 체험 / 오분류 6대 교정 내역 / AS-IS ➔ TO-BE 메뉴 구조도 */}
+            {on_change_화면_모드 && (
+              <div className="flex items-center gap-0.5 p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800" role="tablist" aria-label="화면 전환">
+                {(
+                  [
+                    { id: '프로토타입', 아이콘: '🖥️', 전체: '사용자별 프로토타입 체험', 짧게: '체험' },
+                    { id: '교정내역', 아이콘: '⚠️', 전체: '메뉴·기능 오분류 6대 교정 내역', 짧게: '교정' },
+                    { id: '구조도', 아이콘: '🗺️', 전체: 'AS-IS ➔ TO-BE 전체 메뉴 구조도 (A01)', 짧게: '구조도' },
+                  ] as const
+                ).map((b) => (
+                  <button
+                    key={b.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={화면_모드 === b.id}
+                    onClick={() => on_change_화면_모드(b.id)}
+                    title={b.전체}
+                    className={`px-2 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
+                      화면_모드 === b.id
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <span>{b.아이콘}</span>
+                    <span className="hidden min-[1800px]:inline ml-1">{b.전체}</span>
+                    <span className="min-[1800px]:hidden inline ml-1">{b.짧게}</span>
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* 데이터 & 사업가이드 팝업 안내 버튼 */}
             <button

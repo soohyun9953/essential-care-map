@@ -60,6 +60,14 @@ export function 알리미_병상수(h: 알리미_기관_공시): number | null {
   return 전국_공공의료기관_목록.find((p) => 병원명_키(p.기관명) === key)?.병상수 ?? null;
 }
 
+/** 알리미 기관의 소재 시도·시군구 (공공의료기관 데이터셋, 백령병원은 데이터셋에 없어 직접 지정) */
+export function 알리미_소재지(h: 알리미_기관_공시): { 시도명: string; 시군구명: string } | null {
+  if (h.기관명 === '인천의료원 백령병원') return { 시도명: '인천광역시', 시군구명: '옹진군' };
+  const key = 병원명_키(h.기관명);
+  const p = 전국_공공의료기관_목록.find((x) => 병원명_키(x.기관명) === key);
+  return p ? { 시도명: p.시도명, 시군구명: p.시군구명 } : null;
+}
+
 /** 결산(의료수익)이 공시된 가장 최근 연도 */
 export function 최근_결산연도(h: 알리미_기관_공시): 알리미_연도별_공시 | undefined {
   return [...h.연도별].reverse().find((r) => r.의료수익 !== null);

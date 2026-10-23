@@ -1,6 +1,6 @@
 {
   "name": "health-map-essential-care",
-  "version": "20261023-1750",
+  "version": "20261024-0802",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/update-version.js",
@@ -16,7 +16,7 @@
     "jszip": "^3.10.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
-    "next": "^16.3.8",
+    "next": "^16.4.2",
     "pako": "^3.0.2",
     "papaparse": "^5.4.1",
     "react": "^19.3.0",
@@ -35,7 +35,7 @@
     "@types/react-dom": "^19.3.0",
     "autoprefixer": "^10.4.19",
     "eslint": "^9.39.5",
-    "eslint-config-next": "^16.3.8",
+    "eslint-config-next": "^16.4.2",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.4.5",

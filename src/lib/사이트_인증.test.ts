@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
 import { 비밀번호_검증, 인증_토큰_생성, 인증_토큰_검증, 인증_유효기간_초 } from './사이트_인증';
 import { POST as 로그인 } from '@/app/api/auth/login/route';
-import { proxy } from '@/proxy';
+import { proxy, 보호_대상인가 } from '@/proxy';
 import { NextRequest } from 'next/server';
 
 const 요청 = (url: string, init?: { cookie?: string; body?: unknown }) =>
@@ -50,15 +50,20 @@ describe('사이트 인증 (서버 측)', () => {
     expect((await 로그인(요청('/api/auth/login', { body: { password: 'x' } }))).status).toBe(503);
   });
 
-  it('미들웨어: 쿠키 없으면 페이지는 /login 으로, API는 401; 유효 쿠키면 통과', async () => {
+  it('프록시: 화면과 공개 API는 로그인 없이 통과, AI·문서변환 API는 쿠키 없으면 401', async () => {
     vi.stubEnv('SITE_PASSWORD', 'test-pass-1');
-    const page = await proxy(요청('/'));
-    expect(page.status).toBe(307);
-    expect(page.headers.get('location')).toMatch(/\/login$/);
-    expect((await proxy(요청('/api/llm/compare'))).status).toBe(401);
+    for (const 공개 of ['/', '/login', '/api/emergency/realtime', '/api/system/status', '/api/version']) {
+      expect((await proxy(요청(공개))).headers.get('x-middleware-next'), 공개).toBe('1');
+    }
+    for (const 보호 of ['/api/llm/compare', '/api/llm/local-server', '/api/report/hwpx']) {
+      const r = await proxy(요청(보호));
+      expect(r.status, 보호).toBe(401);
+      expect((await r.json()).message).toContain('로그인');
+    }
     const t = await 인증_토큰_생성();
-    const pass = await proxy(요청('/', { cookie: `site_auth=${t}` }));
+    const pass = await proxy(요청('/api/llm/compare', { cookie: `site_auth=${t}` }));
     expect(pass.headers.get('x-middleware-next')).toBe('1');
+    expect(보호_대상인가('/api/llmx')).toBe(false);
   });
 
   it('클라이언트 코드(src/components, src/app 페이지)에 비밀번호 상수가 없다', () => {

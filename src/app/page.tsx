@@ -21,7 +21,9 @@ import { export_element_as_png } from '@/lib/유틸리티';
 
 // 5대 Global Workspace 컴포넌트
 // 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
-import { 글로벌_공공_헤더, 워크스페이스_타입 } from '@/components/글로벌_공공_헤더';
+import { 글로벌_공공_헤더, 워크스페이스_타입, type 헤더_화면_모드 } from '@/components/글로벌_공공_헤더';
+import { PersonaSwitcherBar } from '@/components/PersonaSwitcherBar';
+import { 페르소나_찾기, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
 import { 대상자별_좌측_사이드바 } from '@/components/대상자별_좌측_사이드바';
@@ -54,6 +56,19 @@ const AI분석_통합_워크스페이스 = dynamic(
   () => import('@/components/AI분석_통합_워크스페이스').then((m) => m.AI분석_통합_워크스페이스),
   { loading: 워크스페이스_로딩 }
 );
+const 대국민_알리미_비교 = dynamic(
+  () => import('@/components/대국민_알리미_비교').then((m) => m.대국민_알리미_비교),
+  { loading: 워크스페이스_로딩 }
+);
+const 오분류_교정_내역_뷰 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.오분류_교정_내역_뷰), {
+  loading: 워크스페이스_로딩,
+});
+const 메뉴_구조도_뷰 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.메뉴_구조도_뷰), {
+  loading: 워크스페이스_로딩,
+});
+const 페르소나_준비중_화면 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.페르소나_준비중_화면), {
+  loading: 워크스페이스_로딩,
+});
 const 국민안심_서비스_뷰 = dynamic(
   () => import('@/components/국민안심_서비스_뷰').then((m) => m.국민안심_서비스_뷰),
   { loading: 워크스페이스_로딩 }
@@ -124,6 +139,11 @@ export default function Home() {
     }
   };
 
+  // 헤더 우측 화면 전환 (프로토타입 체험 / 오분류 교정 내역 / 메뉴 구조도)
+  const [화면_모드, set_화면_모드] = useState<헤더_화면_모드>('프로토타입');
+  // 사용자 그룹 전용 화면에서 보여줄 서브탭 id (workspace === 'persona_page'일 때)
+  const [persona_page_id, set_persona_page_id] = useState<string | null>(null);
+
   // 정책기획 서브탭 및 의료기관 서브탭 딥링크 상태
   const [policy_subtab, set_policy_subtab] = useState<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast'>('policy_ai');
   const [medical_subtab, set_medical_subtab] = useState<의료기관_서브탭_타입>('hospitals');
@@ -175,7 +195,7 @@ export default function Home() {
   // 테마 상태
   const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 사이트 보안 로그인 및 인가 상태 (일반인 접근 차단)
+  // 로그인 상태: 화면은 공개, AI·문서변환 API만 로그인 필요 (2026-10-24)
   const [is_authenticated, set_is_authenticated] = useState<boolean>(false);
   const [is_auth_modal_open, set_is_auth_modal_open] = useState<boolean>(false);
   const [is_auth_initialized, set_is_auth_initialized] = useState<boolean>(false);
@@ -183,14 +203,11 @@ export default function Home() {
   // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화 + 보안 인증 상태 확인)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 보안 로그인 인증 여부 확인 (서버가 HttpOnly 쿠키를 검증; 미인증 요청은 미들웨어가 /login 으로 보냄)
+      // 로그인 여부 확인 (서버가 HttpOnly 쿠키를 검증). 미로그인이어도 화면은 그대로 쓰고 로그인 창을 띄우지 않음
       fetch('/api/auth/status')
         .then((r) => r.json())
-        .then((d) => {
-          set_is_authenticated(Boolean(d.authenticated));
-          if (!d.authenticated) set_is_auth_modal_open(true);
-        })
-        .catch(() => set_is_auth_modal_open(true))
+        .then((d) => set_is_authenticated(Boolean(d.authenticated)))
+        .catch(() => set_is_authenticated(false))
         .finally(() => set_is_auth_initialized(true));
 
       const stored_gemini = API키_불러오기('google_gemini_api_key');
@@ -404,6 +421,39 @@ export default function Home() {
     return undefined;
   }, [current_workspace, medical_subtab, policy_subtab, ai_hospital_subtab]);
 
+  // ── 3대 사용자 그룹 전환 바 (PersonaSwitcherBar) ──────────────────────────
+  const active_persona: 페르소나_키 | null = current_user_role === 'all' ? null : current_user_role;
+
+  const handle_open_persona_subtab = (sub: 페르소나_서브탭) => {
+    const 소속 = (['citizen', 'hospital', 'nmc'] as const).find((k) => 페르소나_찾기(k).서브탭.some((x) => x.id === sub.id));
+    if (소속) set_current_user_role(소속);
+    set_화면_모드('프로토타입');
+    if (sub.대상.종류 === '전용화면') {
+      set_persona_page_id(sub.id);
+      set_current_workspace('persona_page');
+      return;
+    }
+    handle_navigate_from_sidebar(sub.대상.workspace, sub.대상.subtab);
+  };
+
+  const handle_select_persona = (persona: 페르소나_키) => {
+    handle_open_persona_subtab(페르소나_찾기(persona).서브탭[0]);
+  };
+
+  // 현재 화면과 일치하는 서브탭 (같은 화면을 쓰는 서브탭이 여럿이면 첫 번째)
+  const active_persona_subtab_id = useMemo(() => {
+    if (!active_persona) return null;
+    if (current_workspace === 'persona_page') return persona_page_id;
+    const 서브탭들 = 페르소나_찾기(active_persona).서브탭;
+    const 일치 = 서브탭들.find(
+      (s) =>
+        s.대상.종류 === '워크스페이스' &&
+        s.대상.workspace === current_workspace &&
+        (!s.대상.subtab || s.대상.subtab === current_active_subtab)
+    );
+    return 일치?.id ?? null;
+  }, [active_persona, current_workspace, persona_page_id, current_active_subtab]);
+
   // 메뉴, 워크스페이스, 서브탭, 역할 변경 시 메인 콘텐츠 및 사이드바, 윈도우 스크롤을 최상단(위쪽)으로 리셋
   useEffect(() => {
     if (main_content_ref.current) {
@@ -424,7 +474,7 @@ export default function Home() {
     if (typeof window !== 'undefined') {
       window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     }
-  }, [current_workspace, policy_subtab, medical_subtab, ai_hospital_subtab, current_user_role]);
+  }, [current_workspace, policy_subtab, medical_subtab, ai_hospital_subtab, current_user_role, 화면_모드, persona_page_id]);
 
   return (
     <IspProvider onPersonaChange={handle_persona_change}>
@@ -486,10 +536,22 @@ export default function Home() {
         is_authenticated={is_authenticated}
         on_open_auth_modal={() => set_is_auth_modal_open(true)}
         on_open_review_guide_modal={() => set_is_review_guide_open(true)}
+        화면_모드={화면_모드}
+        on_change_화면_모드={set_화면_모드}
       />
 
+      {/* 1-0. 3대 사용자 그룹 원클릭 전환 바 (프로토타입 체험 화면에서만) */}
+      {화면_모드 === '프로토타입' && (
+        <PersonaSwitcherBar
+          active_persona={active_persona}
+          active_subtab_id={active_persona_subtab_id}
+          on_select_persona={handle_select_persona}
+          on_select_subtab={handle_open_persona_subtab}
+        />
+      )}
+
       {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (NMC / 보건복지부 정책 기획 화면에서만 조건부 노출) */}
-      {(current_workspace === 'regional_diagnosis' ||
+      {화면_모드 === '프로토타입' && (current_workspace === 'regional_diagnosis' ||
         current_workspace === 'policy_planning' ||
         current_workspace === 'ai_analysis') && (
         <전체_여정_프로그레스_바
@@ -517,9 +579,26 @@ export default function Home() {
           id="main-workspace-content"
           ref={main_content_ref}
           className={`flex-1 flex flex-col min-w-0 min-h-0 relative ${
-            current_workspace === 'national_safety' ? 'overflow-hidden h-full' : 'overflow-y-auto'
+            current_workspace === 'national_safety' && 화면_모드 === '프로토타입' ? 'overflow-hidden h-full' : 'overflow-y-auto'
           }`}
         >
+        {/* 헤더 화면 전환: 오분류 교정 내역 / 메뉴 구조도 */}
+        {화면_모드 === '교정내역' && <오분류_교정_내역_뷰 on_open_subtab={handle_open_persona_subtab} />}
+        {화면_모드 === '구조도' && <메뉴_구조도_뷰 on_open_subtab={handle_open_persona_subtab} />}
+
+        {화면_모드 === '프로토타입' && (<>
+        {/* 사용자 그룹 전용 화면: 대국민 알리미 비교 / 준비 중 서브탭 안내 */}
+        {current_workspace === 'persona_page' && persona_page_id === '1-2' && <대국민_알리미_비교 />}
+        {current_workspace === 'persona_page' && persona_page_id && persona_page_id !== '1-2' && (
+          <페르소나_준비중_화면
+            subtab_id={persona_page_id}
+            on_open_citizen_map={() => {
+              set_current_user_role('citizen');
+              set_current_workspace('national_safety');
+            }}
+          />
+        )}
+
         {/* 워크스페이스 0: HOME 화면 (Hero + 4대 Quick Action + 지역 검색창) */}
         {current_workspace === 'home' && (
           <div className="flex-1 w-full overflow-y-auto">
@@ -609,6 +688,7 @@ export default function Home() {
             <국민안심_서비스_뷰 />
           </div>
         )}
+        </>)}
         </div>
       </div>
 
@@ -695,7 +775,7 @@ export default function Home() {
         }}
         onLogout={() => {
           set_is_authenticated(false);
-          set_is_auth_modal_open(true);
+          set_is_auth_modal_open(false);
         }}
       />
 

@@ -33,8 +33,14 @@ export function API키_저장하기(name: API키_이름, value: string, remember
   안전_실행(() => {
     sessionStorage.removeItem(name);
     localStorage.removeItem(name);
-    if (!value) return;
-    (remember_on_device ? localStorage : sessionStorage).setItem(name, value);
+    if (value) {
+      (remember_on_device ? localStorage : sessionStorage).setItem(name, value);
+    }
+    if (typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('app_api_key_updated', { detail: { name, value } }));
+      } catch {}
+    }
   }, undefined);
 }
 

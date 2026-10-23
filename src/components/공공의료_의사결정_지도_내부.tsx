@@ -4,16 +4,17 @@
 // - 카카오 지도 Web API (kakao.maps) 및 Leaflet(오픈스트리트맵) 듀얼 엔진 지원
 // - 실시간 공공병원(214개소) 및 보조 의료기관(민간 분만/소아/응급) 위치 핀 렌더링
 // - 스카이뷰(위성사진)/일반지도 전환 및 병원 선택 시 부드러운 카메라 이동(panTo) 지원
+// - 카카오 도메인 미등록 시 명확한 에러 안내 및 원클릭 도메인 복사 제공
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { 공공의료기관_상세_프로필 } from '@/lib/의료서비스_검색_엔진';
-import { loadKakaoMap, isKakaoMapLoaded } from '@/lib/카카오_지도_로더';
+import { loadKakaoMap, KakaoMapLoadError } from '@/lib/카카오_지도_로더';
 import { 카카오_지도_API키_불러오기 } from '@/lib/API키_저장소';
-import { Map as MapIcon, Satellite } from 'lucide-react';
+import { Map as MapIcon, Satellite, AlertCircle, Copy, Check, ExternalLink } from 'lucide-react';
 
-// 공공병원 외 보조 지점 (예: 심평원 분만가능 민간 의료기관). 병상 등 상세 정보 없이 위치와 기본 정보만 표시
+// 공공병원 외 보조 지점 (예: 심평원 분만가능 민간 의료기관)
 export interface 보조_지도_지점 {
   id: string;
   기관명: string;
@@ -97,31 +98,53 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
   const handle_select = on_select_hospital || on_select_marker || (() => {});
   const active_extra = extra_points.find((p) => p.id === active_extra_id) || null;
 
-  // 지도 엔진 선택: 카카오 키가 있으면 'kakao', 없으면 'leaflet'
+  // 지도 엔진 및 상태
   const [engine, set_engine] = useState<'kakao' | 'leaflet'>('kakao');
   const [kakao_ready, set_kakao_ready] = useState<boolean>(false);
   const [map_type, set_map_type] = useState<'roadmap' | 'skyview'>('roadmap');
+  const [load_error, set_load_error] = useState<string | null>(null);
+  const [copied_domain, set_copied_domain] = useState<boolean>(false);
+
+  // API 키 변경 트리거 (이벤트 수신 시 재렌더링)
+  const [key_trigger, set_key_trigger] = useState<number>(0);
 
   const kakaoContainerRef = useRef<HTMLDivElement>(null);
   const kakaoMapRef = useRef<kakao.maps.Map | null>(null);
   const kakaoOverlaysRef = useRef<kakao.maps.CustomOverlay[]>([]);
   const tooltipOverlayRef = useRef<kakao.maps.CustomOverlay | null>(null);
 
+  // 전역 API 키 저장/갱신 이벤트 리스닝
+  useEffect(() => {
+    const handleKeyUpdated = () => {
+      set_key_trigger((prev) => prev + 1);
+    };
+    window.addEventListener('app_api_key_updated', handleKeyUpdated);
+    window.addEventListener('storage', handleKeyUpdated);
+    return () => {
+      window.removeEventListener('app_api_key_updated', handleKeyUpdated);
+      window.removeEventListener('storage', handleKeyUpdated);
+    };
+  }, []);
+
   // 초기 엔진 판별 및 카카오맵 로드
   useEffect(() => {
     const key = 카카오_지도_API키_불러오기();
     if (!key) {
       set_engine('leaflet');
+      set_kakao_ready(false);
+      set_load_error(null);
       return;
     }
 
     let is_mounted = true;
+    set_load_error(null);
+
     loadKakaoMap(key)
       .then((kakaoMaps) => {
         if (!is_mounted || !kakaoContainerRef.current) return;
 
         if (!kakaoMapRef.current) {
-          const defaultLat = active_hospital ? active_hospital.위도 : 37.5665; // 서울 중심 기본
+          const defaultLat = active_hospital ? active_hospital.위도 : 37.5665;
           const defaultLng = active_hospital ? active_hospital.경도 : 126.9780;
 
           const options: kakao.maps.MapOptions = {
@@ -139,9 +162,15 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
         set_kakao_ready(true);
         set_engine('kakao');
       })
-      .catch((err) => {
-        console.warn('카카오 지도 로드 실패, Leaflet으로 fallback:', err);
+      .catch((err: any) => {
+        console.warn('카카오 지도 로드 실패:', err);
         if (is_mounted) {
+          const msg =
+            err instanceof KakaoMapLoadError
+              ? err.message
+              : err?.message || '카카오 지도 SDK를 불러오지 못했습니다.';
+          set_load_error(msg);
+          // 실패 시 Leaflet으로 fallback하되, 사용자에게 에러 안내 배너를 제공
           set_engine('leaflet');
         }
       });
@@ -149,7 +178,7 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
     return () => {
       is_mounted = false;
     };
-  }, [active_hospital]);
+  }, [active_hospital, key_trigger]);
 
   // 창 크기 변경 시 카카오 지도 relayout
   useEffect(() => {
@@ -175,7 +204,7 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
 
   // 선택된 병원/보조지점으로 카카오 지도 이동
   useEffect(() => {
-    if (!kakaoMapRef.current || !window.kakao?.maps) return;
+    if (!kakaoMapRef.current || !window.kakao?.maps || engine !== 'kakao') return;
     const target = active_hospital || active_extra;
     if (!target) return;
 
@@ -188,9 +217,9 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
     } catch (e) {
       console.warn('카카오 지도 이동 실패:', e);
     }
-  }, [active_hospital, active_extra]);
+  }, [active_hospital, active_extra, engine]);
 
-  // 카카오 맵 툴팁 표시 헬퍼
+  // 툴팁 CustomOverlay 헬퍼
   const show_kakao_tooltip = useCallback((lat: number, lng: number, htmlContent: string) => {
     if (!kakaoMapRef.current || !window.kakao?.maps) return;
     const kakaoMaps = window.kakao.maps;
@@ -226,7 +255,6 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
     const kakaoMaps = window.kakao.maps;
     const map = kakaoMapRef.current;
 
-    // 기존 오버레이 제거
     kakaoOverlaysRef.current.forEach((o) => o.setMap(null));
     kakaoOverlaysRef.current = [];
 
@@ -243,13 +271,12 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
 
       const markerEl = document.createElement('div');
       markerEl.className = 'cursor-pointer group flex items-center justify-center transition-transform hover:scale-125';
-      markerEl.style.zIndex = is_active ? '30' : '10';
 
       markerEl.innerHTML = `
         <div style="position: relative; display: flex; align-items: center; justify-content: center;">
           ${
             is_active
-              ? '<div style="position: absolute; width: 34px; height: 34px; border-radius: 9999px; background-color: #ff3b30; opacity: 0.3; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>'
+              ? '<div style="position: absolute; width: 34px; height: 34px; border-radius: 9999px; background-color: #ff3b30; opacity: 0.35; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>'
               : ''
           }
           <div style="width: ${is_active ? '20px' : '14px'}; height: ${
@@ -356,14 +383,30 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
     ? [active_hospital.위도, active_hospital.경도]
     : [37.5665, 126.9780];
 
+  const currentOrigin =
+    typeof window !== 'undefined'
+      ? `${window.location.protocol}//${window.location.host}`
+      : 'https://...vercel.app';
+
+  const copy_current_domain = () => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(currentOrigin);
+      set_copied_domain(true);
+      setTimeout(() => set_copied_domain(false), 2000);
+    }
+  };
+
   return (
     <div className="w-full h-full relative min-h-[300px] overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800" id="decision-map-canvas-container">
-      {/* 상단 컨트롤러: 지도 엔진 및 스카이뷰 토글 */}
-      <div className="absolute top-3 left-3 z-[400] flex items-center gap-1.5 pointer-events-auto">
+      {/* 상단 컨트롤러: E-Gen 실시간 뱃지와 겹치지 않도록 [우측 상단 (top-3 right-3)]에 배치 */}
+      <div className="absolute top-3 right-3 z-[1100] flex items-center gap-1.5 pointer-events-auto">
         <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-md p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1 text-xs">
           <button
             type="button"
-            onClick={() => set_engine('kakao')}
+            onClick={() => {
+              set_engine('kakao');
+              set_load_error(null);
+            }}
             className={`px-2.5 py-1 text-xs font-bold rounded-full transition flex items-center gap-1 cursor-pointer ${
               engine === 'kakao'
                 ? 'bg-amber-400 text-slate-900 shadow-sm'
@@ -415,6 +458,49 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
           </div>
         )}
       </div>
+
+      {/* 도메인 미등록 또는 로드 에러 알림 바 (발생 시 상단에 표시) */}
+      {load_error && (
+        <div className="absolute top-14 left-3 right-3 z-[1150] p-3 rounded-2xl bg-amber-50/95 dark:bg-amber-950/95 backdrop-blur-md border-2 border-amber-400 shadow-xl text-xs space-y-1.5 animate-in fade-in">
+          <div className="flex items-center justify-between text-amber-900 dark:text-amber-200 font-bold">
+            <span className="flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+              <span>카카오 개발자 콘솔에 현재 사이트 도메인 등록이 필요합니다</span>
+            </span>
+            <button
+              onClick={() => set_load_error(null)}
+              className="text-slate-400 hover:text-slate-600 text-[11px] font-normal"
+            >
+              닫기 ✕
+            </button>
+          </div>
+          <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+            카카오 지도는 등록된 사이트 도메인에서만 지도를 표시합니다. 아래 도메인을 카카오 콘솔의 <strong>[앱 설정] &gt; [플랫폼] &gt; [Web]</strong>에 추가해 주세요:
+          </p>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-amber-300 dark:border-amber-800">
+            <code className="text-blue-600 dark:text-blue-400 font-mono font-bold flex-1 break-all">
+              {currentOrigin}
+            </code>
+            <button
+              type="button"
+              onClick={copy_current_domain}
+              className="px-2 py-1 rounded bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-200 text-[10px] font-bold flex items-center gap-1 shrink-0 cursor-pointer"
+            >
+              {copied_domain ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+              <span>{copied_domain ? '복사됨' : '도메인 복사'}</span>
+            </button>
+            <a
+              href="https://developers.kakao.com/console/app"
+              target="_blank"
+              rel="noreferrer"
+              className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold flex items-center gap-1 shrink-0 hover:bg-slate-200"
+            >
+              <span>콘솔 바로가기</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* 1. 카카오 지도 Canvas (engine === 'kakao') */}
       <div

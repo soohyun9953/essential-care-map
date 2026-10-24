@@ -84,6 +84,10 @@ const 고위험_모자_전원매칭_화면 = dynamic(
   () => import('@/components/고위험_모자_전원매칭_화면').then((m) => m.고위험_모자_전원매칭_화면),
   { loading: 워크스페이스_로딩 }
 );
+const 책임의료기관_지침_질의응답_화면 = dynamic(
+  () => import('@/components/책임의료기관_지침_질의응답_화면').then((m) => m.책임의료기관_지침_질의응답_화면),
+  { loading: 워크스페이스_로딩 }
+);
 const NMC_평가_모니터링_화면 = dynamic(() => import('@/components/NMC_평가_모니터링_화면').then((m) => m.NMC_평가_모니터링_화면), {
   loading: 워크스페이스_로딩,
 });
@@ -653,7 +657,7 @@ export default function Home() {
         {화면_모드 === '구조도' && <메뉴_구조도_뷰 on_open_subtab={handle_open_persona_subtab} />}
 
         {화면_모드 === '프로토타입' && (<>
-        {/* 사용자 그룹 전용 화면 (1-1~1-4·2-1~2-4·3-1~3-3, 준비 중 서브탭 안내) */}
+        {/* 사용자 그룹 전용 화면 (1-1~1-4·2-1~2-5·3-1~3-3, 준비 중 서브탭 안내) */}
         {current_workspace === 'persona_page' && persona_page_화면 === '대국민_공공의료기관_찾기' && (
           <div className="flex-1 w-full h-full min-h-0 overflow-hidden">
             <국민안심_서비스_뷰 />
@@ -672,6 +676,7 @@ export default function Home() {
         {current_workspace === 'persona_page' && persona_page_화면 === '퇴원연계' && <퇴원환자_연계_업무화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === '경영사전검증' && <경영벤치마킹_사전검증_화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === '모자전원' && <고위험_모자_전원매칭_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === '책임의료기관지침' && <책임의료기관_지침_질의응답_화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === 'NMC평가' && <NMC_평가_모니터링_화면 on_navigate={handle_navigate_from_sidebar} />}
         {current_workspace === 'persona_page' && persona_page_화면 === 'NMC통계' && <NMC_정책통계_DW_화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === 'NMC투자' && <NMC_투자배분_모자관제_화면 />}

@@ -5,13 +5,13 @@ import { 신규_메뉴_구조_데이터 } from '@/components/대상자별_좌측
 const AS_IS_ids = new Set(신규_메뉴_구조_데이터.flatMap((g) => g.menus.map((m) => m.id)));
 
 describe('3대 사용자 그룹 메뉴 구조', () => {
-  it('대국민 4 · 의료기관 4 · NMC 3, 서브탭 id는 그룹 번호로 시작하고 중복이 없다', () => {
-    expect(페르소나_목록.map((p) => p.서브탭.length)).toEqual([4, 4, 3]);
+  it('대국민 4 · 의료기관 5 · NMC 3, 서브탭 id는 그룹 번호로 시작하고 중복이 없다', () => {
+    expect(페르소나_목록.map((p) => p.서브탭.length)).toEqual([4, 5, 3]);
     const ids = 페르소나_목록.flatMap((p, i) => p.서브탭.map((s) => {
       expect(s.id.startsWith(`${i + 1}-`)).toBe(true);
       return s.id;
     }));
-    expect(new Set(ids).size).toBe(11);
+    expect(new Set(ids).size).toBe(12);
   });
 
   it('AS-IS 메뉴 id는 모두 실제 사이드바에 있고, 모든 AS-IS 메뉴가 TO-BE 어딘가에 대응된다', () => {

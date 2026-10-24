@@ -516,7 +516,7 @@ export const 사업계획서_서술문_생성기: React.FC<사업계획서_서�
         <div className="space-y-4">
           {/* 검색 바 */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 input-icon" />
             <input
               type="text"
               value={dict_keyword}

@@ -221,7 +221,6 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
             예시="병상수가 가장 많은 공공병원 Top10 보여줘."
             실행_라벨="질의 실행"
             실행중={is_searching}
-            버튼_색="bg-emerald-600 hover:bg-emerald-700"
           />
 
           {/* 추천 퀵 질의 버튼 바 */}
@@ -247,7 +246,7 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
 
           {/* 질의 분석 결과 영역 */}
           {result && (
-            <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300">
+            <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300 p-4 rounded-2xl result-panel">
               {/* Google Gemini 온라인 실시간 심층 소견 카드 */}
               {(is_gemini_loading || result.gemini_analysis) && (
                 <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-purple-50/90 via-indigo-50/40 to-white dark:from-purple-950/40 dark:via-slate-900 dark:to-slate-900 border border-purple-200 dark:border-purple-800 shadow-xs space-y-3 animate-in fade-in duration-300">

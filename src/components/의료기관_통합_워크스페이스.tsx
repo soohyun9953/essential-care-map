@@ -302,7 +302,7 @@ export const 의료기관_통합_워크스페이스: React.FC<의료기관_통�
           {/* 검색 및 필터 헤더 */}
           <div className="bg-white dark:bg-[#15161b] p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
             <div className="relative w-full md:w-96">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 input-icon absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={keyword}

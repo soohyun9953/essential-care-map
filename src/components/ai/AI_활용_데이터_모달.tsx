@@ -269,7 +269,7 @@ export const AI_활용_데이터_모달: React.FC<AI_활용_데이터_모달_속
           </div>
 
           <div className="relative w-full sm:w-56">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 input-icon" />
             <input
               type="text"
               value={search_query}

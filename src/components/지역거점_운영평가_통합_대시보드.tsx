@@ -467,7 +467,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
             <div className="flex flex-wrap items-center gap-2">
               {/* 검색창 */}
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 input-icon" />
                 <input
                   type="text"
                   placeholder="병원명 또는 시군구 검색..."

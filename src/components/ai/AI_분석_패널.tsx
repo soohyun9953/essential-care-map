@@ -397,7 +397,7 @@ function AI_최종_결과({
       </div>
 
       {/* 분석 요약 */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 space-y-2">
+      <div className="p-4 rounded-2xl bg-white dark:bg-[#15161b] result-panel space-y-2">
         <div className="text-xs font-black text-slate-400 uppercase tracking-wider">분석 요약</div>
         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">{결과.분석_요약}</p>
       </div>

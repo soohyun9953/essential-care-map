@@ -121,7 +121,7 @@ export function NMC_에이전트_LLMOps_화면() {
               </tbody>
             </table>
             <label className="block text-[11px] font-bold text-slate-500">요청 문장으로 라우팅 시험</label>
-            <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={set_시험문장} 예시="환자 홍길동(010-1234-5678) 퇴원 의뢰서 요약해줘" 실행_라벨="라우팅" 크기="sm" 버튼_색="bg-indigo-600 hover:bg-indigo-700" aria_label="라우팅 시험 문장" />
+            <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={set_시험문장} 예시="환자 홍길동(010-1234-5678) 퇴원 의뢰서 요약해줘" 실행_라벨="라우팅" 크기="sm" aria_label="라우팅 시험 문장" />
             {시험문장 && (
               <p className="text-xs"><strong>{라우팅_정책[판정.등급].이름} → {라우팅_정책[판정.등급].경로}</strong> <span className="text-slate-500">({판정.사유})</span></p>
             )}

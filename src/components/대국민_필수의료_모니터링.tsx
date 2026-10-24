@@ -67,7 +67,7 @@ export function 대국민_필수의료_모니터링() {
       </div>
 
       {/* 실시간 응급실·소아병상 위젯 */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+      <div className="bg-white dark:bg-slate-900 result-panel rounded-2xl p-5 space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
             <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">

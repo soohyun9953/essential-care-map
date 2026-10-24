@@ -199,7 +199,7 @@ export default function 공공의료_CP_오더세트_라이브러리() {
         {/* 검색 및 보조 필터 */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800">
           <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 input-icon" />
             <input
               type="text"
               value={search_query}

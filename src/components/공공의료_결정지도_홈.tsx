@@ -124,7 +124,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
         <div className="max-w-2xl mx-auto space-y-3">
           <form onSubmit={handle_submit} className="relative">
             <div className="flex items-center bg-white dark:bg-[#15161b] rounded-2xl shadow-md hover:shadow-lg border-2 border-slate-200 dark:border-slate-700 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-600/10 p-1.5 transition-all">
-              <Search className="w-5 h-5 text-slate-400 ml-3 shrink-0" />
+              <Search className="w-5 h-5 input-icon ml-3 shrink-0" />
               <input
                 type="text"
                 value={search_input}

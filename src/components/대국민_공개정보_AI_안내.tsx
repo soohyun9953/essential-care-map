@@ -80,7 +80,7 @@ export function 대국민_공개정보_AI_안내() {
             <div className="flex justify-end">
               <div className="max-w-[80%] px-4 py-2 rounded-2xl rounded-br-sm bg-rose-600 text-white text-sm">{d.질문}</div>
             </div>
-            <div className="max-w-[90%] p-4 rounded-2xl rounded-bl-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="max-w-[90%] p-4 rounded-2xl rounded-bl-sm bg-white dark:bg-slate-900 result-panel space-y-2">
               <div className="text-sm font-bold text-slate-900 dark:text-white">{d.답변.제목}</div>
               <div className="text-xs text-slate-700 dark:text-slate-300 space-y-1 whitespace-pre-line">
                 {d.답변.내용.map((c, j) => (
@@ -117,7 +117,7 @@ export function 대국민_공개정보_AI_안내() {
       </div>
 
       <div className="sticky bottom-0 bg-slate-50/90 dark:bg-[#0c0d10]/90 backdrop-blur py-2">
-        <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={묻기} 예시={추천_질문[0]} 실행_라벨="질문" 버튼_색="bg-rose-600 hover:bg-rose-700" aria_label="질문 입력" />
+        <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={묻기} 예시={추천_질문[0]} 실행_라벨="질문" aria_label="질문 입력" />
       </div>
     </div>
   );

@@ -272,3 +272,30 @@ html.dark .leaflet-control-zoom a:hover {
   background-color: #272a34 !important;
   color: #38bdf8 !important;
 }
+
+/* ==========================================================================
+   화면 공통 UI 토큰 (2026-10-24)
+   - .result-panel : 조회·분석·AI 답변 등 결과가 표시되는 영역. 사이트 전체에서 같은 색·굵기 테두리
+   - .input-action : 입력창 옆 실행(전송) 버튼. 처음 쓰는 사용자도 누를 곳임을 알 수 있도록 전용 색, 비어 있어도 흐리게 하지 않음
+   - .input-icon   : 입력창 안 검색 아이콘 등 입력 영역 아이콘 색
+   ========================================================================== */
+@layer components {
+  .result-panel {
+    border-width: 2px !important;
+    border-style: solid !important;
+    border-color: #3b82f6 !important; /* blue-500 */
+  }
+  .dark .result-panel {
+    border-color: #60a5fa !important; /* blue-400 */
+  }
+  .input-action {
+    background-color: #f97316; /* orange-500 */
+    color: #ffffff;
+  }
+  .input-action:hover:not(:disabled) {
+    background-color: #ea580c; /* orange-600 */
+  }
+  .input-icon {
+    color: #f97316 !important;
+  }
+}

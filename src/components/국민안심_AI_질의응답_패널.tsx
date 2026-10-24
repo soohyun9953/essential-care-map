@@ -938,7 +938,7 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               className={`max-w-[96%] sm:max-w-[94%] rounded-2xl px-4 py-3 leading-relaxed ${
                 msg.sender === 'user'
                   ? 'bg-blue-600 text-white shadow-xs rounded-tr-xs'
-                  : 'bg-white dark:bg-[#1a1b22] text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 shadow-sm rounded-tl-xs'
+                  : 'bg-white dark:bg-[#1a1b22] text-slate-800 dark:text-slate-200 border result-panel shadow-sm rounded-tl-xs'
               }`}
             >
               <div className="whitespace-pre-line text-xs sm:text-[13px] font-normal leading-relaxed">
@@ -1221,9 +1221,9 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
 
           <button
             type="submit"
-            disabled={!query_input.trim() || is_loading}
-            className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white transition cursor-pointer shadow-xs shrink-0"
-            title="질문 전송"
+            disabled={is_loading}
+            className="p-2.5 rounded-xl input-action disabled:opacity-60 transition cursor-pointer shadow-sm shrink-0"
+            title={query_input.trim() ? '질문 전송' : `예시 질문으로 실행: ${DEFAULT_PLACEHOLDER_QUERY}`}
           >
             <Send className="w-4 h-4" />
           </button>

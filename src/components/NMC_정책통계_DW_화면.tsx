@@ -67,16 +67,16 @@ export function NMC_정책통계_DW_화면() {
         <section className={카드}>
           <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Database className="w-4 h-4 text-indigo-600" /> 통합 DW 대화형 자연어 질의 (Text-to-SQL) {코드('AIS-08-01')}</h3>
           <p className="text-[11px] text-slate-500">정해진 질문 유형을 SQL로 바꿔 플랫폼 내장 테이블(시군구_진단, 알리미_공시)에서 실행합니다. 자유 질의(내부 sLLM)는 본 사업 대상입니다.</p>
-          <AI_질의_입력창 value={질문} onChange={set_질문} onSubmit={(q) => set_결과(자연어_질의(q))} 예시={질의_예시[0]} 크기="sm" 버튼_색="bg-indigo-600 hover:bg-indigo-700" aria_label="자연어 질의" />
+          <AI_질의_입력창 value={질문} onChange={set_질문} onSubmit={(q) => set_결과(자연어_질의(q))} 예시={질의_예시[0]} 크기="sm" aria_label="자연어 질의" />
           <div className="flex flex-wrap gap-1">
             {질의_예시.map((q) => (
               <button key={q} type="button" onClick={() => set_질문(q)} className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 cursor-pointer">{q}</button>
             ))}
           </div>
           {결과 && ('오류' in 결과 ? (
-            <p className="text-xs text-rose-600">{결과.오류}</p>
+            <p className="text-xs text-rose-600 p-2 rounded-lg result-panel">{결과.오류}</p>
           ) : (
-            <>
+            <div className="p-2 rounded-xl result-panel space-y-2">
               <pre className="text-[10px] p-2 rounded-lg bg-slate-900 text-emerald-300 overflow-x-auto">{결과.sql}</pre>
               <div className="text-[11px] text-slate-500">{결과.설명} · {결과.행.length}행</div>
               <div className="max-h-56 overflow-y-auto">
@@ -87,7 +87,7 @@ export function NMC_정책통계_DW_화면() {
                   </tbody>
                 </table>
               </div>
-            </>
+            </div>
           ))}
         </section>
 

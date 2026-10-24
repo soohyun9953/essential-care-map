@@ -139,11 +139,10 @@ export function 교육_인력매칭_스마트병원_화면() {
               예시="CP 운영 가산율은 얼마야?"
               실행_라벨="질문"
               크기="sm"
-              버튼_색="bg-purple-600 hover:bg-purple-700"
               aria_label="튜터 질문"
             />
             {튜터_답.map((x) => (
-              <div key={x.청크.id} className="text-[11px] text-slate-700 dark:text-slate-300 p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
+              <div key={x.청크.id} className="text-[11px] text-slate-700 dark:text-slate-300 p-2 rounded-lg bg-slate-50 dark:bg-slate-800 result-panel">
                 {x.청크.본문.slice(0, 220)}{x.청크.본문.length > 220 ? '…' : ''}
                 <div className="text-slate-400 mt-1">출처: {x.청크.문서명} ({x.청크.검증상태 ?? '검증 상태 미표시'})</div>
               </div>

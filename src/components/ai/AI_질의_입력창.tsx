@@ -6,7 +6,7 @@ import { Send } from 'lucide-react';
 // AI 질의 공통 입력창 (2026-10-24 통일)
 // - 빈 입력창에는 회색 예시 질문이 보이고, Tab 키(또는 「Tab ⇥ 입력」 배지)를 누르면 그 질문이 입력창에 채워진다
 // - 질의는 오른쪽 실행 버튼(또는 Enter)으로만 보낸다. Tab은 채우기만 하고 바로 질의하지 않는다
-// - 입력이 비어 있으면 실행 버튼은 비활성
+// - 실행 버튼은 사이트 공통 입력 실행 색(.input-action). 입력이 비어 있을 때 누르면 회색 예시 질문으로 질의한다
 
 interface AI_질의_입력창_속성 {
   value: string;
@@ -17,7 +17,6 @@ interface AI_질의_입력창_속성 {
   실행중?: boolean;
   aria_label?: string;
   크기?: 'sm' | 'md';
-  버튼_색?: string; // tailwind 배경색 클래스
   아이콘?: React.ReactNode;
 }
 
@@ -30,7 +29,6 @@ export function AI_질의_입력창({
   실행중 = false,
   aria_label = 'AI 질의 입력',
   크기 = 'md',
-  버튼_색 = 'bg-blue-600 hover:bg-blue-700',
   아이콘,
 }: AI_질의_입력창_속성) {
   const ref = useRef<HTMLInputElement>(null);
@@ -45,7 +43,11 @@ export function AI_질의_입력창({
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        if (!비었음 && !실행중) onSubmit(value.trim());
+        if (실행중) return;
+        if (비었음) {
+          onChange(예시);
+          onSubmit(예시);
+        } else onSubmit(value.trim());
       }}
       className="flex gap-2 w-full"
     >
@@ -80,8 +82,9 @@ export function AI_질의_입력창({
       </div>
       <button
         type="submit"
-        disabled={비었음 || 실행중}
-        className={`${sm ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} rounded-xl ${버튼_색} disabled:opacity-40 text-white font-bold cursor-pointer disabled:cursor-not-allowed flex items-center gap-1 shrink-0`}
+        disabled={실행중}
+        title={비었음 ? `예시 질문으로 실행: ${예시}` : undefined}
+        className={`${sm ? 'px-3 py-1.5 text-xs' : 'px-4 py-2.5 text-sm'} rounded-xl input-action shadow-sm disabled:opacity-60 font-bold cursor-pointer disabled:cursor-not-allowed flex items-center gap-1 shrink-0`}
       >
         {아이콘 ?? <Send className={sm ? 'w-3.5 h-3.5' : 'w-4 h-4'} />}
         {실행중 ? '실행 중…' : 실행_라벨}

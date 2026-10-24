@@ -158,7 +158,6 @@ export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이�
             예시="중진료권별 유출 Top10과 유출 재원일수 보여줘."
             실행_라벨="질의 실행"
             실행중={is_searching}
-            버튼_색="bg-blue-600 hover:bg-blue-700"
           />
 
           {/* 추천 퀵 질의 버튼 바 */}
@@ -195,7 +194,7 @@ export const 환자_의료이용_질의응답_모달: React.FC<환자_의료이�
 
           {/* 질의 분석 결과 영역 */}
           {result && (
-            <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300">
+            <div key={`${result.query}-${result.title}-${result.table_rows.length}`} className="space-y-5 animate-in fade-in duration-300 p-4 rounded-2xl result-panel">
               {/* 1. AI 종합 분석 브리핑 카드 */}
               <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-blue-50/80 via-indigo-50/40 to-white dark:from-blue-950/30 dark:via-slate-900 dark:to-slate-900 border border-blue-100 dark:border-blue-900/60 shadow-xs space-y-3">
                 <div className="flex items-center justify-between gap-3">

@@ -205,8 +205,8 @@ export const 국민안심_서비스_뷰: React.FC = () => {
   // 병원 상세정보 모달 상태
   const [detail_modal_hospital, set_detail_modal_hospital] = useState<공공의료기관_상세_프로필 | null>(null);
 
-  // 모바일 바텀시트 상태: 'min' | 'half' | 'full' (기본: min - 상단 지도 및 AI 답변 영역 최대 확보)
-  const [sheet_state, set_sheet_state] = useState<'min' | 'half' | 'full'>('min');
+  // 하단 목록: 접힘(min) ↔ 전체(full) 두 단계 (중간 단계 없음)
+  const [sheet_state, set_sheet_state] = useState<'min' | 'full'>('min');
 
   // AI 답변 영역 넓게보기/전체화면 모드
   const [is_ai_expanded, set_is_ai_expanded] = useState(false);
@@ -577,7 +577,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         {/* 검색 인풋 & 5대 빠른 서비스 선택 버튼 */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative flex-1 sm:max-w-xs">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 input-icon absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={search_text}
@@ -614,7 +614,6 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                   setSelected_service(item.id as any);
                   setSelected_hospital(null);
                   setSelected_extra_id(null);
-                  if (sheet_state === 'min') set_sheet_state('half');
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition cursor-pointer active:scale-95 ${
                   selected_service === item.id
@@ -646,14 +645,12 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               on_select_hospital={(h) => {
                 setSelected_hospital(h);
                 setSelected_extra_id(null);
-                set_sheet_state('half');
               }}
               extra_points={보조_지점}
               active_extra_id={selected_extra_id}
               on_select_extra={(p) => {
                 setSelected_extra_id(p.id);
                 setSelected_hospital(null);
-                set_sheet_state('half');
               }}
             />
 
@@ -688,7 +685,6 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               if (matched) {
                 setSelected_hospital(matched);
                 setSelected_extra_id(null);
-                set_sheet_state('half');
               }
             }}
           />
@@ -700,19 +696,13 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       {/* ============================================================== */}
       <div
         className={`bg-white dark:bg-[#15161b] rounded-t-3xl border-t border-slate-200 dark:border-slate-800 shadow-2xl transition-all duration-300 flex flex-col z-30 shrink-0 overflow-hidden ${
-          sheet_state === 'min'
-            ? 'h-12 sm:h-14'
-            : sheet_state === 'half'
-            ? 'h-[36%] sm:h-[34%]'
-            : 'h-[85%]'
+          sheet_state === 'min' ? 'h-12 sm:h-14' : 'h-[85%]'
         }`}
       >
         {/* 바텀시트 핸들 & 토글 */}
         <div
           onClick={() => {
-            if (sheet_state === 'min') set_sheet_state('half');
-            else if (sheet_state === 'half') set_sheet_state('full');
-            else set_sheet_state('half');
+            set_sheet_state(sheet_state === 'min' ? 'full' : 'min');
           }}
           className="p-2 flex flex-col items-center justify-center cursor-pointer select-none border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition shrink-0"
         >
@@ -730,7 +720,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
               <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">(거리순 · 한 줄에 3개 정렬)</span>
             </span>
             <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-              {sheet_state === 'min' ? '목록 펼치기' : sheet_state === 'half' ? '전체 보기' : '축소'}
+              {sheet_state === 'min' ? '목록 펼치기' : '축소'}
               {sheet_state === 'full' ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
             </span>
           </div>
@@ -780,7 +770,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
             /* 핵심 요구사항 3: 한 줄에 3개 보여주는 3열 그리드 (grid-cols-1 md:grid-cols-2 lg:grid-cols-3) */
             /* ============================================================== */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-              {표시_목록.slice(0, sheet_state === 'full' ? 90 : 18).map((item) => {
+              {표시_목록.slice(0, 90).map((item) => {
                 if (item.kind === '민간') {
                   const p = item.h;
                   const is_selected = selected_extra_id === item.id;

@@ -450,22 +450,8 @@ export const 공공의료_의사결정_지도_내부: React.FC<공공의료_의�
             }`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-slate-900" />
-            <span>카카오맵 (기본)</span>
+            <span>카카오맵</span>
             {is_kakao_loading && <span className="w-2.5 h-2.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin ml-0.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              set_engine('leaflet');
-              set_load_error(null);
-            }}
-            className={`px-2.5 py-1 text-xs font-semibold rounded-full transition cursor-pointer ${
-              engine === 'leaflet'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
-            }`}
-          >
-            오픈스트리트맵
           </button>
         </div>
 

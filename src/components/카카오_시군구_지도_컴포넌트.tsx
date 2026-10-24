@@ -28,7 +28,6 @@ export interface 카카오_시군구_지도_컴포넌트_속성 {
   on_change_view_mode: (mode: 지도_시각화_모드) => void;
   region_unit: 지역_구분_단위;
   on_change_region_unit: (unit: 지역_구분_단위) => void;
-  on_switch_to_leaflet?: () => void;
   on_open_key_modal?: () => void;
 }
 
@@ -40,7 +39,6 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
   on_change_view_mode,
   region_unit,
   on_change_region_unit,
-  on_switch_to_leaflet,
   on_open_key_modal,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -592,21 +590,12 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
       {/* 1. 상단 플로팅 컨트롤러 바 (카카오맵 연동 전용 디자인)       */}
       {/* ============================================================== */}
       <div className="absolute top-4 left-4 z-[400] flex flex-wrap items-center gap-2 max-w-[calc(100%-2rem)]">
-        {/* 지도 엔진 스위처: 카카오 지도 vs Leaflet */}
+        {/* 지도 엔진 표시 (카카오맵 단일) */}
         <div className="bg-white/95 dark:bg-[#15161b]/95 backdrop-blur-xl p-1 rounded-full shadow-apple-glass border border-black/[0.06] dark:border-slate-800 flex items-center space-x-1">
           <span className="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-400 text-slate-900 shadow-apple-sm flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-slate-900 animate-pulse" />
-            <span>카카오맵 (기본)</span>
+            <span>카카오맵</span>
           </span>
-          {on_switch_to_leaflet && (
-            <button
-              onClick={on_switch_to_leaflet}
-              className="px-2.5 py-1 text-xs font-semibold rounded-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
-              title="오픈스트리트맵(Leaflet) 보조 지도로 전환"
-            >
-              오픈스트리트맵
-            </button>
-          )}
         </div>
 
         {/* 카카오맵 지도 형태 스위처: 일반지도 vs 스카이뷰 */}
@@ -812,14 +801,6 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
                 >
                   <Key className="w-3.5 h-3.5" />
                   <span>카카오 API 키 입력하기</span>
-                </button>
-              )}
-              {on_switch_to_leaflet && (
-                <button
-                  onClick={on_switch_to_leaflet}
-                  className="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold rounded-xl text-xs transition cursor-pointer"
-                >
-                  오픈스트리트맵(보조)으로 보기
                 </button>
               )}
             </div>

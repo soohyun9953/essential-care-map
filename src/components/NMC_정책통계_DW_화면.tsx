@@ -8,7 +8,6 @@ import { 취약지_요약, 자연어_질의, 질의_예시, 정책_요구자료_
 // ③ NMC › 3-2 전국 취약지 정책통계·연계실적 & 통합 DW 분석 (정책연구팀·책임지원팀 | AP-05·08·01)
 
 const 카드 = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2';
-const 코드 = (c: string) => <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">{c}</span>;
 
 export function NMC_정책통계_DW_화면() {
   const 요약 = useMemo(() => 취약지_요약(), []);
@@ -91,7 +90,7 @@ export function NMC_정책통계_DW_화면() {
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><FileText className="w-4 h-4 text-emerald-600" /> 국회·복지부 정책 요구자료 초안 {코드('TB-PR-07')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><FileText className="w-4 h-4 text-emerald-600" /> 국회·복지부 정책 요구자료 초안</h3>
           <div className="flex flex-wrap gap-2">
             <select value={요청기관} onChange={(e) => set_요청기관(e.target.value as '국회' | '보건복지부')} className="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="요청기관">
               <option>국회</option><option>보건복지부</option>

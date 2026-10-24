@@ -7,7 +7,7 @@
 // 구성:
 //   1. [평가 종합 결과]: 종합 77.9점(+4.3점), A등급 15개소, 4대 영역/11개 부문, 20개년 추이
 //   2. [41개 기관 벤치마크]: 전국 41개소 전수 병상·인력·점수 벤치마킹 및 상세 진단
-//   3. [101개 지표 가이드]: 4영역-11부문-20분야-50기준-101항목 B-set 체계 및 점수분포
+//   3. [101개 조사항목 가이드]: 4영역-11부문-20분야-50기준-101항목 B-set 체계 및 점수분포
 //   4. [만족도 & CS 포트폴리오]: 환자(90.7점)/직원(68.7점)/리더십(67.4점) 및 4사분면 매트릭스
 //   5. [자가진단 시뮬레이터]: 11대 부문 실시간 가중치 시뮬레이션 및 A등급 달성 처방전
 //   6. [우수사례 & 혁신과제]: 8대 우수기관(김천·서귀포·이천·포항 등) 및 2026 필수의료 혁신과제
@@ -82,8 +82,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSido, setSelectedSido] = useState('전체');
   const [selectedType, setSelectedType] = useState<'전체' | '지방의료원' | '적십자병원'>('전체');
-  const [selectedGrade, setSelectedGrade] = useState<'전체' | 'A' | 'B' | 'C'>('전체');
-  const [sortBy, setSortBy] = useState<'score_desc' | 'bed_desc' | 'doc_desc' | 'name_asc'>('score_desc');
+  const [sortBy, setSortBy] = useState<'bed_desc' | 'doc_desc' | 'name_asc'>('bed_desc');
   const [selectedHospital, setSelectedHospital] = useState<공공병원_운영평가_기관_데이터 | null>(null);
 
   // 시도 목록
@@ -101,16 +100,21 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
         const matchType =
           selectedType === '전체' ||
           (selectedType === '적십자병원' ? h.기관명.includes('적십자') : !h.기관명.includes('적십자'));
-        const matchGrade = selectedGrade === '전체' || h.등급 === selectedGrade;
-        return matchName && matchSido && matchType && matchGrade;
+        return matchName && matchSido && matchType;
       })
       .sort((a, b) => {
-        if (sortBy === 'score_desc') return b.종합점수 - a.종합점수;
         if (sortBy === 'bed_desc') return b.허가병상 - a.허가병상;
         if (sortBy === 'doc_desc') return b.전문의수 - a.전문의수;
         return a.기관명.localeCompare(b.기관명, 'ko');
       });
-  }, [searchTerm, selectedSido, selectedType, selectedGrade, sortBy]);
+  }, [searchTerm, selectedSido, selectedType, sortBy]);
+
+  // 부록 2 우수 사례에 오른 기관 (기관별 점수·등급은 보고서 미공개)
+  const 우수사례_기관 = useMemo(() => new Set(운영평가_8대_우수기관_사례.map((x) => x.병원명.replace(/\s+/g, ''))), []);
+  const 우수사례_여부 = (기관명: string) => {
+    const 키 = 기관명.replace(/\s+/g, '');
+    return Array.from(우수사례_기관).some((x) => x.includes(키) || 키.includes(x));
+  };
 
   // --------------------------------------------------------------------------
   // 지표 탐색기 탭 상태
@@ -121,7 +125,6 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
   // --------------------------------------------------------------------------
   // 자가진단 시뮬레이터 상태
   // --------------------------------------------------------------------------
-  const [simulatorHospitalName, setSimulatorHospitalName] = useState<string>('전국 평균 (벤치마크)');
   const [simInput, setSimInput] = useState<병원_평가_시뮬레이션_입력>({
     양질의_의료_일반진료: 69.9,
     양질의_의료_환자만족: 90.7,
@@ -138,27 +141,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
 
   const simResult = useMemo(() => simulate_hospital_evaluation(simInput), [simInput]);
 
-  // 특정 병원 프로필 불러오기 핸들러
-  const handleLoadHospitalToSimulator = (hospital: 공공병원_운영평가_기관_데이터) => {
-    setSimulatorHospitalName(hospital.기관명);
-    setSimInput({
-      양질의_의료_일반진료: Math.round(hospital.양질의_의료_점수 * 0.95 * 10) / 10,
-      양질의_의료_환자만족: 90.7,
-      공익적_의료지원체계: hospital.공익적_보건의료_점수 > 85 ? 85.0 : 75.0,
-      공익적_포용적의료: 76.0,
-      공익적_특화서비스: hospital.공익적_보건의료_점수 > 88 ? 92.0 : 84.0,
-      합리적_경영관리: hospital.합리적_운영_점수 > 80 ? 84.0 : 77.0,
-      합리적_경영성과: hospital.합리적_운영_점수 > 80 ? 76.0 : 66.0,
-      책임_거버넌스: hospital.책임_운영_점수 > 82 ? 86.0 : 80.0,
-      책임_리더십: hospital.책임_운영_점수 > 85 ? 65.0 : 52.0,
-      책임_윤리경영: hospital.우수_사례_선정 ? 95.0 : 85.0,
-      책임_작업환경: 81.0,
-    });
-    setActiveTab('simulator');
-  };
-
   const handleResetSimulator = () => {
-    setSimulatorHospitalName('전국 평균 (벤치마크)');
     setSimInput({
       양질의_의료_일반진료: 69.9,
       양질의_의료_환자만족: 90.7,
@@ -259,7 +242,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>3. 101개 지표 &amp; B-set 체계</span>
+          <span>3. 101개 조사항목 &amp; B-set 체계</span>
         </button>
 
         <button
@@ -414,7 +397,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                   2025년 평가 등급별 기관 분포
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                  총 41개소 중 A등급 15개소(36.6%)로 전년 4개소 대비 대폭 증가
+                  총 41개소 중 A등급 15개소(36.6%)로 전년 4개소 대비 증가. B·C·D등급 기관 수와 기관별 등급은 보고서에 공개되지 않았습니다.
                 </p>
 
                 <div className="space-y-3">
@@ -437,12 +420,16 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-base font-black text-slate-900 dark:text-white">
-                          {gradeInfo.기관수}<span className="text-xs font-normal text-slate-400">개소</span>
-                        </div>
-                        <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                          {gradeInfo.비율}%
-                        </div>
+                        {gradeInfo.기관수 === null ? (
+                          <div className="text-xs font-bold text-slate-400">미공개</div>
+                        ) : (
+                          <>
+                            <div className="text-base font-black text-slate-900 dark:text-white">
+                              {gradeInfo.기관수}<span className="text-xs font-normal text-slate-400">개소</span>
+                            </div>
+                            <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">{gradeInfo.비율}%</div>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -450,7 +437,7 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
               </div>
 
               <div className="mt-4 p-3 rounded-xl bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/60 text-xs text-blue-800 dark:text-blue-300">
-                <span className="font-bold">평가 총평:</span> 필수의료 인프라 회복 및 환자만족도 개선(90.7점)에 힘입어 15개 의료원이 A등급을 획득함.
+                <span className="font-bold">평가 총평:</span> 필수의료 인프라 회복 및 환자만족도 개선(90.7점)에 힘입어 15개소가 A등급(80점 이상)을 받음. (보고서 74쪽)
               </div>
             </div>
           </div>
@@ -499,17 +486,6 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                 <option value="적십자병원">적십자병원 (6개)</option>
               </select>
 
-              {/* 등급 필터 */}
-              <select
-                value={selectedGrade}
-                onChange={(e) => setSelectedGrade(e.target.value as any)}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300"
-              >
-                <option value="전체">전체 등급</option>
-                <option value="A">A등급 (15개)</option>
-                <option value="B">B등급 (23개)</option>
-                <option value="C">C등급 (3개)</option>
-              </select>
             </div>
 
             {/* 정렬 셀렉터 */}
@@ -520,7 +496,6 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300"
               >
-                <option value="score_desc">종합점수 높은순</option>
                 <option value="bed_desc">허가병상 많은순</option>
                 <option value="doc_desc">전문의수 많은순</option>
                 <option value="name_asc">병원명 가나다순</option>
@@ -531,8 +506,6 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
           {/* 41개 병원 카드 그리드 */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredHospitals.map((hospital) => {
-              const isA = hospital.등급 === 'A';
-              const isC = hospital.등급 === 'C';
               return (
                 <div
                   key={hospital.연번}
@@ -550,24 +523,16 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                           {hospital.종별}
                         </span>
                       </div>
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-black border ${
-                          isA
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300'
-                            : isC
-                            ? 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
-                            : 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300'
-                        }`}
-                      >
-                        {hospital.등급}등급 ({hospital.종합점수}점)
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold border bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                        {hospital.소속}
                       </span>
                     </div>
 
                     {/* 병원명 */}
                     <h4 className="text-base font-black text-slate-900 dark:text-white group-hover:text-blue-600 transition mb-3">
                       {hospital.기관명}
-                      {hospital.우수_사례_선정 && (
-                        <span className="ml-1.5 text-xs font-bold text-amber-500">★ 우수기관</span>
+                      {우수사례_여부(hospital.기관명) && (
+                        <span className="ml-1.5 text-xs font-bold text-amber-500" title="결과보고서 부록 2 「2025년 우수 사례」 수록 기관">★ 우수 사례</span>
                       )}
                     </h4>
 
@@ -593,41 +558,11 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* 4대 영역 점수 미니 프로그레스 */}
-                    <div className="space-y-1.5 text-[11px]">
-                      <div className="flex justify-between text-slate-500">
-                        <span>양질의 의료 (30%)</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{hospital.양질의_의료_점수}점</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500">
-                        <span>공익적 보건 (30%)</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{hospital.공익적_보건의료_점수}점</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500">
-                        <span>합리적 운영 (20%)</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{hospital.합리적_운영_점수}점</span>
-                      </div>
-                      <div className="flex justify-between text-slate-500">
-                        <span>책임 운영 (20%)</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{hospital.책임_운영_점수}점</span>
-                      </div>
-                    </div>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
-                    <span className="text-slate-400 truncate max-w-[200px]">
-                      {hospital.우수_사례_내용 || `개선권고: ${hospital.개선_필요_분야}`}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleLoadHospitalToSimulator(hospital);
-                      }}
-                      className="px-2 py-1 rounded-md text-[11px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/60 dark:text-blue-300 hover:bg-blue-600 hover:text-white transition whitespace-nowrap"
-                    >
-                      시뮬레이션 ➔
-                    </button>
+                  <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                    <span className="truncate">응급: {hospital.응급지정}</span>
+                    <span className="shrink-0">상세 보기 ➔</span>
                   </div>
                 </div>
               );
@@ -650,47 +585,11 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                       {selectedHospital.기관명}
                     </h3>
                   </div>
-                  <div className="text-right">
-                    <span className="px-3 py-1 rounded-full text-sm font-black bg-blue-600 text-white shadow-xs">
-                      {selectedHospital.등급}등급 ({selectedHospital.종합점수}점)
-                    </span>
-                  </div>
                 </div>
 
-                {/* 4대 영역 벤치마킹 비교 */}
-                <div>
-                  <h5 className="text-xs font-black text-slate-800 dark:text-slate-200 mb-2">4대 영역 점수 vs 전국 평균</h5>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <div className="text-slate-400 text-[10px]">양질의 의료 (30%)</div>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
-                        {selectedHospital.양질의_의료_점수}점
-                      </div>
-                      <div className="text-[10px] text-blue-600">평균 76.0점</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <div className="text-slate-400 text-[10px]">공익적 보건 (30%)</div>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
-                        {selectedHospital.공익적_보건의료_점수}점
-                      </div>
-                      <div className="text-[10px] text-blue-600">평균 82.7점</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <div className="text-slate-400 text-[10px]">합리적 운영 (20%)</div>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
-                        {selectedHospital.합리적_운영_점수}점
-                      </div>
-                      <div className="text-[10px] text-blue-600">평균 75.5점</div>
-                    </div>
-                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                      <div className="text-slate-400 text-[10px]">책임 운영 (20%)</div>
-                      <div className="text-base font-black text-slate-900 dark:text-white mt-0.5">
-                        {selectedHospital.책임_운영_점수}점
-                      </div>
-                      <div className="text-[10px] text-blue-600">평균 75.5점</div>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                  기관별 운영평가 점수·등급은 결과보고서에 공개되지 않아 표시하지 않습니다. 2025 전국 평균: 종합 77.9점 · 양질의 의료 76.0 · 공익적 보건의료 82.7 · 합리적 운영 75.5 · 책임 운영 75.5 (보고서 74~75쪽). 아래는 부록 1 일반현황입니다.
+                </p>
 
                 {/* 필수 시설 및 병상 상세 (부록 1 표 10-2) */}
                 <div>
@@ -736,22 +635,13 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 닫기 및 시뮬레이션 버튼 */}
+                {/* 닫기 */}
                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <button
                     onClick={() => setSelectedHospital(null)}
                     className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   >
                     닫기
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleLoadHospitalToSimulator(selectedHospital);
-                      setSelectedHospital(null);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black cursor-pointer shadow-xs"
-                  >
-                    이 기관으로 시뮬레이션 시작 ➔
                   </button>
                 </div>
               </div>
@@ -1036,8 +926,8 @@ export const 지역거점_운영평가_통합_대시보드: React.FC = () => {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-bold text-slate-400">진단 대상:</span>
-                <span className="text-sm font-black text-blue-600 dark:text-blue-400">
-                  {simulatorHospitalName}
+                <span className="text-sm font-black text-blue-600 dark:text-blue-400" title="기관별 운영평가 점수는 결과보고서에 공개되지 않아, 시작값은 전국 부문 평균이며 직접 입력해 진단합니다">
+                  직접 입력 (시작값: 2025 전국 부문 평균)
                 </span>
                 <button
                   type="button"

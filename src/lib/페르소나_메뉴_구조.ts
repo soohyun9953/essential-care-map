@@ -187,6 +187,19 @@ export function 페르소나_찾기(키: 페르소나_키): 페르소나_정의 
   return 페르소나_목록.find((p) => p.키 === 키) ?? 페르소나_목록[0];
 }
 
+/** 좌측 메뉴(AS-IS) id가 들어 있는 TO-BE 서브탭. 우선 그룹을 주면 그 그룹에서 먼저 찾는다 */
+export function 메뉴_소속_서브탭(
+  메뉴_id: string,
+  우선?: 페르소나_키 | null
+): { 페르소나: 페르소나_정의; 서브탭: 페르소나_서브탭 } | null {
+  const 순서 = 우선 ? [...페르소나_목록].sort((a, b) => (a.키 === 우선 ? -1 : b.키 === 우선 ? 1 : 0)) : 페르소나_목록;
+  for (const 페르소나 of 순서) {
+    const 서브탭 = 페르소나.서브탭.find((s) => s.as_is_메뉴_ids.includes(메뉴_id));
+    if (서브탭) return { 페르소나, 서브탭 };
+  }
+  return null;
+}
+
 export function 서브탭_찾기(id: string): { 페르소나: 페르소나_정의; 서브탭: 페르소나_서브탭 } | null {
   for (const 페르소나 of 페르소나_목록) {
     const 서브탭 = 페르소나.서브탭.find((s) => s.id === id);

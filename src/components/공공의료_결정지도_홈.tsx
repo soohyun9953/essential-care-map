@@ -33,6 +33,10 @@ interface 공공의료_결정지도_홈_속성 {
   active_user_role?: 사용자_역할_타입;
   /** 사용자 그룹 서브탭 열기 (상단 사용자 그룹 버튼과 같은 화면: 1-1 · 2-1 · 3-1 …) */
   on_open_persona_subtab?: (subtab_id: string) => void;
+  /** 기존 화면을 그 화면이 속한 사용자 그룹·서브탭이 선택된 상태로 열기 (배너용) */
+  on_open_in_persona?: (workspace: 워크스페이스_타입, sub_feature?: string) => void;
+  /** 기존 화면이 속한 서브탭 표시 문구 (예: '③ 3-1 통합 평가·공시심사·성과 모니터링 AI') */
+  화면_소속?: (workspace: 워크스페이스_타입, sub_feature?: string) => string | null;
   on_open_guide_modal?: () => void;
   // 하위 호환성 핸들러
   on_search_submit?: (keyword: string, selected_services: 의료서비스_코드[]) => void;
@@ -85,6 +89,8 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
   on_navigate_workspace,
   active_user_role = 'all',
   on_open_persona_subtab,
+  on_open_in_persona,
+  화면_소속,
   on_open_guide_modal,
   on_search_submit,
   on_navigate_map,
@@ -101,6 +107,17 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       return;
     }
     on_search_region(query);
+  };
+
+  // 배너: 소속 사용자 그룹·서브탭 문맥으로 열고(없으면 기존 이동), 어느 메뉴인지 칩으로 표시
+  const 열기 = (ws: 워크스페이스_타입, sub?: string) => (on_open_in_persona ?? on_navigate_workspace)(ws, sub);
+  const 소속_칩 = (ws: 워크스페이스_타입, sub?: string) => {
+    const 문구 = 화면_소속?.(ws, sub);
+    return 문구 ? (
+      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-white/15 text-white border border-white/30" title="이 기능이 속한 사용자 그룹 메뉴">
+        {문구}
+      </span>
+    ) : null;
   };
 
   const handle_select_sample = (region: string) => {
@@ -178,7 +195,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* 🏆 신규 반영: 2025년 지역거점 공공병원 운영평가 결과보고서 배너      */}
       {/* ================================================================== */}
       <div
-        onClick={() => on_navigate_workspace('medical_institution', 'operation_eval')}
+        onClick={() => 열기('medical_institution', 'operation_eval')}
         className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all cursor-pointer border border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 group"
       >
         <div className="space-y-2">
@@ -190,13 +207,14 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
               지방의료원법 제21조 근거
             </span>
             <span className="text-xs text-blue-300">국립중앙의료원 평가주관</span>
+            {소속_칩('medical_institution', 'operation_eval')}
           </div>
           <h3 className="text-lg sm:text-xl font-black tracking-tight text-white group-hover:text-amber-300 transition-colors flex items-center gap-2">
             <span>2025년 전국 41개 지역거점 공공병원 운영평가 종합결과 &amp; 자가진단</span>
             <ArrowRight className="w-5 h-5 text-amber-400 group-hover:translate-x-1 transition-transform" />
           </h3>
           <p className="text-xs text-blue-200 leading-relaxed max-w-2xl">
-            전국 종합평균 77.9점(+4.3점) · A등급 15개소(김천·서귀포·이천 등) · 4대 영역 101개 지표 B-set 점수종합 체계 및 병원별 맞춤형 A등급 개선 처방전을 확인하세요.
+            전국 종합평균 77.9점(+4.3점) · A등급 15개소 · 우수 사례 김천·서귀포·이천 등 · 4대 영역 101개 조사항목 B-set 점수종합 체계와 A등급(80점) 도달 자가진단 시뮬레이터를 확인하세요.
           </p>
         </div>
         <div className="flex items-center gap-3 shrink-0 self-start md:self-center">
@@ -305,6 +323,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
               <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
               <span>NEW · 2025 시행계획 수립지침 &amp; 2024 추진실적 작성지침 반영</span>
             </div>
+            <div>{소속_칩('policy_planning', 'evaluation')}</div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
               공공보건의료 시행계획 · 추진실적 AI 평가
             </h2>
@@ -315,7 +334,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
           <button
             type="button"
-            onClick={() => on_navigate_workspace('policy_planning', 'evaluation')}
+            onClick={() => 열기('policy_planning', 'evaluation')}
             className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
           >
             <ShieldCheck className="w-4 h-4 text-slate-950" />
@@ -331,6 +350,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>NEW · 국립중앙의료원 의료기관 프로파일 5종 진단보고서 탑재</span>
             </div>
+            <div>{소속_칩('hospital_ai_diagnosis', 'profile_report')}</div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
               AI 공공병원 종합진단 &amp; 5종 진단보고서 작성
             </h2>
@@ -342,7 +362,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => on_navigate_workspace('hospital_ai_diagnosis', 'profile_report')}
+              onClick={() => 열기('hospital_ai_diagnosis', 'profile_report')}
               className="px-5 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
             >
               <FileText className="w-4 h-4 text-slate-950" />
@@ -352,7 +372,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
             <button
               type="button"
-              onClick={() => on_navigate_workspace('hospital_ai_diagnosis', 'diagnosis')}
+              onClick={() => 열기('hospital_ai_diagnosis', 'diagnosis')}
               className="px-4 py-3.5 rounded-2xl bg-blue-500/80 hover:bg-blue-500 text-white font-extrabold text-xs sm:text-sm shadow-md border border-blue-400/40 transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Building2 className="w-4 h-4 text-white" />

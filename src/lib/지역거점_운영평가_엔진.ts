@@ -6,7 +6,8 @@ import {
   전국_41개_지역거점_공공병원_운영평가_목록,
   공공병원_운영평가_기관_데이터,
   평가_등급,
-  평가_영역_코드,
+  종합점수_통계_2025,
+  등급별_기관수_2025,
 } from './지역거점_공공병원_운영평가_데이터셋';
 
 /**
@@ -298,34 +299,26 @@ export function get_hospital_evaluation_data(
 }
 
 /**
- * 7. 전국 41개 병원 종합 통계 요약
+ * 7. 전국 41개 병원 종합 통계 요약 (보고서 공개값: 평균·표준편차·최대·최소, A등급 수)
+ *    기관별 점수는 공개되지 않으므로 기관 데이터에서 계산하지 않는다. B·C·D등급 수는 미공개(null)
  */
 export function get_national_evaluation_summary() {
-  const list = 전국_41개_지역거점_공공병원_운영평가_목록;
-  const count = list.length;
-  const avg_total = Math.round((list.reduce((acc, h) => acc + h.종합점수, 0) / count) * 10) / 10;
-  const avg_quality = Math.round((list.reduce((acc, h) => acc + h.양질의_의료_점수, 0) / count) * 10) / 10;
-  const avg_public = Math.round((list.reduce((acc, h) => acc + h.공익적_보건의료_점수, 0) / count) * 10) / 10;
-  const avg_rational = Math.round((list.reduce((acc, h) => acc + h.합리적_운영_점수, 0) / count) * 10) / 10;
-  const avg_responsibility = Math.round((list.reduce((acc, h) => acc + h.책임_운영_점수, 0) / count) * 10) / 10;
-
-  const count_a = list.filter((h) => h.등급 === 'A').length;
-  const count_b = list.filter((h) => h.등급 === 'B').length;
-  const count_c = list.filter((h) => h.등급 === 'C').length;
-  const count_d = list.filter((h) => h.등급 === 'D').length;
-
+  const 영역_평균 = (코드: string) => 운영평가_4대영역_목록.find((d) => d.코드 === 코드)?.평균점수_2025 ?? null;
   return {
-    총기관수: count,
-    종합점수_평균: avg_total,
-    양질의_의료_평균: avg_quality,
-    공익적_보건의료_평균: avg_public,
-    합리적_운영_평균: avg_rational,
-    책임_운영_평균: avg_responsibility,
+    총기관수: 전국_41개_지역거점_공공병원_운영평가_목록.length,
+    종합점수_평균: 종합점수_통계_2025.평균,
+    종합점수_표준편차: 종합점수_통계_2025.표준편차,
+    종합점수_최대: 종합점수_통계_2025.최대,
+    종합점수_최소: 종합점수_통계_2025.최소,
+    양질의_의료_평균: 영역_평균('quality'),
+    공익적_보건의료_평균: 영역_평균('public'),
+    합리적_운영_평균: 영역_평균('rational'),
+    책임_운영_평균: 영역_평균('responsibility'),
     등급별_분포: {
-      A: count_a,
-      B: count_b,
-      C: count_c,
-      D: count_d,
+      A: 등급별_기관수_2025.A등급.기관수,
+      B: 등급별_기관수_2025.B등급.기관수,
+      C: 등급별_기관수_2025.C등급.기관수,
+      D: 등급별_기관수_2025.D등급.기관수,
     },
   };
 }

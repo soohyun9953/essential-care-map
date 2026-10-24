@@ -130,16 +130,17 @@ describe('운영평가 자가진단 시뮬레이션 및 벤치마킹 검증', ()
     expect(result.A등급_달성_차이).toBe(2.2);
   });
 
-  it('김천의료원, 서귀포의료원 등 우수 기관 조회가 정상 동작한다', () => {
+  it('기관 조회는 부록 1 일반현황만 돌려주고, 보고서에 없는 기관별 점수·등급은 담지 않는다', () => {
     const 김천 = get_hospital_evaluation_data('김천의료원');
-    expect(김천).toBeDefined();
-    expect(김천?.종합점수).toBeGreaterThanOrEqual(88);
-    expect(김천?.등급).toBe('A');
-    expect(김천?.우수_사례_선정).toBe(true);
+    expect(김천?.허가병상).toBeGreaterThan(0);
+    expect(김천 && '종합점수' in 김천).toBe(false);
+    expect(김천 && '등급' in 김천).toBe(false);
+  });
 
-    const 서귀포 = get_hospital_evaluation_data('서귀포의료원');
-    expect(서귀포).toBeDefined();
-    expect(서귀포?.등급).toBe('A');
-    expect(서귀포?.우수_사례_선정).toBe(true);
+  it('전국 요약은 보고서 공개값(평균 77.9·표준편차 4.9·최대 88.3·최소 65.8, A등급 15)이고 B·C·D 수는 미공개', () => {
+    const s = get_national_evaluation_summary();
+    expect([s.종합점수_평균, s.종합점수_표준편차, s.종합점수_최대, s.종합점수_최소]).toEqual([77.9, 4.9, 88.3, 65.8]);
+    expect(s.등급별_분포).toEqual({ A: 15, B: null, C: null, D: null });
+    expect([s.양질의_의료_평균, s.공익적_보건의료_평균, s.합리적_운영_평균, s.책임_운영_평균]).toEqual([76.0, 82.7, 75.5, 75.5]);
   });
 });

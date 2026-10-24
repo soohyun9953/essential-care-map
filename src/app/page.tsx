@@ -23,10 +23,10 @@ import { export_element_as_png } from '@/lib/유틸리티';
 // 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
 import { 글로벌_공공_헤더, 워크스페이스_타입, type 헤더_화면_모드 } from '@/components/글로벌_공공_헤더';
 import { PersonaGroupButtons, PersonaSwitcherBar } from '@/components/PersonaSwitcherBar';
-import { 페르소나_찾기, 서브탭_찾기, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
+import { 페르소나_찾기, 서브탭_찾기, 메뉴_소속_서브탭, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
-import { 대상자별_좌측_사이드바 } from '@/components/대상자별_좌측_사이드바';
+import { 대상자별_좌측_사이드바, 신규_메뉴_구조_데이터 } from '@/components/대상자별_좌측_사이드바';
 import type { 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
 
 const 워크스페이스_로딩 = () => (
@@ -477,6 +477,19 @@ export default function Home() {
     handle_navigate_from_sidebar(sub.대상.workspace, sub.대상.subtab);
   };
 
+  // 기존 워크스페이스 화면(좌측 메뉴)이 속한 사용자 그룹 서브탭 (예: 운영평가 대시보드 → ③ 3-1)
+  const 화면_소속_서브탭 = (ws: 워크스페이스_타입, sub?: string, 우선?: 페르소나_키 | null) => {
+    const 메뉴 = 신규_메뉴_구조_데이터.flatMap((g) => g.menus).find((m) => m.workspace === ws && (m.subtab ?? undefined) === sub);
+    return 메뉴 ? 메뉴_소속_서브탭(메뉴.id, 우선) : null;
+  };
+
+  // 홈 배너 등에서 기존 화면을 열 때, 그 화면이 속한 사용자 그룹·서브탭이 선택된 상태로 연다
+  const handle_open_in_persona = (ws: 워크스페이스_타입, sub?: string) => {
+    const 소속 = 화면_소속_서브탭(ws, sub);
+    if (소속) set_current_user_role(소속.페르소나.키);
+    handle_navigate_from_sidebar(ws, sub);
+  };
+
   const handle_select_persona = (persona: 페르소나_키) => {
     handle_open_persona_subtab(페르소나_찾기(persona).서브탭[0]);
   };
@@ -498,7 +511,10 @@ export default function Home() {
         s.대상.workspace === current_workspace &&
         (!s.대상.subtab || s.대상.subtab === current_active_subtab)
     );
-    return 일치?.id ?? null;
+    if (일치) return 일치.id;
+    // 서브탭이 전용 화면이어도, 지금 화면이 그 서브탭에 속한 기존 메뉴면 그 서브탭을 표시 (예: 3-1 → 운영평가 대시보드)
+    const 소속 = 화면_소속_서브탭(current_workspace, current_active_subtab, active_persona);
+    return 소속 && 소속.페르소나.키 === active_persona ? 소속.서브탭.id : null;
   }, [active_persona, current_workspace, persona_page_id, current_active_subtab]);
 
   // 메뉴, 워크스페이스, 서브탭, 역할 변경 시 메인 콘텐츠 및 사이드바, 윈도우 스크롤을 최상단(위쪽)으로 리셋
@@ -682,6 +698,11 @@ export default function Home() {
               on_search_region={handle_search_region}
               on_navigate_workspace={handle_navigate_from_home}
               active_user_role={current_user_role}
+              on_open_in_persona={handle_open_in_persona}
+              화면_소속={(ws, sub) => {
+                const 소속 = 화면_소속_서브탭(ws, sub);
+                return 소속 ? `${소속.페르소나.번호} ${소속.서브탭.id} ${소속.서브탭.label}` : null;
+              }}
               on_open_persona_subtab={(id) => {
                 const 찾음 = 서브탭_찾기(id);
                 if (찾음) handle_open_persona_subtab(찾음.서브탭);

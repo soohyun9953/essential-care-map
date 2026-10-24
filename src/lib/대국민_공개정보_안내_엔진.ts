@@ -15,6 +15,7 @@ import { 알리미_기관_공시_목록, 알리미_공시_출처 } from './알�
 import { 최근_결산연도 } from './알리미_경영지표';
 import { 경량_RAG_엔진 } from './경량_rag_엔진';
 import { 거점_찾기 } from './주요_거점_좌표';
+import { 주소_시군구 } from './실시간_병상_조회';
 
 export interface 안내_출처 {
   자료: string;
@@ -63,11 +64,6 @@ function 거리_km(a: { 위도: number; 경도: number }, b: { 위도: number; �
   return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
-/** 주소에서 시도·시군구 추출 (E-Gen 실시간 조회용) */
-function 주소_시군구(주소: string): { 시도명: string; 시군구명: string } | null {
-  const r = 전국_시군구_진단_데이터.find((x) => 주소_지역_일치(x.시도명, x.시군구명, 주소));
-  return r ? { 시도명: r.시도명, 시군구명: r.시군구명 } : null;
-}
 
 const 공백제거 = (s: string) => s.replace(/\s/g, '');
 

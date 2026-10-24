@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import { BookOpenCheck, ExternalLink } from 'lucide-react';
 import { 공개정보_안내, 추천_질문, 안내_공통_고지, type 안내_답변 } from '@/lib/대국민_공개정보_안내_엔진';
+import { 실시간_병상_조회 } from '@/lib/실시간_병상_조회';
 
 // ① 대국민 › 1-3 대국민 공공의료 AI 안내 도우미 (AIS-02-02)
 // 공개 자료를 찾아 출처와 함께 보여주는 검색형 안내 (생성형 AI 답변 아님, 로그인 불필요)
@@ -14,22 +15,12 @@ interface 대화 {
   실시간?: string[]; // E-Gen 실시간 신생아중환자실 확인 결과 (NICU 질문)
 }
 
-const 압축 = (x: string) => x.replace(/\s/g, '');
-
 /** NICU 질문: 후보 병원 소재 시군구를 E-Gen 실시간으로 조회해 신생아중환자실 가용 병상을 붙인다 */
 async function 실시간_NICU_확인(대상: NonNullable<안내_답변['실시간_확인']>): Promise<string[]> {
-  const 시군구들 = Array.from(new Map(대상.map((x) => [`${x.시도명}|${x.시군구명}`, x])).values());
-  const 응답 = await Promise.all(
-    시군구들.map((x) =>
-      fetch(`/api/emergency/realtime?sido=${encodeURIComponent(x.시도명)}&sigungu=${encodeURIComponent(x.시군구명)}`)
-        .then((r) => (r.ok ? r.json() : null))
-        .catch(() => null)
-    )
-  );
-  if (!응답.some((d) => d?.is_live_api)) return ['E-Gen 실시간 병상이 연동되지 않아 신생아중환자실 가용 여부를 확인하지 못했습니다. 병원에 전화로 확인하세요.'];
-  const 병원들: { 기관명: string; 신생아중환자실_가용병상?: number; 최종_업데이트: string }[] = 응답.flatMap((d) => (d?.is_live_api ? d.all_hospitals : []));
+  const { 연동됨, 기관별 } = await 실시간_병상_조회(대상);
+  if (!연동됨) return ['E-Gen 실시간 병상이 연동되지 않아 신생아중환자실 가용 여부를 확인하지 못했습니다. 병원에 전화로 확인하세요.'];
   return 대상.map((x) => {
-    const h = 병원들.find((b) => 압축(b.기관명) === 압축(x.기관명) || 압축(b.기관명).includes(압축(x.기관명)) || 압축(x.기관명).includes(압축(b.기관명)));
+    const h = 기관별.get(x.기관명);
     if (!h) return `· ${x.기관명}: 실시간 목록에 없음 (전화 확인)`;
     const n = h.신생아중환자실_가용병상;
     return `· ${x.기관명}: 신생아중환자실 가용 ${n ?? '정보 없음'}${n === 0 ? ' (만실이거나 미운영 — 전화 확인)' : ''}`;

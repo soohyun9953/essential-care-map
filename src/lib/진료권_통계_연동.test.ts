@@ -50,3 +50,28 @@ describe('1-3 대국민 공개정보 안내 (AIS-02-02)', () => {
     expect(질문_지역_찾기('영월 분만 병원')?.시군구명).toBe('영월군');
   });
 });
+
+describe('1-3 거점·NICU 질문 (답변 오류 수정 2026-10-24)', () => {
+  it('「동대구역 근처의 NICU 가능 한곳?」은 대구 동구 기준 가까운 응급의료센터와 실시간 확인 대상을 돌려준다', () => {
+    const a = 공개정보_안내('동대구역 근처의 NICU 가능 한곳?');
+    expect(a.유형).toBe('기관찾기');
+    expect(a.제목).toContain('동대구역');
+    expect(a.내용.join(' ')).toMatch(/대구|경북대|계명|영남|칠곡/);
+    expect(a.실시간_확인?.length).toBeGreaterThan(0);
+    expect(a.출처[0].자료).toContain('E-Gen');
+    expect(a.내용.join(' ')).not.toContain('지표정의');
+  });
+  it('거점 기준 응급실은 가까운 순으로 보여준다', () => {
+    const a = 공개정보_안내('서울역 근처 응급실');
+    expect(a.제목).toContain('서울역');
+    expect(a.내용[1]).toMatch(/직선 \d/);
+  });
+  it('같은 이름의 구는 질문의 시도로 구분한다 (대구 동구 ≠ 부산 동구)', () => {
+    expect(질문_지역_찾기('대구 동구 응급실')?.시도명).toBe('대구광역시');
+  });
+  it('제도 질문 답에는 검증 상태가 있는 지침만 쓰고 지표정의서는 쓰지 않는다', () => {
+    const a = 공개정보_안내('신생아 중환자실이 뭐야?');
+    for (const s of a.출처) expect(s.자료).not.toContain('지표정의서');
+  });
+});
+

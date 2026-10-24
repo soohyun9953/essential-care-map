@@ -11,6 +11,29 @@ import { 공개정보_안내, 추천_질문, 안내_공통_고지, type 안내_�
 interface 대화 {
   질문: string;
   답변: 안내_답변;
+  실시간?: string[]; // E-Gen 실시간 신생아중환자실 확인 결과 (NICU 질문)
+}
+
+const 압축 = (x: string) => x.replace(/\s/g, '');
+
+/** NICU 질문: 후보 병원 소재 시군구를 E-Gen 실시간으로 조회해 신생아중환자실 가용 병상을 붙인다 */
+async function 실시간_NICU_확인(대상: NonNullable<안내_답변['실시간_확인']>): Promise<string[]> {
+  const 시군구들 = Array.from(new Map(대상.map((x) => [`${x.시도명}|${x.시군구명}`, x])).values());
+  const 응답 = await Promise.all(
+    시군구들.map((x) =>
+      fetch(`/api/emergency/realtime?sido=${encodeURIComponent(x.시도명)}&sigungu=${encodeURIComponent(x.시군구명)}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null)
+    )
+  );
+  if (!응답.some((d) => d?.is_live_api)) return ['E-Gen 실시간 병상이 연동되지 않아 신생아중환자실 가용 여부를 확인하지 못했습니다. 병원에 전화로 확인하세요.'];
+  const 병원들: { 기관명: string; 신생아중환자실_가용병상?: number; 최종_업데이트: string }[] = 응답.flatMap((d) => (d?.is_live_api ? d.all_hospitals : []));
+  return 대상.map((x) => {
+    const h = 병원들.find((b) => 압축(b.기관명) === 압축(x.기관명) || 압축(b.기관명).includes(압축(x.기관명)) || 압축(x.기관명).includes(압축(b.기관명)));
+    if (!h) return `· ${x.기관명}: 실시간 목록에 없음 (전화 확인)`;
+    const n = h.신생아중환자실_가용병상;
+    return `· ${x.기관명}: 신생아중환자실 가용 ${n ?? '정보 없음'}${n === 0 ? ' (만실이거나 미운영 — 전화 확인)' : ''}`;
+  });
 }
 
 export function 대국민_공개정보_AI_안내() {
@@ -25,8 +48,14 @@ export function 대국민_공개정보_AI_안내() {
   const 묻기 = (q: string) => {
     const 질문 = q.trim();
     if (!질문) return;
-    set_대화들((prev) => [...prev, { 질문, 답변: 공개정보_안내(질문) }]);
+    const 답변 = 공개정보_안내(질문);
+    set_대화들((prev) => [...prev, { 질문, 답변, 실시간: 답변.실시간_확인?.length ? ['E-Gen 실시간 신생아중환자실 병상 조회 중…'] : undefined }]);
     set_입력('');
+    if (답변.실시간_확인?.length) {
+      실시간_NICU_확인(답변.실시간_확인).then((줄) =>
+        set_대화들((prev) => prev.map((d) => (d.답변 === 답변 ? { ...d, 실시간: 줄 } : d)))
+      );
+    }
   };
 
   return (
@@ -40,7 +69,7 @@ export function 대국민_공개정보_AI_안내() {
           <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">AIS-02-02</span>
         </div>
         <p className="text-xs text-slate-500">
-          응급실·분만 병원·달빛어린이병원 위치, 공공병원 공개 정보, 공공의료 제도를 공개 자료에서 찾아 <strong>출처 문서와 함께</strong> 알려드립니다. 생성형 AI가 지어낸 답변이 아니라 공개 자료를 그대로 보여줍니다.
+          응급실·분만 병원·달빛어린이병원·신생아중환자실(NICU) 위치(역·공항 이름으로도 검색), 공공병원 공개 정보, 공공의료 제도를 공개 자료에서 찾아 <strong>출처 문서와 함께</strong> 알려드립니다. 생성형 AI가 지어낸 답변이 아니라 공개 자료를 그대로 보여줍니다.
         </p>
         <p className="text-xs font-bold text-rose-700 dark:text-rose-300">{안내_공통_고지}</p>
       </div>
@@ -67,6 +96,14 @@ export function 대국민_공개정보_AI_안내() {
                   <p key={j}>{c}</p>
                 ))}
               </div>
+              {d.실시간 && (
+                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900 text-xs text-slate-700 dark:text-slate-300 space-y-0.5">
+                  <div className="text-[11px] font-black text-rose-700 dark:text-rose-300">실시간 확인 (국립중앙의료원 E-Gen)</div>
+                  {d.실시간.map((c, j) => (
+                    <p key={j}>{c}</p>
+                  ))}
+                </div>
+              )}
               {d.답변.출처.length > 0 && (
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
                   <div className="text-[11px] font-black text-slate-500">출처 문서</div>

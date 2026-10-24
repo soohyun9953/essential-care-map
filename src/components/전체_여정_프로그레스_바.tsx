@@ -1,7 +1,7 @@
 'use client';
 
 // Essential Care Map - 전체 여정(Journey) 상단 고정 Progress Navigation
-// 지역진단 ✓ → 지역비교 ✓ → 미래수요 ✓ → AI 정책분석 ● → 정책대안 ○ → 사업계획 ○
+// 지역진단 ✓ → 지역비교 ✓ → 미래수요 ✓ → AI 정책분석 ● → 정책대안 ○ → 사업계획 ○ → 시행계획 평가 ○
 // 사용자 요구사항 1번: 모든 주요 화면 상단에 고정 표시
 
 import React from 'react';
@@ -126,11 +126,15 @@ export const 전체_여정_프로그레스_바: React.FC<전체_여정_프로그
       <div className="max-w-[1700px] mx-auto px-3 sm:px-6 py-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-2.5">
         {/* 좌측: 타이틀 및 타겟 지역 표시 */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-900/60">
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-900/60 cursor-help"
+            title="단계를 클릭하면 해당 분석 작업으로 즉시 전환됩니다"
+          >
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
             <span className="text-[11px] font-black text-blue-700 dark:text-blue-300 tracking-wide uppercase">
               AI 정책 의사결정 Workflow
             </span>
+            <Info className="w-3.5 h-3.5 text-blue-500" />
           </div>
           {selected_region_name && (
             <div className="hidden xl:flex items-center gap-1.5 text-xs text-slate-500">
@@ -142,8 +146,8 @@ export const 전체_여정_프로그레스_바: React.FC<전체_여정_프로그
           )}
         </div>
 
-        {/* 중앙: 6단계 Journey 프로그레스 바 (가로 스크롤 대응) */}
-        <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar py-0.5">
+        {/* 우측: 7단계 Journey 프로그레스 바 (가로 스크롤로 마지막 단계가 가려지지 않게, 넘치면 다음 줄로) */}
+        <div className="flex flex-wrap items-center md:justify-end gap-1 sm:gap-1.5 py-0.5 min-w-0">
           {전체_여정_단계_목록.map((step, idx) => {
             const is_passed = idx < active_index;
             const is_current = idx === active_index;
@@ -210,11 +214,6 @@ export const 전체_여정_프로그레스_바: React.FC<전체_여정_프로그
           })}
         </div>
 
-        {/* 우측: 안내 팁 */}
-        <div className="hidden 2xl:flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0">
-          <Info className="w-3.5 h-3.5 text-blue-500" />
-          <span>단계를 클릭하면 해당 분석 작업으로 즉시 전환됩니다</span>
-        </div>
       </div>
     </div>
   );

@@ -109,6 +109,15 @@ const AI_5단계_프로세스: AI_분석_스텝[] = [
   { step: 5, 이름: 'AI 종합 정책대안 생성', 설명: '다중 에이전트 인과추론 및 최적 실행 시나리오 도출', 핵심지표: '대안 유형 3가지 제시 (예산·효과는 직접 산정)' },
 ];
 
+// 상단 Workflow 바 단계명과 같은 이름 (지역비교 → 미래수요 → AI 정책분석·정책대안 → 사업계획 → 시행계획 평가)
+const 현재_단계_표시: Record<'policy_ai' | 'report' | 'evaluation' | 'compare' | 'forecast', { 이름: string; 아이콘: React.ReactNode; 과제?: { id: string; label: string } }> = {
+  compare: { 이름: '지역비교 · 유사지역 1:1 비교', 아이콘: <GitCompare className="w-3.5 h-3.5" /> },
+  forecast: { 이름: '미래수요 · 2030 미래수요 추계', 아이콘: <TrendingUp className="w-3.5 h-3.5" /> },
+  policy_ai: { 이름: 'AI 정책분석 · 정책대안', 아이콘: <Sparkles className="w-3.5 h-3.5" />, 과제: { id: '3.8', label: '과제 3.8 AI 의사결정' } },
+  report: { 이름: '사업계획 · 12대 항목 사업계획서', 아이콘: <FileText className="w-3.5 h-3.5" />, 과제: { id: '3.4', label: '과제 3.4 기능보강 PMS' } },
+  evaluation: { 이름: '시행계획 평가 · 100점 평가표', 아이콘: <ShieldCheck className="w-3.5 h-3.5" /> },
+};
+
 export const 정책기획_통합_워크스페이스: React.FC<정책기획_통합_워크스페이스_속성> = ({
   selected_region,
   diagnosed_list,
@@ -429,77 +438,17 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
       {/* 1. 상단 워크스페이스 서브탭 네비게이션 & 빠른 액션 */}
       {/* ============================================================== */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-[#15161b] p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+        {/* 단계 이동은 상단 「AI 정책 의사결정 Workflow」 바 하나로 한다 (같은 화면을 다른 순서로 중복 표시하던 탭 줄 삭제)
+            여기서는 지금 보고 있는 단계만 표시 */}
         <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => handle_tab_change('policy_ai')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              active_tab === 'policy_ai'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI 정책분석 &amp; 대안 워크스페이스</span>
-            <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
-          </button>
-
-          <button
-            onClick={() => handle_tab_change('report')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              active_tab === 'report'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>12대 항목 사업계획서</span>
-            <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
-          </button>
-
-          <button
-            onClick={() => handle_tab_change('evaluation')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              active_tab === 'evaluation'
-                ? 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-xs'
-                : 'text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200/70 dark:border-indigo-800/60'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>시행계획·추진실적 AI 평가</span>
-            <span
-              className={`px-1.5 py-0.2 rounded-md text-[10px] font-black ${
-                active_tab === 'evaluation'
-                  ? 'bg-white/20 text-white'
-                  : 'bg-indigo-600 text-white'
-              }`}
-            >
-              100점 평가표 · NEW
-            </span>
-          </button>
-
-          <button
-            onClick={() => handle_tab_change('compare')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              active_tab === 'compare'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <GitCompare className="w-3.5 h-3.5" />
-            <span>유사지역 1:1 비교</span>
-          </button>
-
-          <button
-            onClick={() => handle_tab_change('forecast')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-              active_tab === 'forecast'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>2030 미래수요 추계</span>
-          </button>
+          <span className="text-[11px] font-bold text-slate-400">현재 단계</span>
+          <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs flex items-center gap-1.5">
+            {현재_단계_표시[active_tab].아이콘}
+            <span>{현재_단계_표시[active_tab].이름}</span>
+          </span>
+          {현재_단계_표시[active_tab].과제 && (
+            <ISP_과제_뱃지 taskId={현재_단계_표시[active_tab].과제!.id} customLabel={현재_단계_표시[active_tab].과제!.label} />
+          )}
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-500 px-2 shrink-0 flex-wrap">
@@ -523,7 +472,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
             <span>AI 작동원리</span>
           </button>
 
-          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400">
+          <div className="hidden lg:flex xl:hidden items-center gap-1.5 text-xs text-slate-400">
             <span>대상:</span>
             <span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg">
               {region_name}

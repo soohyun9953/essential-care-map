@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 공개정보_안내 } from '@/lib/대국민_공개정보_안내_엔진';
-import { Gemini_본문, 실시간_줄_정리, 요약_프롬프트, 요청_허용, 질문_최대_길이 } from '@/lib/대국민_AI_요약';
+import { Gemini_키_정리, Gemini_키_형식, 실시간_줄_정리, 요약_프롬프트, 요청_허용, 질문_최대_길이 } from '@/lib/대국민_AI_요약';
+import { Gemini_순차_호출 } from '@/lib/Gemini_모델_탐색';
 
 export const dynamic = 'force-dynamic';
+// 모델 목록 조회 + 여러 모델 순차 시도를 고려한 최대 실행 시간 (초)
+export const maxDuration = 60;
 
 // ① 대국민 › 1-4 AI 안내 도우미: 사이트 자료 근거 + Gemini 요약
 // - 로그인 사용자만 (proxy가 /api 전체를 보호), IP별 요청 제한
 // - 서버 환경변수 GEMINI_API_KEY는 이 경로에서만 쓴다 (다른 Gemini 경로는 ALLOW_SERVER_GEMINI_KEY 설정을 따름)
+// - 모델은 /api/llm/compare와 같은 방식: 이 키로 쓸 수 있는 모델 목록을 조회해 flash부터 성공할 때까지 순차 시도
 
 export interface 대국민_AI_요약_응답 {
   상태: '성공' | '근거없음' | '미연결' | '제한' | '실패';
@@ -16,7 +20,6 @@ export interface 대국민_AI_요약_응답 {
   근거_수?: number;
 }
 
-const 모델_후보 = ['gemini-flash-latest', 'gemini-2.5-flash'];
 
 export async function POST(req: NextRequest) {
   let body: { 질문?: unknown; 실시간?: unknown };
@@ -34,7 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json<대국민_AI_요약_응답>({ 상태: '근거없음', 근거_수: 0 });
   }
 
-  const key = process.env.GEMINI_API_KEY?.trim().replace(/^["']|["']$/g, '') ?? '';
+  const key = Gemini_키_정리(process.env.GEMINI_API_KEY);
   if (!key) return NextResponse.json<대국민_AI_요약_응답>({ 상태: '미연결', 사유: '서버 Gemini 키 미등록' });
 
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
@@ -43,31 +46,14 @@ export async function POST(req: NextRequest) {
   }
 
   const 프롬프트 = 요약_프롬프트(질문, 답변, 실시간_줄_정리(body.실시간));
-  let 마지막_사유 = '';
-  for (const 모델 of 모델_후보) {
-    try {
-      const generationConfig: Record<string, unknown> = { temperature: 0.2, maxOutputTokens: 1024 };
-      if (모델.includes('2.5')) generationConfig.thinkingConfig = { thinkingBudget: 0 };
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${모델}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: 프롬프트 }] }], generationConfig }),
-        signal: AbortSignal.timeout(20000),
-      });
-      if (!res.ok) {
-        마지막_사유 = `Gemini HTTP ${res.status}`;
-        continue;
-      }
-      const 요약 = Gemini_본문(await res.json());
-      if (!요약) {
-        마지막_사유 = 'Gemini 빈 응답';
-        continue;
-      }
-      return NextResponse.json<대국민_AI_요약_응답>({ 상태: '성공', 요약, 모델, 근거_수: 답변.출처.length });
-    } catch (e) {
-      마지막_사유 = e instanceof Error && e.name === 'TimeoutError' ? 'Gemini 응답 시간 초과' : 'Gemini 호출 오류';
-    }
+  const 결과 = await Gemini_순차_호출(key, 프롬프트, { temperature: 0.2, maxOutputTokens: 1024, 시간제한_ms: 15000, 최대_시도: 5 });
+  if (결과.성공) {
+    return NextResponse.json<대국민_AI_요약_응답>({ 상태: '성공', 요약: 결과.본문, 모델: 결과.모델.name, 근거_수: 답변.출처.length });
   }
+  const 마지막 = 결과.시도[결과.시도.length - 1];
+  const 마지막_사유 = 마지막
+    ? `${결과.키_오류 ? '' : `${결과.시도.length}개 모델 시도 · `}Gemini HTTP ${마지막.status} · ${마지막.error.slice(0, 140)}${결과.키_오류 ? ` (${Gemini_키_형식(key)})` : ''}`
+    : '가용 모델 없음';
   console.warn(`[1-4 Gemini 요약] 실패: ${마지막_사유}`);
   return NextResponse.json<대국민_AI_요약_응답>({ 상태: '실패', 사유: 마지막_사유 });
 }

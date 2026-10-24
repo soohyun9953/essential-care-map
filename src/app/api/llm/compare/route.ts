@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { 로컬_LLM_허용, 서버_Gemini_키_허용 } from '@/lib/서버_환경설정';
+import { Gemini_순차_호출 } from '@/lib/Gemini_모델_탐색';
 
 export const dynamic = 'force-dynamic';
 
@@ -154,157 +155,23 @@ ${effective_gemini_rag ? ` 4. 지침 근거(RAG): ${effective_gemini_rag.slice(0
         };
       }
 
-      // Step 1: 구글 공식 권장 방식 - ModelService.ListModels를 통해 이 키로 사용 가능한 모델 실시간 자동 조회!
-      let available_models: Array<{ id: string; name: string; api_ver: 'v1beta' | 'v1' }> = [];
-
-      for (const api_ver of ['v1beta', 'v1'] as const) {
-        try {
-          const list_url = `https://generativelanguage.googleapis.com/${api_ver}/models`;
-          const list_res = await fetch(list_url, { headers: { 'x-goog-api-key': clean_key } });
-          if (list_res.ok) {
-            const list_data = await list_res.json();
-            const valid = (list_data.models || [])
-              .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
-              // 텍스트 응답용이 아닌 특수 목적 모델 제외
-              .filter((m: any) => !/(tts|image|embedding|audio|live|aqa|robotics|computer-use)/i.test(m.name))
-              .map((m: any) => ({
-                id: m.name.replace(/^models\//, ''),
-                name: m.displayName || m.name.replace(/^models\//, ''),
-                api_ver,
-              }));
-            if (valid.length > 0) {
-              available_models = valid;
-              break;
-            }
-          }
-        } catch {
-          // 다음 버전 시도
-        }
+      // 가용 모델 자동 탐색(ListModels) → flash 우선 → 성공할 때까지 순차 시도 (공용: lib/Gemini_모델_탐색)
+      const 결과 = await Gemini_순차_호출(clean_key, `${system_instruction}\n\n사용자 질의: ${query}`, { temperature: 0.4, maxOutputTokens: 8192 });
+      if (결과.성공) {
+        return {
+          model: `${결과.모델.name}`,
+          model_id: 결과.모델.id,
+          is_live: true,
+          elapsed_ms: Date.now() - start_t,
+          success_model: 결과.모델.name,
+          attempt_order: 결과.시도_순번,
+          total_candidates_tried: 결과.시도_순번,
+          response: `[✓ 호출 성공 모델: ${결과.모델.name} (${결과.모델.api_ver}/${결과.모델.id})]\n\n${결과.본문}`,
+          security: '외부 클라우드 전송 (SSL/TLS 암호화 통신)',
+          cost: `토큰: ${결과.토큰 ?? 'N/A'} (Pay-per-Token)`,
+        };
       }
-
-      // Step 2: ListModels 조회가 실패했거나 비어있는 경우 정적 후보군 정의 (v1beta 및 v1 교차)
-      if (available_models.length === 0) {
-        available_models = [
-          { id: 'gemini-flash-latest', name: 'Google Gemini Flash (Latest)', api_ver: 'v1beta' },
-          { id: 'gemini-2.5-flash', name: 'Google Gemini 2.5 Flash', api_ver: 'v1beta' },
-          { id: 'gemini-2.5-flash-lite', name: 'Google Gemini 2.5 Flash-Lite', api_ver: 'v1beta' },
-          { id: 'gemini-2.5-pro', name: 'Google Gemini 2.5 Pro', api_ver: 'v1beta' },
-        ];
-      }
-
-      // flash 계열이 우선 오도록 정렬 (응답 속도 및 비용 최적화)
-      available_models.sort((a, b) => {
-        const a_flash = a.id.toLowerCase().includes('flash') ? 0 : 1;
-        const b_flash = b.id.toLowerCase().includes('flash') ? 0 : 1;
-        return a_flash - b_flash;
-      });
-
-      const attempts_log: Array<{ model: string; error: string; status: number }> = [];
-
-      // Step 3: 가용 모델들을 300ms 간격을 두고 성공할 때까지 순차 시도!
-      for (let i = 0; i < available_models.length; i++) {
-        const candidate = available_models[i];
-
-        // 2번째 시도부터는 API 과열 방지 및 네트워크 안정을 위해 300ms 간격을 두고 진행
-        if (i > 0) {
-          await new Promise((resolve) => setTimeout(resolve, 300));
-        }
-
-        try {
-          const url = `https://generativelanguage.googleapis.com/${candidate.api_ver}/models/${candidate.id}:generateContent`;
-          const gemini_headers = { 'Content-Type': 'application/json', 'x-goog-api-key': clean_key };
-          
-          const genConfig: Record<string, any> = {
-            temperature: 0.4,
-            maxOutputTokens: 8192,
-          };
-
-          // Gemini 2.5 / 2.0 모델: 생각(Thinking) 토큰 과다 소진으로 본문이 잘리는 현상 방지 (thinkingBudget: 0으로 즉시 응답 생성)
-          if (candidate.id.includes('2.5') || candidate.id.includes('2.0')) {
-            genConfig.thinkingConfig = { thinkingBudget: 0 };
-          }
-
-          let response = await fetch(url, {
-            method: 'POST',
-            headers: gemini_headers,
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: 'user',
-                  parts: [
-                    { text: `${system_instruction}\n\n사용자 질의: ${query}` }
-                  ],
-                },
-              ],
-              generationConfig: genConfig,
-            }),
-          });
-
-          // 만약 thinkingConfig를 지원하지 않아 400 에러 발생 시 thinkingConfig 제외하고 재시도
-          if (response.status === 400 && genConfig.thinkingConfig) {
-            delete genConfig.thinkingConfig;
-            response = await fetch(url, {
-              method: 'POST',
-              headers: gemini_headers,
-              body: JSON.stringify({
-                contents: [
-                  {
-                    role: 'user',
-                    parts: [
-                      { text: `${system_instruction}\n\n사용자 질의: ${query}` }
-                    ],
-                  },
-                ],
-                generationConfig: genConfig,
-              }),
-            });
-          }
-
-          if (response.ok) {
-            const data = await response.json();
-            const parts = data.candidates?.[0]?.content?.parts || [];
-            
-            // Gemini 2.0 / 2.5 Flash thinking 모드 대응: thought 파트 제외 후 실제 답변 텍스트 취합
-            let raw_text = parts
-              .filter((p: any) => !p.thought)
-              .map((p: any) => p.text || '')
-              .join('');
-
-            // 혹시 모든 파트가 필터링되었을 경우 전체 text 수집
-            if (!raw_text.trim() && parts.length > 0) {
-              raw_text = parts.map((p: any) => p.text || '').join('');
-            }
-
-            const output_text = raw_text.trim() || '응답을 생성하지 못했습니다.';
-            const elapsed_ms = Date.now() - start_t;
-
-            // 성공한 모델 즉시 반환
-            return {
-              model: `${candidate.name}`,
-              model_id: candidate.id,
-              is_live: true,
-              elapsed_ms,
-              success_model: candidate.name,
-              attempt_order: i + 1,
-              total_candidates_tried: i + 1,
-              response: `[✓ 호출 성공 모델: ${candidate.name} (${candidate.api_ver}/${candidate.id})]\n\n${output_text.trim()}`,
-              security: '외부 클라우드 전송 (SSL/TLS 암호화 통신)',
-              cost: `토큰: ${data.usageMetadata?.totalTokenCount ?? 'N/A'} (Pay-per-Token)`,
-            };
-          } else {
-            const err_json = await response.json().catch(() => ({}));
-            const err_msg = err_json?.error?.message || `HTTP ${response.status}`;
-            attempts_log.push({ model: `${candidate.name} (${candidate.api_ver})`, error: err_msg, status: response.status });
-
-            // API 키 자체가 완전히 틀린 경우(400 INVALID_ARGUMENT)에는 모든 모델에서 동일하므로 조기 종료
-            if (response.status === 400 && err_msg.toLowerCase().includes('api key not valid')) {
-              break;
-            }
-          }
-        } catch (err: any) {
-          attempts_log.push({ model: candidate.name, error: err.message || '네트워크 오류', status: 0 });
-        }
-      }
+      const attempts_log = 결과.시도;
 
       // 모든 모델 시도 실패 시 상세 원인 리포트
       const elapsed_ms = Date.now() - start_t;

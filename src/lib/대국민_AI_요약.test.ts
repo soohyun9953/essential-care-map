@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { Gemini_본문, 실시간_줄_정리, 요약_프롬프트, 요청_허용, 분당_최대 } from './대국민_AI_요약';
+import { Gemini_키_정리, Gemini_키_형식, 실시간_줄_정리, 요약_프롬프트, 요청_허용, 분당_최대 } from './대국민_AI_요약';
 import { 공개정보_안내 } from './대국민_공개정보_안내_엔진';
 import { POST } from '@/app/api/citizen/ask/route';
 
@@ -36,10 +36,6 @@ describe('1-4 Gemini 요약: 프롬프트·보조 함수', () => {
     expect(요청_허용('rate-test', t + 61_000)).toBe(true);
   });
 
-  it('Gemini 응답에서 본문 텍스트만 꺼낸다', () => {
-    expect(Gemini_본문({ candidates: [{ content: { parts: [{ text: '가' }, { text: '나' }] } }] })).toBe('가나');
-    expect(Gemini_본문({})).toBe('');
-  });
 });
 
 describe('1-4 Gemini 요약: /api/citizen/ask', () => {
@@ -65,14 +61,32 @@ describe('1-4 Gemini 요약: /api/citizen/ask', () => {
 
   it('서버가 찾은 근거로 프롬프트를 만들어 Gemini를 호출하고 요약을 돌려준다 (클라이언트 문맥은 받지 않음)', async () => {
     vi.stubEnv('GEMINI_API_KEY', 'test-key');
-    const f = vi.fn(async () => ({ ok: true, json: async () => ({ candidates: [{ content: { parts: [{ text: '영월의료원 응급실이 있습니다 [1].' }] } }] }) }));
+    const f = vi.fn(async (url: string) =>
+      url.endsWith('/models')
+        ? { ok: true, json: async () => ({ models: [{ name: 'models/gemini-test-flash', supportedGenerationMethods: ['generateContent'] }] }) }
+        : { ok: true, status: 200, json: async () => ({ candidates: [{ content: { parts: [{ text: '영월의료원 응급실이 있습니다 [1].' }] } }] }) }
+    );
     vi.stubGlobal('fetch', f);
     const r = await (await POST(요청({ 질문: '영월군 응급실 어디 있어?', 문맥: '무시해야 할 임의 문맥' }, '10.0.0.4'))).json();
     expect(r.상태).toBe('성공');
     expect(r.요약).toContain('영월의료원');
-    const 보낸_본문 = JSON.parse((f.mock.calls[0] as unknown as [string, { body: string }])[1].body);
+    const 생성_호출 = (f.mock.calls as unknown as [string, { body: string }][]).find(([u]) => u.includes(':generateContent'))!;
+    expect(생성_호출[0]).toContain('gemini-test-flash');
+    const 보낸_본문 = JSON.parse(생성_호출[1].body);
     const 프롬프트: string = 보낸_본문.contents[0].parts[0].text;
     expect(프롬프트).toContain('영월');
     expect(프롬프트).not.toContain('무시해야 할 임의 문맥');
   });
+});
+
+describe('1-4 Gemini 오류 진단', () => {
+  it('키 정리: 따옴표·공백·줄바꿈 제거, 여러 개면 첫 번째', () => {
+    expect(Gemini_키_정리(' "AIzaABC" \n')).toBe('AIzaABC');
+    expect(Gemini_키_정리('AIzaA,AIzaB')).toBe('AIzaA');
+    expect(Gemini_키_정리(undefined)).toBe('');
+  });
+  it('키 형식은 길이와 AIza 시작 여부만 알려준다', () => {
+    expect(Gemini_키_형식('AIza' + 'x'.repeat(35))).toBe('키 길이 39 · AIza로 시작 예');
+  });
+
 });

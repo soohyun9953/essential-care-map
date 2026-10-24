@@ -69,11 +69,17 @@ export function 요청_허용(key: string, now: number = Date.now()): boolean {
   return true;
 }
 
-/** Gemini generateContent 응답에서 본문 텍스트만 꺼낸다 */
-export function Gemini_본문(응답: unknown): string {
-  const parts = (응답 as { candidates?: { content?: { parts?: { text?: string }[] } }[] })?.candidates?.[0]?.content?.parts ?? [];
-  return parts
-    .map((p) => p.text ?? '')
-    .join('')
-    .trim();
+/** 환경변수 키 정리: 따옴표·공백·줄바꿈 제거, 여러 개가 들어 있으면 첫 번째 */
+export function Gemini_키_정리(값: string | undefined): string {
+  return (
+    (값 ?? '')
+      .split(/[\n,;]+/)
+      .map((k) => k.trim().replace(/^["']|["']$/g, '').replace(/\s/g, ''))
+      .find(Boolean) ?? ''
+  );
+}
+
+/** 키 형식 정보만 (값은 노출하지 않음). Google AI Studio 키는 보통 'AIza'로 시작하는 39자 */
+export function Gemini_키_형식(key: string): string {
+  return `키 길이 ${key.length} · AIza로 시작 ${key.startsWith('AIza') ? '예' : '아니오'}`;
 }

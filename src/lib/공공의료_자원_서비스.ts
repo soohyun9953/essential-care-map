@@ -12,6 +12,7 @@ export interface 실시간_응급실_기관정보 {
   응급실_총병상: number;
   소아_가용병상: number;
   신생아중환자실_가용병상?: number; // E-Gen hvncc (실시간 연동 시에만)
+  최종_입력일시?: string; // E-Gen hvidate (YYYYMMDDHHMMSS, 실시간 연동 시에만)
   음압격리_가용병상: number;
   중환자실_가용병상: number;
   장비가동상태: {

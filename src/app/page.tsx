@@ -88,6 +88,18 @@ const 교육_인력매칭_스마트병원_화면 = dynamic(
   () => import('@/components/교육_인력매칭_스마트병원_화면').then((m) => m.교육_인력매칭_스마트병원_화면),
   { loading: 워크스페이스_로딩 }
 );
+const NMC_평가_모니터링_화면 = dynamic(() => import('@/components/NMC_평가_모니터링_화면').then((m) => m.NMC_평가_모니터링_화면), {
+  loading: 워크스페이스_로딩,
+});
+const NMC_정책통계_DW_화면 = dynamic(() => import('@/components/NMC_정책통계_DW_화면').then((m) => m.NMC_정책통계_DW_화면), {
+  loading: 워크스페이스_로딩,
+});
+const NMC_투자배분_모자관제_화면 = dynamic(() => import('@/components/NMC_투자배분_모자관제_화면').then((m) => m.NMC_투자배분_모자관제_화면), {
+  loading: 워크스페이스_로딩,
+});
+const NMC_에이전트_LLMOps_화면 = dynamic(() => import('@/components/NMC_에이전트_LLMOps_화면').then((m) => m.NMC_에이전트_LLMOps_화면), {
+  loading: 워크스페이스_로딩,
+});
 const 오분류_교정_내역_뷰 = dynamic(() => import('@/components/페르소나_구조_뷰').then((m) => m.오분류_교정_내역_뷰), {
   loading: 워크스페이스_로딩,
 });
@@ -641,6 +653,10 @@ export default function Home() {
         {current_workspace === 'persona_page' && persona_page_화면 === '경영사전검증' && <경영벤치마킹_사전검증_화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === '모자전원' && <고위험_모자_전원매칭_화면 />}
         {current_workspace === 'persona_page' && persona_page_화면 === '교육인력' && <교육_인력매칭_스마트병원_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === 'NMC평가' && <NMC_평가_모니터링_화면 on_navigate={handle_navigate_from_sidebar} />}
+        {current_workspace === 'persona_page' && persona_page_화면 === 'NMC통계' && <NMC_정책통계_DW_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === 'NMC투자' && <NMC_투자배분_모자관제_화면 />}
+        {current_workspace === 'persona_page' && persona_page_화면 === 'NMC에이전트' && <NMC_에이전트_LLMOps_화면 />}
         {current_workspace === 'persona_page' && persona_page_id && persona_page_화면 === '준비중' && (
           <페르소나_준비중_화면
             subtab_id={persona_page_id}

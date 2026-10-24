@@ -3,6 +3,7 @@ import {
   공공의료_자원_서비스,
   실시간_응급실_기관정보,
 } from '@/lib/공공의료_자원_서비스';
+import { 서비스키_정규화, 실패_사유 } from '@/lib/공공데이터_응답_해석';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,6 +13,8 @@ export interface RealtimeEmergencyResponse {
   sido: string;
   sigungu: string;
   last_updated: string;
+  /** 실시간 조회 결과 (성공·키 미등록·실패 사유). 서비스키는 담지 않는다 */
+  api_status: string;
   local_hospital: 실시간_응급실_기관정보 | null;
   regional_center: 실시간_응급실_기관정보 | null;
   all_hospitals: 실시간_응급실_기관정보[];
@@ -22,10 +25,10 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const sido = searchParams.get('sido') || '강원특별자치도';
     const sigungu = searchParams.get('sigungu') || '영월군';
-    const service_key =
-      req.headers.get('x-data-go-kr-key')?.trim() ||
-      process.env.DATA_GO_KR_API_KEY ||
-      '';
+    const service_key = 서비스키_정규화(
+      req.headers.get('x-data-go-kr-key')?.trim() || process.env.DATA_GO_KR_API_KEY || ''
+    );
+    let api_status = service_key ? '' : '키 미등록';
 
     // 배포 서버(Vercel)는 UTC이므로 한국 시간대를 명시
     const now_time_str = new Date().toLocaleTimeString('ko-KR', {
@@ -39,43 +42,36 @@ export async function GET(req: NextRequest) {
     if (service_key) {
       try {
         // 국립중앙의료원 중앙응급의료센터_전국 응급의료기관 실시간 병상 정보 조회
-        const stage1_param = encodeURIComponent(sido);
-        const stage2_param = encodeURIComponent(sigungu);
         const api_url = `https://apis.data.go.kr/B552657/ErmctInfoInqireService/getEmrrmRltmUsefulSckbdInfoInqire?serviceKey=${encodeURIComponent(
           service_key
-        )}&STAGE1=${stage1_param}&STAGE2=${stage2_param}&pageNo=1&numOfRows=10`;
+        )}&STAGE1=${encodeURIComponent(sido)}&STAGE2=${encodeURIComponent(sigungu)}&pageNo=1&numOfRows=10`;
 
         const res = await fetch(api_url, {
           next: { revalidate: 30 }, // 30초 캐시
           headers: { Accept: 'application/json, text/xml' },
+          signal: AbortSignal.timeout(8000),
         });
+        const raw_text = await res.text();
+        const parsed_items = res.ok ? parse_xml_items(raw_text, now_time_str) : [];
 
-        if (res.ok) {
-          const raw_text = await res.text();
-          // JSON 포맷 또는 XML 파싱 시도
-          if (raw_text.includes('<items>') && raw_text.includes('<item>')) {
-            const parsed_items = parse_xml_items(raw_text, now_time_str);
-            if (parsed_items.length > 0) {
-              const local_h = parsed_items[0];
-              const regional_h =
-                parsed_items.length > 1 ? parsed_items[1] : null;
-
-              return NextResponse.json<RealtimeEmergencyResponse>({
-                is_live_api: true,
-                source: '국립중앙의료원(NMC) 중앙응급의료센터 실시간 OpenAPI (E-Gen Live)',
-                sido,
-                sigungu,
-                last_updated: `${now_time_str} (실시간 동기화)`,
-                local_hospital: local_h,
-                regional_center: regional_h,
-                all_hospitals: parsed_items,
-              });
-            }
-          }
+        if (parsed_items.length > 0) {
+          return NextResponse.json<RealtimeEmergencyResponse>({
+            is_live_api: true,
+            source: '국립중앙의료원(NMC) 중앙응급의료센터 실시간 OpenAPI (E-Gen Live)',
+            sido,
+            sigungu,
+            last_updated: `${now_time_str} (실시간 동기화)`,
+            api_status: '실시간 연동',
+            local_hospital: parsed_items[0],
+            regional_center: parsed_items.length > 1 ? parsed_items[1] : null,
+            all_hospitals: parsed_items,
+          });
         }
+        api_status = 실패_사유(res.status, raw_text);
       } catch (api_err) {
-        console.warn('E-Gen OpenAPI 호출 오류 (폴백 모드로 전환):', api_err);
+        api_status = api_err instanceof Error && api_err.name === 'TimeoutError' ? '응답 시간 초과(8초)' : '네트워크 오류';
       }
+      console.warn(`[E-Gen 실시간] ${sido} ${sigungu} 조회 실패: ${api_status}`);
     }
 
     // 2. 서비스키 미입력 또는 API 실패 시: 플랫폼 내장 기준 데이터 반환
@@ -92,11 +88,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json<RealtimeEmergencyResponse>({
       is_live_api: false,
       source: service_key
-        ? '플랫폼 내장 기준 데이터 (공공데이터포털 실시간 API 조회 실패 · 실제 병상 현황 아님)'
+        ? `플랫폼 내장 기준 데이터 (공공데이터포털 실시간 API 조회 실패: ${api_status} · 실제 병상 현황 아님)`
         : '플랫폼 내장 기준 데이터 (공공데이터 API 키 미등록 · 실제 병상 현황 아님)',
       sido,
       sigungu,
       last_updated: `기준 데이터 (조회 ${now_time_str})`,
+      api_status,
       local_hospital: local_h,
       regional_center: regional_h,
       all_hospitals: base_hospitals,

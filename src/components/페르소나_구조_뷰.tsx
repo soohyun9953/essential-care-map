@@ -16,6 +16,7 @@ import { 신규_메뉴_구조_데이터 } from './대상자별_좌측_사이드�
 
 const AS_IS_메뉴명 = new Map(신규_메뉴_구조_데이터.flatMap((g) => g.menus.map((m) => [m.id, { 메뉴: m.label, 그룹: g.shortTitle }] as const)));
 const 메뉴명 = (id: string) => AS_IS_메뉴명.get(id)?.메뉴 ?? id;
+const 전체_서브탭_수 = 페르소나_목록.reduce((n, p) => n + p.서브탭.length, 0);
 
 const 상태_스타일: Record<구현_상태, string> = {
   구현: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
@@ -113,7 +114,7 @@ export function 메뉴_구조도_뷰({ on_open_subtab }: { on_open_subtab: (s: �
           AS-IS ➔ TO-BE 전체 메뉴 구조도 (A01)
         </h2>
         <p className="text-xs text-slate-500 mt-1">
-          표 1은 현재 메뉴 {이관.length}개가 옮겨 간 위치, 표 2는 3대 사용자 그룹 12개 서브탭의 구현 상태와 출처 메뉴입니다.
+          표 1은 현재 메뉴 {이관.length}개가 옮겨 간 위치, 표 2는 3대 사용자 그룹 {전체_서브탭_수}개 서브탭의 구현 상태와 출처 메뉴입니다.
         </p>
       </div>
       {안내문()}
@@ -151,7 +152,7 @@ export function 메뉴_구조도_뷰({ on_open_subtab }: { on_open_subtab: (s: �
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-black text-slate-900 dark:text-white">표 2. TO-BE 3대 사용자 그룹 · 12개 서브탭</h3>
+        <h3 className="text-sm font-black text-slate-900 dark:text-white">표 2. TO-BE 3대 사용자 그룹 · {전체_서브탭_수}개 서브탭</h3>
         <div className="overflow-x-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl">
           <table className="w-full text-xs border-collapse">
             <thead>

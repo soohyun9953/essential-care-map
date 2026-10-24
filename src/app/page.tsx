@@ -644,15 +644,15 @@ export default function Home() {
         {화면_모드 === '구조도' && <메뉴_구조도_뷰 on_open_subtab={handle_open_persona_subtab} />}
 
         {화면_모드 === '프로토타입' && (<>
-        {/* 사용자 그룹 전용 화면 (1-1·1-2·1-3·2-1·2-2, 준비 중 서브탭 안내) */}
+        {/* 사용자 그룹 전용 화면 (1-1~1-4·2-1~2-5·3-1~3-4, 준비 중 서브탭 안내) */}
+        {current_workspace === 'persona_page' && persona_page_화면 === '대국민_공공의료기관_찾기' && (
+          <div className="flex-1 w-full h-full min-h-0 overflow-hidden">
+            <국민안심_서비스_뷰 />
+          </div>
+        )}
         {current_workspace === 'persona_page' && persona_page_화면 === '대국민_필수의료_지도' && (
           <div className="flex-1 w-full overflow-y-auto">
             <대국민_필수의료_모니터링 />
-            <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
-              <div className="h-[80vh] min-h-[560px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-                <국민안심_서비스_뷰 />
-              </div>
-            </div>
           </div>
         )}
         {current_workspace === 'persona_page' && persona_page_화면 === '대국민_알리미_비교' && <대국민_알리미_비교 />}

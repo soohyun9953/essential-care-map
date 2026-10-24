@@ -6,7 +6,7 @@ import { BookOpenCheck, ExternalLink } from 'lucide-react';
 import { 공개정보_안내, 추천_질문, 안내_공통_고지, type 안내_답변 } from '@/lib/대국민_공개정보_안내_엔진';
 import { 실시간_병상_조회 } from '@/lib/실시간_병상_조회';
 
-// ① 대국민 › 1-3 대국민 공공의료 AI 안내 도우미 (AIS-02-02)
+// ① 대국민 › 1-4 대국민 공공의료 AI 안내 도우미 (AIS-02-02)
 // 공개 자료를 찾아 출처와 함께 보여주는 검색형 안내 (생성형 AI 답변 아님, 로그인 불필요)
 
 interface 대화 {

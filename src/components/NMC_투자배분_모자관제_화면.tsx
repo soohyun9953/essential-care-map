@@ -12,7 +12,6 @@ import type { 실시간_응급실_기관정보 } from '@/lib/공공의료_자원
 // 좌측(투자배분)에는 요청에 따라 '병상' 용어를 쓰지 않는다.
 
 const 카드 = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2';
-const 코드 = (c: string) => <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">{c}</span>;
 const 시연 = <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">시연 데이터</span>;
 const 시도_목록 = Array.from(new Set(전국_시군구_진단_데이터.map((r) => r.시도명)));
 
@@ -90,7 +89,6 @@ export function NMC_투자배분_모자관제_화면() {
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">기능보강 투자배분 & 중앙모자의료 관제·환류</h2>
-        {코드('AP-04·06')}
         <span className="text-[11px] text-slate-500">사업지원팀·중앙모자센터 · 내부망 전용</span>
       </div>
 
@@ -98,7 +96,7 @@ export function NMC_투자배분_모자관제_화면() {
         {/* 좌측 */}
         <div className="space-y-4">
           <section className={카드}>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><SlidersHorizontal className="w-4 h-4 text-blue-600" /> 기능보강·시설·장비 투자 우선순위 시뮬레이터 {코드('AIS-04-03~04')}</h3>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><SlidersHorizontal className="w-4 h-4 text-blue-600" /> 기능보강·시설·장비 투자 우선순위 시뮬레이터</h3>
             <p className="text-[11px] text-slate-500">
               지역수요 = 소재 시군구 종합 취약도(헬스맵 2024) · 활용률 = 소재 시군구 입원 자체충족률(대리지표, 2024 유출입) · 유지비 부담 = 경상운영비 ÷ 의료수익(알리미).
               각 값을 공시기관 내 백분위로 바꿔 가중합합니다(유지비는 낮을수록 가점). 플랫폼 규칙입니다.
@@ -144,7 +142,7 @@ export function NMC_투자배분_모자관제_화면() {
         {/* 우측: 중앙모자의료센터 */}
         <div className="space-y-4">
           <section className={카드}>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><BellRing className="w-4 h-4 text-rose-600" /> 미갱신 병상 자동경보 {코드('AIS-06-05')}</h3>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><BellRing className="w-4 h-4 text-rose-600" /> 미갱신 병상 자동경보</h3>
             <div className="flex flex-wrap items-center gap-2 text-[11px]">
               <select value={시도} onChange={(e) => set_시도(e.target.value)} className="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800" aria-label="시도">{시도_목록.map((s) => <option key={s}>{s}</option>)}</select>
               <label className="flex items-center gap-1">기준 <input type="number" min={10} value={기준_분} onChange={(e) => set_기준_분(Math.max(10, Number(e.target.value) || 60))} className="w-16 px-1.5 py-0.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-right" /> 분 이상 미갱신</label>
@@ -172,7 +170,7 @@ export function NMC_투자배분_모자관제_화면() {
           </section>
 
           <section className={카드}>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Moon className="w-4 h-4 text-indigo-600" /> 야간 미수용(거절) 사유 병목 분석 {코드('AIS-06-06')} {시연}</h3>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Moon className="w-4 h-4 text-indigo-600" /> 야간 미수용(거절) 사유 병목 분석 {시연}</h3>
             <p className="text-[11px] text-slate-500">전원 거절 사유 원천(중앙모자의료센터 전원 기록)이 미연계라 시연 데이터로 집계 방식을 보여줍니다.</p>
             {시연_미수용.map((x) => {
               const 합 = 시연_미수용.reduce((a, b) => a + b.건수, 0);
@@ -186,7 +184,7 @@ export function NMC_투자배분_모자관제_화면() {
           </section>
 
           <section className={카드}>
-            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><ClipboardList className="w-4 h-4 text-emerald-600" /> 11개 지원사업 실적·증빙 검증 {코드('AIS-06-08')}</h3>
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><ClipboardList className="w-4 h-4 text-emerald-600" /> 11개 지원사업 실적·증빙 검증</h3>
             <p className="text-[11px] text-slate-500">사업 목록은 중앙모자의료센터 사업안내서 기준으로 등록합니다(이 프로토타입에는 사업 목록 원문이 없어 예시 1건). 규칙: 실적 누락 · 집행액 &gt; 교부액 · 증빙 미첨부.</p>
             {실적_검증.map((r, i) => (
               <div key={i} className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-[11px] space-y-1">

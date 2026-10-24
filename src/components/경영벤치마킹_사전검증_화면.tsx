@@ -103,7 +103,6 @@ export function 경영벤치마킹_사전검증_화면() {
               <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                 <FileSearch className="w-4 h-4 text-emerald-600" /> 결산 공시항목 · ERP 대조 사전검증
               </h3>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">AIS-03-02/05</span>
             </div>
             <p className="text-[11px] text-slate-500">
               공시값은 알리미에 실제 공시된 {공시?.연도}년 값입니다(단위 천원). 결산서 PDF 자동추출·ERP 직접 연동은 본 사업 구현 대상이라, ERP 값은 담당자가 입력합니다.
@@ -151,7 +150,6 @@ export function 경영벤치마킹_사전검증_화면() {
               <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5">
                 <Wrench className="w-4 h-4 text-amber-600" /> 원내 시설·장비 노후도·가동률 진단
               </h3>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">AP-04 · AIS-04-01~02</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">가상 시연 장비대장</span>
             </div>
             <p className="text-[11px] text-slate-500">

@@ -55,7 +55,7 @@ export function 고위험_모자_전원매칭_화면() {
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">고위험 산모·신생아 전원의뢰·수용 매칭</h2>
-        <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">AP-06 병원용</span>
+        <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">병원용</span>
         <span className="text-[11px] text-slate-500">의뢰기관: 영월의료원 · 판단 보조용이며 최종 전원 결정은 의료진이 합니다.</span>
       </div>
 
@@ -72,7 +72,7 @@ export function 고위험_모자_전원매칭_화면() {
 
         {/* 산모 정보 · 중증도 */}
         <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5"><Baby className="w-4 h-4 text-rose-600" /> 고위험 산모 발생 — 중증도 (AIS-06-01)</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5"><Baby className="w-4 h-4 text-rose-600" /> 고위험 산모 발생 — 중증도</h3>
           {숫자입력('재태주수 (주)', 산모.재태주수, (v) => set_산모((p) => ({ ...p, 재태주수: Math.min(42, v) })))}
           {(['조기진통', '조기양막파수', '전자간증', '다태아'] as const).map((k) => (
             <label key={k} className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
@@ -85,7 +85,7 @@ export function 고위험_모자_전원매칭_화면() {
 
         {/* TOP 3 추천 */}
         <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5"><Ambulance className="w-4 h-4 text-blue-600" /> 권역 수용기관 TOP 3 (AIS-06-03·04)</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5"><Ambulance className="w-4 h-4 text-blue-600" /> 권역 수용기관 TOP 3</h3>
           <p className="text-[11px] text-slate-500">
             {실시간_여부 === null ? 'E-Gen 실시간 NICU 조회 중…' : 실시간_여부 ? 'NICU 가용: E-Gen 실시간 (hvncc)' : 'E-Gen 실시간 미연동 — NICU 가용은 전화 확인 필요'} · MFICU 실시간 항목 없음
           </p>

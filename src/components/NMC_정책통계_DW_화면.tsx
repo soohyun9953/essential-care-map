@@ -22,13 +22,12 @@ export function NMC_정책통계_DW_화면() {
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">전국 취약지 정책통계·연계실적 & 통합 DW 분석</h2>
-        {코드('AP-05·08·01')}
         <span className="text-[11px] text-slate-500">정책연구팀·책임지원팀 · 내부망 전용</span>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><MapPinned className="w-4 h-4 text-rose-600" /> 전국 250개 시군구 응급·분만·소아 취약지 식별 {코드('AIS-05-03')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><MapPinned className="w-4 h-4 text-rose-600" /> 전국 250개 시군구 응급·분만·소아 취약지 식별</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {[
               ['응급취약', 요약.응급취약],
@@ -56,7 +55,7 @@ export function NMC_정책통계_DW_화면() {
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Network className="w-4 h-4 text-blue-600" /> 책임의료기관 퇴원연계 실적 자동취합·해설 {코드('AIS-01-07')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Network className="w-4 h-4 text-blue-600" /> 책임의료기관 퇴원연계 실적 자동취합·해설</h3>
           <div className="p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1">
             <p className="font-bold">실적 원천 미연계 — 표시할 실적이 없습니다.</p>
             <p>55개 책임의료기관의 퇴원연계 실적은 공공의료 연계망(퇴원환자 의뢰·회신)에서 자동 취합해야 합니다. 이 프로토타입에는 해당 원천이 없어 숫자를 만들지 않았습니다.</p>
@@ -65,7 +64,7 @@ export function NMC_정책통계_DW_화면() {
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Database className="w-4 h-4 text-indigo-600" /> 통합 DW 대화형 자연어 질의 (Text-to-SQL) {코드('AIS-08-01')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Database className="w-4 h-4 text-indigo-600" /> 통합 DW 대화형 자연어 질의 (Text-to-SQL)</h3>
           <p className="text-[11px] text-slate-500">정해진 질문 유형을 SQL로 바꿔 플랫폼 내장 테이블(시군구_진단, 알리미_공시)에서 실행합니다. 자유 질의(내부 sLLM)는 본 사업 대상입니다.</p>
           <AI_질의_입력창 value={질문} onChange={set_질문} onSubmit={(q) => set_결과(자연어_질의(q))} 예시={질의_예시[0]} 크기="sm" aria_label="자연어 질의" />
           <div className="flex flex-wrap gap-1">

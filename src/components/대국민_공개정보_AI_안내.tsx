@@ -90,7 +90,6 @@ export function 대국민_공개정보_AI_안내() {
             <BookOpenCheck className="w-5 h-5 text-rose-600" />
             대국민 공공의료 AI 안내 도우미
           </h2>
-          <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">AIS-02-02</span>
         </div>
         <p className="text-xs text-slate-500">
           응급실·분만 병원·달빛어린이병원·신생아중환자실(NICU) 위치(역·공항 이름으로도 검색), 공공병원 공개 정보, 공공의료 제도를 사이트의 공개 자료에서 먼저 찾고,

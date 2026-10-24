@@ -43,7 +43,7 @@ export function 퇴원환자_연계_업무화면() {
           className="px-3 py-1.5 rounded-xl text-xs font-black bg-blue-600 text-white flex items-center gap-1.5 shadow-xs"
           title="본 사업 구현 대상: 병원 EMR과 HL7 FHIR로 연동해 퇴원환자 정보를 다시 입력하지 않게 하는 기능 (이 프로토타입은 화면 입력)"
         >
-          <Link2 className="w-3.5 h-3.5" /> [AP-01] 차세대 공공의료 연계망 (EMR HL7 FHIR 연동 · 이중입력 방지)
+          <Link2 className="w-3.5 h-3.5" /> 차세대 공공의료 연계망 (EMR HL7 FHIR 연동 · 이중입력 방지)
         </span>
         <span
           className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-600 text-white flex items-center gap-1.5 shadow-xs"
@@ -67,7 +67,7 @@ export function 퇴원환자_연계_업무화면() {
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
               공공보건의료 협력체계 개인정보보호 준수 가이드 & 돌봄제도 AI FAQ
             </h3>
-            <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">AIS-01-06 · 프로토타입은 고정 답변</span>
+            <span className="inline-block mt-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">프로토타입은 고정 답변</span>
           </div>
           <ul className="space-y-1.5">
             {개인정보_가이드.map((g) => (

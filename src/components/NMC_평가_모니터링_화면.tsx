@@ -10,7 +10,6 @@ import { 평가_모듈, 교차검증_항목, 원천값, 교차검증, 공시_이
 // ③ NMC › 3-1 통합 평가·공시심사·성과 모니터링 AI (기획평가팀·정보운영팀 | AP-03)
 
 const 카드 = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2';
-const 코드 = (c: string) => <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">{c}</span>;
 
 export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (ws: 워크스페이스_타입, sub?: string) => void }) {
   const [기관번호, set_기관번호] = useState(알리미_기관_공시_목록.find((h) => h.기관명 === '영월의료원')!.기관번호);
@@ -32,7 +31,6 @@ export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">통합 평가·공시심사·성과 모니터링 AI</h2>
-        {코드('AP-03')}
         <span className="text-[11px] text-slate-500">기획평가팀·정보운영팀 · 내부망 전용</span>
         <select value={기관번호} onChange={(e) => set_기관번호(e.target.value)} className="ml-auto px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm" aria-label="심사 대상 기관">
           {알리미_기관_공시_목록.map((h) => <option key={h.기관번호} value={h.기관번호}>{h.기관명}</option>)}
@@ -58,7 +56,7 @@ export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 items-start">
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><GitCompareArrows className="w-4 h-4 text-indigo-600" /> 제출증빙 ↔ 원천데이터 교차검증 {코드('AIS-03-01')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><GitCompareArrows className="w-4 h-4 text-indigo-600" /> 제출증빙 ↔ 원천데이터 교차검증</h3>
           <p className="text-[11px] text-slate-500">원천은 알리미 공시(최근 결산연도·2025 감면액). 제출값은 평가 제출본을 입력합니다.</p>
           <table className="w-full text-xs border-collapse">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500"><tr><th className="py-1.5 px-2 text-left">항목</th><th className="py-1.5 px-2 text-right">제출</th><th className="py-1.5 px-2 text-right">원천</th><th className="py-1.5 px-2 text-left">판정</th></tr></thead>
@@ -81,7 +79,7 @@ export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><TriangleAlert className="w-4 h-4 text-amber-600" /> 공시 이상치 탐지 {코드('AIS-03-03')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><TriangleAlert className="w-4 h-4 text-amber-600" /> 공시 이상치 탐지</h3>
           <p className="text-[11px] text-slate-500">42곳 2025년 전년 대비 증감률의 수정 z-score |z| &gt; 3.5 (Iglewicz–Hoaglin). 규칙 기반 자동점검 {자동점검_수}건은 공시검증 대시보드에서 확인.</p>
           <table className="w-full text-xs border-collapse">
             <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500"><tr><th className="py-1.5 px-2 text-left">기관</th><th className="py-1.5 px-2 text-left">항목</th><th className="py-1.5 px-2 text-right">전년 대비</th><th className="py-1.5 px-2 text-right">z</th></tr></thead>
@@ -99,7 +97,7 @@ export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><FileText className="w-4 h-4 text-blue-600" /> 평가위원 종합 심사보고서 초안 {코드('AIS-03-06')}</h3>
+          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><FileText className="w-4 h-4 text-blue-600" /> 평가위원 종합 심사보고서 초안</h3>
           <p className="text-[11px] text-slate-500">교차검증·자동점검·이상치·취약영역을 모은 규칙 기반 초안입니다. 내부 sLLM(S등급) 연계 시 문장을 고도화하며, 최종 판단은 평가위원이 합니다.</p>
           <textarea readOnly value={보고서} rows={14} className="w-full text-[11px] leading-relaxed p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono" aria-label="심사보고서 초안" />
         </section>

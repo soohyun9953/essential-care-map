@@ -33,6 +33,20 @@ export interface 의료기관_질의_응답_결과 {
   gemini_model?: string;
   gemini_elapsed_ms?: number;
   is_gemini_live?: boolean;
+  /** 공공의료기관 데이터와 관련된 질문인지. false면 표·Gemini 없이 안내만 (날씨·맛집 등) */
+  관련_질문: boolean;
+}
+
+// 공공의료기관 데이터 질의로 볼 수 있는 단어 (병원·병상·인력·필수의료·지역 등)
+const 관련_단어 =
+  /병원|의료원|의료기관|보건|병상|의사|전문의|간호|인력|응급|분만|산부인과|출산|소아|어린이|달빛|중환자|icu|투석|입원|외래|진료|수술|장비|가동률|회전율|공공|책임의료|권역|지역책임|적십자|대학병원|지침|법령|정책|필수의료|취약|기관/i;
+
+/** 공공의료기관 데이터와 관련된 질문인지 (관련 단어·시도·시군구·기관명 중 하나라도 있으면 관련) */
+export function 질문_관련성(user_query: string): boolean {
+  const q = user_query.trim().toLowerCase();
+  if (!q) return false;
+  if (관련_단어.test(q)) return true;
+  return 전체_공공의료기관_상세목록.some((h) => q.includes(h.기관명.toLowerCase()) || q.includes(h.시군구명.replace(/(시|군|구)$/, '')) || q.includes(h.시도명.slice(0, 2)));
 }
 
 /**
@@ -103,6 +117,25 @@ export function analyze_hospital_query(user_query: string): 의료기관_질의_
   const q = user_query.trim().toLowerCase();
   const limit = parse_query_limit(user_query, 10, 100);
   const all_hospitals = 전체_공공의료기관_상세목록;
+
+  // 0. 공공의료기관 데이터와 관련 없는 질문이면 표·지침 검색·Gemini 없이 안내만 돌려준다
+  if (!질문_관련성(user_query)) {
+    return {
+      query: user_query,
+      category: '일반_분석',
+      title: '공공의료기관 데이터와 관련된 질문이 아닙니다',
+      summary: '이 화면은 전국 공공의료기관의 병상·의료인력·응급/분만/소아 등 필수의료 현황에 대한 질문에 답합니다. 관련 없는 질문에는 답하지 않습니다.',
+      insights: [
+        `💡 **질문 예시**: "강원도 공공의료기관 현황", "응급실과 중환자실을 동시에 가동하는 공공병원", "전문의 수가 가장 많은 공공병원 Top10"`,
+      ],
+      total_count: 0,
+      table_columns: [],
+      table_rows: [],
+      hospitals: [],
+      rag_evidences: [],
+      관련_질문: false,
+    };
+  }
 
   // 1. RAG 코퍼스에서 관련 법령/지침 검색
   const rag_evidences = search_rag_guidelines(user_query, 2);
@@ -273,6 +306,7 @@ export function analyze_hospital_query(user_query: string): 의료기관_질의_
       ],
       hospitals: [h],
       rag_evidences,
+      관련_질문: true,
     };
   }
 
@@ -305,6 +339,7 @@ export function analyze_hospital_query(user_query: string): 의료기관_질의_
       })),
       hospitals: fallback_list,
       rag_evidences,
+      관련_질문: true,
     };
   }
 
@@ -427,5 +462,6 @@ export function analyze_hospital_query(user_query: string): 의료기관_질의_
     chart_data,
     hospitals: sorted,
     rag_evidences,
+    관련_질문: true,
   };
 }

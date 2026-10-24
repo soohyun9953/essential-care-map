@@ -91,8 +91,9 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
         set_result(res);
 
         // Google Gemini 온라인 실시간 질의응답 비동기 연동
+        // 공공의료기관 데이터와 관련 없는 질문(날씨·맛집 등)은 Gemini를 부르지 않는다 (1-4 AI 안내 도우미와 같은 원칙)
         const gemini_key = API키_불러오기('google_gemini_api_key');
-        if (gemini_key) {
+        if (gemini_key && res.관련_질문) {
           set_is_gemini_loading(true);
 
           // 상위 공공병원 추출 요약 생성
@@ -408,7 +409,8 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                 </div>
               )}
 
-              {/* 3. 정밀 통계 데이터 테이블 */}
+              {/* 3. 정밀 통계 데이터 테이블 (관련 없는 질문이면 표 없음) */}
+              {result.table_columns.length > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -493,6 +495,7 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
                   </table>
                 </div>
               </div>
+              )}
             </div>
           )}
         </div>

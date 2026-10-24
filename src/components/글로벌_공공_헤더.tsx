@@ -316,15 +316,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               )}
             </button>
 
-            {/* 5. 블랙/화이트 화면 변경 (라이트/다크 테마 토글) */}
-            <button
-              onClick={on_toggle_dark_mode}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              title={is_dark_mode ? '화이트 테마로 전환' : '블랙 테마로 전환'}
-            >
-              {is_dark_mode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-            </button>
-
             {/* 5-1. 카카오맵 Web API 키 설정 버튼 (상시 노출) */}
             {on_open_kakao_modal && (
               <button
@@ -342,7 +333,7 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
               </button>
             )}
 
-            {/* 6. 관리자 & 데이터 설정 드롭다운 (가장 우측) */}
+            {/* 6. 관리자 & 데이터 설정 드롭다운 */}
             <div className="relative" ref={admin_ref}>
               <button
                 type="button"
@@ -571,6 +562,15 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               )}
             </div>
+
+            {/* 7. 블랙/화이트 화면 변경 (라이트/다크 테마 토글, 관리자 우측 끝) */}
+            <button
+              onClick={on_toggle_dark_mode}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              title={is_dark_mode ? '화이트 테마로 전환' : '블랙 테마로 전환'}
+            >
+              {is_dark_mode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
       </div>

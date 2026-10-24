@@ -1,7 +1,7 @@
 'use client';
 
 // Essential Care Map HOME 화면 (UI/UX 전면 개선)
-// 기존 기능 100% 보존 + Journey Stepper + 개선된 Hero + 미리보기 카드 추가
+// 기존 기능 보존 + 개선된 Hero (영월군 예시 미리보기·4대 바로가기 카드는 2026-10-24 삭제)
 // 변경 이유: 단순 데이터 조회 사이트 → 공공의료 정책 의사결정 Journey 지원 플랫폼으로 정체성 재정의
 
 import React, { useState } from 'react';
@@ -10,14 +10,10 @@ import {
   ArrowRight,
   ShieldCheck,
   FileText,
-  AlertTriangle,
-  TrendingUp,
   Sparkles,
   ChevronRight,
-  Info,
   MapPin,
   Activity,
-  Users,
   Building2,
   CheckCircle2,
   Award,
@@ -44,27 +40,6 @@ interface 공공의료_결정지도_홈_속성 {
 }
 
 const SAMPLE_REGIONS = ['영월군', '태백시', '강원특별자치도', '정선군'];
-
-// 미리보기 데이터 (영월군 예시 - DEMO DATA 명시)
-const PREVIEW_REGION = {
-  name: '영월군',
-  sido: '강원특별자치도',
-  score: 85,
-  grade: '심각',
-  gradeColor: 'text-red-600',
-  gradeBg: 'bg-red-50 dark:bg-red-950/40',
-  gradeBorder: 'border-red-200 dark:border-red-800',
-  domains: [
-    { name: '응급의료', score: 78, color: 'text-orange-600', bar: 'bg-orange-500', weak: true },
-    { name: '분만의료', score: 92, color: 'text-red-600', bar: 'bg-red-500', weak: true },
-    { name: '소아의료', score: 73, color: 'text-amber-600', bar: 'bg-amber-500', weak: true },
-  ],
-  factors: [
-    { rank: 1, title: '응급의료 접근성', desc: '권역응급의료센터 60분 내 도달 불가 인구 비율 높음' },
-    { rank: 2, title: '분만 의료공백', desc: '분만 가능 의료기관 부재로 관내 분만율 극히 낮음' },
-    { rank: 3, title: '전문인력 부족', desc: '지역 내 필수의료 전문의 공급 절대 부족' },
-  ],
-};
 
 export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_홈_속성> = ({
   on_search_region,
@@ -457,184 +432,6 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       </div>
 
       {/* 정책 의사결정 여정 5단계 스테퍼는 ② 의료기관 담당자 › 2-1 작성 도우미로 이동 (정책_의사결정_여정_스테퍼.tsx) */}
-
-      {/* ================================================================== */}
-      {/* 3. 미리보기 카드 + 4대 Quick Action 카드                               */}
-      {/* ================================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-
-        {/* 왼쪽: 영월군 진단 미리보기 카드 (예시 데이터) */}
-        <div className="lg:col-span-2 p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col gap-4">
-          {/* 예시 데이터 배지 */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="font-bold text-sm">{PREVIEW_REGION.name}</span>
-              <span className="text-xs text-slate-500">{PREVIEW_REGION.sido}</span>
-            </div>
-            <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800 tracking-wider uppercase flex items-center gap-1">
-              <Info className="w-3 h-3" />
-              예시 데이터 · DEMO
-            </span>
-          </div>
-
-          {/* 종합 취약도 */}
-          <div className={`p-4 rounded-xl border ${PREVIEW_REGION.gradeBg} ${PREVIEW_REGION.gradeBorder} flex items-center justify-between`}>
-            <div>
-              <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">종합 취약도</div>
-              <div className={`text-4xl font-black ${PREVIEW_REGION.gradeColor}`}>{PREVIEW_REGION.score}</div>
-            </div>
-            <div className={`px-3 py-1.5 rounded-xl text-sm font-black ${PREVIEW_REGION.gradeColor} ${PREVIEW_REGION.gradeBg} border ${PREVIEW_REGION.gradeBorder}`}>
-              {PREVIEW_REGION.grade}
-            </div>
-          </div>
-
-          {/* 3대 분야 점수 */}
-          <div className="space-y-2.5">
-            {PREVIEW_REGION.domains.map((d) => (
-              <div key={d.name} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-slate-700 dark:text-slate-300">{d.name}</span>
-                  <span className={`font-bold ${d.color}`}>{d.score}</span>
-                </div>
-                <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className={`h-full rounded-full ${d.bar}`} style={{ width: `${d.score}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 주요 취약요인 */}
-          <div className="space-y-1.5">
-            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">주요 취약요인</div>
-            {PREVIEW_REGION.factors.map((f) => {
-              const CIRCLE_NUMS = ['①', '②', '③', '④', '⑤'];
-              const circle = CIRCLE_NUMS[f.rank - 1] ?? `${f.rank}.`;
-              return (
-                <div key={f.rank} className="flex items-start gap-2 text-xs">
-                  <span className="font-black text-blue-700 dark:text-blue-400 shrink-0">{circle}</span>
-                  <div>
-                    <span className="font-bold text-slate-800 dark:text-slate-200">{f.title}</span>
-                    <span className="text-slate-500 dark:text-slate-400 ml-1">— {f.desc}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* CTA */}
-          <button
-            type="button"
-            onClick={() => on_search_region('영월군')}
-            className="w-full py-2.5 rounded-xl bg-blue-700 hover:bg-blue-800 text-white font-bold text-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-2 shadow-sm"
-          >
-            <span>영월군 상세 진단하기</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        {/* 오른쪽: 4대 Quick Action 카드 */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="flex items-center gap-2 px-1">
-            <div className="w-1 h-5 rounded-full bg-slate-400" />
-            <span className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">주요 분석 워크스페이스 바로가기</span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* 카드 1: 지역 진단 */}
-            <div
-              onClick={() => on_navigate_workspace('regional_diagnosis')}
-              className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-blue-500 dark:hover:border-blue-600 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                    01 지역 진단
-                  </span>
-                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">필수의료 현황 진단</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  응급·분만·소아 취약도와 GIS 레이어로 관내 의료자원을 확인합니다.
-                </p>
-              </div>
-              <div className="text-xs font-bold text-blue-700 dark:text-blue-400 flex items-center justify-between group-hover:underline">
-                <span>진단 대시보드 열기</span>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* 카드 2: 지역 비교 */}
-            <div
-              onClick={() => on_navigate_workspace('policy_planning', 'compare')}
-              className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-600 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                    02 지역 비교
-                  </span>
-                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 헬스맵 고도화" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">유사 지자체 1:1 비교</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  인근 권역 및 동일 규모 지자체와 필수의료 인프라 격차를 비교합니다.
-                </p>
-              </div>
-              <div className="text-xs font-bold text-indigo-700 dark:text-indigo-400 flex items-center justify-between group-hover:underline">
-                <span>비교 분석 시작</span>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* 카드 3: 의료수요 예측 */}
-            <div
-              onClick={() => on_navigate_workspace('policy_planning', 'forecast')}
-              className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-amber-500 dark:hover:border-amber-600 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                    03 수요 예측
-                  </span>
-                  <ISP_과제_뱃지 taskId="3.8" customLabel="과제 3.8 AI 의사결정" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">2030 의료수요 변화</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  인구수 기반 단순 추정 모델로 중장기 수요를 추정합니다.
-                </p>
-              </div>
-              <div className="text-xs font-bold text-amber-700 dark:text-amber-400 flex items-center justify-between group-hover:underline">
-                <span>수요 추계 확인</span>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-
-            {/* 카드 4: AI 정책기획 */}
-            <div
-              onClick={() => on_navigate_workspace('policy_planning', 'policy_ai')}
-              className="p-5 rounded-2xl bg-white dark:bg-[#15161b] border border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-600 shadow-xs hover:shadow-md transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-md text-xs font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-                    04 AI 정책기획
-                  </span>
-                  <ISP_과제_뱃지 taskId="3.4" customLabel="과제 3.4 기능보강 PMS" />
-                </div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">정책대안 및 사업계획서</h3>
-                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                  진단 데이터를 근거로 3대 정책대안과 표준 사업계획서를 자동 완성합니다.
-                </p>
-              </div>
-              <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center justify-between group-hover:underline">
-                <span>정책대안 도출</span>
-                <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition-all" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* ================================================================== */}
       {/* 4. 데이터 신뢰성 고지 배너                                             */}

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import {
   공공의료_자원_서비스,
   실시간_응급실_기관정보,
@@ -68,6 +69,10 @@ export async function GET(req: NextRequest) {
           });
         }
         api_status = 실패_사유(res.status, raw_text);
+        if (/SERVICE_KEY|서비스키/.test(api_status)) {
+          // 키 값은 내보내지 않고 길이·해시 앞 6자리만 붙여, 로컬 .env.local 키와 같은지 비교할 수 있게 한다
+          api_status += ` (키 길이 ${service_key.length} · 지문 ${createHash('sha256').update(service_key).digest('hex').slice(0, 6)})`;
+        }
       } catch (api_err) {
         api_status = api_err instanceof Error && api_err.name === 'TimeoutError' ? '응답 시간 초과(8초)' : '네트워크 오류';
       }

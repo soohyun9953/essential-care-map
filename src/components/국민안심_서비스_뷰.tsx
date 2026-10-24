@@ -39,7 +39,8 @@ import {
 import { 분만가능_의료기관_출처 } from '@/lib/분만가능_의료기관_데이터셋';
 import { 응급의료기관_출처 } from '@/lib/응급의료기관_데이터셋';
 import { 달빛어린이병원_출처 } from '@/lib/달빛어린이병원_데이터셋';
-import { 공공의료_자원_서비스, 실시간_응급실_기관정보 } from '@/lib/공공의료_자원_서비스';
+import type { 실시간_응급실_기관정보 } from '@/lib/공공의료_자원_서비스';
+import { 주소_시군구 } from '@/lib/실시간_병상_조회';
 import { 전국_시군구_대표_좌표 } from '@/lib/시군구_경계_데이터';
 import type { 보조_지도_지점 } from './공공의료_의사결정_지도_내부';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
@@ -215,8 +216,9 @@ export const 국민안심_서비스_뷰: React.FC = () => {
 
   // E-Gen 실시간 병상 정보 맵 (기관명 기준 매핑)
   const [egen_realtime_data, set_egen_realtime_data] = useState<Record<string, 실시간_응급실_기관정보>>({});
-  const [egen_source_label, set_egen_source_label] = useState<string>('E-Gen 중앙응급의료센터 실시간 병상 연계');
-  const [last_sync_time, set_last_sync_time] = useState<string>('실시간 동기화 완료');
+  const [egen_source_label, set_egen_source_label] = useState<string>('E-Gen 실시간 병상 조회 중');
+  const [last_sync_time, set_last_sync_time] = useState<string>('');
+  const [egen_live, set_egen_live] = useState(false);
 
   // 현재 위치 불러오기
   const handle_get_location = () => {
@@ -253,32 +255,35 @@ export const 국민안심_서비스_뷰: React.FC = () => {
     return (R * c).toFixed(1);
   };
 
-  // E-Gen 실시간 데이터 비동기 조회 함수 (스네이크 케이스)
-  const fetch_egen_realtime = async (sgg: string = '도봉구', sido: string = '서울특별시') => {
-    try {
-      const res = await fetch(`/api/emergency/realtime?sido=${encodeURIComponent(sido)}&sigungu=${encodeURIComponent(sgg)}`);
-      if (res.ok) {
-        const json = await res.json();
-        const map: Record<string, 실시간_응급실_기관정보> = {};
-        if (json.all_hospitals && Array.isArray(json.all_hospitals)) {
-          json.all_hospitals.forEach((h: 실시간_응급실_기관정보) => {
-            map[기관명_정규화(h.기관명)] = h;
-          });
-        }
-        set_egen_realtime_data(map);
-        set_egen_source_label('E-Gen 중앙응급의료센터 실시간 병상 연계');
-        set_last_sync_time(json.last_updated || '실시간 동기화 완료');
-      }
-    } catch (e) {
-      const fallback = 공공의료_자원_서비스.get_integrated_resources(sgg, sido);
+  // E-Gen 실시간 데이터 비동기 조회: 목록 상단 기관들의 소재 시군구를 한 번씩 조회해 합친다
+  const fetch_egen_realtime = async (지역들: { 시도명: string; 시군구명: string }[]) => {
+    if (지역들.length === 0) return;
+    const 응답 = await Promise.all(
+      지역들.map(({ 시도명, 시군구명 }) =>
+        fetch(`/api/emergency/realtime?sido=${encodeURIComponent(시도명)}&sigungu=${encodeURIComponent(시군구명)}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .catch(() => null)
+      )
+    );
+    // 실시간 연동(is_live_api)일 때만 병상 수를 쓴다. 내장 기준 데이터의 병상 수는 실제 값이 아님
+    const 연동 = 응답.filter((j) => j?.is_live_api && Array.isArray(j.all_hospitals));
+    if (연동.length > 0) {
       const map: Record<string, 실시간_응급실_기관정보> = {};
-      fallback.응급의료기관_목록.forEach((h) => {
-        map[기관명_정규화(h.기관명)] = h;
-      });
+      연동.forEach((j) =>
+        j.all_hospitals.forEach((h: 실시간_응급실_기관정보) => {
+          map[기관명_정규화(h.기관명)] = h;
+        })
+      );
       set_egen_realtime_data(map);
+      set_egen_live(true);
       set_egen_source_label('E-Gen 중앙응급의료센터 실시간 병상 연계');
-      set_last_sync_time('실시간 동기화 완료');
+      set_last_sync_time(연동[0].last_updated || '');
+      return;
     }
+    set_egen_realtime_data({});
+    set_egen_live(false);
+    set_egen_source_label('E-Gen 실시간 병상 미연동');
+    set_last_sync_time(응답.find((j) => j?.api_status)?.api_status || '네트워크 오류');
   };
 
   // 현재 위치 좌표 기준 시군구명 정밀 산출 함수
@@ -338,10 +343,6 @@ export const 국민안심_서비스_뷰: React.FC = () => {
       }
     }
   }, [search_text]);
-
-  useEffect(() => {
-    fetch_egen_realtime('영월군', '강원특별자치도');
-  }, []);
 
   // 서비스 및 위치 기준 필터링 & 거리순 정렬
   const hospital_list = useMemo(() => {
@@ -458,6 +459,21 @@ export const 국민안심_서비스_뷰: React.FC = () => {
     const 민간: 표시_항목[] = 민간_목록.map((m) => ({ kind: '민간', id: m.h.id, 거리: m.거리, h: m.h }));
     return [...공공, ...민간].sort((a, b) => (a.거리 ?? Infinity) - (b.거리 ?? Infinity));
   }, [hospital_list, 민간_목록]);
+
+  // 목록 상단(최대 18곳) 기관의 소재 시군구 (최대 6곳) → E-Gen 실시간 조회 대상
+  const 조회_지역_키 = useMemo(() => {
+    const 지역 = new Map<string, { 시도명: string; 시군구명: string }>();
+    for (const item of 표시_목록.slice(0, 18)) {
+      const 지 = item.kind === '공공' ? { 시도명: item.h.시도명, 시군구명: item.h.시군구명 } : 주소_시군구(item.h.주소 || item.h.지역);
+      if (지) 지역.set(`${지.시도명}|${지.시군구명}`, 지);
+      if (지역.size >= 6) break;
+    }
+    return JSON.stringify(Array.from(지역.values()));
+  }, [표시_목록]);
+
+  useEffect(() => {
+    fetch_egen_realtime(JSON.parse(조회_지역_키));
+  }, [조회_지역_키]);
 
   const 보조_지점: 보조_지도_지점[] = useMemo(
     () =>
@@ -724,13 +740,22 @@ export const 국민안심_서비스_뷰: React.FC = () => {
         {sheet_state !== 'min' && (
           <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3">
           {/* E-Gen 실시간 데이터 안내 배너 */}
-          <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-900 dark:text-blue-200">
-            <Activity className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
-            <p>
-              하단 기관별 가용병상(응급·소아·음압·중환자실) 및 CT/MRI 장비 가동 상태는 <strong>국립중앙의료원 중앙응급의료센터 E-Gen 실시간 OpenAPI</strong>를 통해 연동된 모든 정보입니다.
-              실시간 상태가 급변할 수 있으니 방문 전 유선 확인을 권장합니다.
-            </p>
-          </div>
+          {egen_live ? (
+            <div className="p-2.5 rounded-xl bg-blue-50/80 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 flex items-start gap-2 text-[11px] text-blue-900 dark:text-blue-200">
+              <Activity className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
+              <p>
+                병상 수·장비 상태는 <strong>국립중앙의료원 중앙응급의료센터 E-Gen 실시간 OpenAPI</strong>로 확인된 기관에만 표시합니다.
+                실시간 상태가 급변할 수 있으니 방문 전 유선 확인을 권장합니다.
+              </p>
+            </div>
+          ) : (
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 flex items-start gap-2 text-[11px] text-amber-900 dark:text-amber-200">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+              <p>
+                지금은 E-Gen 실시간 병상이 연동되지 않아 병상 수·장비 상태를 표시하지 않습니다{last_sync_time ? ` (${last_sync_time})` : ''}. 응급실 이용 전 119 또는 해당 병원에 확인하세요.
+              </p>
+            </div>
+          )}
 
           {표시_목록.length === 0 ? (
             <div className="py-12 px-4 text-center space-y-3">
@@ -901,36 +926,7 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                 const is_selected = !selected_extra_id && active_target?.id === h.id;
                 const live_egen = get_hospital_egen_info(h.기관명);
 
-                // E-Gen 데이터 우선, 없으면 기관 의료자원 데이터
-                const available_emergency_beds = live_egen
-                  ? live_egen.응급실_가용병상
-                  : h.의료자원.응급실.가용병상;
-                const total_emergency_beds = live_egen
-                  ? live_egen.응급실_총병상
-                  : 20;
-                const pediatric_beds = live_egen
-                  ? live_egen.소아_가용병상
-                  : h.의료자원.응급실.소아가용병상;
-                const negative_pressure_beds = live_egen ? live_egen.음압격리_가용병상 : 1;
-                const icu_beds = live_egen
-                  ? live_egen.중환자실_가용병상
-                  : h.의료자원.중환자실.가용병상;
-                const saturation_status = live_egen
-                  ? live_egen.포화도_상태
-                  : (h.의료자원.응급실.상태 as any) || '보통';
-
-                const ct_running = live_egen
-                  ? live_egen.장비가동상태.CT
-                  : h.의료자원.주요장비.CT;
-                const mri_running = live_egen
-                  ? live_egen.장비가동상태.MRI
-                  : h.의료자원.주요장비.MRI;
-                const venti_running = live_egen
-                  ? live_egen.장비가동상태.인공호흡기
-                  : h.의료자원.주요장비.인공호흡기;
-                const incubator_running = live_egen
-                  ? live_egen.장비가동상태.인큐베이터
-                  : h.의료자원.주요장비.인큐베이터;
+                // 병상·장비는 E-Gen 실시간 값이 있을 때만 표시 (내장 기준 데이터의 병상 수는 실제 값이 아님)
 
                 return (
                   <div
@@ -971,73 +967,75 @@ export const 국민안심_서비스_뷰: React.FC = () => {
                       {/* 핵심 요구사항 2: E-Gen에서 획득한 모든 실시간 정보 표시 */}
                       {/* ============================================================== */}
                       <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 space-y-2">
-                        {/* 응급실 가용현황 & 포화도 뱃지 */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
-                            <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                            <span>E-Gen 응급실 가용병상</span>
-                          </span>
-                          <span
-                            className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold ${
-                              saturation_status === '여유'
-                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                : saturation_status === '보통'
-                                ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
-                                : saturation_status === '혼잡'
-                                ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                                : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                            }`}
-                          >
-                            포화도: {saturation_status}
-                          </span>
-                        </div>
+                        {live_egen ? (
+                          <>
+                            {/* 응급실 가용현황 & 포화도 뱃지 */}
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1">
+                                <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>E-Gen 응급실 가용병상</span>
+                              </span>
+                              <span
+                                className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold ${
+                                  live_egen.포화도_상태 === '여유'
+                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                    : live_egen.포화도_상태 === '보통'
+                                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300'
+                                    : live_egen.포화도_상태 === '혼잡'
+                                    ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
+                                    : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                }`}
+                              >
+                                포화도: {live_egen.포화도_상태}
+                              </span>
+                            </div>
 
-                        {/* 4대 세부 병상 현황 (응급실, 소아, 음압격리, 중환자실) */}
-                        <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-lg bg-white dark:bg-slate-900/60 text-[10px] border border-slate-100 dark:border-slate-800">
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400">응급실 가용:</span>
-                            <strong className="text-emerald-600 dark:text-emerald-400 font-bold">
-                              {available_emergency_beds} / {total_emergency_beds}석
-                            </strong>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400">소아 가용:</span>
-                            <strong className="text-blue-600 dark:text-blue-400 font-bold">
-                              {pediatric_beds}석
-                            </strong>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400">음압 격리:</span>
-                            <strong className="text-indigo-600 dark:text-indigo-400 font-bold">
-                              {negative_pressure_beds}석
-                            </strong>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-slate-400">중환자실(ICU):</span>
-                            <strong className="text-amber-600 dark:text-amber-400 font-bold">
-                              {icu_beds}석
-                            </strong>
-                          </div>
-                        </div>
+                            {/* 세부 병상 현황 (응급실, 소아, 중환자실) */}
+                            <div className="grid grid-cols-2 gap-1.5 p-1.5 rounded-lg bg-white dark:bg-slate-900/60 text-[10px] border border-slate-100 dark:border-slate-800">
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">응급실 가용:</span>
+                                <strong className="text-emerald-600 dark:text-emerald-400 font-bold">{live_egen.응급실_가용병상}석</strong>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">소아 가용:</span>
+                                <strong className="text-blue-600 dark:text-blue-400 font-bold">{live_egen.소아_가용병상}석</strong>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-slate-400">중환자실(ICU):</span>
+                                <strong className="text-amber-600 dark:text-amber-400 font-bold">{live_egen.중환자실_가용병상}석</strong>
+                              </div>
+                              {(live_egen.신생아중환자실_가용병상 ?? 0) > 0 && (
+                                <div className="flex items-center justify-between">
+                                  <span className="text-slate-400">신생아중환자실:</span>
+                                  <strong className="text-pink-600 dark:text-pink-400 font-bold">{live_egen.신생아중환자실_가용병상}석</strong>
+                                </div>
+                              )}
+                            </div>
 
-                        {/* 4대 핵심 장비 가동 상태 (CT, MRI, 인공호흡기, 인큐베이터) */}
-                        <div className="flex items-center justify-between text-[9px] pt-1 border-t border-slate-200 dark:border-slate-700/60">
-                          <span className="text-slate-400 font-semibold">장비 가동:</span>
-                          <div className="flex items-center gap-1 flex-wrap">
-                            <span className={`px-1.5 py-0.5 rounded font-bold ${ct_running ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-500'}`}>
-                              CT {ct_running ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded font-bold ${mri_running ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-500'}`}>
-                              MRI {mri_running ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded font-bold ${venti_running ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-500'}`}>
-                              호흡기 {venti_running ? 'ON' : 'OFF'}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded font-bold ${incubator_running ? 'bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300' : 'bg-slate-200 text-slate-500'}`}>
-                              인큐 {incubator_running ? 'ON' : 'OFF'}
-                            </span>
+                            {/* 장비 가동 상태 (CT, MRI, 인공호흡기, 인큐베이터) */}
+                            <div className="flex items-center justify-between text-[9px] pt-1 border-t border-slate-200 dark:border-slate-700/60">
+                              <span className="text-slate-400 font-semibold">장비 가동:</span>
+                              <div className="flex items-center gap-1 flex-wrap">
+                                {([
+                                  ['CT', live_egen.장비가동상태.CT],
+                                  ['MRI', live_egen.장비가동상태.MRI],
+                                  ['호흡기', live_egen.장비가동상태.인공호흡기],
+                                  ['인큐', live_egen.장비가동상태.인큐베이터],
+                                ] as const).map(([이름, 가동]) => (
+                                  <span key={이름} className={`px-1.5 py-0.5 rounded font-bold ${가동 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-200 text-slate-500'}`}>
+                                    {이름} {가동 ? 'ON' : 'OFF'}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-[11px] text-amber-800 dark:text-amber-300">
+                            {egen_live
+                              ? 'E-Gen 실시간 응급실 목록에 없음 (응급실 미운영일 수 있음) — 전화로 확인하세요'
+                              : '실시간 병상 미연동 — 응급실 이용 전 전화로 확인하세요'}
                           </div>
-                        </div>
+                        )}
 
                         {/* 총 병상 및 주요 서비스 태그 */}
                         <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">

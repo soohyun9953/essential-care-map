@@ -15,8 +15,10 @@ export function 서비스키_정규화(key: string): string {
 
 /** 실패 응답에서 사유만 뽑는다 (HTTP 상태, 포털 오류 코드·메시지, 결과 0건) */
 export function 실패_사유(status: number, body: string): string {
-  const tag = (t: string) => new RegExp(`<${t}>([\\s\\S]*?)</${t}>`).exec(body)?.[1]?.trim() ?? '';
-  const 인증오류 = tag('returnAuthMsg') || tag('errMsg');
+  // XML(<errMsg>…</errMsg>)과 JSON("errMsg": "…") 응답을 모두 읽는다 (Accept 헤더에 따라 형식이 달라짐)
+  const tag = (t: string) =>
+    (new RegExp(`<${t}>([\\s\\S]*?)</${t}>`).exec(body) ?? new RegExp(`"${t}"\\s*:\\s*"?([^",}]*)`).exec(body))?.[1]?.trim() ?? '';
+  const 인증오류 = [tag('errMsg'), tag('returnAuthMsg')].filter(Boolean).join(' · ');
   if (인증오류) return `포털 오류 ${인증오류}`;
   const code = tag('resultCode');
   if (code && code !== '00') return `포털 오류 ${code} ${tag('resultMsg')}`.trim();

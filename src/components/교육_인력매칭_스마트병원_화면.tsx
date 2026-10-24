@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import { BrainCircuit, GraduationCap, MonitorSmartphone, Stethoscope, UserSearch } from 'lucide-react';
 import { 경량_RAG_엔진 } from '@/lib/경량_rag_엔진';
 
@@ -131,10 +132,16 @@ export function 교육_인력매칭_스마트병원_화면() {
 
           <section className={카드}>
             <h3 className={제목}><BrainCircuit className="w-4 h-4 text-purple-600" /> AI 튜터 {코드('AIS-07-03')}</h3>
-            <form onSubmit={(e) => { e.preventDefault(); set_튜터_답(경량_RAG_엔진.retrieve(튜터_질문, 4).filter((x) => x.청크.검증상태 !== '원문 미확인').slice(0, 2)); }} className="flex gap-1.5">
-              <input value={튜터_질문} onChange={(e) => set_튜터_질문(e.target.value)} placeholder="예: CP 운영 가산율은?" className="flex-1 px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="튜터 질문" />
-              <button type="submit" className="px-2.5 py-1 rounded-lg bg-purple-600 text-white text-xs font-bold cursor-pointer">질문</button>
-            </form>
+            <AI_질의_입력창
+              value={튜터_질문}
+              onChange={set_튜터_질문}
+              onSubmit={(q) => set_튜터_답(경량_RAG_엔진.retrieve(q, 4).filter((x) => x.청크.검증상태 !== '원문 미확인').slice(0, 2))}
+              예시="CP 운영 가산율은 얼마야?"
+              실행_라벨="질문"
+              크기="sm"
+              버튼_색="bg-purple-600 hover:bg-purple-700"
+              aria_label="튜터 질문"
+            />
             {튜터_답.map((x) => (
               <div key={x.청크.id} className="text-[11px] text-slate-700 dark:text-slate-300 p-2 rounded-lg bg-slate-50 dark:bg-slate-800">
                 {x.청크.본문.slice(0, 220)}{x.청크.본문.length > 220 ? '…' : ''}

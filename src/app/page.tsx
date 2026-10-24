@@ -154,6 +154,7 @@ export default function Home() {
   }, []);
 
   const handle_navigate_from_sidebar = (ws: 워크스페이스_타입, subtab?: string) => {
+    set_화면_모드('프로토타입');
     if (ws === 'medical_institution' && subtab) {
       set_medical_subtab(subtab as any);
     }
@@ -529,6 +530,7 @@ export default function Home() {
       <글로벌_공공_헤더
         active_workspace={current_workspace}
         on_change_workspace={(ws) => {
+          set_화면_모드('프로토타입');
           if (ws === 'policy_planning' && policy_subtab === 'evaluation') {
             set_policy_subtab('policy_ai');
           }
@@ -560,7 +562,10 @@ export default function Home() {
           (current_workspace === 'medical_institution' && medical_subtab === 'profile_report')
         }
         active_user_role={current_user_role}
-        on_change_user_role={handle_select_user_role}
+        on_change_user_role={(role) => {
+          set_화면_모드('프로토타입');
+          handle_select_user_role(role);
+        }}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
@@ -629,6 +634,17 @@ export default function Home() {
           }`}
         >
         {/* 헤더 화면 전환: 오분류 교정 내역 / 메뉴 구조도 */}
+        {화면_모드 !== '프로토타입' && (
+          <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4">
+            <button
+              type="button"
+              onClick={() => set_화면_모드('프로토타입')}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 cursor-pointer"
+            >
+              ← 사용자별 프로토타입 화면으로 돌아가기
+            </button>
+          </div>
+        )}
         {화면_모드 === '교정내역' && <오분류_교정_내역_뷰 on_open_subtab={handle_open_persona_subtab} />}
         {화면_모드 === '구조도' && <메뉴_구조도_뷰 on_open_subtab={handle_open_persona_subtab} />}
 

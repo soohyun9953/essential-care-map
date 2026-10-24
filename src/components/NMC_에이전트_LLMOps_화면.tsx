@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import { Bot, Coins, GraduationCap, Route, ShieldAlert } from 'lucide-react';
 import {
   에이전트_템플릿,
@@ -41,8 +42,9 @@ export function NMC_에이전트_LLMOps_화면() {
   const [배포, set_배포] = useState('');
   const 통과율 = 평가 ? 평가.filter((x) => x.통과).length / 평가.length : 0;
 
-  const [입력, set_입력] = useState('환자 홍길동(010-1234-5678) 퇴원 의뢰서 요약');
-  const 판정 = 정보등급_판정(입력);
+  const [입력, set_입력] = useState('');
+  const [시험문장, set_시험문장] = useState('');
+  const 판정 = 정보등급_판정(시험문장);
   const 미이수 = useMemo(() => 미이수_탐지(시연_이수_명단), []);
   const 이상 = useMemo(() => 이상접근_탐지(시연_접근_로그), []);
 
@@ -112,15 +114,17 @@ export function NMC_에이전트_LLMOps_화면() {
               <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500"><tr><th className="py-1.5 px-2 text-left">등급</th><th className="py-1.5 px-2 text-left">라우팅</th><th className="py-1.5 px-2 text-left">설명</th></tr></thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {(['C', 'S', 'O'] as const).map((g) => (
-                  <tr key={g} className={g === 판정.등급 ? 'bg-indigo-50/70 dark:bg-indigo-950/30' : ''}>
+                  <tr key={g} className={시험문장 && g === 판정.등급 ? 'bg-indigo-50/70 dark:bg-indigo-950/30' : ''}>
                     <td className="py-1.5 px-2 font-black">{라우팅_정책[g].이름}</td><td className="py-1.5 px-2">{라우팅_정책[g].경로}</td><td className="py-1.5 px-2 text-slate-500">{라우팅_정책[g].설명}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <label className="block text-[11px] font-bold text-slate-500">요청 문장으로 라우팅 시험</label>
-            <input value={입력} onChange={(e) => set_입력(e.target.value)} className="w-full px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="라우팅 시험 문장" />
-            <p className="text-xs"><strong>{라우팅_정책[판정.등급].이름} → {라우팅_정책[판정.등급].경로}</strong> <span className="text-slate-500">({판정.사유})</span></p>
+            <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={set_시험문장} 예시="환자 홍길동(010-1234-5678) 퇴원 의뢰서 요약해줘" 실행_라벨="라우팅" 크기="sm" 버튼_색="bg-indigo-600 hover:bg-indigo-700" aria_label="라우팅 시험 문장" />
+            {시험문장 && (
+              <p className="text-xs"><strong>{라우팅_정책[판정.등급].이름} → {라우팅_정책[판정.등급].경로}</strong> <span className="text-slate-500">({판정.사유})</span></p>
+            )}
             <p className="text-[10px] text-slate-400">개인정보 탐지는 플랫폼 비식별화 엔진(정규식), 기밀 판정은 표시어 규칙입니다.</p>
           </section>
 

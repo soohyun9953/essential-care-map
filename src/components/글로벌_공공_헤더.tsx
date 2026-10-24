@@ -499,36 +499,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
           {/* 3. 우측: 데이터·사업가이드 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0 whitespace-nowrap">
 
-            {/* 3-0. 화면 전환: 사용자별 프로토타입 체험 / 오분류 6대 교정 내역 / AS-IS ➔ TO-BE 메뉴 구조도 */}
-            {on_change_화면_모드 && (
-              <div className="flex items-center gap-0.5 p-0.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800" role="tablist" aria-label="화면 전환">
-                {(
-                  [
-                    { id: '프로토타입', 아이콘: '🖥️', 전체: '사용자별 프로토타입 체험', 짧게: '체험' },
-                    { id: '교정내역', 아이콘: '⚠️', 전체: '메뉴·기능 오분류 6대 교정 내역', 짧게: '교정' },
-                    { id: '구조도', 아이콘: '🗺️', 전체: 'AS-IS ➔ TO-BE 전체 메뉴 구조도 (A01)', 짧게: '구조도' },
-                  ] as const
-                ).map((b) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={화면_모드 === b.id}
-                    onClick={() => on_change_화면_모드(b.id)}
-                    title={b.전체}
-                    className={`px-2 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer ${
-                      화면_모드 === b.id
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <span>{b.아이콘}</span>
-                    <span className="hidden min-[1800px]:inline ml-1">{b.전체}</span>
-                    <span className="min-[1800px]:hidden inline ml-1">{b.짧게}</span>
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* 데이터 & 사업가이드 팝업 안내 버튼 */}
             <button
@@ -683,6 +653,34 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                     </div>
                     <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-blue-600 text-white dark:bg-blue-600">통제센터</span>
                   </button>
+
+                  {/* 메뉴 구조 검토 화면 (헤더에서 관리자 메뉴로 이동, 2026-10-24) */}
+                  {on_change_화면_모드 && (
+                    <>
+                      <button
+                        onClick={() => {
+                          on_change_화면_모드('교정내역');
+                          set_is_admin_open(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition mb-1 border cursor-pointer ${
+                          화면_모드 === '교정내역' ? 'bg-amber-100 dark:bg-amber-900/50 border-amber-300 dark:border-amber-700' : 'bg-amber-50/60 dark:bg-amber-950/30 hover:bg-amber-100/70 border-amber-200/60 dark:border-amber-900/50'
+                        }`}
+                      >
+                        <span className="font-bold text-amber-900 dark:text-amber-200">⚠️ 메뉴·기능 오분류 6대 교정 내역</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          on_change_화면_모드('구조도');
+                          set_is_admin_open(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition mb-1.5 border cursor-pointer ${
+                          화면_모드 === '구조도' ? 'bg-sky-100 dark:bg-sky-900/50 border-sky-300 dark:border-sky-700' : 'bg-sky-50/60 dark:bg-sky-950/30 hover:bg-sky-100/70 border-sky-200/60 dark:border-sky-900/50'
+                        }`}
+                      >
+                        <span className="font-bold text-sky-900 dark:text-sky-200">🗺️ AS-IS ➔ TO-BE 전체 메뉴 구조도 (A01)</span>
+                      </button>
+                    </>
+                  )}
 
                   <button
                     onClick={() => {

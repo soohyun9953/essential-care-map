@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { BookOpenCheck, ExternalLink, Send } from 'lucide-react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
+import { BookOpenCheck, ExternalLink } from 'lucide-react';
 import { 공개정보_안내, 추천_질문, 안내_공통_고지, type 안내_답변 } from '@/lib/대국민_공개정보_안내_엔진';
 
 // ① 대국민 › 1-3 대국민 공공의료 AI 안내 도우미 (AIS-02-02)
@@ -48,7 +49,7 @@ export function 대국민_공개정보_AI_안내() {
         {대화들.length === 0 && (
           <div className="flex flex-wrap gap-2">
             {추천_질문.map((q) => (
-              <button key={q} type="button" onClick={() => 묻기(q)} className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer">
+              <button key={q} type="button" onClick={() => set_입력(q)} className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 cursor-pointer">
                 {q}
               </button>
             ))}
@@ -87,24 +88,9 @@ export function 대국민_공개정보_AI_안내() {
         <div ref={끝} />
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          묻기(입력);
-        }}
-        className="sticky bottom-0 flex gap-2 bg-slate-50/90 dark:bg-[#0c0d10]/90 backdrop-blur py-2"
-      >
-        <input
-          value={입력}
-          onChange={(e) => set_입력(e.target.value)}
-          placeholder="예: 영월군 응급실 어디 있어? / 삼척의료원 정보 / 분만취약지 지원"
-          className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm"
-          aria-label="질문 입력"
-        />
-        <button type="submit" className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold cursor-pointer flex items-center gap-1">
-          <Send className="w-4 h-4" /> 질문
-        </button>
-      </form>
+      <div className="sticky bottom-0 bg-slate-50/90 dark:bg-[#0c0d10]/90 backdrop-blur py-2">
+        <AI_질의_입력창 value={입력} onChange={set_입력} onSubmit={묻기} 예시={추천_질문[0]} 실행_라벨="질문" 버튼_색="bg-rose-600 hover:bg-rose-700" aria_label="질문 입력" />
+      </div>
     </div>
   );
 }

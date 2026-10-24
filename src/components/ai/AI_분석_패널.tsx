@@ -5,6 +5,7 @@
 // [MOCK] 이 컴포넌트는 실제 AI API를 호출하지 않고 Mock 파이프라인을 시뮬레이션합니다.
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import {
   X,
   Play,
@@ -654,7 +655,8 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
   initial_query = '영월군의 응급의료 취약 원인과 개선방안을 분석해줘.',
 }) => {
   // 상태 관리
-  const [query, set_query] = useState(initial_query);
+  // 질문은 빈 칸에서 시작: 회색 예시(initial_query)를 Tab으로 채우고 오른쪽 실행으로 분석
+  const [query, set_query] = useState('');
   const [phase, set_phase] = useState<'input' | 'pipeline' | 'result'>('input');
   const [current_step_idx, set_current_step_idx] = useState(-1);
   const [done_steps, set_done_steps] = useState<Set<number>>(new Set());
@@ -676,7 +678,7 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
 
   // initial_query 및 region_name 변경 시 동기화
   useEffect(() => {
-    set_query(initial_query);
+    set_query('');
   }, [initial_query]);
 
   // 전국 229개 시군구 실데이터 동적 AI 분석 패키지 산출 (2024 헬스맵 & 진단 엔진 연계)
@@ -840,14 +842,8 @@ export const AI_분석_패널: React.FC<AI_분석_패널_속성> = ({
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-black text-slate-700 dark:text-slate-300">분석 질문</label>
-                <textarea
-                  value={query}
-                  onChange={(e) => set_query(e.target.value)}
-                  rows={3}
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition"
-                  placeholder="분석할 질문을 입력하세요."
-                />
-                <p className="text-[11px] text-slate-400">기본 질문을 그대로 사용하거나, 직접 수정하여 분석할 수 있습니다.</p>
+                <AI_질의_입력창 value={query} onChange={set_query} onSubmit={() => run_pipeline()} 예시={initial_query} 실행_라벨="분석 실행" aria_label="분석 질문" />
+                <p className="text-[11px] text-slate-400">회색 예시 질문은 Tab 키로 입력하고, 오른쪽 실행 버튼으로 분석합니다.</p>
               </div>
 
               {/* 실데이터 연동 안내 */}

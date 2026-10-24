@@ -1154,7 +1154,11 @@ export const 국민안심_AI_질의응답_패널: React.FC<국민안심_AI_질�
               key={idx}
               type="button"
               disabled={is_loading}
-              onClick={() => handle_submit_query(q)}
+              onClick={() => {
+                // 추천 질문은 입력창에 채우기만 하고, 질의는 오른쪽 전송 버튼으로
+                set_query_input(q);
+                input_ref.current?.focus();
+              }}
               className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 hover:text-emerald-600 text-slate-600 dark:text-slate-300 text-[11px] whitespace-nowrap transition border border-transparent hover:border-emerald-300 cursor-pointer active:scale-95"
             >
               {q}

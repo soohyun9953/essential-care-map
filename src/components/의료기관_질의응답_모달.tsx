@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import {
   X,
   Search,
@@ -152,9 +153,9 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
     execute_query(query_input);
   };
 
+  // 추천 질문은 입력창에 채우기만 하고, 질의는 오른쪽 실행 버튼으로
   const handle_preset_click = (preset: string) => {
     set_query_input(preset);
-    execute_query(preset);
   };
 
   const handle_copy_table = () => {
@@ -213,31 +214,15 @@ export const 의료기관_질의응답_모달: React.FC<의료기관_질의응�
         {/* 메인 바디 */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
           {/* 질의 입력창 */}
-          <form onSubmit={handle_submit} className="relative">
-            <div className="relative flex items-center">
-              <Search className="w-5 h-5 text-slate-400 absolute left-4 pointer-events-none" />
-              <input
-                ref={input_ref}
-                type="text"
-                value={query_input}
-                onChange={(e) => set_query_input(e.target.value)}
-                placeholder="질문을 입력하세요 (예: 병상수가 가장 많은 공공병원 Top10 보여줘.)"
-                className="w-full pl-12 pr-28 py-3.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:bg-white dark:focus:bg-slate-900 transition-all shadow-inner"
-              />
-              <button
-                type="submit"
-                disabled={is_searching}
-                className="absolute right-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer disabled:opacity-50"
-              >
-                {is_searching ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Sparkles className="w-3.5 h-3.5" />
-                )}
-                <span>질의 실행</span>
-              </button>
-            </div>
-          </form>
+          <AI_질의_입력창
+            value={query_input}
+            onChange={set_query_input}
+            onSubmit={(v) => execute_query(v)}
+            예시="병상수가 가장 많은 공공병원 Top10 보여줘."
+            실행_라벨="질의 실행"
+            실행중={is_searching}
+            버튼_색="bg-emerald-600 hover:bg-emerald-700"
+          />
 
           {/* 추천 퀵 질의 버튼 바 */}
           <div className="flex flex-wrap items-center gap-1.5 pt-0.5">

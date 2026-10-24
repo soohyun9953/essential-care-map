@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
 import { Database, FileText, MapPinned, Network } from 'lucide-react';
 import { 취약지_요약, 자연어_질의, 질의_예시, 정책_요구자료_초안, type 질의_결과 } from '@/lib/NMC_정책통계_DW';
 
@@ -11,8 +12,8 @@ const 코드 = (c: string) => <span className="px-1.5 py-0.5 rounded text-[10px]
 
 export function NMC_정책통계_DW_화면() {
   const 요약 = useMemo(() => 취약지_요약(), []);
-  const [질문, set_질문] = useState(질의_예시[0]);
-  const [결과, set_결과] = useState<질의_결과 | { 오류: string } | null>(() => 자연어_질의(질의_예시[0]));
+  const [질문, set_질문] = useState('');
+  const [결과, set_결과] = useState<질의_결과 | { 오류: string } | null>(null);
   const [요청기관, set_요청기관] = useState<'국회' | '보건복지부'>('국회');
   const [요청내용, set_요청내용] = useState('시도별 필수의료 취약지 현황');
   const [초안, set_초안] = useState('');
@@ -66,13 +67,10 @@ export function NMC_정책통계_DW_화면() {
         <section className={카드}>
           <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Database className="w-4 h-4 text-indigo-600" /> 통합 DW 대화형 자연어 질의 (Text-to-SQL) {코드('AIS-08-01')}</h3>
           <p className="text-[11px] text-slate-500">정해진 질문 유형을 SQL로 바꿔 플랫폼 내장 테이블(시군구_진단, 알리미_공시)에서 실행합니다. 자유 질의(내부 sLLM)는 본 사업 대상입니다.</p>
-          <form onSubmit={(e) => { e.preventDefault(); set_결과(자연어_질의(질문)); }} className="flex gap-1.5">
-            <input value={질문} onChange={(e) => set_질문(e.target.value)} className="flex-1 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="자연어 질의" />
-            <button type="submit" className="px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold cursor-pointer">실행</button>
-          </form>
+          <AI_질의_입력창 value={질문} onChange={set_질문} onSubmit={(q) => set_결과(자연어_질의(q))} 예시={질의_예시[0]} 크기="sm" 버튼_색="bg-indigo-600 hover:bg-indigo-700" aria_label="자연어 질의" />
           <div className="flex flex-wrap gap-1">
             {질의_예시.map((q) => (
-              <button key={q} type="button" onClick={() => { set_질문(q); set_결과(자연어_질의(q)); }} className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 cursor-pointer">{q}</button>
+              <button key={q} type="button" onClick={() => set_질문(q)} className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 cursor-pointer">{q}</button>
             ))}
           </div>
           {결과 && ('오류' in 결과 ? (

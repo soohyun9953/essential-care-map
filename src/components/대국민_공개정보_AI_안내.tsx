@@ -94,7 +94,7 @@ export function 대국민_공개정보_AI_안내() {
         </div>
         <p className="text-xs text-slate-500">
           응급실·분만 병원·달빛어린이병원·신생아중환자실(NICU) 위치(역·공항 이름으로도 검색), 공공병원 공개 정보, 공공의료 제도를 사이트의 공개 자료에서 먼저 찾고,
-          <strong> Gemini가 찾은 자료만 근거로 요약</strong>합니다. 요약 아래에 근거 자료와 <strong>출처 문서</strong>를 함께 보여드리니 원문으로 확인하세요.
+          <strong> Gemini가 찾은 자료만 근거로 요약</strong>합니다. 요약 아래에 근거 자료와 <strong>출처 자료</strong>를 함께 보여드리니 원문으로 확인하세요.
         </p>
         <p className="text-xs font-bold text-rose-700 dark:text-rose-300">{안내_공통_고지}</p>
       </div>
@@ -135,7 +135,7 @@ export function 대국민_공개정보_AI_안내() {
               )}
               {d.답변.출처.length > 0 && (
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-1">
-                  <div className="text-[11px] font-black text-slate-500">출처 문서</div>
+                  <div className="text-[11px] font-black text-slate-500">출처 자료</div>
                   {d.답변.출처.map((s, j) => (
                     <div key={j} className="text-[11px] text-slate-500">
                       [{j + 1}] <span className="font-bold text-slate-700 dark:text-slate-300">{s.자료}</span> — {s.상세}
@@ -186,7 +186,7 @@ function AI_요약_상자({ 요약 }: { 요약: NonNullable<대화['요약']> })
         </span>
       </div>
       <p className="text-sm text-slate-800 dark:text-slate-100 whitespace-pre-line leading-relaxed">{요약.요약}</p>
-      <p className="text-[10px] text-slate-400">생성형 AI 요약이라 틀릴 수 있습니다. [번호]는 아래 출처 문서 번호이며, 중요한 내용은 근거 자료와 원문으로 확인하세요.</p>
+      <p className="text-[10px] text-slate-400">생성형 AI 요약이라 틀릴 수 있습니다. [번호]는 아래 출처 자료 번호이며, 중요한 내용은 근거 자료와 원문으로 확인하세요.</p>
     </div>
   );
 }

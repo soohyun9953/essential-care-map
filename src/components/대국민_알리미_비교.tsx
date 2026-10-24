@@ -6,14 +6,25 @@ import { 알리미_기관_공시_목록, 알리미_공시_출처 } from '@/lib/�
 import { 경영지표_계산, 알리미_병상수, 알리미_소재지, 최근_결산연도, 알리미_공시_조회 } from '@/lib/알리미_경영지표';
 import { 병원_실데이터_조회 } from '@/lib/공공병원_실데이터_연계';
 
-// 강원 남부 3개 병원 비교 (영월·삼척은 알리미 공시 대상, 태백병원은 근로복지공단 소속이라 공시 대상 아님)
-const 비교_병원 = [
-  { 이름: '영월의료원', 시도: '강원특별자치도', 시군구: '영월군' },
-  { 이름: '삼척의료원', 시도: '강원특별자치도', 시군구: '삼척시' },
-  { 이름: '근로복지공단 태백병원', 시도: '강원특별자치도', 시군구: '태백시' },
-] as const;
+// 선택 지역 공공병원 비교 (최대 3곳, 지역 선택을 따른다)
+// - 후보: 선택 지역의 알리미 공시 기관. 강원을 고르면 알리미 공시 대상이 아닌 근로복지공단 태백병원도 후보에 넣는다
+// - 기본: 강원(또는 전체)은 강원 남부 진료권 영월·삼척의료원 + 태백병원, 그 밖의 지역은 목록 앞 3곳
+export interface 비교_후보 {
+  이름: string;
+  시도: string;
+  시군구: string;
+}
 
-function 강원남부_3개병원_비교표() {
+const 강원 = '강원특별자치도';
+const 태백병원: 비교_후보 = { 이름: '근로복지공단 태백병원', 시도: 강원, 시군구: '태백시' };
+const 강원남부_기본 = ['영월의료원', '삼척의료원', 태백병원.이름];
+const 최대_비교 = 3;
+
+function 지역_공공병원_비교표({ 지역명, 후보, 기본 }: { 지역명: string; 후보: 비교_후보[]; 기본: string[] }) {
+  const [선택, set_선택] = useState<string[]>(기본);
+  const 토글 = (이름: string) =>
+    set_선택((prev) => (prev.includes(이름) ? prev.filter((x) => x !== 이름) : prev.length >= 최대_비교 ? prev : [...prev, 이름]));
+  const 비교_병원 = 선택.map((이름) => 후보.find((b) => b.이름 === 이름)).filter((b): b is 비교_후보 => Boolean(b));
   const 행 = 비교_병원.map((b) => {
     const 실 = 병원_실데이터_조회(b.이름, b.시도, b.시군구);
     const 공시 = 알리미_공시_조회(b.이름);
@@ -49,11 +60,42 @@ function 강원남부_3개병원_비교표() {
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
       <div>
-        <h3 className="text-sm font-black text-slate-900 dark:text-white">강원 남부 공공병원 비교 — 필수의료 운영 · CP 적용률 · 취약계층 감면</h3>
+        <h3 className="text-sm font-black text-slate-900 dark:text-white">{지역명} 공공병원 비교 — 필수의료 운영 · CP 적용률 · 취약계층 감면</h3>
         <p className="text-[11px] text-slate-500 mt-0.5">
-          공개된 값만 표시합니다. 태백병원은 근로복지공단 소속이라 지역거점공공병원 알리미 공시 대상이 아니고, 병원별 CP 적용률은 공개 자료가 없습니다.
+          공개된 값만 표시합니다. 병원별 CP 적용률은 공개 자료가 없습니다.
+          {선택.includes(태백병원.이름) && ' 태백병원은 근로복지공단 소속이라 지역거점공공병원 알리미 공시 대상이 아닙니다.'}
         </p>
       </div>
+      {/* 비교할 병원 고르기 (최대 3곳) */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-[11px] font-bold text-slate-500 mr-1">
+          비교 병원 ({선택.length}/{최대_비교})
+        </span>
+        {후보.map((b) => {
+          const 켜짐 = 선택.includes(b.이름);
+          const 막힘 = !켜짐 && 선택.length >= 최대_비교;
+          return (
+            <button
+              key={b.이름}
+              type="button"
+              onClick={() => 토글(b.이름)}
+              disabled={막힘}
+              aria-pressed={켜짐}
+              title={막힘 ? '최대 3곳까지 비교합니다. 다른 병원을 먼저 빼 주세요.' : `${b.시도} ${b.시군구}`}
+              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
+                켜짐
+                  ? 'bg-rose-600 text-white border-rose-600'
+                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-400'
+              }`}
+            >
+              {b.이름}
+            </button>
+          );
+        })}
+      </div>
+      {행.length === 0 ? (
+        <p className="text-xs text-slate-500 py-4 text-center">비교할 병원을 위에서 골라 주세요.</p>
+      ) : (
       <div className="overflow-x-auto">
         <table className="w-full text-xs border-collapse">
           <thead className="text-slate-500 bg-slate-50 dark:bg-slate-800/60">
@@ -86,6 +128,7 @@ function 강원남부_3개병원_비교표() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }
@@ -111,10 +154,21 @@ export function 대국민_알리미_비교() {
     () => Array.from(new Set(행.map((x) => x.소재지?.시도명).filter((x): x is string => Boolean(x)))).sort(),
     [행]
   );
-  const [시도, set_시도] = useState<string>('전체');
+  // 기본은 강원 (강원 남부 진료권 영월·삼척 비교로 시작)
+  const [시도, set_시도] = useState<string>(강원);
   const 표시 = 행
     .filter((x) => 시도 === '전체' || x.소재지?.시도명 === 시도)
     .sort((a, b) => (a.소재지?.시도명 ?? '').localeCompare(b.소재지?.시도명 ?? '') || a.h.기관명.localeCompare(b.h.기관명));
+
+  // 위쪽 비교표 후보·기본 선택 (지역 선택을 따름)
+  const 비교_후보: 비교_후보[] = [
+    ...표시.map((x) => ({ 이름: x.h.기관명, 시도: x.소재지?.시도명 ?? '', 시군구: x.소재지?.시군구명 ?? '' })),
+    ...(시도 === 강원 || 시도 === '전체' ? [태백병원] : []),
+  ];
+  const 기본_선택 =
+    시도 === 강원 || 시도 === '전체'
+      ? 강원남부_기본.filter((이름) => 비교_후보.some((b) => b.이름 === 이름))
+      : 비교_후보.slice(0, 최대_비교).map((b) => b.이름);
 
   return (
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
@@ -152,7 +206,7 @@ export function 대국민_알리미_비교() {
         </ul>
       </div>
 
-      <강원남부_3개병원_비교표 />
+      <지역_공공병원_비교표 key={시도} 지역명={시도 === '전체' ? '전국' : 시도} 후보={비교_후보} 기본={기본_선택} />
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-xs border-collapse">

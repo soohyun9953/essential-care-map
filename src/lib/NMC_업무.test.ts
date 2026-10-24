@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { 알리미_공시_조회 } from './알리미_경영지표';
 import { 교차검증, 원천값, 공시_이상치, 평가_환류, 심사보고서_초안 } from './NMC_평가_모니터링';
-import { 취약지_요약, 자연어_질의, 정책_요구자료_초안 } from './NMC_정책통계_DW';
+import { 취약지_요약, 자연어_질의 } from './NMC_정책통계_DW';
 import { 투자_후보_목록, 투자_우선순위, 입력_경과분 } from './NMC_투자배분_모자관제';
 
 describe('3-1 평가·공시심사', () => {
@@ -39,9 +39,6 @@ describe('3-2 정책통계·DW', () => {
     const 하위 = 자연어_질의('의료이익률 하위 5개 지방의료원');
     expect('행' in 하위 && 하위.행.length).toBe(5);
     expect('오류' in 자연어_질의('오늘 날씨 어때')).toBe(true);
-  });
-  it('요구자료 초안에 실제 취약지 수가 들어간다', () => {
-    expect(정책_요구자료_초안('국회', 'x')).toContain(`${취약지_요약().응급취약}개`);
   });
 });
 

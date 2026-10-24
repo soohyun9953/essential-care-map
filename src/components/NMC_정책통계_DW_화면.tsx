@@ -2,10 +2,11 @@
 
 import React, { useMemo, useState } from 'react';
 import { AI_질의_입력창 } from '@/components/ai/AI_질의_입력창';
-import { Database, FileText, MapPinned, Network } from 'lucide-react';
-import { 취약지_요약, 자연어_질의, 질의_예시, 정책_요구자료_초안, type 질의_결과 } from '@/lib/NMC_정책통계_DW';
+import { Database, MapPinned } from 'lucide-react';
+import { 취약지_요약, 자연어_질의, 질의_예시, type 질의_결과 } from '@/lib/NMC_정책통계_DW';
 
-// ③ NMC › 3-2 전국 취약지 정책통계·연계실적 & 통합 DW 분석 (정책연구팀·책임지원팀 | AP-05·08·01)
+// ③ NMC › 3-2 전국 취약지 정책통계 & 통합 DW 분석 (정책연구팀·책임지원팀)
+// 책임의료기관 퇴원연계 실적·국회/복지부 요구자료 초안 카드는 2026-10-24 삭제
 
 const 카드 = 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2';
 
@@ -13,14 +14,11 @@ export function NMC_정책통계_DW_화면() {
   const 요약 = useMemo(() => 취약지_요약(), []);
   const [질문, set_질문] = useState('');
   const [결과, set_결과] = useState<질의_결과 | { 오류: string } | null>(null);
-  const [요청기관, set_요청기관] = useState<'국회' | '보건복지부'>('국회');
-  const [요청내용, set_요청내용] = useState('시도별 필수의료 취약지 현황');
-  const [초안, set_초안] = useState('');
 
   return (
     <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-lg font-black text-slate-900 dark:text-white">전국 취약지 정책통계·연계실적 & 통합 DW 분석</h2>
+        <h2 className="text-lg font-black text-slate-900 dark:text-white">전국 취약지 정책통계 & 통합 DW 분석</h2>
         <span className="text-[11px] text-slate-500">정책연구팀·책임지원팀 · 내부망 전용</span>
       </div>
 
@@ -54,15 +52,6 @@ export function NMC_정책통계_DW_화면() {
         </section>
 
         <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Network className="w-4 h-4 text-blue-600" /> 책임의료기관 퇴원연계 실적 자동취합·해설</h3>
-          <div className="p-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300 space-y-1">
-            <p className="font-bold">실적 원천 미연계 — 표시할 실적이 없습니다.</p>
-            <p>55개 책임의료기관의 퇴원연계 실적은 공공의료 연계망(퇴원환자 의뢰·회신)에서 자동 취합해야 합니다. 이 프로토타입에는 해당 원천이 없어 숫자를 만들지 않았습니다.</p>
-            <p className="text-slate-500">취합 예정 항목: 기관별 퇴원환자 평가 건수, 지역사회 연계 의뢰 건수, 연계기관 회신율, 연계 후 30일 재입원.</p>
-          </div>
-        </section>
-
-        <section className={카드}>
           <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><Database className="w-4 h-4 text-indigo-600" /> 통합 DW 대화형 자연어 질의 (Text-to-SQL)</h3>
           <p className="text-[11px] text-slate-500">정해진 질문 유형을 SQL로 바꿔 플랫폼 내장 테이블(시군구_진단, 알리미_공시)에서 실행합니다. 자유 질의(내부 sLLM)는 본 사업 대상입니다.</p>
           <AI_질의_입력창 value={질문} onChange={set_질문} onSubmit={(q) => set_결과(자연어_질의(q))} 예시={질의_예시[0]} 크기="sm" aria_label="자연어 질의" />
@@ -87,19 +76,6 @@ export function NMC_정책통계_DW_화면() {
               </div>
             </div>
           ))}
-        </section>
-
-        <section className={카드}>
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-1.5 flex-wrap"><FileText className="w-4 h-4 text-emerald-600" /> 국회·복지부 정책 요구자료 초안</h3>
-          <div className="flex flex-wrap gap-2">
-            <select value={요청기관} onChange={(e) => set_요청기관(e.target.value as '국회' | '보건복지부')} className="px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="요청기관">
-              <option>국회</option><option>보건복지부</option>
-            </select>
-            <input value={요청내용} onChange={(e) => set_요청내용(e.target.value)} className="flex-1 px-2 py-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs" aria-label="요청 내용" />
-            <button type="button" onClick={() => set_초안(정책_요구자료_초안(요청기관, 요청내용))} className="px-3 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold cursor-pointer">초안 생성</button>
-          </div>
-          {초안 && <textarea readOnly value={초안} rows={14} className="w-full text-[11px] leading-relaxed p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono" aria-label="요구자료 초안" />}
-          <p className="text-[10px] text-slate-400">취약지 통계로 채우는 템플릿 초안입니다. 제출 전 최신 지정 고시와 대조해야 합니다.</p>
         </section>
       </div>
     </div>

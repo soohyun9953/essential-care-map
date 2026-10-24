@@ -29,7 +29,7 @@ export function NMC_평가_모니터링_화면({ on_navigate }: { on_navigate: (
   const 보고서 = useMemo(() => 심사보고서_초안(기관, 교차), [기관, 교차]);
 
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">통합 평가·공시심사·성과 모니터링 AI</h2>
         {코드('AP-03')}

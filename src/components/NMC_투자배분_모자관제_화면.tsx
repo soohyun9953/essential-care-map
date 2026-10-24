@@ -87,7 +87,7 @@ export function NMC_투자배분_모자관제_화면() {
   );
 
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">기능보강 투자배분 & 중앙모자의료 관제·환류</h2>
         {코드('AP-04·06')}

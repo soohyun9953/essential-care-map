@@ -88,7 +88,7 @@ export function 교육_인력매칭_스마트병원_화면() {
   const 코드 = (c: string) => <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">{c}</span>;
 
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">직무역량 맞춤 교육·인력매칭·스마트병원</h2>
         {코드('AP-07')}

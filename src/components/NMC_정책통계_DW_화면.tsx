@@ -19,7 +19,7 @@ export function NMC_정책통계_DW_화면() {
   const [초안, set_초안] = useState('');
 
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">전국 취약지 정책통계·연계실적 & 통합 DW 분석</h2>
         {코드('AP-05·08·01')}

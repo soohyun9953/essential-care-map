@@ -51,7 +51,7 @@ export function NMC_에이전트_LLMOps_화면() {
   const 토글 = (arr: string[], v: string) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">노코드 MCP 에이전트 빌더 & 교육기획·LLMOps</h2>
         {코드('Ⅳ.8 · AP-07 · 과제 3.13')}

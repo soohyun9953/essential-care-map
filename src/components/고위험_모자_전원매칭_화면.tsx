@@ -52,7 +52,7 @@ export function 고위험_모자_전원매칭_화면() {
   );
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-black text-slate-900 dark:text-white">고위험 산모·신생아 전원의뢰·수용 매칭</h2>
         <span className="px-2 py-0.5 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">AP-06 병원용</span>

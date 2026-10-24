@@ -30,7 +30,7 @@ export function 대국민_공개정보_AI_안내() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">

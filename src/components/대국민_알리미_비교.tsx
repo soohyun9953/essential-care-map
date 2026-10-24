@@ -117,7 +117,7 @@ export function 대국민_알리미_비교() {
     .sort((a, b) => (a.소재지?.시도명 ?? '').localeCompare(b.소재지?.시도명 ?? '') || a.h.기관명.localeCompare(b.h.기관명));
 
   return (
-    <div className="max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
           <div>

@@ -52,7 +52,7 @@ export function 대국민_필수의료_모니터링() {
   const 선택_자원 = 선택 ? 지역_의료자원_집계(선택.시도명, 선택.시군구명, 선택.시군구코드) : null;
 
   return (
-    <div className="max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       {/* 지역 선택 */}
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-base font-black text-slate-900 dark:text-white mr-2">우리 동네 응급실·소아 진료 현황</h2>

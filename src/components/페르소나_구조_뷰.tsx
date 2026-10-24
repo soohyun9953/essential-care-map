@@ -50,7 +50,7 @@ function TO_BE_링크({ id, on_open_subtab }: { id: string; on_open_subtab: (s: 
 
 export function 오분류_교정_내역_뷰({ on_open_subtab }: { on_open_subtab: (s: 페르소나_서브탭) => void }) {
   return (
-    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       <div>
         <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
           <Wrench className="w-5 h-5 text-amber-600" />
@@ -106,7 +106,7 @@ export function 메뉴_구조도_뷰({ on_open_subtab }: { on_open_subtab: (s: �
     }))
   );
   return (
-    <div className="max-w-7xl mx-auto w-full p-4 sm:p-6 space-y-6">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-6">
       <div>
         <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
           <MapIcon className="w-5 h-5 text-blue-600" />

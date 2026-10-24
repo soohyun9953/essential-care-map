@@ -635,7 +635,7 @@ export default function Home() {
         >
         {/* 헤더 화면 전환: 오분류 교정 내역 / 메뉴 구조도 */}
         {화면_모드 !== '프로토타입' && (
-          <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 pt-4">
+          <div className="w-full px-4 sm:px-6 lg:px-8 pt-4">
             <button
               type="button"
               onClick={() => set_화면_모드('프로토타입')}
@@ -653,7 +653,7 @@ export default function Home() {
         {current_workspace === 'persona_page' && persona_page_화면 === '대국민_필수의료_지도' && (
           <div className="flex-1 w-full overflow-y-auto">
             <대국민_필수의료_모니터링 />
-            <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 pb-6">
+            <div className="w-full px-4 sm:px-6 lg:px-8 pb-6">
               <div className="h-[80vh] min-h-[560px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
                 <국민안심_서비스_뷰 />
               </div>

@@ -137,7 +137,7 @@ export function 공공보건의료계획_작성도우미({ on_navigate }: { on_n
   );
 
   return (
-    <div className="max-w-6xl mx-auto w-full p-4 sm:p-6 space-y-6">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>

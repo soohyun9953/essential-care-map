@@ -36,7 +36,7 @@ const 돌봄_FAQ: { 질문: string; 답변: string; 근거: string }[] = [
 export function 퇴원환자_연계_업무화면() {
   const [열린_FAQ, set_열린_FAQ] = useState<number | null>(0);
   return (
-    <div className="max-w-[1500px] mx-auto w-full p-4 sm:p-6 space-y-4">
+    <div className="w-full p-4 sm:p-6 lg:p-8 space-y-4">
       {/* 상단 배지 */}
       <div className="flex flex-wrap items-center gap-2">
         <span

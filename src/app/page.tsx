@@ -22,7 +22,7 @@ import { export_element_as_png } from '@/lib/유틸리티';
 // 5대 Global Workspace 컴포넌트
 // 홈·헤더만 초기 번들에 포함하고, 대용량 데이터셋을 쓰는 워크스페이스는 진입 시점에 지연 로딩
 import { 글로벌_공공_헤더, 워크스페이스_타입, type 헤더_화면_모드 } from '@/components/글로벌_공공_헤더';
-import { PersonaSwitcherBar } from '@/components/PersonaSwitcherBar';
+import { PersonaGroupButtons, PersonaSwitcherBar } from '@/components/PersonaSwitcherBar';
 import { 페르소나_찾기, 서브탭_찾기, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
@@ -561,11 +561,6 @@ export default function Home() {
           (current_workspace === 'hospital_ai_diagnosis' && ai_hospital_subtab === 'profile_report') ||
           (current_workspace === 'medical_institution' && medical_subtab === 'profile_report')
         }
-        active_user_role={current_user_role}
-        on_change_user_role={(role) => {
-          set_화면_모드('프로토타입');
-          handle_select_user_role(role);
-        }}
         on_open_key_modal={() => set_is_key_modal_open(true)}
         on_open_data_go_kr_modal={() => set_is_data_go_kr_modal_open(true)}
         on_open_upload_modal={() => set_is_upload_modal_open(true)}
@@ -589,14 +584,14 @@ export default function Home() {
         on_open_review_guide_modal={() => set_is_review_guide_open(true)}
         화면_모드={화면_모드}
         on_change_화면_모드={set_화면_모드}
+        가운데_메뉴={<PersonaGroupButtons active_persona={화면_모드 === '프로토타입' ? active_persona : null} on_select_persona={handle_select_persona} />}
       />
 
-      {/* 1-0. 3대 사용자 그룹 원클릭 전환 바 (프로토타입 체험 화면에서만) */}
+      {/* 1-0. 선택한 사용자 그룹의 서브탭 바 (프로토타입 체험 화면에서만) */}
       {화면_모드 === '프로토타입' && (
         <PersonaSwitcherBar
           active_persona={active_persona}
           active_subtab_id={active_persona_subtab_id}
-          on_select_persona={handle_select_persona}
           on_select_subtab={handle_open_persona_subtab}
         />
       )}

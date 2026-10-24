@@ -21,14 +21,11 @@ import {
   Lock,
   Unlock,
   Compass,
-  FileText,
   HelpCircle,
   Check,
-  Building2,
   Bot,
 } from 'lucide-react';
 import { PLATFORM_VERSION } from '@/lib/버전_정보';
-import { 사용자_역할_타입, 사용자_역할_목록 } from '@/lib/사용자_역할_타입';
 
 export type 워크스페이스_타입 =
   | 'home'
@@ -57,9 +54,8 @@ export type 업무_도메인_타입 = 메인_도메인;
 interface 글로벌_공공_헤더_속성 {
   active_workspace?: 워크스페이스_타입;
   on_change_workspace?: (ws: 워크스페이스_타입) => void;
-  // 3대 사용자 역할 (국민 / 의료기관 / NMC)
-  active_user_role?: 사용자_역할_타입;
-  on_change_user_role?: (role: 사용자_역할_타입) => void;
+  // 헤더 가운데 영역 (3대 사용자 그룹 전환 버튼)
+  가운데_메뉴?: React.ReactNode;
   // 하위 호환성 속성
   active_main_view?: any;
   on_change_main_view?: (view: any) => void;
@@ -96,48 +92,10 @@ interface 글로벌_공공_헤더_속성 {
   is_profile_report_active?: boolean;
 }
 
-const ROLE_OPTIONS: {
-  id: 사용자_역할_타입;
-  icon: string;
-  label: string;
-  badge: string;
-  desc: string;
-}[] = [
-  {
-    id: 'citizen',
-    icon: '👨‍👩‍👧',
-    label: '국민',
-    badge: '대국민 안심',
-    desc: '내 주변 응급실·분만병원·소아과 실시간 병상 및 AI 증상 비서',
-  },
-  {
-    id: 'hospital',
-    icon: '🏥',
-    label: '의료기관 담당자',
-    badge: '공공병원',
-    desc: '41개 거점공공병원 AI 종합진단, 5종 보고서, HWPX 사업계획서',
-  },
-  {
-    id: 'nmc',
-    icon: '🏛️',
-    label: 'NMC 업무 담당자',
-    badge: '중앙 총괄',
-    desc: '전국 250개 시군구 헬스맵 취약지 관제, 환자 유출입, 공시 검증',
-  },
-  {
-    id: 'all',
-    icon: '🌐',
-    label: '전체',
-    badge: '전체보기',
-    desc: '모든 워크스페이스 메뉴 및 플랫폼 전 기능 탐색',
-  },
-];
-
 export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> = ({
   active_workspace = 'home',
   on_change_workspace,
-  active_user_role = 'all',
-  on_change_user_role,
+  가운데_메뉴,
   active_main_view,
   on_change_main_view,
   active_domain,
@@ -173,10 +131,8 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
 }) => {
   const [is_admin_open, set_is_admin_open] = useState(false);
   const [is_hovering_medical, set_is_hovering_medical] = useState(false);
-  const [is_role_dropdown_open, set_is_role_dropdown_open] = useState(false);
   const admin_ref = useRef<HTMLDivElement>(null);
   const medical_ref = useRef<HTMLDivElement>(null);
-  const role_dropdown_ref = useRef<HTMLDivElement>(null);
   // Gemini API 키 등록 현황 및 멀티 키 카운트
   const raw_gemini_keys = (google_api_key || '')
     .split(/[\n,;]+/)
@@ -196,23 +152,6 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
     }
   };
 
-  // 🌟 3대 사용자 역할 전환 핸들러 (국민 / 의료기관 담당자 / NMC 업무 담당자 / 전체)
-  const handle_user_role_change = (role: 사용자_역할_타입) => {
-    if (on_change_user_role) {
-      on_change_user_role(role);
-    }
-    // 각 역할의 전용 기본 화면으로 즉시 전환
-    if (role === 'citizen') {
-      handle_workspace_change('national_safety');
-    } else if (role === 'hospital') {
-      handle_workspace_change('hospital_ai_diagnosis');
-    } else if (role === 'nmc') {
-      handle_workspace_change('regional_diagnosis');
-    } else if (role === 'all') {
-      handle_workspace_change('home');
-    }
-  };
-
   useEffect(() => {
     const handle_click_outside = (e: MouseEvent) => {
       if (admin_ref.current && !admin_ref.current.contains(e.target as Node)) {
@@ -221,25 +160,19 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
       if (medical_ref.current && !medical_ref.current.contains(e.target as Node)) {
         set_is_hovering_medical(false);
       }
-      if (role_dropdown_ref.current && !role_dropdown_ref.current.contains(e.target as Node)) {
-        set_is_role_dropdown_open(false);
-      }
     };
     document.addEventListener('mousedown', handle_click_outside);
     return () => document.removeEventListener('mousedown', handle_click_outside);
   }, []);
 
-  const current_role_option =
-    ROLE_OPTIONS.find((r) => r.id === active_user_role) || ROLE_OPTIONS[3];
 
-  const current_active = active_workspace || (active_main_view as any) || 'home';
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors shadow-xs">
       {/* 1줄 단일 헤더 (모든 정보 1줄에 컴팩트 통합) */}
       <div className="max-w-[1920px] mx-auto px-4 sm:px-6">
-        {/* 1800px 이상은 한 줄, 그보다 좁으면 메뉴가 두 번째 줄로 내려감 (글자 단위 줄바꿈 방지) */}
-        <div className="min-h-14 py-2 min-[1800px]:py-0 min-[1800px]:h-14 flex flex-wrap min-[1800px]:flex-nowrap items-center justify-between gap-x-3 gap-y-2">
+        {/* 공간이 되면 한 줄, 좁으면 사용자 그룹이 두 번째 줄로 내려감 (글자 단위 줄바꿈 방지) */}
+        <div className="min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           
           {/* 1. 좌측: 브랜드 로고 & 플랫폼 타이틀 + 🌟 3대 사용자 역할 선택 스위처 */}
           <div className="flex flex-wrap items-center gap-3 shrink-0">
@@ -316,185 +249,12 @@ export const 글로벌_공공_헤더: React.FC<글로벌_공공_헤더_속성> =
                 </div>
               </div>
             </div>
-
-            {/* 🌟 3대 사용자 역할별 화면 선택 드롭다운 (국민 / 의료기관 / NMC / 전체) */}
-            <div className="relative inline-block" ref={role_dropdown_ref}>
-              <button
-                type="button"
-                onClick={() => set_is_role_dropdown_open((prev) => !prev)}
-                aria-expanded={is_role_dropdown_open}
-                aria-haspopup="menu"
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer border shadow-2xs ${
-                  is_role_dropdown_open
-                    ? 'bg-blue-50/90 dark:bg-blue-950/70 border-blue-400/60 text-blue-700 dark:text-blue-300 ring-2 ring-blue-400/20'
-                    : 'bg-slate-100/90 dark:bg-slate-900/90 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white/80 dark:hover:bg-slate-800/80'
-                }`}
-                title="사용자 역할(국민 / 의료기관 / NMC / 전체) 선택 드롭다운"
-              >
-                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 select-none">
-                  사용자:
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="text-sm leading-none">{current_role_option.icon}</span>
-                  <span className="font-extrabold">{current_role_option.label}</span>
-                </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                    is_role_dropdown_open ? 'rotate-180 text-blue-600 dark:text-blue-400' : ''
-                  }`}
-                />
-              </button>
-
-              {/* 드롭다운 메뉴 레이어 */}
-              {is_role_dropdown_open && (
-                <div
-                  role="menu"
-                  className="absolute left-0 top-full mt-2 w-72 sm:w-80 p-2 bg-white/98 dark:bg-slate-900/98 text-slate-800 dark:text-slate-100 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/90 dark:border-slate-800 z-[90] animate-in fade-in slide-in-from-top-1 duration-150"
-                >
-                  <div className="px-2.5 py-1.5 mb-1 border-b border-slate-100 dark:border-slate-800/80">
-                    <p className="text-[11px] font-extrabold text-slate-900 dark:text-white">
-                      사용자 역할 선택
-                    </p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      선택하신 역할의 전용 기본 화면과 메뉴로 즉시 전환됩니다.
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    {ROLE_OPTIONS.map((opt) => {
-                      const is_active = active_user_role === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          role="menuitem"
-                          onClick={() => {
-                            handle_user_role_change(opt.id);
-                            set_is_role_dropdown_open(false);
-                          }}
-                          className={`w-full text-left p-2 rounded-xl transition flex items-start gap-2.5 cursor-pointer ${
-                            is_active
-                              ? 'bg-blue-50/90 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/60'
-                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 border border-transparent'
-                          }`}
-                        >
-                          <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-base shrink-0 mt-0.5 shadow-2xs">
-                            {opt.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1">
-                              <span
-                                className={`text-xs font-bold ${
-                                  is_active
-                                    ? 'text-blue-600 dark:text-blue-400'
-                                    : 'text-slate-800 dark:text-slate-200'
-                                }`}
-                              >
-                                {opt.label}
-                              </span>
-                              <span className="text-[9px] px-1.5 py-0.2 rounded-md font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
-                                {opt.badge}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1 leading-tight">
-                              {opt.desc}
-                            </p>
-                          </div>
-                          {is_active && (
-                            <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-1" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
 
-          {/* 2. 중앙: 신규 IA v1.24.0 기준 통합 워크스페이스 네비게이션 */}
-          <nav className="order-last min-[1800px]:order-none w-full min-[1800px]:w-auto flex flex-wrap min-[1800px]:flex-nowrap justify-center items-center gap-1 bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-2xl border border-slate-200/60 dark:border-slate-800">
-            {/* [내부용] 전국 214개 공공병원 통합 관제 & 알리미 공시 */}
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('medical_institution')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
-                current_active === 'medical_institution'
-                  ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
-              title="[내부용] 전국 214개 공공병원 통합 관제 및 알리미 경영공시 검증"
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>병원 통합관제</span>
-              <span className="text-[9px] font-black px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-                내부용
-              </span>
-            </button>
-
-            {/* [외부용: 지역진단] GIS 헬스맵 & 취약지 진단 */}
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('regional_diagnosis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
-                current_active === 'regional_diagnosis'
-                  ? 'bg-white dark:bg-[#1a1d24] text-blue-700 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/50'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
-              title="[외부용 > 지역진단] 전국 250개 시군구 GIS 헬스맵 및 환자 유출입(OD) 분석"
-            >
-              <Compass className="w-3.5 h-3.5" />
-              <span>지역진단</span>
-            </button>
-
-            {/* [외부용: 계획수립] AI 정책기획, 2030 수요추계, 사업계획서 & 시행계획 AI 평가 */}
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('policy_planning')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
-                current_active === 'policy_planning'
-                  ? 'bg-white dark:bg-[#1a1d24] text-indigo-700 dark:text-indigo-400 shadow-sm border border-indigo-100 dark:border-indigo-900/50'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
-              title="[외부용 > 계획수립] 2030 수요추계, AI 정책대안, 사업계획서 자동생성 & 시행계획 100점 AI 평가"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span>계획수립</span>
-            </button>
-
-            {/* [외부용: 경영개선] 우리 공공병원 대시보드, 2025 운영평가, 5종 진단보고서, 경영위기 조기경보 */}
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('hospital_ai_diagnosis')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-black whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                current_active === 'hospital_ai_diagnosis'
-                  ? 'bg-blue-600 text-white shadow-sm ring-2 ring-blue-500/30'
-                  : 'bg-blue-50/80 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200/60 dark:border-blue-800/60'
-              }`}
-              title="[외부용 > 경영개선] 우리 공공병원 현황 대시보드, 2025 거점병원 운영평가(77.9점), 5종 진단보고서, 경영위기 조기경보"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>경영개선</span>
-              <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-400 text-slate-950">
-                AI 진단
-              </span>
-            </button>
-
-            {/* [대국민] 국민안심 안심의료 서비스 */}
-            <button
-              type="button"
-              onClick={() => handle_workspace_change('national_safety')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
-                current_active === 'national_safety'
-                  ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-500/30'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
-              }`}
-              title="[대국민] 시민 맞춤 포털, 내 주변 필수의료 찾기, E-Gen 실시간 응급실·중환자실 관제"
-            >
-              <Activity className="w-3.5 h-3.5 text-rose-500" />
-              <span>대국민 안심</span>
-            </button>
-          </nav>
+          {/* 2. 중앙: 3대 사용자 그룹 전환 (page.tsx에서 전달) */}
+          {가운데_메뉴 && (
+            <div className="flex-1 flex justify-center">{가운데_메뉴}</div>
+          )}
 
           {/* 3. 우측: 데이터·사업가이드 / 테마 / 관리자 */}
           <div className="flex items-center space-x-2 shrink-0 whitespace-nowrap">

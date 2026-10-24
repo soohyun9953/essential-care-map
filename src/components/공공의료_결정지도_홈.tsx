@@ -22,6 +22,7 @@ import { 의료서비스_코드 } from '@/lib/의료서비스_검색_엔진';
 import { ISP_과제_뱃지 } from './ISP_과제_뱃지';
 import { 워크스페이스_타입 } from './글로벌_공공_헤더';
 import { 사용자_역할_타입 } from '@/lib/사용자_역할_타입';
+import { 페르소나_목록, type 페르소나_키 } from '@/lib/페르소나_메뉴_구조';
 
 interface 공공의료_결정지도_홈_속성 {
   on_search_region: (region_name: string) => void;
@@ -29,8 +30,9 @@ interface 공공의료_결정지도_홈_속성 {
     workspace: 워크스페이스_타입,
     sub_feature?: string
   ) => void;
-  on_select_user_role?: (role: 사용자_역할_타입) => void;
   active_user_role?: 사용자_역할_타입;
+  /** 사용자 그룹 서브탭 열기 (상단 사용자 그룹 버튼과 같은 화면: 1-1 · 2-1 · 3-1 …) */
+  on_open_persona_subtab?: (subtab_id: string) => void;
   on_open_guide_modal?: () => void;
   // 하위 호환성 핸들러
   on_search_submit?: (keyword: string, selected_services: 의료서비스_코드[]) => void;
@@ -41,11 +43,48 @@ interface 공공의료_결정지도_홈_속성 {
 
 const SAMPLE_REGIONS = ['영월군', '태백시', '강원특별자치도', '정선군'];
 
+// 사용자 그룹 카드 색 (상단 사용자 그룹 버튼과 같은 계열: 대국민 rose · 의료기관 blue · NMC indigo)
+const 그룹_색: Record<페르소나_키, Record<'배경' | '테두리' | '활성_테두리' | '아이콘' | '배지' | '제목_호버' | '구분선' | '체크' | '버튼', string>> = {
+  citizen: {
+    배경: 'from-rose-50/90 via-white to-pink-50/60 dark:from-rose-950/20 dark:via-[#161820] dark:to-pink-950/10',
+    테두리: 'border-rose-200 dark:border-rose-900/50 hover:border-rose-400',
+    활성_테두리: 'border-rose-500 shadow-md ring-4 ring-rose-400/20',
+    아이콘: 'from-rose-500 to-pink-500',
+    배지: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border-rose-200 dark:border-rose-800',
+    제목_호버: 'group-hover:text-rose-600 dark:group-hover:text-rose-400',
+    구분선: 'border-rose-100 dark:border-rose-900/40',
+    체크: 'text-rose-500',
+    버튼: 'from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700',
+  },
+  hospital: {
+    배경: 'from-blue-50/90 via-white to-cyan-50/60 dark:from-blue-950/20 dark:via-[#161820] dark:to-cyan-950/10',
+    테두리: 'border-blue-200 dark:border-blue-900/50 hover:border-blue-400',
+    활성_테두리: 'border-blue-600 shadow-md ring-4 ring-blue-400/20',
+    아이콘: 'from-blue-600 to-cyan-600',
+    배지: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+    제목_호버: 'group-hover:text-blue-600 dark:group-hover:text-blue-400',
+    구분선: 'border-blue-100 dark:border-blue-900/40',
+    체크: 'text-blue-600',
+    버튼: 'from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700',
+  },
+  nmc: {
+    배경: 'from-indigo-50/90 via-white to-purple-50/60 dark:from-indigo-950/20 dark:via-[#161820] dark:to-purple-950/10',
+    테두리: 'border-indigo-200 dark:border-indigo-900/50 hover:border-indigo-400',
+    활성_테두리: 'border-indigo-600 shadow-md ring-4 ring-indigo-400/20',
+    아이콘: 'from-indigo-600 to-purple-600',
+    배지: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800',
+    제목_호버: 'group-hover:text-indigo-600 dark:group-hover:text-indigo-400',
+    구분선: 'border-indigo-100 dark:border-indigo-900/40',
+    체크: 'text-indigo-600',
+    버튼: 'from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700',
+  },
+};
+
 export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_홈_속성> = ({
   on_search_region,
   on_navigate_workspace,
-  on_select_user_role,
   active_user_role = 'all',
+  on_open_persona_subtab,
   on_open_guide_modal,
   on_search_submit,
   on_navigate_map,
@@ -174,192 +213,84 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
 
 
       {/* ================================================================== */}
-      {/* 🌟 3대 사용자 역할별 맞춤 화면 바로가기 (국민 / 의료기관 / NMC)     */}
-      {/* ============================================================== */}
+      {/* 3대 사용자 그룹 바로가기: 상단 사용자 그룹 버튼과 같은 메뉴 구조(페르소나_메뉴_구조)로 그린다 */}
+      {/* 카드·바로가기 버튼 → 각 그룹 첫 서브탭(1-1 · 2-1 · 3-1), 서브탭 항목 → 해당 서브탭           */}
+      {/* ================================================================== */}
       <div className="space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-4 rounded-full bg-blue-600" />
-            <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-              <span>사용자 유형별 맞춤 화면 바로가기</span>
-            </h2>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 font-bold border border-emerald-200 dark:border-emerald-800">
-              로그인 없이 즉시 이용 가능
-            </span>
+            <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">사용자 그룹별 화면 바로가기</h2>
           </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
-            원하시는 사용자 역할을 선택하시면 전용 화면으로 바로 접근할 수 있습니다.
-          </span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">상단 사용자 그룹 버튼과 같은 화면으로 연결됩니다. 항목을 누르면 해당 화면이 바로 열립니다.</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* [카드 1] 👨‍👩‍👧 일반 국민 (환자·보호자) */}
-          <div
-            onClick={() => {
-              if (on_select_user_role) on_select_user_role('citizen');
-              on_navigate_workspace('national_safety');
-            }}
-            className={`p-6 rounded-3xl bg-gradient-to-br from-rose-50/90 via-white to-pink-50/60 dark:from-rose-950/20 dark:via-[#161820] dark:to-pink-950/10 border-2 transition-all cursor-pointer group flex flex-col justify-between gap-5 hover:shadow-xl hover:-translate-y-1 ${
-              active_user_role === 'citizen'
-                ? 'border-rose-500 shadow-md ring-4 ring-rose-400/20'
-                : 'border-rose-200 dark:border-rose-900/50 hover:border-rose-400'
-            }`}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform">
-                  👨‍👩‍👧
+          {페르소나_목록.map((p) => {
+            const 색 = 그룹_색[p.키];
+            const 첫_서브탭 = p.서브탭[0];
+            const 활성 = active_user_role === p.키;
+            return (
+              <div
+                key={p.키}
+                role="button"
+                tabIndex={0}
+                onClick={() => on_open_persona_subtab?.(첫_서브탭.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') on_open_persona_subtab?.(첫_서브탭.id);
+                }}
+                className={`p-6 rounded-3xl bg-gradient-to-br ${색.배경} border-2 transition-all cursor-pointer group flex flex-col justify-between gap-5 hover:shadow-xl hover:-translate-y-1 ${
+                  활성 ? 색.활성_테두리 : 색.테두리
+                }`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-11 h-11 rounded-2xl bg-gradient-to-tr ${색.아이콘} text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform`}>
+                      {p.아이콘}
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-black border ${색.배지}`}>서브탭 {p.서브탭.length}개</span>
+                  </div>
+
+                  <h3 className={`text-lg font-black text-slate-900 dark:text-white transition-colors ${색.제목_호버}`}>
+                    {p.번호} {p.이름}
+                  </h3>
+
+                  <div className={`space-y-1 pt-2 border-t ${색.구분선} text-xs text-slate-600 dark:text-slate-300`}>
+                    {p.서브탭.map((sub) => (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          on_open_persona_subtab?.(sub.id);
+                        }}
+                        title={sub.설명}
+                        className="w-full flex items-start gap-1.5 text-left rounded-lg px-1 py-0.5 hover:bg-white/70 dark:hover:bg-slate-800/60 cursor-pointer"
+                      >
+                        <CheckCircle2 className={`w-3.5 h-3.5 mt-0.5 shrink-0 ${색.체크}`} />
+                        <span>
+                          <strong className="font-black">{sub.id}</strong> {sub.label}
+                          {sub.상태 !== '구현' && (
+                            <span className="ml-1 px-1 py-px rounded text-[9px] font-black bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">{sub.상태}</span>
+                          )}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                  국민 전용 뷰
-                </span>
+
+                <button
+                  type="button"
+                  className={`w-full py-3 px-4 rounded-2xl bg-gradient-to-r ${색.버튼} text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer`}
+                >
+                  <span>
+                    {첫_서브탭.id} {첫_서브탭.label} 바로가기
+                  </span>
+                  <ChevronRight className="w-4 h-4 shrink-0 group-hover:translate-x-1 transition-transform" />
+                </button>
               </div>
-
-              <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                  국민 안심의료 서비스
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  내 주변 응급실·분만병원·소아과 실시간 가용병상 &amp; AI 증상 비서
-                </p>
-              </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-rose-100 dark:border-rose-900/40 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  <span>E-Gen 실시간 응급실·소아·중환자실 잔여 병상</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  <span>달빛어린이병원(114개소) 및 야간·휴일 약국</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                  <span>119 즉시 전화, 길찾기 및 안심 AI 비서 질의응답</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>국민 안심의료 바로가기</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          {/* [카드 2] 🏥 의료기관의 담당자 (공공병원) */}
-          <div
-            onClick={() => {
-              if (on_select_user_role) on_select_user_role('hospital');
-              on_navigate_workspace('hospital_ai_diagnosis');
-            }}
-            className={`p-6 rounded-3xl bg-gradient-to-br from-blue-50/90 via-white to-cyan-50/60 dark:from-blue-950/20 dark:via-[#161820] dark:to-cyan-950/10 border-2 transition-all cursor-pointer group flex flex-col justify-between gap-5 hover:shadow-xl hover:-translate-y-1 ${
-              active_user_role === 'hospital'
-                ? 'border-blue-600 shadow-md ring-4 ring-blue-400/20'
-                : 'border-blue-200 dark:border-blue-900/50 hover:border-blue-400'
-            }`}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform">
-                  🏥
-                </div>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  공공병원 업무 (214개소)
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                  공공병원 AI 진단 &amp; 자원관리
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  41개 거점공공병원 AI 종합진단, 환자 이용 유출입 &amp; 법정 사업계획서
-                </p>
-              </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-blue-100 dark:border-blue-900/40 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>41개 거점공공병원 AI 종합점수 및 5종 보고서</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>환자 이용 유출입(OD) &amp; AI 정책기획·미래수요</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                  <span>12대 항목 법정 사업계획서(HWPX) 원클릭 생성</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>의료기관 화면 바로가기</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          {/* [카드 3] 🏛️ NMC 업무 담당자 (중앙·지원단) */}
-          <div
-            onClick={() => {
-              if (on_select_user_role) on_select_user_role('nmc');
-              on_navigate_workspace('regional_diagnosis');
-            }}
-            className={`p-6 rounded-3xl bg-gradient-to-br from-indigo-50/90 via-white to-purple-50/60 dark:from-indigo-950/20 dark:via-[#161820] dark:to-purple-950/10 border-2 transition-all cursor-pointer group flex flex-col justify-between gap-5 hover:shadow-xl hover:-translate-y-1 ${
-              active_user_role === 'nmc'
-                ? 'border-indigo-600 shadow-md ring-4 ring-indigo-400/20'
-                : 'border-indigo-200 dark:border-indigo-900/50 hover:border-indigo-400'
-            }`}
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center text-xl shadow-md group-hover:scale-110 transition-transform">
-                  🏛️
-                </div>
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-black bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  중앙 총괄 관제
-                </span>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  전국 헬스맵 &amp; 공공병원 경영·공시 관제
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  전국 250개 시군구 GIS 취약지 관제, 경영위기 조기경보 &amp; 공시 사전검증
-                </p>
-              </div>
-
-              <div className="space-y-1.5 pt-2 border-t border-indigo-100 dark:border-indigo-900/40 text-xs text-slate-600 dark:text-slate-300">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span>전국 250개 시군구 35:65 GIS 취약지 판정 &amp; 분석</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span>35개 지방의료원 경영위기 조기경보 &amp; 공시 사전검증</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-                  <span>시행계획·추진실적 AI 평가 (100점 평가표) &amp; 데이터센터</span>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-black text-xs sm:text-sm shadow-md transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <span>NMC 업무 화면 바로가기</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
+            );
+          })}
         </div>
       </div>
 

@@ -681,8 +681,11 @@ export default function Home() {
             <공공의료_결정지도_홈
               on_search_region={handle_search_region}
               on_navigate_workspace={handle_navigate_from_home}
-              on_select_user_role={handle_select_user_role}
               active_user_role={current_user_role}
+              on_open_persona_subtab={(id) => {
+                const 찾음 = 서브탭_찾기(id);
+                if (찾음) handle_open_persona_subtab(찾음.서브탭);
+              }}
               on_open_guide_modal={() => set_is_guide_modal_open(true)}
               on_open_kakao_modal={() => set_is_kakao_modal_open(true)}
               kakao_map_key_registered={Boolean(kakao_map_api_key || process.env.NEXT_PUBLIC_KAKAO_MAP_KEY)}

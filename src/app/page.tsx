@@ -235,7 +235,7 @@ export default function Home() {
   // 테마 상태
   const [is_dark_mode, set_is_dark_mode] = useState(false);
 
-  // 로그인 상태: 화면은 공개, AI·문서변환 API만 로그인 필요 (2026-10-24)
+  // 로그인 상태: 모든 화면·API는 로그인 후 사용 (미로그인 요청은 서버 proxy가 /login 으로 보냄)
   const [is_authenticated, set_is_authenticated] = useState<boolean>(false);
   const [is_auth_modal_open, set_is_auth_modal_open] = useState<boolean>(false);
   const [is_auth_initialized, set_is_auth_initialized] = useState<boolean>(false);
@@ -243,7 +243,7 @@ export default function Home() {
   // 초기 설정 복원 (API 키 및 테마 + 시스템 상태 자동 동기화 + 보안 인증 상태 확인)
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 로그인 여부 확인 (서버가 HttpOnly 쿠키를 검증). 미로그인이어도 화면은 그대로 쓰고 로그인 창을 띄우지 않음
+      // 로그인 여부 확인 (서버가 HttpOnly 쿠키를 검증)
       fetch('/api/auth/status')
         .then((r) => r.json())
         .then((d) => set_is_authenticated(Boolean(d.authenticated)))
@@ -841,6 +841,7 @@ export default function Home() {
         onLogout={() => {
           set_is_authenticated(false);
           set_is_auth_modal_open(false);
+          window.location.replace('/login');
         }}
       />
 

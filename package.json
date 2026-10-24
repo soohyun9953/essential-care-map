@@ -1,6 +1,6 @@
 {
   "name": "health-map-essential-care",
-  "version": "20261024-1849",
+  "version": "20261024-1858",
   "private": true,
   "scripts": {
     "prebuild": "node scripts/update-version.js",

@@ -358,6 +358,9 @@ export default function Home() {
 
   // 지역진단에서 정책 연계 액션 클릭 시 정책기획 탭 전환
   const handle_navigate_policy = (feature: 'compare' | 'forecast' | 'policy_ai' | 'report' | 'evaluation') => {
+    if (current_user_role === 'all' && feature !== 'evaluation') {
+      set_current_user_role('hospital');
+    }
     set_policy_subtab(feature);
     set_current_workspace('policy_planning');
   };
@@ -452,6 +455,10 @@ export default function Home() {
 
   // Journey 단계 클릭 시 네비게이션 핸들러
   const handle_select_journey_step = (step: 여정_단계_정의) => {
+    // 2-1 전체 의사결정 Workflow(지역진단 ➔ 지역비교 ➔ 미래수요 ➔ AI정책분석 ➔ 사업계획) 단계 이동 시 의료기관 담당자 역할 유지/설정
+    if (current_user_role === 'all') {
+      set_current_user_role('hospital');
+    }
     if (step.workspace === 'policy_planning') {
       if (step.policyTab) {
         set_policy_subtab(step.policyTab);
@@ -516,6 +523,20 @@ export default function Home() {
   const active_persona_subtab_id = useMemo(() => {
     if (!active_persona) return null;
     if (current_workspace === 'persona_page') return persona_page_id;
+
+    // 🌟 의료기관 담당자(hospital): 2-1 전체 의사결정 Workflow 5단계
+    // (1단계 지역진단 regional_diagnosis, 2단계 지역비교 compare, 3단계 미래수요 forecast,
+    // 4단계 AI 정책분석·대안 policy_ai, 5단계 사업계획 report)
+    // 진행 중인 모든 화면에서 2-1 서브탭 활성화 유지 (단, NMC 고유 업무인 evaluation 제외)
+    if (active_persona === 'hospital') {
+      if (
+        current_workspace === 'regional_diagnosis' ||
+        (current_workspace === 'policy_planning' && policy_subtab !== 'evaluation')
+      ) {
+        return '2-1';
+      }
+    }
+
     const 서브탭들 = 페르소나_찾기(active_persona).서브탭;
     const 일치 = 서브탭들.find(
       (s) =>
@@ -527,7 +548,7 @@ export default function Home() {
     // 서브탭이 전용 화면이어도, 지금 화면이 그 서브탭에 속한 기존 메뉴면 그 서브탭을 표시 (예: 3-1 → 운영평가 대시보드)
     const 소속 = 화면_소속_서브탭(current_workspace, current_active_subtab, active_persona);
     return 소속 && 소속.페르소나.키 === active_persona ? 소속.서브탭.id : null;
-  }, [active_persona, current_workspace, persona_page_id, current_active_subtab]);
+  }, [active_persona, current_workspace, persona_page_id, current_active_subtab, policy_subtab]);
 
   // 메뉴, 워크스페이스, 서브탭, 역할 변경 시 메인 콘텐츠 및 사이드바, 윈도우 스크롤을 최상단(위쪽)으로 리셋
   useEffect(() => {

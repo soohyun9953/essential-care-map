@@ -360,12 +360,13 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       current_role === 'hospital' ||
       current_workspace === 'regional_diagnosis' ||
       current_workspace === 'hospital_ai_diagnosis' ||
-      (current_workspace === 'medical_institution' && current_subtab === 'policy_incentive')
+      (current_workspace === 'medical_institution' && current_subtab === 'policy_incentive') ||
+      (current_workspace === 'policy_planning' && current_subtab !== 'evaluation')
     ) {
       set_open_groups((prev) => ({ ...prev, hospital: true }));
     } else if (
       current_role === 'nmc' ||
-      current_workspace === 'policy_planning' ||
+      (current_workspace === 'policy_planning' && current_subtab === 'evaluation') ||
       (current_workspace === 'medical_institution' && current_subtab !== 'policy_incentive')
     ) {
       set_open_groups((prev) => ({ ...prev, nmc: true }));
@@ -516,6 +517,8 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                       // 활성화 여부 판별 (상단/중앙 active_subtab_id와 100% 동기화: 정확히 1개만 활성화)
                       const isSubtabActive = active_subtab_id
                         ? item.subtabId === active_subtab_id
+                        : item.id === '2-1' && (current_role === 'hospital' || !current_role)
+                        ? current_workspace === 'regional_diagnosis' || (current_workspace === 'policy_planning' && current_subtab !== 'evaluation')
                         : item.workspace !== 'persona_page' &&
                           current_workspace === item.workspace &&
                           (item.subtab ? item.subtab === current_subtab : !current_subtab);

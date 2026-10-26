@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-26',
-  time: '14:47',
-  deployedAt: '2026.10.26 14:47',
-  semver: '1.45.5',
-  fullLabel: '2026.10.26 14:47 · v1.45.5',
-  packageVersion: '20261026-1447',
-  updatedAt: '2026-10-26 14:47',
+  time: '14:58',
+  deployedAt: '2026.10.26 14:58',
+  semver: '1.45.6',
+  fullLabel: '2026.10.26 14:58 · v1.45.6',
+  packageVersion: '20261026-1458',
+  updatedAt: '2026-10-26 14:58',
   changelog:
-    '의료기관 2-1 Workflow에서 NMC 전담 업무인 시행계획 심사·평가 단계 분리 및 5단계 수립 완성 체계 정립 (2026.10.26 14:47)',
+    '의료기관 2-1 Workflow(지역비교, 미래수요, AI정책분석, 사업계획) 단계 이동 시에도 2-1 서브탭 활성화 유지 (2026.10.26 14:58)',
 };

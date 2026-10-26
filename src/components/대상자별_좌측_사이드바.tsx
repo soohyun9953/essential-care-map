@@ -221,13 +221,13 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     ],
   },
 
-  // 3. 국립중앙의료원·복지부 - 3개 서브탭 (업무 흐름: 통계DW ➔ 투자배분 ➔ 100점 심사평가)
+  // 3. 국립중앙의료원·복지부 - 4개 서브탭 (업무 흐름: 통계DW ➔ 투자배분 ➔ 공시심사 ➔ 시행계획 100점 심사평가)
   {
     role: 'nmc',
     title: '③ 보건복지부·지원단/NMC',
     shortTitle: '중앙·NMC',
     icon: '🏛️',
-    desc: '전국 정책통계 DW 분석, 기능보강 투자배분, 통합 평가 및 100점 심사',
+    desc: '전국 정책통계 DW 분석, 기능보강 투자배분, 통합 공시심사 및 시행계획 100점 심사평가',
     headerStyle: {
       container:
         'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/50 hover:border-indigo-400 shadow-sm',
@@ -264,14 +264,26 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       {
         id: '3-3',
         subtabId: '3-3',
-        category: '평가심사',
-        label: '3-3. 통합 평가·공시심사·성과 모니터링 (100점 심사)',
+        category: '공시심사',
+        label: '3-3. 통합 공시심사·이상치 탐지 & 성과 모니터링',
+        icon: <BarChart3 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: '교차검증',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'persona_page',
+        desc: '알리미 교차검증, 이상치 탐지(수정 z-score), 조기경보 모니터링',
+        isCustomPage: true,
+      },
+      {
+        id: '3-4',
+        subtabId: '3-4',
+        category: '시행계획평가',
+        label: '3-4. 공공보건의료 시행계획·추진실적 AI 평가 (100점 심사)',
         icon: <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
         badge: '100점 심사',
         badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'persona_page',
-        desc: '3대 평가 모듈, 알리미 교차검증, 이상치 탐지, 조기경보 모니터링',
-        isCustomPage: true,
+        workspace: 'policy_planning',
+        subtab: 'evaluation',
+        desc: '17개 시·도 및 공공단체 지침 공식 100점 심사표 기반 정량·루브릭 AI 평가 및 심사보고서 생성',
       },
     ],
   },

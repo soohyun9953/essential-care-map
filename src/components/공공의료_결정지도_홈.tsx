@@ -332,7 +332,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
             type="button"
             onClick={() => {
               if (on_open_persona_subtab) {
-                on_open_persona_subtab('3-3');
+                on_open_persona_subtab('3-4');
               } else {
                 열기('policy_planning', 'evaluation');
               }

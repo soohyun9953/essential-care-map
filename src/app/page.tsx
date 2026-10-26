@@ -157,6 +157,9 @@ export default function Home() {
     }
     if (ws === 'policy_planning' && subtab) {
       set_policy_subtab(subtab as any);
+      if (subtab === 'evaluation') {
+        set_current_user_role('nmc');
+      }
     }
     if (ws === 'hospital_ai_diagnosis' && subtab) {
       set_ai_hospital_subtab(subtab as any);
@@ -537,6 +540,13 @@ export default function Home() {
       }
     }
 
+    // 🌟 국립중앙의료원(nmc): 시행계획 평가(evaluation)는 3-4 활성화
+    if (active_persona === 'nmc') {
+      if (current_workspace === 'policy_planning' && policy_subtab === 'evaluation') {
+        return '3-4';
+      }
+    }
+
     const 서브탭들 = 페르소나_찾기(active_persona).서브탭;
     const 일치 = 서브탭들.find(
       (s) =>
@@ -598,6 +608,7 @@ export default function Home() {
           set_current_workspace(ws);
         }}
         on_open_plan_evaluation={() => {
+          set_current_user_role('nmc');
           set_policy_subtab('evaluation');
           set_current_workspace('policy_planning');
         }}
@@ -645,9 +656,9 @@ export default function Home() {
         />
       )}
 
-      {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (NMC / 보건복지부 정책 기획 화면에서만 조건부 노출) */}
+      {/* 1-1. 전체 Journey 상단 고정 Progress Navigation (의료기관 2-1 정책 의사결정 워크플로우 화면에서 노출, NMC 시행계획 평가 제외) */}
       {화면_모드 === '프로토타입' && (current_workspace === 'regional_diagnosis' ||
-        current_workspace === 'policy_planning' ||
+        (current_workspace === 'policy_planning' && policy_subtab !== 'evaluation') ||
         current_workspace === 'ai_analysis') && (
         <전체_여정_프로그레스_바
           current_step={current_journey_step}
@@ -771,7 +782,12 @@ export default function Home() {
           <div className="flex-1 w-full p-4 sm:p-6 lg:p-8 overflow-y-auto">
             <정책기획_통합_워크스페이스
               initial_tab={policy_subtab}
-              on_change_tab={(tab) => set_policy_subtab(tab)}
+              on_change_tab={(tab) => {
+                if (tab === 'evaluation') {
+                  set_current_user_role('nmc');
+                }
+                set_policy_subtab(tab);
+              }}
               selected_region={selected_region}
               diagnosed_list={diagnosed_list}
               sido_stat={sido_stat}

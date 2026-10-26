@@ -274,43 +274,10 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       </div>
 
       {/* ================================================================== */}
-      {/* ⭐ 신규 핵심 배너 2종: 1) 3-3 통합 평가·심사 / 2) 2-2 경영 벤치마킹 & 사전검증 */}
+      {/* ⭐ 신규 핵심 배너 2종: 1) 2-2 경영 벤치마킹 & 사전검증 / 2) 3-3 통합 평가·심사 */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* 배너 1: 공공보건의료 시행계획·추진실적 AI 평가 (100점 평가표) */}
-        <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 text-white shadow-xl border border-indigo-400/40 relative overflow-hidden flex flex-col justify-between gap-5">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-              <span>NEW · 2025 시행계획 수립지침 &amp; 2024 추진실적 작성지침 반영</span>
-            </div>
-            <div>{소속_칩('policy_planning', 'evaluation')}</div>
-            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              공공보건의료 통합 평가 · 공시심사 (100점 심사)
-            </h2>
-            <p className="text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-medium">
-              공공기관(시·도 17개소 / 중앙부처 8개소 / 공공단체) 평가자료 입력 시 <strong>지침 공식 평가표(추진실적 70점 + 사업계획 30점 = 100점 만점)</strong> 산출 및 <strong>알리미 공시 교차검증·심사보고서 초안 자동화</strong>를 제공합니다.
-            </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (on_open_persona_subtab) {
-                on_open_persona_subtab('3-3');
-              } else {
-                열기('policy_planning', 'evaluation');
-              }
-            }}
-            className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
-          >
-            <ShieldCheck className="w-4 h-4 text-slate-950" />
-            <span>통합 평가·공시심사 바로가기 (100점 심사)</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
-        </div>
-
-        {/* 배너 2: 2-2 경영 벤치마킹 & 공시·시설장비 사전검증 */}
+        {/* 배너 1: 2-2 경영 벤치마킹 & 공시·시설장비 사전검증 */}
         <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden flex flex-col justify-between gap-5">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-black">
@@ -343,6 +310,39 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
+        </div>
+
+        {/* 배너 2: 공공보건의료 시행계획·추진실적 AI 평가 (100점 평가표) */}
+        <div className="p-6 rounded-3xl bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-900 text-white shadow-xl border border-indigo-400/40 relative overflow-hidden flex flex-col justify-between gap-5">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-black">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+              <span>NEW · 2025 시행계획 수립지침 &amp; 2024 추진실적 작성지침 반영</span>
+            </div>
+            <div>{소속_칩('policy_planning', 'evaluation')}</div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+              공공보건의료 통합 평가 · 공시심사 (100점 심사)
+            </h2>
+            <p className="text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-medium">
+              공공기관(시·도 17개소 / 중앙부처 8개소 / 공공단체) 평가자료 입력 시 <strong>지침 공식 평가표(추진실적 70점 + 사업계획 30점 = 100점 만점)</strong> 산출 및 <strong>알리미 공시 교차검증·심사보고서 초안 자동화</strong>를 제공합니다.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (on_open_persona_subtab) {
+                on_open_persona_subtab('3-3');
+              } else {
+                열기('policy_planning', 'evaluation');
+              }
+            }}
+            className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
+          >
+            <ShieldCheck className="w-4 h-4 text-slate-950" />
+            <span>통합 평가·공시심사 바로가기 (100점 심사)</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </button>
         </div>
       </div>
 

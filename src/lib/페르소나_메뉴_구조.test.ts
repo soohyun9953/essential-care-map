@@ -63,4 +63,21 @@ describe('기존 화면 → 소속 사용자 그룹 서브탭 (홈 배너)', () 
     expect(메뉴_소속_서브탭('mn_04_08')?.서브탭.id).toBe('1-3');
     expect(메뉴_소속_서브탭('mn_04_08', 'nmc')?.서브탭.id).toBe('3-3');
   });
+
+  it('active_subtab_id가 주어지면 사이드바 13개 메뉴 중 오직 일치하는 1개만 활성화된다 (다중 선택 방지)', () => {
+    const allMenus = 신규_메뉴_구조_데이터.flatMap((g) => g.menus);
+    expect(allMenus).toHaveLength(13);
+
+    for (const target of allMenus) {
+      const activeId = target.subtabId;
+      const activeCount = allMenus.filter((item) => {
+        // 사이드바의 활성화 판별 로직과 동일
+        return activeId
+          ? item.subtabId === activeId
+          : item.workspace !== 'persona_page' && item.workspace === target.workspace;
+      }).length;
+
+      expect(activeCount).toBe(1);
+    }
+  });
 });

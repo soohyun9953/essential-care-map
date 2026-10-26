@@ -343,6 +343,17 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
 
   // 역할 또는 워크스페이스 변경 시 해당 그룹 자동 확장
   useEffect(() => {
+    if (active_subtab_id) {
+      if (active_subtab_id.startsWith('1-')) {
+        set_open_groups((prev) => ({ ...prev, citizen: true }));
+      } else if (active_subtab_id.startsWith('2-')) {
+        set_open_groups((prev) => ({ ...prev, hospital: true }));
+      } else if (active_subtab_id.startsWith('3-')) {
+        set_open_groups((prev) => ({ ...prev, nmc: true }));
+      }
+      return;
+    }
+
     if (current_role === 'citizen' || current_workspace === 'national_safety') {
       set_open_groups((prev) => ({ ...prev, citizen: true }));
     } else if (
@@ -359,7 +370,7 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
     ) {
       set_open_groups((prev) => ({ ...prev, nmc: true }));
     }
-  }, [current_role, current_workspace, current_subtab]);
+  }, [active_subtab_id, current_role, current_workspace, current_subtab]);
 
   const toggle_group = (groupKey: string) => {
     set_open_groups((prev) => ({
@@ -397,11 +408,11 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
               <span>플랫폼 메뉴</span>
             </span>
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold whitespace-nowrap">
-              14대 화면 통일
+              13대 화면 통일
             </span>
           </div>
         ) : (
-          <span className="text-base mx-auto" title="공공보건의료 플랫폼 14대 메뉴">
+          <span className="text-base mx-auto" title="공공보건의료 플랫폼 13대 메뉴">
             📋
           </span>
         )}
@@ -501,15 +512,16 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                   </div>
                 </div>
 
-                {/* 그룹 내 세부 14개 서브탭 목록 */}
+                {/* 그룹 내 세부 13개 서브탭 목록 */}
                 {isGroupOpen && (
                   <div className="px-2 pb-2.5 pt-1.5 space-y-1 bg-slate-50/50 dark:bg-slate-900/30">
                     {group.menus.map((item) => {
-                      // 활성화 여부 판별 (상단/중앙 active_subtab_id와 100% 동기화)
-                      const isSubtabActive =
-                        active_subtab_id === item.subtabId ||
-                        (current_workspace === item.workspace &&
-                          (!item.subtab || item.subtab === current_subtab));
+                      // 활성화 여부 판별 (상단/중앙 active_subtab_id와 100% 동기화: 정확히 1개만 활성화)
+                      const isSubtabActive = active_subtab_id
+                        ? item.subtabId === active_subtab_id
+                        : item.workspace !== 'persona_page' &&
+                          current_workspace === item.workspace &&
+                          (item.subtab ? item.subtab === current_subtab : !current_subtab);
 
                       return (
                         <button

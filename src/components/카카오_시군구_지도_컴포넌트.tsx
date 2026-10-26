@@ -18,7 +18,7 @@ import { format_number_comma } from '@/lib/유틸리티';
 import { get_patient_flow_data } from '@/lib/환자_유출입_데이터셋';
 import { build_patient_flow_arcs } from '@/lib/환자_이동_경로_도우미';
 import { loadKakaoMap, KakaoMapLoadError } from '@/lib/카카오_지도_로더';
-import { Layers, Key, Map as MapIcon, Satellite, ExternalLink, RefreshCw, AlertCircle } from 'lucide-react';
+import { Layers, Key, Map as MapIcon, Satellite, ExternalLink, RefreshCw, AlertCircle, Compass } from 'lucide-react';
 
 export interface 카카오_시군구_지도_컴포넌트_속성 {
   diagnosed_list: 필수의료_진단_결과[];
@@ -147,6 +147,72 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
     return '#34c759';
   }, [view_mode]);
 
+  /**
+   * ⭐ 선택된 지역 및 환자 유출입(OD Flow) 네트워크가 한눈에 들어오도록
+   * 지도의 중심 위치와 줌 비율(LatLngBounds)을 최적으로 자동 조정
+   */
+  const fit_to_region_and_flows = useCallback(
+    (
+      targetRegion: 필수의료_진단_결과 | null,
+      arcs: typeof flow_arcs,
+      animated: boolean = false
+    ) => {
+      if (!mapInstanceRef.current || !window.kakao?.maps || !targetRegion) return;
+      const kakaoMaps = window.kakao.maps;
+      const map = mapInstanceRef.current;
+
+      const loc = get_region_location(targetRegion.시군구명, targetRegion.시도명);
+      if (!loc) return;
+
+      // 1. 유출입 이동선이 있고 활성화된 경우: 출발지 + 모든 유출입 목적지를 포함하는 바운즈 계산
+      if (arcs && arcs.length > 0) {
+        const bounds = new kakaoMaps.LatLngBounds();
+        // 출발 지역(선택 시군구) 좌표 포함
+        bounds.extend(new kakaoMaps.LatLng(loc.위도, loc.경도));
+
+        // 유출입 목적지/경유지 좌표들 포함
+        arcs.forEach((arc) => {
+          if (arc.start_coords && arc.start_coords.length >= 2) {
+            bounds.extend(new kakaoMaps.LatLng(arc.start_coords[0], arc.start_coords[1]));
+          }
+          if (arc.end_coords && arc.end_coords.length >= 2) {
+            bounds.extend(new kakaoMaps.LatLng(arc.end_coords[0], arc.end_coords[1]));
+          }
+        });
+
+        try {
+          // 상단 플로팅 툴바를 고려하여 상단 90px, 좌우 70px, 하단 70px 패딩 지정
+          map.setBounds(bounds, 90, 70, 70, 70);
+
+          // 줌 레벨 가드: 너무 광범위하거나(level > 10) 너무 좁지(level < 8) 않게 보정
+          const currentLevel = map.getLevel();
+          if (currentLevel > 10) {
+            map.setLevel(10);
+          } else if (currentLevel < 8) {
+            map.setLevel(8);
+          }
+        } catch (e) {
+          console.warn('카카오 지도 setBounds 실패:', e);
+          map.setCenter(new kakaoMaps.LatLng(loc.위도, loc.경도));
+          map.setLevel(9);
+        }
+      } else {
+        // 2. 유출입선이 없거나 꺼진 경우: 해당 지역 중심 level 8
+        const latlng = new kakaoMaps.LatLng(loc.위도, loc.경도);
+        if (animated) {
+          map.panTo(latlng);
+          if (map.getLevel() > 9 || map.getLevel() < 7) {
+            map.setLevel(8, { animate: { duration: 400 } });
+          }
+        } else {
+          map.setCenter(latlng);
+          map.setLevel(8);
+        }
+      }
+    },
+    []
+  );
+
   // 카카오 지도 SDK 초기화
   useEffect(() => {
     let is_mounted = true;
@@ -164,9 +230,20 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
           return;
         }
 
+        // 초기 중심 좌표와 레벨: 선택된 지역이 있으면 해당 지역 기반 초기화
+        let initialCenter = new kakaoMaps.LatLng(36.1, 127.8);
+        let initialLevel = 12;
+        if (selected_region) {
+          const loc = get_region_location(selected_region.시군구명, selected_region.시도명);
+          if (loc) {
+            initialCenter = new kakaoMaps.LatLng(loc.위도, loc.경도);
+            initialLevel = 9;
+          }
+        }
+
         const options: kakao.maps.MapOptions = {
-          center: new kakaoMaps.LatLng(36.1, 127.8),
-          level: 12, // 대한민국 전체 뷰
+          center: initialCenter,
+          level: initialLevel,
         };
 
         const map = new kakaoMaps.Map(mapContainerRef.current, options);
@@ -177,6 +254,11 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
         map.addControl(zoomControl, kakaoMaps.ControlPosition.RIGHT);
 
         set_is_loading(false);
+
+        // ⭐ 최초 로드 즉시 해당 지역의 유출입이 모두 보이도록 위치 및 비율 자동 맞춤 실행
+        if (selected_region) {
+          fit_to_region_and_flows(selected_region, flow_arcs, false);
+        }
       })
       .catch((err: any) => {
         if (!is_mounted) return;
@@ -215,23 +297,11 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
     }
   };
 
-  // 선택된 지역으로 지도 중심 이동
+  // 선택된 지역이나 환자 이동선 데이터 변경 시 지도 뷰포트 최적화
   useEffect(() => {
-    if (!mapInstanceRef.current || !selected_region || !window.kakao?.maps) return;
-    const loc = get_region_location(selected_region.시군구명, selected_region.시도명);
-    if (!loc) return;
-
-    try {
-      const latlng = new window.kakao.maps.LatLng(loc.위도, loc.경도);
-      mapInstanceRef.current.panTo(latlng);
-      // 시군구 중심일 때 약간 확대 (level 8)
-      if (mapInstanceRef.current.getLevel() > 9) {
-        mapInstanceRef.current.setLevel(8, { animate: { duration: 500 } });
-      }
-    } catch (e) {
-      console.warn('카카오 지도 이동 실패:', e);
-    }
-  }, [selected_region]);
+    if (is_loading || !mapInstanceRef.current || !selected_region || !window.kakao?.maps) return;
+    fit_to_region_and_flows(selected_region, flow_arcs, true);
+  }, [selected_region, flow_arcs, is_loading, fit_to_region_and_flows]);
 
   // 툴팁 CustomOverlay 헬퍼
   const show_tooltip = useCallback(
@@ -751,6 +821,16 @@ export const 카카오_시군구_지도_컴포넌트: React.FC<카카오_시군�
               show_flow_arcs ? 'bg-white animate-pulse' : 'bg-slate-300'
             }`}
           />
+        </button>
+
+        {/* 유출입 중심 뷰포트 맞춤 버튼 */}
+        <button
+          onClick={() => fit_to_region_and_flows(selected_region, flow_arcs, true)}
+          className="px-2.5 py-1 text-xs font-semibold rounded-full bg-white/90 dark:bg-[#15161b]/90 backdrop-blur-xl text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-white border border-black/[0.06] dark:border-slate-800 transition flex items-center gap-1 cursor-pointer shadow-apple-sm"
+          title="선택된 지역 및 환자 유출입 전체가 잘 보이도록 위치와 줌 비율 최적화"
+        >
+          <Compass className="w-3.5 h-3.5 text-blue-500" />
+          <span>유출입 뷰 맞춤</span>
         </button>
 
         {/* 카카오 API 키 설정 모달 열기 버튼 */}

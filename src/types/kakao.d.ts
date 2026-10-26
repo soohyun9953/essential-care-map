@@ -18,12 +18,23 @@ declare global {
         getLng(): number;
       }
 
+      class LatLngBounds {
+        constructor(sw?: LatLng, ne?: LatLng);
+        extend(latlng: LatLng): void;
+        getSouthWest(): LatLng;
+        getNorthEast(): LatLng;
+        isEmpty(): boolean;
+        contain(latlng: LatLng): boolean;
+      }
+
       class Map {
         constructor(container: HTMLElement, options: MapOptions);
         setCenter(latlng: LatLng): void;
         getCenter(): LatLng;
         setLevel(level: number, options?: { animate?: boolean | { duration?: number } }): void;
         getLevel(): number;
+        setBounds(bounds: LatLngBounds, paddingTop?: number, paddingRight?: number, paddingBottom?: number, paddingLeft?: number): void;
+        getBounds(): LatLngBounds;
         panTo(latlng: LatLng): void;
         setMapTypeId(mapTypeId: MapTypeId): void;
         addControl(control: any, position: ControlPosition): void;

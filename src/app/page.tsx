@@ -437,14 +437,14 @@ export default function Home() {
     }
   };
 
-  // 전체 AI 정책 의사결정 Journey 현재 단계 계산 (요구사항 1번)
+  // 전체 AI 정책 의사결정 Journey 현재 단계 계산 (의료기관 5단계 완결형)
   const current_journey_step: 여정_단계_키 = useMemo(() => {
     if (current_workspace === 'regional_diagnosis') return 'diagnosis';
     if (current_workspace === 'policy_planning') {
       if (policy_subtab === 'compare') return 'compare';
       if (policy_subtab === 'forecast') return 'forecast';
       if (policy_subtab === 'report') return 'report';
-      if (policy_subtab === 'evaluation') return 'evaluation';
+      if (policy_subtab === 'evaluation') return 'report';
       return 'ai_analysis';
     }
     return 'ai_analysis';

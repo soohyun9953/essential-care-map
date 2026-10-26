@@ -1793,13 +1793,13 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
           <div className="bg-gradient-to-r from-indigo-950 via-slate-900 to-blue-950 text-white p-5 rounded-3xl border border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
             <div className="space-y-1">
               <div className="text-[11px] font-black text-amber-300 uppercase tracking-wider">
-                NEXT STEP · 공공보건의료법 제4조 시행계획 및 추진실적 평가 연계
+                국립중앙의료원(NMC) 심사 연계 안내 · 공공보건의료법 제4조
               </div>
               <h4 className="text-base font-black text-white">
-                작성된 시행계획 및 전년도 추진실적을 공식 평가표(100점 만점)로 즉시 사전 진단해보세요
+                수립된 계획서는 국립중앙의료원(NMC) 평가 담당자가 공식 100점 평가표 기준으로 심사합니다
               </h4>
               <p className="text-xs text-slate-300">
-                『2025년 공공보건의료 시행계획 수립 지침』 및 『2024년 추진실적 작성 지침』의 10대 평가지표(추진실적 70점 + 사업계획 30점) 루브릭 채점과 6단계 AI 평가 서비스를 제공합니다.
+                『2025년 공공보건의료 시행계획 수립 지침』 및 『2024년 추진실적 작성 지침』 기준 심사는 NMC 평가 담당자(3-3)의 고유 업무이며, 본 화면에서는 제출 전 100점 기준 자가진단(사전 모의채점)을 제공합니다.
               </p>
             </div>
             <button
@@ -1808,7 +1808,7 @@ export const 정책기획_통합_워크스페이스: React.FC<정책기획_통�
               className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer shadow-sm"
             >
               <ShieldCheck className="w-4 h-4" />
-              <span>시행계획·추진실적 AI 평가 열기 →</span>
+              <span>NMC 공식 100점 평가표 사전 모의진단 열기 →</span>
             </button>
           </div>
         </div>

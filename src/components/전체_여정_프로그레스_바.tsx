@@ -81,19 +81,10 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
     key: 'report',
     order: 5,
     label: '사업계획',
-    subLabel: '12대 항목 법정 공문서 완성',
+    subLabel: '12대 항목 법정 공문서 완성 & HWPX 다운로드 (의료기관 계획 수립 완료)',
     icon: FileText,
     workspace: 'policy_planning',
     policyTab: 'report',
-  },
-  {
-    key: 'evaluation',
-    order: 6,
-    label: '시행계획 심사·평가',
-    subLabel: 'NMC 중앙 100점 평가표 & 6단계 AI 심사 (NMC 업무 연계)',
-    icon: ShieldCheck,
-    workspace: 'policy_planning',
-    policyTab: 'evaluation',
   },
 ];
 

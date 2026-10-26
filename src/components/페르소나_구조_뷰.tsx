@@ -10,11 +10,14 @@ import {
   type 페르소나_서브탭,
   type 구현_상태,
 } from '@/lib/페르소나_메뉴_구조';
-import { 신규_메뉴_구조_데이터 } from './대상자별_좌측_사이드바';
+import { 신규_메뉴_구조_데이터, 레거시_AS_IS_메뉴_데이터 } from './대상자별_좌측_사이드바';
 
 // 헤더 우측 화면 전환: ⚠️ 오분류 6대 교정 내역 / 🗺️ AS-IS ➔ TO-BE 메뉴 구조도(A01) / 준비 중 서브탭 안내
 
-const AS_IS_메뉴명 = new Map(신규_메뉴_구조_데이터.flatMap((g) => g.menus.map((m) => [m.id, { 메뉴: m.label, 그룹: g.shortTitle }] as const)));
+const AS_IS_메뉴명 = new Map([
+  ...레거시_AS_IS_메뉴_데이터.map((m) => [m.id, { 메뉴: m.label, 그룹: '기존메뉴' }] as const),
+  ...신규_메뉴_구조_데이터.flatMap((g) => g.menus.map((m) => [m.id, { 메뉴: m.label, 그룹: g.shortTitle }] as const)),
+]);
 const 메뉴명 = (id: string) => AS_IS_메뉴명.get(id)?.메뉴 ?? id;
 const 전체_서브탭_수 = 페르소나_목록.reduce((n, p) => n + p.서브탭.length, 0);
 

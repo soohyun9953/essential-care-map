@@ -13,24 +13,24 @@ import {
   FileText,
   Sparkles,
   BarChart3,
-  GitCompare,
-  TrendingUp,
-  AlertTriangle,
   MapPin,
   Compass,
-  Award,
   Share2,
   Sliders,
-  Cpu,
 } from 'lucide-react';
 import { 워크스페이스_타입 } from './글로벌_공공_헤더';
 import { 사용자_역할_타입 } from '@/lib/사용자_역할_타입';
+import {
+  서브탭_찾기,
+  type 페르소나_서브탭,
+} from '@/lib/페르소나_메뉴_구조';
 
-export type 사이드바_대분류_키 = 'internal' | 'external' | 'citizen';
+export type 사이드바_대분류_키 = 'citizen' | 'hospital' | 'nmc';
 
 export interface 대상자별_메뉴_항목 {
-  id: string;
-  category?: string; // 중분류 (예: 전반, 통합공시, 지역진단, 계획수립, 경영개선, 연계망)
+  id: string; // 서브탭 id ('1-1' ~ '3-4')
+  subtabId: string;
+  category?: string;
   label: string;
   icon: React.ReactNode;
   badge?: string;
@@ -38,6 +38,7 @@ export interface 대상자별_메뉴_항목 {
   workspace: 워크스페이스_타입;
   subtab?: string;
   desc?: string;
+  isCustomPage?: boolean;
 }
 
 export interface 대상자_그룹 {
@@ -57,281 +58,19 @@ export interface 대상자_그룹 {
 }
 
 // ============================================================================
-// 사용자 요청 반영 메뉴 구조:
-// 1. 숫자(1., 2., 3.) 제거
-// 2. 플랫폼 종합 결정지도 홈 버튼 삭제
-// 3. 고대비 다크 캡슐 헤더 디자인으로 내부용/외부용/대국민 명확한 시각 구분
+// 상단·중앙·좌측 100% 동일 일치화 메뉴 구조 (3대 페르소나 · 14개 서브탭)
+// - ① 대국민 (4개): 1-1, 1-2, 1-3, 1-4
+// - ② 의료기관 담당자 (6개): 2-1, 2-2, 2-3, 2-4, 2-5, 2-6(신포괄 계산기 승격)
+// - ③ 국립중앙의료원·복지부 (4개): 3-1, 3-2, 3-3, 3-4(환자 유출입 OD 분석 승격)
 // ============================================================================
 export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
-  // 1. 내부용 (전반 / 통합공시)
-  {
-    role: 'internal',
-    title: '내부용 (총괄·지원단)',
-    shortTitle: '내부용',
-    icon: '🏛️',
-    desc: '214개 공공병원 통합 관제 및 알리미 공시 검증',
-    headerStyle: {
-      container:
-        'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/50 hover:border-indigo-400 shadow-sm',
-      iconBg: 'bg-indigo-600/30 border border-indigo-400/40 text-indigo-300',
-      titleColor: 'text-white',
-      badgeBg: 'bg-indigo-500/25 text-indigo-200 border border-indigo-400/30',
-      border: 'border-indigo-200/80 dark:border-indigo-900/60',
-    },
-    menus: [
-      {
-        id: 'mn_04_01',
-        category: '전반',
-        label: '전국 214개 공공병원 통합 관제',
-        icon: <Building2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-        badge: '214개소',
-        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'medical_institution',
-        subtab: 'hospitals',
-        desc: '국립대병원, 지방의료원, 적십자병원 병상·인력 종합 모니터링',
-      },
-      {
-        id: 'mn_04_02',
-        category: '전반',
-        label: '의료기관 AI 자연어 질의응답',
-        icon: <Sparkles className="w-4 h-4 text-amber-500" />,
-        badge: 'Gemini RAG',
-        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-        workspace: 'medical_institution',
-        subtab: 'hospitals',
-        desc: '경영 지표, 인력 현황, 진료 실적에 대한 실시간 대화식 질의',
-      },
-      {
-        id: 'mn_04_08',
-        category: '통합공시',
-        label: '공공의료 알리미 경영공시 검증',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-        badge: '신뢰검증',
-        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-        workspace: 'medical_institution',
-        subtab: 'aa_disclosure',
-        desc: '알리미 등록 데이터의 누락, 이상치, 회계 불일치 자동 검증',
-      },
-    ],
-  },
-
-  // 2. 외부용 (지역진단 / 계획수립 / 경영개선 / 연계망)
-  {
-    role: 'external',
-    title: '외부용 (지자체·공공병원)',
-    shortTitle: '외부용',
-    icon: '🏥',
-    desc: '지역진단, 계획수립, 경영개선 및 연계망 통합 솔루션',
-    headerStyle: {
-      container:
-        'bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-blue-500/50 hover:border-blue-400 shadow-sm',
-      iconBg: 'bg-blue-600/30 border border-blue-400/40 text-blue-300',
-      titleColor: 'text-white',
-      badgeBg: 'bg-blue-500/25 text-blue-200 border border-blue-400/30',
-      border: 'border-blue-200/80 dark:border-blue-900/60',
-    },
-    menus: [
-      // 2-1. [지역진단]
-      {
-        id: 'mn_01_01',
-        category: '지역진단',
-        label: '전국 필수의료 취약지 지도',
-        icon: <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-        badge: 'GIS 헬스맵',
-        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-        workspace: 'regional_diagnosis',
-        desc: '17개 시도 및 250개 시군구 필수의료 취약지 등급 시각화',
-      },
-      {
-        id: 'mn_01_02',
-        category: '지역진단',
-        label: '지역별 취약지 등급 필터 & 검색',
-        icon: <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-        workspace: 'regional_diagnosis',
-        desc: '중증응급/분만취약/소아취약 및 골든타임 60분 도달지역 필터링',
-      },
-      {
-        id: 'mn_01_03',
-        category: '지역진단',
-        label: '취약지 종합 지표 매트릭스',
-        icon: <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-        workspace: 'regional_diagnosis',
-        desc: '응급실 병상수, 분만실 수, 전문의 수, 표준화 사망비 종합 산출',
-      },
-      {
-        id: 'mn_01_04',
-        category: '지역진단',
-        label: '환자 의료이용 유출입(OD) 분석',
-        icon: <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-        badge: 'OD 분석',
-        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'regional_diagnosis',
-        desc: '타 시도 원정 진료(유출) 및 타지역 환자 유입 이동 패턴 흐름도',
-      },
-
-      // 2-2. [계획수립]
-      {
-        id: 'mn_02_02',
-        category: '계획수립',
-        label: '2030 미래 의료수요 AI 추계',
-        icon: <TrendingUp className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-        badge: '시계열 AI',
-        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'policy_planning',
-        subtab: 'forecast',
-        desc: '인구 고령화 및 질환 역학 기반 2030년 진료과별 입원/외래 수요',
-      },
-      {
-        id: 'mn_02_03',
-        category: '계획수립',
-        label: '인프라 확충 효과 시뮬레이터',
-        icon: <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-        workspace: 'policy_planning',
-        subtab: 'policy_ai',
-        desc: '병상 증설·전문의 확충 시 골든타임 도달률 및 취약지 개선율 예측',
-      },
-      {
-        id: 'mn_01_05',
-        category: '계획수립',
-        label: '지자체 1:1 비교 갭(Gap) 분석',
-        icon: <GitCompare className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-        workspace: 'policy_planning',
-        subtab: 'compare',
-        desc: '기준 지자체와 유사 규모 지자체 간 인프라·재정 레이더 벤치마킹',
-      },
-      {
-        id: 'mn_03_01',
-        category: '계획수립',
-        label: '근거 기반 AI 정책대안 패키지',
-        icon: <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
-        badge: 'Option A/B/C',
-        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-        workspace: 'policy_planning',
-        subtab: 'policy_ai',
-        desc: '취약 원인 진단 기반 단기/중기/장기 맞춤형 정책 패키지 자동 도출',
-      },
-      {
-        id: 'mn_03_02',
-        category: '계획수립',
-        label: '시행계획 사업계획서 자동생성기',
-        icon: <FileText className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
-        badge: 'HWPX 빌더',
-        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-        workspace: 'policy_planning',
-        subtab: 'report',
-        desc: '정부 공식 서식(사업개요, 성과지표, 소요예산) 12대 항목 자동 생성',
-      },
-      {
-        // ⭐ 시행계획 AI 평가: 사업계획서 생성 하위 탭 귀속
-        id: 'mn_03_02_eval',
-        category: '계획수립',
-        label: '↳ 시행계획·추진실적 AI 평가',
-        icon: <ShieldCheck className="w-4 h-4 text-amber-500" />,
-        badge: '100점 심사',
-        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-        workspace: 'policy_planning',
-        subtab: 'evaluation',
-        desc: '17개 시도·8개 부처 100점 평가표 산출 및 6단계 AI 심사 연계',
-      },
-      {
-        id: 'mn_02_04',
-        category: '계획수립',
-        label: 'AI 처리 8단계 파이프라인 관제',
-        icon: <Cpu className="w-4 h-4 text-indigo-500" />,
-        workspace: 'ai_analysis',
-        desc: '수집→정제→임베딩→색인→RAG→LLM→가드레일→시각화 전주기 모니터링',
-      },
-
-      // 2-3. [경영개선]
-      {
-        id: 'mn_06_01',
-        category: '경영개선',
-        label: '우리 의료기관 현황 대시보드',
-        icon: <Building2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-        badge: '기관 전용',
-        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-        workspace: 'hospital_ai_diagnosis',
-        subtab: 'diagnosis',
-        desc: '소속 공공병원의 병상가동률, 의사인력, 외래·입원환자 요약 모니터링',
-      },
-      {
-        // ⭐ 2025 지역거점 공공병원 운영평가: 기관 맞춤 대시보드 서브탭 유지
-        id: 'mn_06_01_eval',
-        category: '경영개선',
-        label: '↳ 2025 거점공공병원 운영평가',
-        icon: <Award className="w-4 h-4 text-amber-500" />,
-        badge: '77.9점',
-        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-        workspace: 'medical_institution',
-        subtab: 'operation_eval',
-        desc: '4대 영역 11개 부문 평가결과 및 A등급 개선 시뮬레이터',
-      },
-      {
-        // ⭐ NMC 기관프로파일 5종 진단보고서 자동 생성기: 경영개선 하위 기능 유지
-        id: 'mn_06_01_report',
-        category: '경영개선',
-        label: '↳ 기관프로파일 5종 진단보고서',
-        icon: <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-        badge: '5종 자동화',
-        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-        workspace: 'hospital_ai_diagnosis',
-        subtab: 'profile_report',
-        desc: 'NMC 공식 의료자원·진료기능·실적·기관비교·지역비교 진단보고서',
-      },
-      {
-        id: 'mn_04_06',
-        category: '경영개선',
-        label: '지방의료원 경영위기 조기경보',
-        icon: <AlertTriangle className="w-4 h-4 text-amber-500" />,
-        badge: '조기경보',
-        badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
-        workspace: 'medical_institution',
-        subtab: 'crisis',
-        desc: '의사 1인당 입원수익, 병상가동률, 의료수지비율 이상 징후 조기 포착',
-      },
-      {
-        id: 'mn_06_02',
-        category: '경영개선',
-        label: 'AI 진료 병목진단 및 개선 제언',
-        icon: <BarChart3 className="w-4 h-4 text-blue-500" />,
-        workspace: 'hospital_ai_diagnosis',
-        subtab: 'simulation',
-        desc: '외래 대기시간 지연, 수술실 가동 병목 원인 진단 및 프로세스 혁신 제언',
-      },
-      {
-        id: 'mn_04_04',
-        category: '경영개선',
-        label: '신포괄수가 정책가산 인센티브 계산기',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-        badge: '가산 모의계산',
-        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-        workspace: 'medical_institution',
-        subtab: 'policy_incentive',
-        desc: '공공성 평가 및 표준진료지침 기반 정부 정책가산 지원금 모의계산',
-      },
-
-      // 2-4. [연계망]
-      {
-        id: 'mn_04_07',
-        category: '연계망',
-        label: '퇴원환자 돌봄자원 AI 매칭',
-        icon: <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
-        badge: '돌봄 연계',
-        badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
-        workspace: 'medical_institution',
-        subtab: 'discharge_care',
-        desc: '퇴원 고위험 환자 대상 방문간호, 보건소, 복지관 돌봄 자원 최적 AI 추천',
-      },
-    ],
-  },
-
-  // 3. 대국민 (대표 메뉴 1개로 단일화)
+  // 1. 대국민 (안심의료) - 4개 서브탭
   {
     role: 'citizen',
-    title: '대국민 (안심의료)',
+    title: '① 대국민 (안심의료)',
     shortTitle: '대국민',
     icon: '👨‍👩‍👧',
-    desc: '일반시민 눈높이 맞춤 포털 및 실시간 안심의료 검색',
+    desc: '필수의료 실시간 찾기 및 안심의료 AI 안내',
     headerStyle: {
       container:
         'bg-gradient-to-r from-slate-900 via-rose-950 to-slate-900 text-white border-rose-500/50 hover:border-rose-400 shadow-sm',
@@ -342,14 +81,209 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     },
     menus: [
       {
-        id: 'citizen_main_portal',
-        category: '대국민',
-        label: '일반국민 공공병원 맞춤형 포털',
-        icon: <HeartPulse className="w-4 h-4 text-rose-500" />,
-        badge: '안심포털',
+        id: '1-1',
+        subtabId: '1-1',
+        category: '안심의료',
+        label: '1-1. 지금 필요한 공공의료기관 찾기',
+        icon: <MapPin className="w-4 h-4 text-rose-500 shrink-0" />,
+        badge: '지도검색',
         badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
-        workspace: 'national_safety',
-        desc: '내 주변 필수의료(응급실·분만·소아) 원클릭 찾기 & E-Gen 실시간 가용병상 관제',
+        workspace: 'persona_page',
+        desc: '안심의료 지도(현재 위치·길찾기·전화), 응급실·분만·소아 빠른 검색',
+        isCustomPage: true,
+      },
+      {
+        id: '1-2',
+        subtabId: '1-2',
+        category: '안심의료',
+        label: '1-2. 우리 동네 응급실·소아 진료 현황',
+        icon: <HeartPulse className="w-4 h-4 text-rose-500 shrink-0" />,
+        badge: '실시간 E-Gen',
+        badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+        workspace: 'persona_page',
+        desc: '실시간 응급실·소아병상 모니터링, 시군구별 기관 수 그리드',
+        isCustomPage: true,
+      },
+      {
+        id: '1-3',
+        subtabId: '1-3',
+        category: '공시비교',
+        label: '1-3. 우리 지역 공공병원 알리미 비교',
+        icon: <Building2 className="w-4 h-4 text-rose-500 shrink-0" />,
+        badge: '공시비교',
+        badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+        workspace: 'persona_page',
+        desc: '영월·삼척의료원·태백병원 필수의료 운영·취약계층 감면 비교',
+        isCustomPage: true,
+      },
+      {
+        id: '1-4',
+        subtabId: '1-4',
+        category: 'AI안내',
+        label: '1-4. 대국민 공공의료 AI 안내 도우미',
+        icon: <Sparkles className="w-4 h-4 text-rose-500 shrink-0" />,
+        badge: 'AI 안내',
+        badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300',
+        workspace: 'persona_page',
+        desc: '공개정보 AI 안내 챗봇: 응급실·달빛병원 안내 및 근거 출처 표시',
+        isCustomPage: true,
+      },
+    ],
+  },
+
+  // 2. 의료기관 담당자 - 6개 서브탭
+  {
+    role: 'hospital',
+    title: '② 의료기관 담당자',
+    shortTitle: '의료기관',
+    icon: '🏥',
+    desc: '사업계획 작성, 퇴원돌봄, 경영진단, 인센티브 계산',
+    headerStyle: {
+      container:
+        'bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-blue-500/50 hover:border-blue-400 shadow-sm',
+      iconBg: 'bg-blue-600/30 border border-blue-400/40 text-blue-300',
+      titleColor: 'text-white',
+      badgeBg: 'bg-blue-500/25 text-blue-200 border border-blue-400/30',
+      border: 'border-blue-200/80 dark:border-blue-900/60',
+    },
+    menus: [
+      {
+        id: '2-1',
+        subtabId: '2-1',
+        category: '계획수립',
+        label: '2-1. 공공보건의료계획 작성 도우미',
+        icon: <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: 'HWPX 빌더',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '진료권 통계 기반 공공보건의료계획·기능보강 12대 항목 초안 자동 연동',
+        isCustomPage: true,
+      },
+      {
+        id: '2-2',
+        subtabId: '2-2',
+        category: '퇴원돌봄',
+        label: '2-2. 퇴원환자 케어플랜·돌봄자원 AI',
+        icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: '돌봄 연계',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '퇴원환자 4단계 평가·케어플랜(ADL 10개 영역), 최적 돌봄자원 매칭',
+        isCustomPage: true,
+      },
+      {
+        id: '2-3',
+        subtabId: '2-3',
+        category: '경영개선',
+        label: '2-3. 경영 벤치마킹 & 사전검증',
+        icon: <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: '사전검증',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '동일 규모 지방의료원 비교군 벤치마킹, ERP 공시 대조 사전검증',
+        isCustomPage: true,
+      },
+      {
+        id: '2-4',
+        subtabId: '2-4',
+        category: '모자전원',
+        label: '2-4. 고위험 산모·신생아 전원 매칭',
+        icon: <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: '전원 매칭',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '중증도×이송시간×수용확률 점수 기반 권역 수용기관 TOP 3 추천',
+        isCustomPage: true,
+      },
+      {
+        id: '2-5',
+        subtabId: '2-5',
+        category: '지침Q&A',
+        label: '2-5. 책임의료기관 사업지침 질의응답',
+        icon: <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: '331쪽 RAG',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '2026 책임의료기관 통합 지침 원문(331쪽) 근거 페이지 발췌 답변',
+        isCustomPage: true,
+      },
+      {
+        id: '2-6',
+        subtabId: '2-6',
+        category: '인센티브',
+        label: '2-6. 신포괄수가 가산 인센티브 계산기',
+        icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />,
+        badge: '가산 모의계산',
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        workspace: 'medical_institution',
+        subtab: 'policy_incentive',
+        desc: '공공성 평가 및 표준진료지침 기반 정부 정책가산 지원금 모의계산',
+      },
+    ],
+  },
+
+  // 3. 국립중앙의료원·복지부 - 4개 서브탭
+  {
+    role: 'nmc',
+    title: '③ 보건복지부·지원단/NMC',
+    shortTitle: '중앙·NMC',
+    icon: '🏛️',
+    desc: '통합 평가, 취약지 정책통계 DW, 투자배분, OD 분석',
+    headerStyle: {
+      container:
+        'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/50 hover:border-indigo-400 shadow-sm',
+      iconBg: 'bg-indigo-600/30 border border-indigo-400/40 text-indigo-300',
+      titleColor: 'text-white',
+      badgeBg: 'bg-indigo-500/25 text-indigo-200 border border-indigo-400/30',
+      border: 'border-indigo-200/80 dark:border-indigo-900/60',
+    },
+    menus: [
+      {
+        id: '3-1',
+        subtabId: '3-1',
+        category: '평가심사',
+        label: '3-1. 통합 평가·공시심사·성과 모니터링 AI',
+        icon: <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: '100점 심사',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'persona_page',
+        desc: '3대 평가 모듈, 알리미 교차검증, 이상치 탐지, 조기경보 모니터링',
+        isCustomPage: true,
+      },
+      {
+        id: '3-2',
+        subtabId: '3-2',
+        category: '통계DW',
+        label: '3-2. 전국 취약지 정책통계 & 통합 DW',
+        icon: <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: '통합 DW',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'persona_page',
+        desc: '250개 시군구 취약지 식별, 내장 Text-to-SQL, AI 파이프라인 관제',
+        isCustomPage: true,
+      },
+      {
+        id: '3-3',
+        subtabId: '3-3',
+        category: '투자배분',
+        label: '3-3. 기능보강 투자배분 & 모자의료 관제',
+        icon: <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: '투자 시뮬레이션',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'persona_page',
+        desc: '투자 우선순위 시뮬레이터(수요×활용률×유지비), E-Gen 미갱신 경보',
+        isCustomPage: true,
+      },
+      {
+        id: '3-4',
+        subtabId: '3-4',
+        category: 'OD분석',
+        label: '3-4. 환자 의료이용 유출입(OD) 분석',
+        icon: <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: 'OD 분석',
+        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'regional_diagnosis',
+        desc: '17개 시도·250개 시군구 간 환자 관외 유출입(OD) 네트워크 흐름도',
       },
     ],
   },
@@ -358,7 +292,35 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
 // 하위 호환성을 위해 기존 변수명도 export
 export const 대상자별_메뉴_데이터 = 신규_메뉴_구조_데이터;
 
-interface 대상자별_좌측_사이드바_속성 {
+// ============================================================================
+// 레거시 AS-IS 메뉴 데이터 (오분류 교정 내역 안내 및 하위 화면 매핑용 보존)
+// ============================================================================
+export const 레거시_AS_IS_메뉴_데이터 = [
+  { id: 'mn_04_01', label: '전국 214개 공공병원 통합 관제', workspace: 'medical_institution', subtab: 'hospitals' },
+  { id: 'mn_04_02', label: '의료기관 AI 자연어 질의응답 (Gemini RAG)', workspace: 'medical_institution', subtab: 'hospitals' },
+  { id: 'mn_04_08', label: '공공의료 알리미 경영공시 검증', workspace: 'medical_institution', subtab: 'aa_disclosure' },
+  { id: 'mn_01_01', label: '전국 필수의료 취약지 지도', workspace: 'regional_diagnosis' },
+  { id: 'mn_01_02', label: '지역별 취약지 등급 필터 & 검색', workspace: 'regional_diagnosis' },
+  { id: 'mn_01_03', label: '취약지 종합 지표 매트릭스', workspace: 'regional_diagnosis' },
+  { id: 'mn_01_04', label: '환자 의료이용 유출입(OD) 분석', workspace: 'regional_diagnosis' },
+  { id: 'mn_02_02', label: '2030 미래 의료수요 AI 추계', workspace: 'policy_planning', subtab: 'forecast' },
+  { id: 'mn_02_03', label: '인프라 확충 효과 시뮬레이터', workspace: 'policy_planning', subtab: 'policy_ai' },
+  { id: 'mn_01_05', label: '지자체 1:1 비교 갭(Gap) 분석', workspace: 'policy_planning', subtab: 'compare' },
+  { id: 'mn_03_01', label: '근거 기반 AI 정책대안 Option A/B/C', workspace: 'policy_planning', subtab: 'policy_ai' },
+  { id: 'mn_03_02', label: '시행계획 사업계획서 자동생성기', workspace: 'policy_planning', subtab: 'report' },
+  { id: 'mn_03_02_eval', label: '시행계획·추진실적 AI 평가 (100점 심사)', workspace: 'policy_planning', subtab: 'evaluation' },
+  { id: 'mn_02_04', label: 'AI 처리 8단계 파이프라인 관제', workspace: 'ai_analysis' },
+  { id: 'mn_06_01', label: '우리 의료기관 현황 대시보드', workspace: 'hospital_ai_diagnosis', subtab: 'diagnosis' },
+  { id: 'mn_06_01_eval', label: '2025 거점공공병원 운영평가', workspace: 'medical_institution', subtab: 'operation_eval' },
+  { id: 'mn_06_01_report', label: '기관프로파일 5종 진단보고서', workspace: 'hospital_ai_diagnosis', subtab: 'profile_report' },
+  { id: 'mn_04_06', label: '지방의료원 경영위기 조기경보', workspace: 'medical_institution', subtab: 'crisis' },
+  { id: 'mn_06_02', label: 'AI 진료 병목진단 및 개선 제언', workspace: 'hospital_ai_diagnosis', subtab: 'simulation' },
+  { id: 'mn_04_04', label: '신포괄수가 정책가산 인센티브 계산기', workspace: 'medical_institution', subtab: 'policy_incentive' },
+  { id: 'mn_04_07', label: '퇴원환자 돌봄자원 AI 매칭', workspace: 'medical_institution', subtab: 'discharge_care' },
+  { id: 'citizen_main_portal', label: '일반국민 공공병원 맞춤형 포털', workspace: 'national_safety' },
+];
+
+export interface 대상자별_좌측_사이드바_속성 {
   is_collapsed: boolean;
   on_toggle_collapse: () => void;
   current_role: 사용자_역할_타입;
@@ -369,6 +331,8 @@ interface 대상자별_좌측_사이드바_속성 {
     workspace: 워크스페이스_타입,
     subtab?: string
   ) => void;
+  active_subtab_id?: string | null;
+  on_select_persona_subtab?: (subtab: 페르소나_서브탭) => void;
 }
 
 export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사이드바_속성> = ({
@@ -379,28 +343,35 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
   current_workspace,
   current_subtab,
   on_navigate_workspace,
+  active_subtab_id,
+  on_select_persona_subtab,
 }) => {
   // 열려있는 아코디언 그룹들 (기본적으로 모두 열림)
   const [open_groups, set_open_groups] = useState<Record<string, boolean>>({
-    internal: true,
-    external: true,
     citizen: true,
+    hospital: true,
+    nmc: true,
   });
 
   // 역할 또는 워크스페이스 변경 시 해당 그룹 자동 확장
   useEffect(() => {
-    if (current_workspace === 'national_safety') {
+    if (current_role === 'citizen' || current_workspace === 'national_safety') {
       set_open_groups((prev) => ({ ...prev, citizen: true }));
     } else if (
+      current_role === 'hospital' ||
+      current_workspace === 'hospital_ai_diagnosis' ||
+      (current_workspace === 'medical_institution' && current_subtab === 'policy_incentive')
+    ) {
+      set_open_groups((prev) => ({ ...prev, hospital: true }));
+    } else if (
+      current_role === 'nmc' ||
       current_workspace === 'regional_diagnosis' ||
       current_workspace === 'policy_planning' ||
-      current_workspace === 'hospital_ai_diagnosis'
+      (current_workspace === 'medical_institution' && current_subtab !== 'policy_incentive')
     ) {
-      set_open_groups((prev) => ({ ...prev, external: true }));
-    } else if (current_workspace === 'medical_institution') {
-      set_open_groups((prev) => ({ ...prev, internal: true }));
+      set_open_groups((prev) => ({ ...prev, nmc: true }));
     }
-  }, [current_workspace]);
+  }, [current_role, current_workspace, current_subtab]);
 
   const toggle_group = (groupKey: string) => {
     set_open_groups((prev) => ({
@@ -410,7 +381,17 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
   };
 
   const handle_item_click = (item: 대상자별_메뉴_항목) => {
-    on_navigate_workspace(item.workspace, item.subtab);
+    // 1. 해당 서브탭 객체가 존재하고 페르소나 전환 핸들러가 있으면 바로 실행
+    const 찾은서브탭 = 서브탭_찾기(item.subtabId);
+    if (찾은서브탭 && on_select_persona_subtab) {
+      on_select_persona_subtab(찾은서브탭.서브탭);
+      return;
+    }
+
+    // 2. 폴백: 기존 네비게이션 방식
+    if (item.workspace) {
+      on_navigate_workspace(item.workspace, item.subtab);
+    }
   };
 
   return (
@@ -427,12 +408,12 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
               <span className="text-base">📋</span>
               <span>플랫폼 메뉴</span>
             </span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold whitespace-nowrap">
-              3대 분류
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold whitespace-nowrap">
+              14대 화면 통일
             </span>
           </div>
         ) : (
-          <span className="text-base mx-auto" title="공공보건의료 플랫폼 메뉴">
+          <span className="text-base mx-auto" title="공공보건의료 플랫폼 14대 메뉴">
             📋
           </span>
         )}
@@ -458,14 +439,20 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       {is_collapsed ? (
         <div className="flex-1 py-3 px-1.5 flex flex-col items-center gap-2 overflow-y-auto">
           {신규_메뉴_구조_데이터.map((group) => {
+            const isGroupActive = current_role === group.role;
             return (
               <div key={group.role} className="w-full flex flex-col items-center gap-1">
                 <button
                   type="button"
                   onClick={() => {
+                    on_select_role(group.role);
                     on_toggle_collapse();
                   }}
-                  className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs bg-slate-900 text-white hover:scale-105 border border-slate-700"
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center text-lg transition-all cursor-pointer shadow-xs ${
+                    isGroupActive
+                      ? 'bg-blue-600 text-white ring-2 ring-blue-400 scale-105'
+                      : 'bg-slate-900 text-white hover:scale-105 border border-slate-700'
+                  }`}
                   title={`${group.title} (클릭 시 펼치기)`}
                 >
                   <span>{group.icon}</span>
@@ -481,19 +468,15 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       ) : (
         /* 3. 펼쳐졌을 때 (Expanded Detailed Sidebar View) */
         <div id="sidebar-scroll-container" className="flex-1 overflow-y-auto p-3 space-y-3.5">
-          {/* 3대 영역 아코디언 그룹 목록 (플랫폼 종합 결정지도 홈 버튼 삭제 완료) */}
           {신규_메뉴_구조_데이터.map((group) => {
             const isGroupOpen = open_groups[group.role] !== false;
-
-            // 중분류(category)별로 묶어서 렌더링
-            let lastCategory = '';
 
             return (
               <div
                 key={group.role}
                 className={`rounded-2xl border ${group.headerStyle.border} bg-white dark:bg-[#151720] shadow-sm overflow-hidden transition-all`}
               >
-                {/* 🌟 사용자 지정 디자인: 고대비 다크 캡슐 헤더 (내부용, 외부용, 대국민 명확한 시각 구분) */}
+                {/* 🌟 상단/중앙과 일치화된 3대 그룹 헤더 */}
                 <div
                   onClick={() => toggle_group(group.role)}
                   className={`p-3 flex items-center justify-between cursor-pointer select-none group border-b ${group.headerStyle.container} transition-all`}
@@ -511,6 +494,9 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                         >
                           {group.title}
                         </span>
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/20 text-white font-bold">
+                          {group.menus.length}개
+                        </span>
                       </div>
                       <p className="text-[10px] text-slate-300 dark:text-slate-400 truncate mt-0.5 font-medium leading-tight opacity-90">
                         {group.desc}
@@ -527,65 +513,51 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
                   </div>
                 </div>
 
-                {/* 그룹 내 세부 메뉴 목록 */}
+                {/* 그룹 내 세부 14개 서브탭 목록 */}
                 {isGroupOpen && (
                   <div className="px-2 pb-2.5 pt-1.5 space-y-1 bg-slate-50/50 dark:bg-slate-900/30">
                     {group.menus.map((item) => {
-                      // 중분류 소제목 표시
-                      let showCategoryHeader = false;
-                      if (item.category && item.category !== lastCategory) {
-                        showCategoryHeader = true;
-                        lastCategory = item.category;
-                      }
-
-                      const isMenuSelected =
-                        current_workspace === item.workspace &&
-                        (!item.subtab || (current_subtab ? item.subtab === current_subtab : true));
+                      // 활성화 여부 판별 (상단/중앙 active_subtab_id와 100% 동기화)
+                      const isSubtabActive =
+                        active_subtab_id === item.subtabId ||
+                        (current_workspace === item.workspace &&
+                          (!item.subtab || item.subtab === current_subtab));
 
                       return (
-                        <React.Fragment key={item.id}>
-                          {showCategoryHeader && (
-                            <div className="pt-2 pb-1 px-2 flex items-center gap-1.5 text-[10px] font-black text-slate-400 dark:text-slate-500">
-                              <span className="w-1.5 h-1.5 rounded-full bg-blue-500/70" />
-                              <span className="uppercase tracking-wider">[{item.category}]</span>
-                              <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800 ml-1" />
-                            </div>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => handle_item_click(item)}
-                            className={`w-full p-2 rounded-xl text-left transition flex items-center justify-between gap-2 cursor-pointer ${
-                              isMenuSelected
-                                ? 'bg-blue-50/90 dark:bg-blue-950/60 shadow-xs border border-blue-200 dark:border-blue-900 text-blue-950 dark:text-white font-bold ring-1 ring-blue-400/20'
-                                : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <span className="shrink-0">{item.icon}</span>
-                              <div className="min-w-0">
-                                <span className="text-xs font-bold block truncate">
-                                  {item.label}
-                                </span>
-                                {item.desc && (
-                                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate leading-tight">
-                                    {item.desc}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-
-                            {item.badge && (
-                              <span
-                                className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${
-                                  item.badgeColor || 'bg-slate-100 text-slate-600'
-                                }`}
-                              >
-                                {item.badge}
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => handle_item_click(item)}
+                          className={`w-full p-2 rounded-xl text-left transition flex items-center justify-between gap-2 cursor-pointer ${
+                            isSubtabActive
+                              ? 'bg-blue-50/90 dark:bg-blue-950/60 shadow-xs border border-blue-200 dark:border-blue-900 text-blue-950 dark:text-white font-bold ring-1 ring-blue-400/20'
+                              : 'hover:bg-slate-100/80 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="shrink-0">{item.icon}</span>
+                            <div className="min-w-0">
+                              <span className="text-xs font-bold block truncate">
+                                {item.label}
                               </span>
-                            )}
-                          </button>
-                        </React.Fragment>
+                              {item.desc && (
+                                <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate leading-tight">
+                                  {item.desc}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 ${
+                                item.badgeColor || 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
+                        </button>
                       );
                     })}
                   </div>

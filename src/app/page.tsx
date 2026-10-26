@@ -26,7 +26,7 @@ import { PersonaGroupButtons, PersonaSwitcherBar } from '@/components/PersonaSwi
 import { 페르소나_찾기, 서브탭_찾기, 메뉴_소속_서브탭, type 페르소나_키, type 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 import { 공공의료_결정지도_홈 } from '@/components/공공의료_결정지도_홈';
 import { 전체_여정_프로그레스_바, 여정_단계_키, 여정_단계_정의 } from '@/components/전체_여정_프로그레스_바';
-import { 대상자별_좌측_사이드바, 신규_메뉴_구조_데이터 } from '@/components/대상자별_좌측_사이드바';
+import { 대상자별_좌측_사이드바, 신규_메뉴_구조_데이터, 레거시_AS_IS_메뉴_데이터 } from '@/components/대상자별_좌측_사이드바';
 import type { 의료기관_서브탭_타입 } from '@/components/의료기관_통합_워크스페이스';
 
 const 워크스페이스_로딩 = () => (
@@ -476,8 +476,13 @@ export default function Home() {
 
   // 기존 워크스페이스 화면(좌측 메뉴)이 속한 사용자 그룹 서브탭 (예: 운영평가 대시보드 → ③ 3-1)
   const 화면_소속_서브탭 = (ws: 워크스페이스_타입, sub?: string, 우선?: 페르소나_키 | null) => {
-    const 메뉴 = 신규_메뉴_구조_데이터.flatMap((g) => g.menus).find((m) => m.workspace === ws && (m.subtab ?? undefined) === sub);
-    return 메뉴 ? 메뉴_소속_서브탭(메뉴.id, 우선) : null;
+    const 신규_일치 = 신규_메뉴_구조_데이터.flatMap((g) => g.menus).find((m) => m.workspace === ws && (m.subtab ?? undefined) === sub);
+    if (신규_일치) {
+      const 찾은 = 서브탭_찾기(신규_일치.subtabId);
+      if (찾은) return 찾은;
+    }
+    const 레거시_메뉴 = 레거시_AS_IS_메뉴_데이터.find((m) => m.workspace === ws && (m.subtab ?? undefined) === sub);
+    return 레거시_메뉴 ? 메뉴_소속_서브탭(레거시_메뉴.id, 우선) : null;
   };
 
   // 홈 배너 등에서 기존 화면을 열 때, 그 화면이 속한 사용자 그룹·서브탭이 선택된 상태로 연다
@@ -622,7 +627,7 @@ export default function Home() {
 
       {/* 2. 메인 바디 컨테이너: 좌측 3대 대상자별 접이식 사이드바 + 우측 메인 워크스페이스 */}
       <div className="flex-1 flex flex-row min-w-0 overflow-hidden relative min-h-0">
-        {/* 2-1. 좌측 3대 정보구조(IA) 사이드바 (내부용 / 외부용 / 대국민) */}
+        {/* 2-1. 좌측 3대 정보구조(IA) 사이드바 (대국민 / 의료기관 / 중앙·NMC) - 상단/중앙과 100% 동일 일치 */}
         <대상자별_좌측_사이드바
           is_collapsed={is_sidebar_collapsed}
           on_toggle_collapse={() => set_is_sidebar_collapsed((prev) => !prev)}
@@ -631,6 +636,8 @@ export default function Home() {
           current_workspace={current_workspace}
           current_subtab={current_active_subtab}
           on_navigate_workspace={handle_navigate_from_sidebar}
+          active_subtab_id={active_persona_subtab_id}
+          on_select_persona_subtab={handle_open_persona_subtab}
         />
 
         {/* 2-2. 우측 본문 메인 워크스페이스 렌더링 영역 */}

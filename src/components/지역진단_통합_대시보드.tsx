@@ -149,61 +149,18 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
                 <div className="text-[10px] text-slate-500 leading-tight">필수의료 취약도 분석 및 GIS 시각화</div>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-slate-300 shrink-0 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-1.5 text-slate-400">
-              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 flex items-center justify-center text-[10px] font-black">02</div>
-              <div className="text-[10px] font-semibold">지역 비교</div>
-            </div>
-            <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-1 text-slate-300">
-              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">03</div>
-              <div className="text-[10px] font-semibold text-slate-400">수요 예측</div>
-            </div>
-            <ChevronRight className="w-3 h-3 text-slate-200 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-1 text-slate-300">
-              <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 flex items-center justify-center text-[10px] font-black">04</div>
-              <div className="text-[10px] font-semibold text-slate-400">AI 정책기획</div>
-            </div>
           </div>
 
-          {/* 우측: 다음 단계 CTA & 의료이용 AI 질의응답 & 진단보고서 작성 */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
-            {on_open_profile_report && (
-              <button
-                type="button"
-                onClick={() => on_open_profile_report('p1_resource')}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-slate-950 font-black text-xs hover:from-orange-600 hover:to-amber-600 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                title="현재 지역의 ① 지역 의료자원 표준 진단보고서 작성 및 HWP 다운로드"
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>① 지역 의료자원 보고서 작성</span>
-              </button>
-            )}
+          {/* 우측: 의료이용 AI 질의응답 */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => handle_open_qa_modal('중진료권별 유출 Top10과 유출 재원일수 보여줘.')}
-              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs hover:from-blue-700 hover:to-indigo-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs hover:from-blue-700 hover:to-indigo-700 transition flex items-center gap-1.5 cursor-pointer shadow-xs hover:shadow"
               title="중진료권/시도/시군구 환자 유출입 실데이터 자연어 질의응답"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>환자 유출입 AI Q&A</span>
-            </button>
-            <span className="text-[10px] text-slate-400 hidden sm:block">진단 후 다음 단계:</span>
-            <button
-              type="button"
-              onClick={() => on_navigate_policy('compare')}
-              className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 font-bold text-xs hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer border border-indigo-200 dark:border-indigo-800"
-            >
-              <span>02 지역 비교</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
-            <button
-              type="button"
-              onClick={() => on_navigate_policy('policy_ai')}
-              className="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 font-bold text-xs hover:bg-emerald-100 transition flex items-center gap-1 cursor-pointer border border-emerald-200 dark:border-emerald-800"
-            >
-              <span>04 AI 정책기획</span>
-              <ArrowRight className="w-3 h-3" />
             </button>
           </div>
         </div>

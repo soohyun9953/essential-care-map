@@ -3,7 +3,7 @@
 // Essential Care Map - 지역진단 통합 대시보드
 // Section 6, 7, 8, 9, 10 표준 구현 (35:65 진단지도, 7대 Layer, 6단계 지역 상세정보 및 정책 연계 체인)
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   Activity,
   AlertTriangle,
@@ -65,6 +65,34 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
   const [search_query, set_search_query] = useState('');
   const [filter_grade, set_filter_grade] = useState<string>('심각');
   const [filter_sido, set_filter_sido] = useState<string>('전체');
+
+  // 좌측 목록 선택 항목 스크롤 참조
+  const selected_item_ref = useRef<HTMLDivElement>(null);
+
+  // 상단에서 대상 지역(selected_region)이 선택되거나 변경되면, 좌측 목록 필터도 해당 지역 데이터로 자동 동기화
+  useEffect(() => {
+    if (selected_region) {
+      // 1. 시도 필터를 선택된 지역의 시도로 동기화 (예: 전라남도 진도군 -> 전라남도)
+      set_filter_sido(selected_region.시도명);
+
+      // 2. 등급 필터도 선택된 지역의 등급으로 동기화하여 해당 지역이 즉시 목록에 노출되도록 함
+      if (selected_region.종합_취약도_등급) {
+        set_filter_grade(selected_region.종합_취약도_등급);
+      } else {
+        set_filter_grade('전체');
+      }
+
+      // 3. 검색어 초기화
+      set_search_query('');
+    }
+  }, [selected_region?.시도명, selected_region?.시군구코드, selected_region?.종합_취약도_등급]);
+
+  // 선택된 항목으로 부드러운 스크롤 이동
+  useEffect(() => {
+    if (selected_item_ref.current) {
+      selected_item_ref.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [selected_region?.시군구코드, filter_sido, filter_grade]);
 
   // Section 10: '왜?' 취약요인 클릭 시 상세 분석 팝오버 상태
   const [selected_factor, setSelected_factor] = useState<'응급' | '분만' | '소아' | null>(null);
@@ -411,15 +439,47 @@ export const 지역진단_통합_대시보드: React.FC<지역진단_통합_대�
 
           {/* 시군구 목록 스크롤 영역 */}
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {/* 현재 상단 선택 지역이 필터 조건에 의해 목록에서 가려졌을 때 항상 상단 고정 노출 */}
+            {active_region && !filtered_regions.some((r) => r.시군구코드 === active_region.시군구코드) && (
+              <div
+                onClick={() => on_select_region(active_region)}
+                className="p-3 rounded-2xl border-2 border-blue-500 bg-blue-50/80 dark:bg-blue-950/50 shadow-xs cursor-pointer flex items-center justify-between"
+              >
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400">
+                      [상단 선택 지역] {active_region.시도명}
+                    </span>
+                    <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                      {active_region.시군구명}
+                    </h4>
+                  </div>
+                  <div className="text-[11px] text-blue-700 dark:text-blue-300">
+                    응급 {active_region.응급_60분_미도달_인구비율}% • RI {active_region.관내_응급_의료이용률}%
+                  </div>
+                </div>
+                <span
+                  className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-xs"
+                  style={{
+                    backgroundColor:
+                      취약도_등급_정보[active_region.종합_취약도_등급].색상코드,
+                  }}
+                >
+                  {active_region.종합_취약도_등급}
+                </span>
+              </div>
+            )}
+
             {filtered_regions.map((item) => {
               const is_selected = active_region?.시군구코드 === item.시군구코드;
               return (
                 <div
                   key={item.시군구코드}
+                  ref={is_selected ? selected_item_ref : undefined}
                   onClick={() => on_select_region(item)}
                   className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
                     is_selected
-                      ? 'border-blue-600 dark:border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-xs ring-1 ring-blue-500/30'
+                      ? 'border-blue-600 dark:border-blue-500 bg-blue-50/70 dark:bg-blue-950/40 shadow-xs ring-2 ring-blue-500/40'
                       : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                   }`}
                 >

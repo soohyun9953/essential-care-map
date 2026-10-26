@@ -631,6 +631,11 @@ export default function Home() {
         <전체_여정_프로그레스_바
           current_step={current_journey_step}
           selected_region_name={selected_region ? `${selected_region.시도명} ${selected_region.시군구명}` : undefined}
+          selected_region={selected_region}
+          regions_list={diagnosed_list}
+          on_select_region={(reg) => {
+            set_selected_region(reg);
+          }}
           on_select_step={handle_select_journey_step}
         />
       )}

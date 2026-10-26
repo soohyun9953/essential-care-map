@@ -407,12 +407,9 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
               <span className="text-base">📋</span>
               <span>플랫폼 메뉴</span>
             </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold whitespace-nowrap">
-              13대 화면 통일
-            </span>
           </div>
         ) : (
-          <span className="text-base mx-auto" title="공공보건의료 플랫폼 13대 메뉴">
+          <span className="text-base mx-auto" title="공공보건의료 플랫폼 메뉴">
             📋
           </span>
         )}

@@ -365,6 +365,11 @@ export default function Home() {
   // 안내 모달에서 메뉴 네비게이션
   const handle_guide_navigate = (menu_id: string) => {
     set_is_guide_modal_open(false);
+    const 찾은서브탭 = 서브탭_찾기(menu_id);
+    if (찾은서브탭) {
+      handle_open_persona_subtab(찾은서브탭.서브탭);
+      return;
+    }
     const resolved_medical_tab = menu_id === 'hospital_crisis' ? 'crisis' : menu_id;
     if (['cp_library', 'policy_incentive', 'cp_variance', 'crisis', 'discharge_care', 'aa_disclosure', 'hospitals', 'datacenter', 'profile_report'].includes(resolved_medical_tab)) {
       set_medical_subtab(resolved_medical_tab as 의료기관_서브탭_타입);
@@ -389,6 +394,11 @@ export default function Home() {
     workspace: 워크스페이스_타입,
     subFeature?: string
   ) => {
+    const 찾은서브탭 = subFeature ? 서브탭_찾기(subFeature) : 서브탭_찾기(workspace);
+    if (찾은서브탭) {
+      handle_open_persona_subtab(찾은서브탭.서브탭);
+      return;
+    }
     if (workspace === 'medical_institution' && subFeature) {
       const targetSubtab = subFeature === 'hospital_crisis' ? 'crisis' : subFeature;
       set_medical_subtab(targetSubtab as any);
@@ -888,6 +898,7 @@ export default function Home() {
         isOpen={is_review_guide_open}
         onClose={() => set_is_review_guide_open(false)}
         onNavigate={handle_review_guide_navigate}
+        onSelectPersonaSubtab={handle_open_persona_subtab}
       />
 
       {/* ISP 개선과제 우측 슬라이딩 드로어 (과제 3.8 / 3.4 / 3.3 / 3.10 상세) */}

@@ -9,40 +9,38 @@ import {
   Activity,
   Calculator,
   ShieldCheck,
-  Cpu,
   HeartPulse,
   TrendingUp,
-  AlertTriangle,
   ArrowRight,
   CheckCircle2,
-  ExternalLink,
   Users,
   Compass,
-  FileSpreadsheet,
-  Network,
   LayoutGrid,
   Search,
   Sliders,
-  DollarSign,
   UserCheck,
   Layers,
-  Bot,
   Brain,
-  ShieldAlert,
-  HelpCircle,
+  Share2,
+  MapPin,
+  Stethoscope,
+  Baby,
 } from 'lucide-react';
 import { 워크스페이스_타입 } from './글로벌_공공_헤더';
+import { 서브탭_찾기, 페르소나_서브탭 } from '@/lib/페르소나_메뉴_구조';
 
 interface 담당자별_검토_가이드_모달_속성 {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (workspace: 워크스페이스_타입, subFeature?: string) => void;
+  onSelectPersonaSubtab?: (subtab: 페르소나_서브탭) => void;
 }
 
-type 직무_카테고리 = 'all' | 'policy' | 'qi_medical' | 'care_network' | 'mgmt_disclosure' | 'ai_data';
+type 직무_카테고리 = 'all' | 'citizen' | 'hospital' | 'nmc';
 
 interface 시스템_가이드_항목 {
   key: string;
+  subtabId: string;
   systemName: string;
   category: 직무_카테고리;
   targetRole: string; // 주요 검토 대상 담당자
@@ -52,9 +50,6 @@ interface 시스템_가이드_항목 {
   icon: React.ReactNode;
   targetWorkspace: 워크스페이스_타입;
   subFeature?: string;
-  secondaryWorkspace?: 워크스페이스_타입;
-  secondarySubFeature?: string;
-  secondaryLabel?: string;
   menuPath: string;
   isImplemented: boolean;
   summary: string;
@@ -66,261 +61,331 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
   isOpen,
   onClose,
   onNavigate,
+  onSelectPersonaSubtab,
 }) => {
-  // 기본 선택 시스템: 공공병원 알리미
-  const [activeSystemKey, setActiveSystemKey] = useState<string>('aa_disclosure');
+  // 기본 선택 시스템: 2-1 AI 정책 의사결정 원스톱
+  const [activeSystemKey, setActiveSystemKey] = useState<string>('2-1');
   // 직무 필터 상태
   const [selectedCategory, setSelectedCategory] = useState<직무_카테고리>('all');
 
   if (!isOpen) return null;
 
-  // 공공병원 AI 진단·개선 + 공공의료 7대 시스템 + AI 스튜디오 총 9대 영역 정밀 가이드 정의
+  // 13대 메뉴 체계에 맞춘 전수 가이드 정의 (대국민 4 + 의료기관 6 + NMC 3)
   const systemGuides: 시스템_가이드_항목[] = [
+    // ──────────────────────────────────────────────────────────────────────────
+    // 2. 의료기관 담당자 (6개 메뉴)
+    // ──────────────────────────────────────────────────────────────────────────
     {
-      key: 'ai_hospital_diagnosis',
-      systemName: '⭐ AI 병원진단·개선 (신규 핵심)',
-      category: 'all',
-      targetRole: '지방의료원장, 지자체 보건의료과장, 보건복지부, NMC 지원센터',
-      roleBadge: '병원장 / 지자체장 / 복지부',
-      badge: 'AI 병원진단·개선·의사결정',
+      key: '2-1',
+      subtabId: '2-1',
+      systemName: '2-1. AI 정책 의사결정 & 공공보건의료계획 수립',
+      category: 'hospital',
+      targetRole: '지자체(시·도/시·군·구) 보건기획관, 공공병원 기획조정실, 보건복지부 공공의료과',
+      roleBadge: '지자체 정책관 / 병원 기획실',
+      badge: '진단·대안·HWPX One-Stop',
       badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
-      icon: <Sparkles className="w-4 h-4 text-amber-500" />,
-      targetWorkspace: 'hospital_ai_diagnosis',
-      menuPath: '[AI 병원진단·개선] ➔ 7단계 풀스택 의사결정 프로세스',
+      icon: <Share2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      targetWorkspace: 'regional_diagnosis',
+      menuPath: '② 의료기관 담당자 ➔ 2-1. AI 정책 의사결정 & 계획수립 원스톱',
       isImplemented: true,
-      summary: '41개 거점공공병원 대상 종합진단 ➔ 문제·원인분석 ➔ Benchmarking ➔ 5개년 수요예측 ➔ 개선대안 ➔ 시뮬레이션 ➔ 실행계획 ➔ 성과관리',
+      summary:
+        '진료권 진단(환자 유출입 OD 분석) ➔ 1:1 병원 비교 ➔ 2030 장래수요 ➔ AI 정책대안(Option A/B/C) ➔ 12대 항목 법정 사업계획서 ➔ HWPX 공문서 다운로드까지 6단계 완결형 의사결정 워크플로우를 제공합니다.',
       keyChecks: [
-        '41개 거점공공병원(지방의료원 35, 적십자 6) 전수 AI 진단점수(공공성·효율·수요·인력·필수의료·재무 6대 지표 및 69점 등 종합점수 산출)',
-        'AI 설명가능성(XAI): 각 점수마다 산출기준, 사용데이터, 기준연도, 비교대상 [AI 분석 근거 보기] 모달 제공',
-        'AI가 발견한 4대 핵심 문제(응급인력 부족, 필수의료 약화, 간호인력 부담, 외래유출) 클릭 시 직접원인, 구조적원인, 연관데이터 심층 분석',
-        '유사병원 Benchmarking: 우리병원 vs 유사규모 vs 전국평균 vs 상위 10% 병원 Gap 자동 발견',
-        'AI 5개년 수요예측(2026~2030): 외래·입원·응급·병상·의료인력 추계 및 2028년 위험구간 조기경보',
-        'Human-in-the-loop 의사결정: AI 추천 3대 대안(A안: 인력충원 vs B안: 필수의료종합 vs C안: 원격협진) 담당자 검토 및 확정 채택',
-        '실시간 경영·정책 시뮬레이터: 의사·간호사 증원 및 원격협진 슬라이더 직접 조절에 따른 처리량·대기시간·전원율 실시간 비교',
-        '세부 실행계획 로드맵 및 성과관리 KPI 목표 대비 달성률 환류 체계 (가상 시연 데이터)',
+        '[1단계 진료권 진단]: 전국 250개 시군구 취약도 지도 및 72.6MB 엑셀 전수 기반 환자 관외 유출입(OD Matrix) 네트워크 흐름도 및 관내이용률(RI)',
+        '[2단계 1:1 비교분석]: 영월의료원 vs 삼척의료원 등 인근 의료기관 간 진료권 인구·병상·의료자원 Gap 분석',
+        '[3단계 장래수요]: 2030년 미래 의료수요(외래/입원/응급) 추계 및 진료권별 위험구간 사전 탐지',
+        '[4단계 AI 정책대안]: Option A(보조금 지원) vs Option B(시설·장비 확충) vs Option C(의료인력 파견) 대안별 소요예산 및 정책효과 정밀 비교',
+        '[5단계 법정계획서]: 정부 12대 항목(사업목표, 추진체계, 예산, KPI 등) 법정 공공보건의료계획서 초안 실시간 자동 작성 (환각 방지 원칙)',
+        '[6단계 HWPX 다운로드]: 한글과컴퓨터 표준 공문서 규격(HWPX) 원클릭 즉시 다운로드',
       ],
-      tip: '헤더의 [AI 병원진단·개선] 버튼을 누르고 영월의료원 선택 후, ①종합진단 ➔ ②유사병원 Benchmarking ➔ ④개선대안 및 실시간 시뮬레이터를 순서대로 체험해 보세요.',
+      tip: '상단 여정바 1단계(진료권 진단)부터 6단계(HWPX 다운로드)까지 차례대로 클릭해 보며, 지역진단 통계가 법정 공문서로 원스톱 완성되는 과정을 체험해 보세요.',
     },
     {
-      key: 'implementation_plan_eval',
-      systemName: '⭐ 시행계획·추진실적 AI 평가 (신규)',
-      category: 'policy',
-      targetRole: '중앙행정기관(8)·시·도(17)·공공단체 작성담당자, 국립중앙의료원 공공보건의료지원센터 기획평가팀',
-      roleBadge: '시·도·중앙부처 / NMC 평가팀',
-      badge: '평가지침 100점 평가표 & AI 심사',
+      key: '2-2',
+      subtabId: '2-2',
+      systemName: '2-2. 경영 벤치마킹 & 공시·시설장비 사전검증',
+      category: 'hospital',
+      targetRole: '지방의료원 원장, 기획조정실 재무회계팀장, 원내 장비관리과',
+      roleBadge: '병원장 / 기조실 / 회계담당',
+      badge: '경영진단 & 사전검증',
+      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
+      icon: <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '2-2',
+      menuPath: '② 의료기관 담당자 ➔ 2-2. 경영 벤치마킹 & 공시·시설장비 사전검증',
+      isImplemented: true,
+      summary:
+        '동일 규모 지방의료원 12곳 익명 비교군 벤치마킹(알리미 실데이터), 공시·ERP 원천 대조 사전검증(출연금·보조금 혼입 탐지), 원내 시설·장비 노후도 진단을 지원합니다.',
+      keyChecks: [
+        '허가병상 150~250병상 동일 규모 지방의료원 12곳(비공개 비교군) 중앙값·평균 대비 우리 병원 재무·경영지표 벤치마킹',
+        '의료이익률(-38.7% vs 중앙값 -43.7%), 인건비율(89.3%), 경상운영비율, 정부·지자체 지원금 의존도 심층 분석',
+        '공시 사전검증: 정부 출연금 및 지자체 보조금 이중계상·원천 불일치(결산서 대조) 사전 감지',
+        '원내 주요 시설장비(심뇌혈관 CT, 혈관조영장치, 인공신장기, MRI 등) 도입연도 및 내구연수 만료 진단',
+      ],
+      tip: '상단 병원 선택 셀렉트박스에서 [영월의료원]을 선택하고, 익명 비교군과의 경영 격차 및 원내 장비 노후도 진단 목록을 확인해 보세요.',
+    },
+    {
+      key: '2-3',
+      subtabId: '2-3',
+      systemName: '2-3. 신포괄수가 정책가산 인센티브 계산기',
+      category: 'hospital',
+      targetRole: '공공병원 적정진료실(QI팀), 심사평가팀, CP위원회, 원무과',
+      roleBadge: '진료처 / QI팀 / 심사평가',
+      badge: '정책가산 모의계산',
+      badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300',
+      icon: <Calculator className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      targetWorkspace: 'medical_institution',
+      subFeature: 'policy_incentive',
+      menuPath: '② 의료기관 담당자 ➔ 2-3. 신포괄수가 정책가산 인센티브 계산기',
+      isImplemented: true,
+      summary:
+        '심평원 2026 신포괄지불제도 지침 및 국립중앙의료원 71개 표준진료지침(CP) 운영 점수를 기반으로 정부 정책가산 지원금(최대 1.0%)을 모의계산합니다.',
+      keyChecks: [
+        '신포괄 지침 별표3 기준: 표준진료지침(CP) 운영 가산율 최대 1.0% 점수 비례 산식 적용',
+        '가산수가 공식: 포괄수가 × (정책가산율 / 100) 기반 기관별 연간 추가 수가액 시뮬레이션',
+        '4대 병상 규모(500병상 초과, 300병상 초과, 300병상 이하, 병원급) 차등 가산 기준 적용',
+        'CP 개발 체계(50점) + 적용 현황(20점) + 질환별 적용(10점) + 관리율(5점) + 모니터링(15점) 100점 만점 연산',
+      ],
+      tip: '슬라이더로 포괄수가 진료비와 CP 운영 점수를 조절해 보며, 병원의 연간 재정지원 추가 인센티브 금액이 실시간으로 변동하는 것을 확인해 보세요.',
+    },
+    {
+      key: '2-4',
+      subtabId: '2-4',
+      systemName: '2-4. 퇴원환자 케어플랜·돌봄자원 매칭 AI',
+      category: 'hospital',
+      targetRole: '공공병원 공공의료사업실, 퇴원지원팀 전담 간호사, 의료사회복지사',
+      roleBadge: '공공의료사업실 / 복지사',
+      badge: '돌봄 연계 & 의뢰서',
+      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
+      icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '2-4',
+      menuPath: '② 의료기관 담당자 ➔ 2-4. 퇴원환자 케어플랜·돌봄자원 매칭 AI',
+      isImplemented: true,
+      summary:
+        '복지부 급성기 퇴원지원 시범사업 표준 4단계에 따라 입원 스크리닝, ADL 10개 영역 심층평가, 케어플랜 수립, 최적 지역 돌봄자원 매칭 및 공식 연계의뢰서를 생성합니다.',
+      keyChecks: [
+        '표준 4단계 프로세스: 조기 스크리닝 ➔ 다학제 심층평가 ➔ 케어플랜 수립 ➔ 지역사회 연계',
+        '가상 환자 프리셋 2종(김공공 72세·독거 뇌경색 vs 박돌봄 81세·노부부 대퇴골절) 지원',
+        'ADL 10개 영역 일상동작, 낙상위험, 영양상태, 주거환경 심층평가표 자동 로딩',
+        '지역사회 돌봄자원(보건소 방문간호, 맞춤돌봄, 식사배달 등) 최적 매칭 및 보건복지부 공식 [퇴원환자 지역사회 연계 의뢰서] 다운로드',
+      ],
+      tip: '상단 가상 환자 탭에서 [김공공]을 선택하고 하단 [공식 퇴원연계 의뢰서 서식 미리보기]를 클릭하여 복지부 제출용 정량 서식을 확인해 보세요.',
+    },
+    {
+      key: '2-5',
+      subtabId: '2-5',
+      systemName: '2-5. 고위험 산모·신생아 전원의뢰·수용 매칭',
+      category: 'hospital',
+      targetRole: '분만산부인과, NICU 전담의사·간호사, 광역 모자의료센터 전원조정관',
+      roleBadge: '모자의료센터 / NICU',
+      badge: '전원 매칭 & 관제',
+      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
+      icon: <Baby className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '2-5',
+      menuPath: '② 의료기관 담당자 ➔ 2-5. 고위험 산모·신생아 전원의뢰·수용 매칭',
+      isImplemented: true,
+      summary:
+        '중증도×이송시간×수용확률 종합 점수화로 권역 내 수용 가능한 고위험 모자의료센터 TOP 3를 추천하고 실시간 NICU 가용 자원을 연계합니다.',
+      keyChecks: [
+        '고위험 산모(임신중독증, 조기양막파열) 및 고위험 신생아(극소저체중, 호흡곤란) 중증도 입력',
+        '골든타임 이송 소요시간(구급차 60분 이내) 및 실시간 수용확률 종합 산출',
+        '권역 모자의료센터 TOP 3 추천 및 다기관 동시 전원 요청 시뮬레이션',
+      ],
+      tip: '산모 중증도 체크박스를 선택하고 [수용기관 추천]을 눌러 강원대병원, 원주세브란스기독병원 등 권역 기관의 매칭 점수를 확인해 보세요.',
+    },
+    {
+      key: '2-6',
+      subtabId: '2-6',
+      systemName: '2-6. 책임의료기관 통합 사업 지침 AI 질의응답',
+      category: 'hospital',
+      targetRole: '책임의료기관 사업 전담인력, 시도 공공보건의료지원단 사업관리자',
+      roleBadge: '책임의료기관 전담팀',
+      badge: '331쪽 지침 RAG',
+      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
+      icon: <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '2-6',
+      menuPath: '② 의료기관 담당자 ➔ 2-6. 책임의료기관 사업지침 AI 질의응답',
+      isImplemented: true,
+      summary:
+        '「2026년 책임의료기관 통합 사업 안내」(총 331쪽) 원문 벡터 DB를 기반으로 질문과 관련된 정확한 페이지와 원문 발췌문을 근거로 답변합니다.',
+      keyChecks: [
+        '331쪽 법정 사업안내 원문 전수 임베딩: 임의 환각 답변을 차단하고 오직 원문만 근거로 요약',
+        '답변 시 근거 페이지(예: p.45 제2절) 및 원문 조항 즉시 인용 표출',
+        '사업비 집행기준, 인건비 책정, 필수원내협의체 구성 요건 등 실무 질의 지원',
+      ],
+      tip: '검색창에 "원내협의체 구성 요건" 또는 "사업비 집행 기준"을 입력하여 쪽수와 함께 제시되는 근거 답변을 확인해 보세요.',
+    },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // 3. 보건복지부·NMC (3개 메뉴)
+    // ──────────────────────────────────────────────────────────────────────────
+    {
+      key: '3-1',
+      subtabId: '3-1',
+      systemName: '3-1. 전국 취약지 정책통계 & 통합 DW 분석',
+      category: 'nmc',
+      targetRole: '보건복지부 공공의료과, 국립중앙의료원 공공보건의료지원센터 통계팀',
+      roleBadge: '복지부 / NMC 통계팀',
+      badge: '정책통계 & DW 분석',
+      badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300',
+      icon: <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '3-1',
+      menuPath: '③ 보건복지부·지원단/NMC ➔ 3-1. 전국 취약지 정책통계 & 통합 DW 분석',
+      isImplemented: true,
+      summary:
+        '전국 250개 시군구 필수의료 취약지 식별, 내장 테이블 기반 규칙형 Text-to-SQL 통계 질의, 공공의료 8단계 AI 파이프라인 관제를 제공합니다.',
+      keyChecks: [
+        '전국 250개 시군구 취약지 종합 지표 매트릭스 및 다차원 큐브 분석',
+        '자연어 질문("응급취약 시군구 목록")을 SQL로 자동 변환하여 즉시 질의하는 Text-to-SQL',
+        '공공데이터포털 및 E-Gen 실시간 연계 파이프라인 무결성 모니터링',
+      ],
+      tip: '통계 질의창에 "강원도 응급 취약지 현황"을 입력하고 실행하여 SQL 변환 및 집계 테이블이 도출되는 과정을 확인해 보세요.',
+    },
+    {
+      key: '3-2',
+      subtabId: '3-2',
+      systemName: '3-2. 기능보강 투자배분 & 중앙모자의료 관제',
+      category: 'nmc',
+      targetRole: '보건복지부 기능보강사업 담당관, 중앙모자의료센터 관제실',
+      roleBadge: '복지부 투자심사 / 모자관제',
+      badge: '투자 시뮬레이션 & 관제',
+      badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300',
+      icon: <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '3-2',
+      menuPath: '③ 보건복지부·지원단/NMC ➔ 3-2. 기능보강 투자배분 & 중앙모자의료 관제',
+      isImplemented: true,
+      summary:
+        '시설·장비 국고 지원 우선순위 시뮬레이터(지역수요×활용률×유지비), 전국 중앙 모자의료 실시간 관제 및 E-Gen 미갱신 경보를 수행합니다.',
+      keyChecks: [
+        '기능보강 사업 국비 투자 우선순위 다기준 평가 시뮬레이터',
+        '기관별 국고 지원액 및 전문인력 확보 수준 종합 대시보드',
+        '광역 모자의료센터 병상 가용정보 미갱신 기관 자동 경보(Alert) 시스템',
+      ],
+      tip: '투자 시뮬레이터에서 지역 취약도 가중치를 상향 조절하여 기관별 지원금 우선순위 순위가 재배열되는 것을 확인해 보세요.',
+    },
+    {
+      key: '3-3',
+      subtabId: '3-3',
+      systemName: '3-3. 통합 평가·공시심사·성과 모니터링 (100점 심사)',
+      category: 'nmc',
+      targetRole: '국립중앙의료원 평가심사팀, 공공보건의료 평가위원, 복지부 심사관',
+      roleBadge: 'NMC 심사평가팀 / 평가위원',
+      badge: '100점 심사 & 공시검증',
       badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300',
       icon: <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-      targetWorkspace: 'policy_planning',
-      subFeature: 'evaluation',
-      menuPath: '[정책기획] ➔ [시행계획·추진실적 AI 평가 (100점 평가표)] 또는 상단 여정바 [시행계획 평가]',
+      targetWorkspace: 'persona_page',
+      subFeature: '3-3',
+      menuPath: '③ 보건복지부·지원단/NMC ➔ 3-3. 통합 평가·공시심사·성과 모니터링',
       isImplemented: true,
-      summary: '『2025년 공공보건의료 시행계획 수립 지침』 및 『2024년 추진실적 작성 지침』 기반 100점 만점(추진실적 70점 + 사업계획 30점) 자동 산출 및 6단계 AI 평가 서비스',
+      summary:
+        '거점공공병원 운영평가, 시행계획 100점 심사(추진실적 70점 + 사업계획 30점), 42곳 알리미 공시 교차검증(14대 회계식·이상치) 및 심사보고서를 자동 편성합니다.',
       keyChecks: [
-        '공공기관 유형별 차등 가중치 완벽 반영: 시·도 지자체(1·2·3분야 + 위원회 정량 5점) vs 중앙행정기관·공공단체(1·2분야 + 위원회 정량 5점)',
-        '[AI 서비스 ① 사전검증]: 요약표·총괄표·본문 사업명 일치, 계획 대비 미수행 사유, 시도 지정센터(권역응급·외상 등) 실적 포함, 전년도 평가의견 전수 기재 등 6대 필수요건 자동 스캔 및 원클릭 보완',
-        '[AI 서비스 ② 지표진단]: 지침에서 지양하는 투입(Input)·과정(Process) 지표를 자동 적발하고 산출(Output)·결과(Outcome) 지표로 원클릭 교정 추천',
-        '[AI 서비스 ③ 위원회 정량채점]: 공공보건의료위원회 20명 이내 및 5대 분야(주민·수요자·공급자·전문가 각 2명 이상) 정량 5점 자동 계산',
-        '[AI 서비스 ④ 공식 평가표 채점]: 10대 평가항목(1.1~1.6 추진실적 70점, 2.1~2.4 사업계획 30점) 루브릭 채점 및 평가위원 수동 등급(수/우/미/양/가) 조정',
-        '[AI 서비스 ⑤·⑥ 소위원회 이견조정 & 결과보고서]: 5인 평가위원 점수 편차 중재안 도출 및 보건복지부 통보용 종합평가결과서·차년도 환류의견 생성 + Google Gemini 실시간 심층 심사',
+        '공식 100점 평가표 자동 채점: 10대 평가항목(실적 70점, 계획 30점) 루브릭 심사 및 위원회 정량 5점 자동 계산',
+        '알리미 교차검증: 14대 법정 회계산출식 및 수정 z-score 이상치(출연금 중복, 인건비 급변) 탐지',
+        '소위원회 점수 편차 중재안 도출 및 복지부 보고용 종합평가결과서 자동 생성',
       ],
-      tip: '[정책기획] ➔ [시행계획·추진실적 AI 평가] 탭에서 4종 기관 프리셋(강원도 최우수 / 경북 양호 / 고용노동부·근로복지공단 / 지침위반 샘플)을 전환해 보고 [AI 원클릭 보완] 버튼으로 점수·등급이 상승하는 과정을 체험해 보세요.',
+      tip: '기관 프리셋에서 [지침위반 샘플]을 선택한 뒤 [사전검증 스캔]을 실행하여 누락 항목과 오류가 즉시 적발되는 과정을 확인해 보세요.',
     },
+
+    // ──────────────────────────────────────────────────────────────────────────
+    // 1. 대국민 (4개 메뉴)
+    // ──────────────────────────────────────────────────────────────────────────
     {
-      key: 'health_map',
-      systemName: '1. 헬스맵',
-      category: 'policy',
-      targetRole: '지자체(시·도/보건소) 보건기획관 & 보건복지부 공공의료과',
-      roleBadge: '지자체 정책관 / 복지부',
-      badge: '필수의료 GIS & 정책',
-      badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-300',
-      icon: <Activity className="w-4 h-4 text-blue-600 dark:text-blue-400" />,
-      targetWorkspace: 'regional_diagnosis',
-      menuPath: '[지역진단] (35:65 GIS 지도) & [정책기획] (AI 사업계획서)',
-      secondaryWorkspace: 'policy_planning',
-      secondarySubFeature: 'report',
-      secondaryLabel: '[정책기획] 사업계획서 이동',
-      isImplemented: true,
-      summary: '전국 250개 시군구 필수의료 취약도 지도 및 환자 유출입 분석, AI 기반 지자체 표준 12대 항목 사업계획서 1초 자동생성',
-      keyChecks: [
-        '250개 시군구 GIS 35:65 화면 분할 지도 및 7대 필수의료 Layer(응급·분만·소아·공공의료원 등)',
-        '환자 의료이용 유출입 네트워크 Top 5: 시·군·구, 중진료권, 시·도 단위별 유출/유입 순위 및 프로그레스 바',
-        '의료이용 AI 자연어 질의응답: "중진료권별 유출 Top10과 유출 재원일수 보여줘" 등 대화형 전수 통계 산출',
-        '관내 중증 응급환자 타 지역 유출률 및 골든타임(골든아워) 취약지 분석',
-        'AI 정책 대안 3종(Option A: 보조금 지원 vs Option B: 시설확충 vs Option C: 인력보강) 시뮬레이션',
-        '정부 공식 지자체 맞춤형 12대 항목 사업계획서(예산, 인력, 성과지표 KPI) 원클릭 생성 및 인쇄/다운로드',
-        '1:1 지자체 간 의료자원 정밀 비교 및 2030 진료권 수요추계',
-      ],
-      tip: '[지역진단] 상단 [환자 유출입 AI Q&A] 버튼을 눌러보거나, [AI 정책기획으로 연계하기] 버튼을 눌러 Option A·B·C 선택에 따른 12대 항목 사업계획서 자동 작성을 확인해 보세요.',
-    },
-    {
-      key: 'cp_monitoring',
-      systemName: '2. CP 모니터링',
-      category: 'qi_medical',
-      targetRole: '공공병원 진료처·적정진료실(QI팀), 국립중앙의료원(NMC) 표준진료지침센터',
-      roleBadge: '진료처 / QI팀 / CP위원회',
-      badge: '표준 임상경로 & 질관리',
-      badgeColor: 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border-purple-300',
-      icon: <HeartPulse className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
-      targetWorkspace: 'medical_institution',
-      subFeature: 'cp_library',
-      secondaryWorkspace: 'medical_institution',
-      secondarySubFeature: 'cp_variance',
-      secondaryLabel: '[CP 변이분석 & ROI] 이동',
-      menuPath: '[의료기관] ➔ [71개 표준진료지침(CP) 라이브러리] & [CP 변이 분석 & ROI]',
-      isImplemented: true,
-      summary: '국립중앙의료원(NMC) 공인 71개 표준 CP 라이브러리 및 재원일수 변이(Variance) 모니터링, 병상회전율·진료비 절감 ROI 산출',
-      keyChecks: [
-        '국립중앙의료원(NMC) 공인 71개 진료과목별 표준 CP(Clinical Pathway) 검색 및 적용 지침 안내',
-        '질환별(복강경 담낭절제술, 슬관절전치환술 등) 표준재원일수 및 다학제 임상경로 흐름도(입원~수술~퇴원) 제공',
-        'CP 변이(Variance) 모니터링: 표준재원일수 대비 초과일수 및 원인별(임상/환자/병원) 변이 분석',
-        '재원일수 단축에 따른 병상회전율·재정 효과를 병원별 입력값으로 계산 (고정 효과 수치 없음)',
-        '임상 질 향상(QI) 및 적정진료 유도 효과 분석 지표 실시간 관제',
-      ],
-      tip: '[71개 표준진료지침(CP) 라이브러리] 탭에서 "담낭절제술" 또는 "슬관절치환술"의 표준재원일수를 확인한 뒤, [CP 변이 분석 & ROI] 탭에서 연간 재정 ROI 절감액을 확인해 보세요.',
-    },
-    {
-      key: 'resource_mgmt',
-      systemName: '3. 공공병원 자원관리',
-      category: 'mgmt_disclosure',
-      targetRole: '국립중앙의료원 중앙공공보건의료지원단, 공공병원 기획/총무/의료자원과',
-      roleBadge: 'NMC 지원단 / 병원 자원관리팀',
-      badge: '병상·인력·장비 인프라',
-      badgeColor: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-300',
-      icon: <LayoutGrid className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
-      targetWorkspace: 'medical_institution',
-      subFeature: 'hospitals',
-      secondaryWorkspace: 'medical_institution',
-      secondarySubFeature: 'datacenter',
-      secondaryLabel: '[기관 데이터센터] 이동',
-      menuPath: '[의료기관] ➔ [공공의료기관 탐색 (214개소)] & [기관 데이터센터]',
-      isImplemented: true,
-      summary: '전국 214개 공공병원(지방의료원 35, 적십자 6, 국립대병원 등) 통합 자원 관제 및 자연어 AI 질의응답, NMC 표준 데이터셋 다운로드',
-      keyChecks: [
-        '전국 214개 공공병원 허가/가동 병상수(일반/중환자실/음압격리) 통합 데이터베이스 구축',
-        '의료기관 AI 자연어 질의응답: "병상수가 가장 많은 공공병원 Top10", "강원도 공공병원 현황" 등 전수 질의 지원',
-        '필수의료 진료과목별 전문의·전공의·공보의 및 간호사 정원/현원 인력 통계 관제',
-        '의사 1인당 연간 외래·입원 진료환자수 및 인력 결원율 분석',
-        'NMC 표준 3종 엑셀 서식(크로스탭 원본 데이터셋) 일괄 다운로드 및 data.go.kr API 연계',
-      ],
-      tip: '[공공의료기관 탐색] 탭 우측 상단 [의료기관 AI 질의응답] 버튼을 클릭하여 자연어로 질문해 보거나, "영월의료원" 카드를 클릭해 병상·전문의 상세 인력을 확인해 보세요.',
-    },
-    {
-      key: 'hospital_portal',
-      systemName: '4. 공공병원 포털',
-      category: 'policy',
-      targetRole: '일반 국민, 응급환자 보호자, 119 구급상황관리센터, 보건소 민원실',
-      roleBadge: '대국민 / 119 구급대 / 보건소',
-      badge: '대국민 서비스 포털',
-      badgeColor: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300 border-cyan-300',
-      icon: <Search className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />,
-      targetWorkspace: 'national_safety',
-      subFeature: 'citizen_view',
-      secondaryWorkspace: 'home',
-      secondaryLabel: '[홈] 메인 포털 이동',
-      menuPath: '[국민안심] (대국민 5대 안심의료 포털) & [홈] (통합 메인)',
-      isImplemented: true,
-      summary: '모바일 최적화 실시간 5대 안심의료 검색, 응급실 실시간 가용병상, 24시 달빛어린이병원 안내 및 원클릭 119/길찾기 연계',
-      keyChecks: [
-        '모바일-First 5대 안심의료(응급실, 분만병원, 달빛어린이병원, 필수의료 병원, 야간약국) 위치 기반 탐색',
-        '전국 응급실/중환자실/수술실 실시간 가용병상 및 소아과 전문의 야간 진료 현황 연계',
-        '원클릭 119/병원 직통 전화연결 및 카카오맵/네이버 지도 실시간 길찾기 연계',
-        '하단 3단계 접이식 바텀시트를 통한 모바일 최적화 UI/UX 제공',
-        '※ (안내) 공공병원 내부 임직원 전용 업무포털(그룹웨어/전자결재)은 연계 시스템으로 분류됨',
-      ],
-      tip: '상단 [국민안심] 메뉴로 이동하여 상단 필터(응급실, 분만병원, 달빛어린이병원)를 누르고, 병원 카드의 [전화연결] 및 [길찾기] 버튼을 체험해 보세요.',
-    },
-    {
-      key: 'care_network',
-      systemName: '5. 공공병원 연계망',
-      category: 'care_network',
-      targetRole: '공공병원 공공의료사업실, 퇴원지원팀 전담 간호사 & 의료사회복지사, 지역 보건소·사회복지관',
-      roleBadge: '공공의료사업실 / 사회복지팀',
-      badge: '퇴원환자 지역사회 돌봄',
-      badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 border-indigo-300',
-      icon: <Network className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />,
-      targetWorkspace: 'medical_institution',
-      subFeature: 'discharge_care',
-      menuPath: '[의료기관] ➔ [퇴원환자 돌봄자원 매칭]',
-      isImplemented: true,
-      summary: '보건복지부 공공병원 퇴원환자 지역사회 연계사업 표준 4단계(스크리닝 ➔ 심층평가 ➔ 돌봄계획 ➔ 복지관 연계 의뢰서 자동생성)',
-      keyChecks: [
-        '복지부 표준 4단계 퇴원지원 프로세스(입원 스크리닝 ➔ 다학제 심층평가 ➔ 계획수립 ➔ 지역사회 연계)',
-        '가상 환자 프리셋 2종(김공공 72세/남·뇌경색 독거노인 vs 박돌봄 81세/여·골절 노부부) 원클릭 매칭',
-        '표준 환자평가표(ADL 10개 영역 일상동작, 낙상위험도, 영양상태, 주거환경) 자동 산출',
-        'AI 기반 지역사회 맞춤형 돌봄자원 추천(영월군보건소 방문간호, 영월종합사회복지관 도시락 배달 등)',
-        '보건복지부 공식 서식 [퇴원환자 지역사회 연계 의뢰서] 원클릭 자동 생성 및 인쇄/다운로드',
-        '퇴원 후 30일/90일 재입원율 감소 효과 모니터링 체계 연계',
-      ],
-      tip: '[의료기관] ➔ [퇴원환자 돌봄자원 매칭] 탭에서 상단 가상 환자(김공공 또는 박돌봄)를 선택하면 심층평가표가 자동 로딩되며, 하단 [연계 의뢰서 자동생성 & 미리보기] 버튼을 눌러 공식 의뢰서를 확인해 보세요.',
-    },
-    {
-      key: 'mgmt_monitoring',
-      systemName: '6. 경영정보모니터링',
-      category: 'mgmt_disclosure',
-      targetRole: '지방의료원 원장·기획조정실 재무회계팀장, 보건복지부 공공의료경영평가관',
-      roleBadge: '병원장 / 기조실 / 복지부 평가관',
-      badge: '재무위기 조기경보 & 신포괄',
-      badgeColor: 'bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-300',
-      icon: <TrendingUp className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
-      targetWorkspace: 'medical_institution',
-      subFeature: 'crisis',
-      secondaryWorkspace: 'medical_institution',
-      secondarySubFeature: 'policy_incentive',
-      secondaryLabel: '[신포괄 정책가산 계산기] 이동',
-      menuPath: '[의료기관] ➔ [지방의료원 경영위기 조기경보] & [신포괄 정책가산 계산기]',
-      isImplemented: true,
-      summary: '전국 35개 지방의료원 결산 재무비율 기반 4단계 경영위기 조기경보 및 신포괄 정책가산 시뮬레이터 (CP 운영 가산율 1.0%, 신포괄 지침 별표3)',
-      keyChecks: [
-        '전국 35개 지방의료원 결산서 기반 부채비율, 의업수지비율, 차입금의존도 3대 핵심 재무지표 실시간 관제',
-        '4단계 경영위기(정상, 주의, 경계, 심각) 자동 판정 및 지역별 취약기관 리스트 표출',
-        '신포괄 CP 운영 가산율 시뮬레이션 (1.0% × 점수 비례, 가산수가 = 포괄수가 × 가산율)',
-        '연간 신포괄 진료비 × 가산율로 추가 재정 효과를 계산 (입력값 기준)',
-      ],
-      tip: '[지방의료원 경영위기 조기경보] 탭에서 35개 의료원 위기등급을 확인한 뒤, [신포괄 정책가산(1.0%) 계산기] 탭에서 가산율 슬라이더를 조정하여 연간 추가 지원금을 산출해 보세요.',
-    },
-    {
-      key: 'aa_disclosure',
-      systemName: '7. 공공병원 알리미',
-      category: 'mgmt_disclosure',
-      targetRole: '전국 41개 지역거점 공공병원 통합공시 총괄담당자, 국립중앙의료원(NMC) 알리미 검증팀',
-      roleBadge: '공공병원 공시총괄팀 / NMC 검증팀',
-      badge: '통합공시 품질검증 (NEW)',
+      key: '1-1',
+      subtabId: '1-1',
+      systemName: '1-1. 지금 필요한 공공의료 찾기 (안심의료 지도)',
+      category: 'citizen',
+      targetRole: '일반 국민, 응급환자 보호자, 119 구급상황관리센터',
+      roleBadge: '대국민 / 119 구급대',
+      badge: '안심의료 지도검색',
       badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-300',
-      icon: <Building2 className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
-      targetWorkspace: 'medical_institution',
-      subFeature: 'aa_disclosure',
-      menuPath: '[의료기관] ➔ [41개 공공병원 알리미 공시검증]',
+      icon: <MapPin className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '1-1',
+      menuPath: '① 대국민 ➔ 1-1. 지금 필요한 공공의료 찾기',
       isImplemented: true,
-      summary: '국립중앙의료원 2026.6 실증 보고서 기반 41개 공공병원 공시 오류검증, 14대 법정 회계산출식 및 PII 개인정보 비식별화 도구',
+      summary:
+        '내 위치 기반 3대 필수의료(응급실, 분만병원, 달빛어린이병원) 안심의료 검색, 실시간 야간 진료 여부, 원클릭 119 전화 및 카카오맵 길찾기를 지원합니다.',
       keyChecks: [
-        '전국 41개 공공병원별 오류의심·검토요청 건수 (업무보고 원문 대조) 및 216건 오류의심(결산서 불일치, 0원 등록 등) 현황',
-        '14대 법정 회계산출식 및 통계이상치(수정 z-score, 전년대비 ±15% 급변동) 실시간 사전검증 시뮬레이터',
-        '영월의료원 2026 실제 검증 사례(전문의 1명 오차 & 인건비 급변동) 자동 감지 체험 프리셋',
-        '수시공시 첨부문서 내 환자 개인정보(주민번호, 의무기록번호, 성명, 연락처, 주소) 실시간 비식별화 마스킹 도구',
-        '국립중앙의료원 6단계 수정공시 공식 소명사유서 원클릭 자동 생성기',
+        '현재 위치 기반 3대 안심의료(응급실 528곳, 분만 420곳, 달빛어린이병원 114곳) 탐색',
+        '원클릭 119 구급대 / 병원 직통 전화연결 및 카카오맵 실시간 길찾기',
+        '야간·공휴일 실시간 진료 가능 기관 필터링',
       ],
-      tip: '[41개 병원별 품질검증] 탭에서 랭킹을 확인하고, [14대 회계산출식 & 통계이상치] 탭에서 "영월의료원" 또는 "오류다발" 프리셋을 눌러 사전검증 판정을 확인해 보세요.',
+      tip: '상단 안심의료 필터(응급실, 분만병원, 달빛병원)를 누르고 지도 위의 마커를 클릭하여 실시간 진료 정보와 전화연결을 확인해 보세요.',
     },
     {
-      key: 'ai_analysis',
-      systemName: '8. 공공의료 AI 스튜디오',
-      category: 'ai_data',
-      targetRole: '공공보건의료 AI 연구원, 정책 입안자, 보건의료 빅데이터 분석관',
-      roleBadge: 'AI 연구원 / 데이터 분석관',
-      badge: '듀얼 AI & RAG 지침 질의',
-      badgeColor: 'bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300 border-violet-300',
-      icon: <Brain className="w-4 h-4 text-violet-600 dark:text-violet-400" />,
-      targetWorkspace: 'ai_analysis',
-      menuPath: '[AI 분석] (Cloud AI vs Local sLLM 듀얼 스튜디오 & RAG 지침 질의)',
+      key: '1-2',
+      subtabId: '1-2',
+      systemName: '1-2. 우리 동네 응급실·소아병상 모니터링',
+      category: 'citizen',
+      targetRole: '소아·응급 환자 보호자, 지역 주민, 보건소 당직실',
+      roleBadge: '대국민 / 보건소 민원실',
+      badge: '실시간 가용병상 E-Gen',
+      badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-300',
+      icon: <HeartPulse className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '1-2',
+      menuPath: '① 대국민 ➔ 1-2. 우리 동네 응급실·소아병상 모니터링',
       isImplemented: true,
-      summary: 'Google Gemini Cloud AI와 원내 폐쇄망 로컬 sLLM 간 비교 검증 및 2026 보건복지부 법정 정책 지침 벡터 DB RAG 실시간 질의',
+      summary:
+        '시도 내 시군구별 응급실 및 달빛어린이병원 실시간 가용병상 그리드 모니터링을 제공합니다.',
       keyChecks: [
-        'Cloud 대규모 모델(Gemini) vs 원내 온프레미스 폐쇄망 sLLM(Ollama / vLLM) 간 듀얼 추론 비교',
-        '환자 민감정보(PII) 유출 없는 안전한 온디바이스/폐쇄망 AI 의사결정 인프라 시연',
-        '2026 보건복지부 필수의료 정책 지침서·시행계획 원문 RAG 벡터 데이터베이스 실시간 검색',
-        '공공의료 정책 기획 특화 프롬프트 템플릿(시행계획 서술문, 예산산출 근거, 정량 KPI 지표 생성)',
+        '시도 내 시군구별 응급실·분만실·달빛어린이병원 기관 수 그리드',
+        'E-Gen 공공데이터포털 실시간 가용병상 API 연동 모니터링',
+        '소아야간진료 달빛어린이병원 114개소 전수 좌표 연계',
       ],
-      tip: '상단 [AI 분석] 메뉴로 이동하여 듀얼 AI 스튜디오에서 정책 질의를 실행하거나, 정책 지침 RAG 검색창에서 "분만취약지 지원 요건"을 검색해 보세요.',
+      tip: '지역을 강원도로 변경하여 영월·삼척·태백 지역의 응급실 및 소아 야간 진료 현황 그리드를 확인해 보세요.',
+    },
+    {
+      key: '1-3',
+      subtabId: '1-3',
+      systemName: '1-3. 우리 지역 공공병원 알리미 비교',
+      category: 'citizen',
+      targetRole: '지역 주민, 공공병원 이용 환자, 시민단체',
+      roleBadge: '일반 시민 / 소비자',
+      badge: '공공병원 공시비교',
+      badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-300',
+      icon: <FileText className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '1-3',
+      menuPath: '① 대국민 ➔ 1-3. 우리 지역 공공병원 알리미 비교',
+      isImplemented: true,
+      summary:
+        '영월의료원·삼척의료원·태백병원 등 공공병원의 필수의료 운영, 표준진료지침(CP) 적용률, 취약계층 진료비 감면 현황을 투명하게 비교합니다.',
+      keyChecks: [
+        '전국 42곳 거점공공병원 알리미 공시 결산 데이터 1:1 비교',
+        '필수의료 진료과목 개설 현황 및 CP 적용률 대조',
+        '취약계층 의료비 감면액 및 공공보건의료사업 수행 실적 비교',
+      ],
+      tip: '비교 대상 병원으로 [영월의료원]과 [삼척의료원]을 선택하여 필수의료 지표와 감면액 차이를 확인해 보세요.',
+    },
+    {
+      key: '1-4',
+      subtabId: '1-4',
+      systemName: '1-4. 대국민 공공의료 AI 안내 도우미',
+      category: 'citizen',
+      targetRole: '일반 시민, 복지 상담사, 보건소 민원 담당자',
+      roleBadge: '대국민 AI 도우미',
+      badge: '공개정보 AI RAG',
+      badgeColor: 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border-rose-300',
+      icon: <Sparkles className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
+      targetWorkspace: 'persona_page',
+      subFeature: '1-4',
+      menuPath: '① 대국민 ➔ 1-4. 대국민 공공의료 AI 안내 도우미',
+      isImplemented: true,
+      summary:
+        '공개된 공공데이터(E-Gen, 심평원, 알리미)만을 근거로 응급실·달빛병원 안내 및 공공의료 제도를 정확하고 친절하게 설명합니다.',
+      keyChecks: [
+        '외부 비공개 정보 배제: 사이트 내 공개 데이터만을 근거로 답변',
+        '답변마다 원천 공공데이터 출처 표출 및 신뢰성 확보',
+        '야간 소아진료, 긴급 분만, 취약지 혜택 등 대국민 맞춤 안내',
+      ],
+      tip: '질문창에 "영월군 근처 야간에 아이가 아플 때 갈 수 있는 병원 알려줘"를 입력해 보세요.',
     },
   ];
 
@@ -333,35 +398,38 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
   const currentSystem =
     systemGuides.find((g) => g.key === activeSystemKey) || systemGuides[0];
 
-  const handleGo = (workspace: 워크스페이스_타입, subFeature?: string) => {
-    onNavigate(workspace, subFeature);
+  const handleGo = (subtabId: string, workspace?: 워크스페이스_타입, subFeature?: string) => {
+    const 찾은 = 서브탭_찾기(subtabId);
+    if (찾은 && onSelectPersonaSubtab) {
+      onSelectPersonaSubtab(찾은.서브탭);
+    } else if (workspace) {
+      onNavigate(workspace, subFeature);
+    }
     onClose();
   };
 
   const categories: { id: 직무_카테고리; label: string; icon: string }[] = [
-    { id: 'all', label: '전체 (8대 시스템)', icon: '🌐' },
-    { id: 'policy', label: '지자체·정책관', icon: '🏛️' },
-    { id: 'qi_medical', label: '진료·QI팀', icon: '🏥' },
-    { id: 'care_network', label: '공공의료·돌봄', icon: '🤝' },
-    { id: 'mgmt_disclosure', label: '경영·공시총괄', icon: '📋' },
-    { id: 'ai_data', label: 'AI·데이터분석', icon: '🤖' },
+    { id: 'all', label: '전체 (13대 기능)', icon: '🌐' },
+    { id: 'hospital', label: '② 의료기관 담당자 (6개)', icon: '🏥' },
+    { id: 'nmc', label: '③ 보건복지부·NMC (3개)', icon: '🏛️' },
+    { id: 'citizen', label: '① 대국민 (4개)', icon: '👨‍👩‍👧' },
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#15161b] rounded-3xl w-full max-w-4xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white dark:bg-[#15161b] rounded-3xl w-full max-w-5xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* 모달 상단 헤더 */}
         <div className="p-5 sm:p-6 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-start justify-between gap-4 shrink-0">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-blue-500/20 text-blue-300 border border-blue-400/30">
               <Compass className="w-3.5 h-3.5 text-blue-400" />
-              <span>담당자별 맞춤 검토 가이드 &amp; 8대 시스템 매핑</span>
+              <span>3대 사용자 그룹 13대 서브탭 검토 총람</span>
             </div>
             <h3 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
-              <span>공공의료 의사결정 플랫폼 직무별·시스템별 집중 검토 가이드</span>
+              <span>공공보건의료 의사결정 지원 플랫폼 담당자별 집중 검토 가이드</span>
             </h3>
             <p className="text-xs sm:text-sm text-slate-300">
-              지자체 정책관, 공공병원 진료/QI팀, 공공의료사업실, 기획재무팀, 공시담당자 등 검토 직무별 최우선 확인 메뉴와 조작 시나리오를 안내합니다.
+              의료기관 담당자, 보건복지부·국립중앙의료원(NMC), 일반 대국민 등 각 역할별 최우선 검토 메뉴와 핵심 확인 시나리오를 안내합니다.
             </p>
           </div>
           <button
@@ -377,7 +445,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800 flex items-center gap-1.5 overflow-x-auto shrink-0">
           <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap mr-1 flex items-center gap-1">
             <Users className="w-3.5 h-3.5" />
-            <span>담당자 직무:</span>
+            <span>사용자 그룹:</span>
           </span>
           {categories.map((cat) => (
             <button
@@ -390,7 +458,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
                   setActiveSystemKey(first.key);
                 }
               }}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 whitespace-nowrap cursor-pointer ${
+              className={`px-3 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 selectedCategory === cat.id
                   ? 'bg-blue-600 text-white shadow-xs'
                   : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700'
@@ -402,9 +470,9 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
           ))}
         </div>
 
-        {/* 8대 시스템 그리드 탭 (2행 4열로 8개 시스템 전체가 한눈에 시원하게 표시됨) */}
-        <div className="p-3 bg-slate-100/90 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {/* 13대 서브탭 그리드 선택 탭 (반응형 3~4열) */}
+        <div className="p-3 bg-slate-100/90 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shrink-0 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {filteredSystems.map((sys) => {
               const isSelected = activeSystemKey === sys.key;
               return (
@@ -412,7 +480,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
                   key={sys.key}
                   type="button"
                   onClick={() => setActiveSystemKey(sys.key)}
-                  className={`p-2 sm:p-2.5 rounded-2xl text-left transition-all cursor-pointer border flex flex-col justify-between gap-1 relative ${
+                  className={`p-2 rounded-xl text-left transition-all cursor-pointer border flex flex-col justify-between gap-1 relative ${
                     isSelected
                       ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border-blue-500/50 ring-2 ring-blue-500/20'
                       : 'bg-white/70 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300'
@@ -423,9 +491,6 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
                       <span className="shrink-0">{sys.icon}</span>
                       <span className="text-xs font-black truncate">{sys.systemName}</span>
                     </div>
-                    {sys.key === 'aa_disclosure' && (
-                      <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 animate-ping" />
-                    )}
                   </div>
                   <div className="flex items-center justify-between gap-1">
                     <span
@@ -447,16 +512,16 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
           </div>
         </div>
 
-        {/* 선택된 시스템 상세 안내 카드 본문 */}
+        {/* 선택된 시스템 상세 안내 본문 */}
         <div className="p-5 sm:p-6 overflow-y-auto space-y-4 flex-1">
           {/* 1. 상단 요약 배너 */}
           <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-            <div className="space-y-1.5">
+            <div className="space-y-1.5 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black border ${currentSystem.badgeColor}`}>
                   {currentSystem.badge}
                 </span>
-                <span className="font-black text-base sm:text-lg text-slate-900 dark:text-white">
+                <span className="font-black text-base sm:text-lg text-slate-900 dark:text-white truncate">
                   {currentSystem.systemName}
                 </span>
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -465,7 +530,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
               </div>
 
               {/* 주요 검토 대상 담당자 (Role) 표시 */}
-              <div className="flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 font-semibold bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-900/50 inline-flex">
+              <div className="flex items-center gap-1.5 text-xs text-indigo-700 dark:text-indigo-300 font-semibold bg-indigo-50 dark:bg-indigo-950/40 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-900/50 inline-flex flex-wrap">
                 <UserCheck className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />
                 <span>주요 검토 대상 담당자:</span>
                 <strong className="font-black text-indigo-900 dark:text-indigo-200">{currentSystem.targetRole}</strong>
@@ -473,31 +538,20 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
 
               {/* 프로토타입 해당 메뉴 경로 */}
               <div className="text-xs text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 pt-0.5">
-                <span>프로토타입 해당 메뉴:</span>
+                <span>실제 메뉴 경로:</span>
                 <strong className="underline underline-offset-2">{currentSystem.menuPath}</strong>
               </div>
             </div>
 
-            {/* 바로가기 버튼 그룹 */}
-            <div className="flex items-center gap-2 shrink-0 flex-wrap lg:flex-col lg:items-end">
+            {/* 바로가기 버튼 */}
+            <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={() => handleGo(currentSystem.targetWorkspace, currentSystem.subFeature)}
-                className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer whitespace-nowrap"
+                onClick={() => handleGo(currentSystem.subtabId, currentSystem.targetWorkspace, currentSystem.subFeature)}
+                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-md flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer whitespace-nowrap"
               >
                 <span>해당 메뉴로 즉시 이동</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-
-              {/* 보조 이동 버튼 (예: 정책기획, CP변이, 데이터센터 등) */}
-              {currentSystem.secondaryWorkspace && (
-                <button
-                  onClick={() => handleGo(currentSystem.secondaryWorkspace!, currentSystem.secondarySubFeature)}
-                  className="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] font-bold flex items-center justify-center gap-1 transition cursor-pointer whitespace-nowrap"
-                >
-                  <span>{currentSystem.secondaryLabel || '연계 화면 이동'}</span>
-                  <ExternalLink className="w-3 h-3" />
-                </button>
-              )}
             </div>
           </div>
 
@@ -539,7 +593,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
         {/* 모달 하단 푸터 */}
         <div className="p-4 bg-slate-50 dark:bg-slate-900/80 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <span className="text-[11px] text-slate-400 hidden sm:inline">
-            ※ 공공의료 의사결정 플랫폼 8대 핵심 시스템 및 담당자 직무별 최우선 검증 가이드입니다.
+            ※ 공공보건의료 플랫폼 13대 서브탭과 100% 동기화된 담당자별 최우선 검증 가이드입니다.
           </span>
           <div className="flex items-center gap-2 ml-auto">
             <button
@@ -549,7 +603,7 @@ export const 담당자별_검토_가이드_모달: React.FC<담당자별_검토_
               닫기
             </button>
             <button
-              onClick={() => handleGo(currentSystem.targetWorkspace, currentSystem.subFeature)}
+              onClick={() => handleGo(currentSystem.subtabId, currentSystem.targetWorkspace, currentSystem.subFeature)}
               className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-black shadow-xs hover:bg-blue-700 transition flex items-center gap-1.5 cursor-pointer"
             >
               <span>{currentSystem.systemName} 확인하러 가기</span>

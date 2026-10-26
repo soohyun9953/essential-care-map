@@ -153,7 +153,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                 시군구 취약지 진단은 헬스맵 2024년 전국 250개 시군구 데이터(소아 실데이터는 미확보로 판정 제외 및 응급·분만 재정규화)이며,
                 환자 유출입(OD Matrix)은 원천 72.6MB 엑셀 전수 분석 기반 228개 시군구 데이터셋입니다.
                 공공의료기관 전수 DB는 214개소이며, 국립중앙의료원 E-Gen 응급기관 528개소, 심평원 분만가능 기관 420곳(2025.1~2026.4 청구실적), NMC 달빛어린이병원 114곳이 연계되어 있습니다.
-                지역거점공공병원 42곳의 알리미 결산·인력 공시(2021~2025년)도 탑재되어 있습니다.
+                지역거점공공병원 42곳의 알리미 결산·인력 공시(2021~2025년)도 탑재되어 13대 화면 전반에 실시간 연계됩니다.
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -164,10 +164,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <Compass className="w-4 h-4" /> 데이터셋 1
                     </span>
                     <button
-                      onClick={() => handle_menu_click('gis_map')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400"
+                      onClick={() => handle_menu_click('2-1')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                     >
-                      01 진단지도 보기 <ArrowRight className="w-3 h-3" />
+                      [2-1] 지역진단 지도 보기 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -189,10 +189,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <Layers className="w-4 h-4" /> 데이터셋 2
                     </span>
                     <button
-                      onClick={() => handle_menu_click('gis_map')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400"
+                      onClick={() => handle_menu_click('2-1')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-teal-600 dark:text-teal-400 hover:underline"
                     >
-                      중진료권 지도 보기 <ArrowRight className="w-3 h-3" />
+                      [2-1] 중진료권 지도 보기 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -212,10 +212,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <Activity className="w-4 h-4" /> 데이터셋 3
                     </span>
                     <button
-                      onClick={() => handle_menu_click('compare_1to1')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+                      onClick={() => handle_menu_click('2-1')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
-                      02 1:1 비교 보기 <ArrowRight className="w-3 h-3" />
+                      [2-1] 환자 유출입 OD 분석 보기 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -236,10 +236,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <Building2 className="w-4 h-4" /> 데이터셋 4
                     </span>
                     <button
-                      onClick={() => handle_menu_click('policy_incentive')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400"
+                      onClick={() => handle_menu_click('2-3')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400 hover:underline"
                     >
-                      공공병원 시뮬레이터 <ArrowRight className="w-3 h-3" />
+                      [2-3] 신포괄 계산기 보기 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -260,10 +260,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <FileText className="w-4 h-4" /> 데이터셋 5
                     </span>
                     <button
-                      onClick={() => handle_menu_click('cp_library')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400"
+                      onClick={() => handle_menu_click('2-3')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
                     >
-                      71개 CP 라이브러리 <ArrowRight className="w-3 h-3" />
+                      [2-3] CP 임상 가산 연동 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -284,10 +284,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <TrendingUp className="w-4 h-4" /> 데이터셋 6
                     </span>
                     <button
-                      onClick={() => handle_menu_click('cp_variance')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-400"
+                      onClick={() => handle_menu_click('2-3')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-600 dark:text-purple-400 hover:underline"
                     >
-                      변이분석 &amp; ROI <ArrowRight className="w-3 h-3" />
+                      [2-3] 가산 시뮬레이터 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -308,10 +308,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <HeartPulse className="w-4 h-4" /> 데이터셋 7
                     </span>
                     <button
-                      onClick={() => handle_menu_click('citizen_view')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400"
+                      onClick={() => handle_menu_click('1-1')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:underline"
                     >
-                      국민안심 서비스 뷰 <ArrowRight className="w-3 h-3" />
+                      [1-1] 대국민 안심의료 지도 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -340,10 +340,10 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                       <FileText className="w-4 h-4" /> 데이터셋 8
                     </span>
                     <button
-                      onClick={() => handle_menu_click('aa_disclosure')}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-cyan-400"
+                      onClick={() => handle_menu_click('2-2')}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
                     >
-                      공시검증 대시보드 <ArrowRight className="w-3 h-3" />
+                      [2-2] 경영사전검증 대시보드 <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -352,8 +352,8 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                   <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc list-inside">
                     <li>보건복지부 지역거점공공병원 알리미 기관별 통합공시: 결산서(재무상태표·손익계산서), 수입·지출 현황, 직원 현황 (개인정보 제외)</li>
                     <li>의료이익률·인건비 지출 비율·지원금 비율·부채 비율·100병상당 의사/간호 현원과 공시기관 분포 비교</li>
-                    <li>AI 병원진단 재무건전성 점수(공시기관 내 백분위 평균, 플랫폼 산식)·비교분석 표, 의료기관 상세 「알리미 경영 공시」 표에 사용</li>
-                    <li>공시 품질 자동점검 5개 규칙(재무상태표·손익 항등식, 결산 미공시, 인건비 0원, 직원 수 집계 불일치) — 플랫폼 규칙이며 공식 검증결과 아님</li>
+                    <li>2-2 경영 벤치마킹 &amp; 사전검증 화면 및 3-3 NMC 통합평가 심사 화면에 실데이터 연동</li>
+                    <li>공시 품질 자동점검 5개 규칙(재무상태표·손익 항등식, 결산 미공시, 인건비 0원, 직원 수 집계 불일치) — 플랫폼 사전검증 규칙</li>
                   </ul>
                 </div>
               </div>
@@ -481,11 +481,11 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
                     <span className="text-xs text-slate-400">플랫폼 사업계획서 구성</span>
                   </div>
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                    공공보건의료 사업계획서 12개 항목 (플랫폼 구성 — 실제 공모 서식은 해당 연도 공고문 확인)
+                    공공보건의료 12대 항목 법정 사업계획서 서식 &amp; HWPX 원스톱 완성 (2-1 연계)
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
                     • <strong>12개 항목:</strong> ① 사업명, ② 추진배경, ③ 현황 및 문제점, ④ 사업목표, ⑤ 추진전략, ⑥ 세부사업, ⑦ 추진체계, ⑧ 추진일정, ⑨ 예산, ⑩ 성과지표, ⑪ 기대효과, ⑫ 사후관리.<br />
-                    • <strong>플랫폼 제공 기능:</strong> 지역 진단 결과 기반 초안 생성, 직접 수정/편집 폼, 브라우저 임시저장, PDF 인쇄, HWPX 한글 문서 다운로드.<br />
+                    • <strong>플랫폼 원스톱 완성 [2-1]:</strong> 지역진단 및 환자 유출입(OD) 분석 결과 ➔ 1:1 비교 ➔ 2030 수요추계 ➔ AI 정책대안(Option A/B/C)이 12대 항목 초안에 실시간 자동 연동되며, 한글과컴퓨터 표준 공문서 규격인 HWPX 파일로 즉시 다운로드 가능.<br />
                     • <strong>환각 방지 원칙:</strong> 법정 산출근거 없는 예산·인력 수치는 임의 생성하지 않고 &apos;직접 입력 필요&apos;로 안내.
                   </p>
                 </div>
@@ -616,7 +616,7 @@ export const 데이터_사업가이드_안내_모달: React.FC<데이터_사업�
         <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 flex items-center justify-between shrink-0">
           <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Info className="w-4 h-4 text-blue-500" />
-            <span>앱에 구현된 데이터·산식 기준으로 작성 (2026-10-11 대조). 원문 대조 내역은 「근거자료 반영 이력」 참고</span>
+            <span>플랫폼 13대 서브탭 메뉴 체계 및 데이터·산식 기준으로 작성 (2026-10-26 현황 대조 반영). 원문 대조 내역은 「근거자료 반영 이력」 참고</span>
           </div>
 
           <button

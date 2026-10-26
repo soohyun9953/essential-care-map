@@ -95,8 +95,8 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
   {
     key: 'evaluation',
     order: 7,
-    label: '시행계획 평가',
-    subLabel: '평가지침 100점 평가표 & 6단계 AI 심사',
+    label: '시행계획 심사·평가',
+    subLabel: 'NMC 중앙 100점 평가표 & 6단계 AI 심사 (NMC 업무 연계)',
     icon: ShieldCheck,
     workspace: 'policy_planning',
     policyTab: 'evaluation',

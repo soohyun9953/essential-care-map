@@ -131,13 +131,13 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
     ],
   },
 
-  // 2. 의료기관 담당자 - 6개 서브탭
+  // 2. 의료기관 담당자 - 7개 서브탭 (업무 흐름: 진단 ➔ 계획 ➔ 경영 ➔ 인센티브 ➔ 돌봄 ➔ 모자 ➔ 지침)
   {
     role: 'hospital',
     title: '② 의료기관 담당자',
     shortTitle: '의료기관',
     icon: '🏥',
-    desc: '사업계획 작성, 퇴원돌봄, 경영진단, 인센티브 계산',
+    desc: '환자 유출입 진단, 사업계획 수립, 경영 및 인센티브, 돌봄·모자 연계',
     headerStyle: {
       container:
         'bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border-blue-500/50 hover:border-blue-400 shadow-sm',
@@ -150,8 +150,19 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       {
         id: '2-1',
         subtabId: '2-1',
+        category: '지역진단',
+        label: '2-1. 환자 의료이용 유출입(OD) 분석 & 지역진단',
+        icon: <Share2 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: 'OD 분석',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'regional_diagnosis',
+        desc: '17개 시도·250개 시군구 환자 관외 유출입(OD) 네트워크 흐름도 및 취약도 진단',
+      },
+      {
+        id: '2-2',
+        subtabId: '2-2',
         category: '계획수립',
-        label: '2-1. 공공보건의료계획 작성 도우미',
+        label: '2-2. 공공보건의료계획·사업계획 작성 도우미',
         icon: <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
         badge: 'HWPX 빌더',
         badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
@@ -160,22 +171,10 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         isCustomPage: true,
       },
       {
-        id: '2-2',
-        subtabId: '2-2',
-        category: '퇴원돌봄',
-        label: '2-2. 퇴원환자 케어플랜·돌봄자원 AI',
-        icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
-        badge: '돌봄 연계',
-        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
-        workspace: 'persona_page',
-        desc: '퇴원환자 4단계 평가·케어플랜(ADL 10개 영역), 최적 돌봄자원 매칭',
-        isCustomPage: true,
-      },
-      {
         id: '2-3',
         subtabId: '2-3',
         category: '경영개선',
-        label: '2-3. 경영 벤치마킹 & 사전검증',
+        label: '2-3. 경영 벤치마킹 & 공시·시설장비 사전검증',
         icon: <BarChart3 className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
         badge: '사전검증',
         badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
@@ -186,8 +185,32 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       {
         id: '2-4',
         subtabId: '2-4',
+        category: '인센티브',
+        label: '2-4. 신포괄수가 정책가산 인센티브 계산기',
+        icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />,
+        badge: '가산 모의계산',
+        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
+        workspace: 'medical_institution',
+        subtab: 'policy_incentive',
+        desc: '공공성 평가 및 표준진료지침 기반 정부 정책가산 지원금 모의계산',
+      },
+      {
+        id: '2-5',
+        subtabId: '2-5',
+        category: '퇴원돌봄',
+        label: '2-5. 퇴원환자 케어플랜·돌봄자원 매칭 AI',
+        icon: <Users className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
+        badge: '돌봄 연계',
+        badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
+        workspace: 'persona_page',
+        desc: '퇴원환자 4단계 평가·케어플랜(ADL 10개 영역), 최적 돌봄자원 매칭',
+        isCustomPage: true,
+      },
+      {
+        id: '2-6',
+        subtabId: '2-6',
         category: '모자전원',
-        label: '2-4. 고위험 산모·신생아 전원 매칭',
+        label: '2-6. 고위험 산모·신생아 전원의뢰·수용 매칭',
         icon: <Compass className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
         badge: '전원 매칭',
         badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
@@ -196,10 +219,10 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         isCustomPage: true,
       },
       {
-        id: '2-5',
-        subtabId: '2-5',
+        id: '2-7',
+        subtabId: '2-7',
         category: '지침Q&A',
-        label: '2-5. 책임의료기관 사업지침 질의응답',
+        label: '2-7. 책임의료기관 사업지침 AI 질의응답',
         icon: <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />,
         badge: '331쪽 RAG',
         badgeColor: 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300',
@@ -207,28 +230,16 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         desc: '2026 책임의료기관 통합 지침 원문(331쪽) 근거 페이지 발췌 답변',
         isCustomPage: true,
       },
-      {
-        id: '2-6',
-        subtabId: '2-6',
-        category: '인센티브',
-        label: '2-6. 신포괄수가 가산 인센티브 계산기',
-        icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />,
-        badge: '가산 모의계산',
-        badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300',
-        workspace: 'medical_institution',
-        subtab: 'policy_incentive',
-        desc: '공공성 평가 및 표준진료지침 기반 정부 정책가산 지원금 모의계산',
-      },
     ],
   },
 
-  // 3. 국립중앙의료원·복지부 - 4개 서브탭
+  // 3. 국립중앙의료원·복지부 - 3개 서브탭 (업무 흐름: 통계DW ➔ 투자배분 ➔ 100점 심사평가)
   {
     role: 'nmc',
     title: '③ 보건복지부·지원단/NMC',
     shortTitle: '중앙·NMC',
     icon: '🏛️',
-    desc: '통합 평가, 취약지 정책통계 DW, 투자배분, OD 분석',
+    desc: '전국 정책통계 DW 분석, 기능보강 투자배분, 통합 평가 및 100점 심사',
     headerStyle: {
       container:
         'bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-indigo-500/50 hover:border-indigo-400 shadow-sm',
@@ -241,20 +252,8 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
       {
         id: '3-1',
         subtabId: '3-1',
-        category: '평가심사',
-        label: '3-1. 통합 평가·공시심사·성과 모니터링 AI',
-        icon: <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
-        badge: '100점 심사',
-        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'persona_page',
-        desc: '3대 평가 모듈, 알리미 교차검증, 이상치 탐지, 조기경보 모니터링',
-        isCustomPage: true,
-      },
-      {
-        id: '3-2',
-        subtabId: '3-2',
         category: '통계DW',
-        label: '3-2. 전국 취약지 정책통계 & 통합 DW',
+        label: '3-1. 전국 취약지 정책통계 & 통합 DW 분석',
         icon: <Activity className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
         badge: '통합 DW',
         badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
@@ -263,10 +262,10 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         isCustomPage: true,
       },
       {
-        id: '3-3',
-        subtabId: '3-3',
+        id: '3-2',
+        subtabId: '3-2',
         category: '투자배분',
-        label: '3-3. 기능보강 투자배분 & 모자의료 관제',
+        label: '3-2. 기능보강 투자배분 & 중앙모자의료 관제',
         icon: <Sliders className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
         badge: '투자 시뮬레이션',
         badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
@@ -275,15 +274,16 @@ export const 신규_메뉴_구조_데이터: 대상자_그룹[] = [
         isCustomPage: true,
       },
       {
-        id: '3-4',
-        subtabId: '3-4',
-        category: 'OD분석',
-        label: '3-4. 환자 의료이용 유출입(OD) 분석',
-        icon: <Share2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
-        badge: 'OD 분석',
-        badgeColor: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300',
-        workspace: 'regional_diagnosis',
-        desc: '17개 시도·250개 시군구 간 환자 관외 유출입(OD) 네트워크 흐름도',
+        id: '3-3',
+        subtabId: '3-3',
+        category: '평가심사',
+        label: '3-3. 통합 평가·공시심사·성과 모니터링 (100점 심사)',
+        icon: <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />,
+        badge: '100점 심사',
+        badgeColor: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300',
+        workspace: 'persona_page',
+        desc: '3대 평가 모듈, 알리미 교차검증, 이상치 탐지, 조기경보 모니터링',
+        isCustomPage: true,
       },
     ],
   },
@@ -359,13 +359,13 @@ export const 대상자별_좌측_사이드바: React.FC<대상자별_좌측_사�
       set_open_groups((prev) => ({ ...prev, citizen: true }));
     } else if (
       current_role === 'hospital' ||
+      current_workspace === 'regional_diagnosis' ||
       current_workspace === 'hospital_ai_diagnosis' ||
       (current_workspace === 'medical_institution' && current_subtab === 'policy_incentive')
     ) {
       set_open_groups((prev) => ({ ...prev, hospital: true }));
     } else if (
       current_role === 'nmc' ||
-      current_workspace === 'regional_diagnosis' ||
       current_workspace === 'policy_planning' ||
       (current_workspace === 'medical_institution' && current_subtab !== 'policy_incentive')
     ) {

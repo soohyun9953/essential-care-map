@@ -5,8 +5,8 @@ import { 신규_메뉴_구조_데이터, 레거시_AS_IS_메뉴_데이터 } from
 const AS_IS_ids = new Set(레거시_AS_IS_메뉴_데이터.map((m) => m.id));
 
 describe('3대 사용자 그룹 메뉴 구조', () => {
-  it('대국민 4 · 의료기관 6 · NMC 4, 서브탭 id는 그룹 번호로 시작하고 중복이 없다', () => {
-    expect(페르소나_목록.map((p) => p.서브탭.length)).toEqual([4, 6, 4]);
+  it('대국민 4 · 의료기관 7 · NMC 3, 서브탭 id는 그룹 번호로 시작하고 중복이 없다', () => {
+    expect(페르소나_목록.map((p) => p.서브탭.length)).toEqual([4, 7, 3]);
     const ids = 페르소나_목록.flatMap((p, i) => p.서브탭.map((s) => {
       expect(s.id.startsWith(`${i + 1}-`)).toBe(true);
       return s.id;
@@ -15,7 +15,7 @@ describe('3대 사용자 그룹 메뉴 구조', () => {
   });
 
   it('좌측 사이드바(신규_메뉴_구조_데이터)는 상단/중앙 페르소나 서브탭과 100% 동일하게 14개로 일치한다', () => {
-    expect(신규_메뉴_구조_데이터.map((g) => g.menus.length)).toEqual([4, 6, 4]);
+    expect(신규_메뉴_구조_데이터.map((g) => g.menus.length)).toEqual([4, 7, 3]);
     const sidebarSubtabIds = 신규_메뉴_구조_데이터.flatMap((g) => g.menus.map((m) => m.subtabId));
     const personaSubtabIds = 페르소나_목록.flatMap((p) => p.서브탭.map((s) => s.id));
     expect(sidebarSubtabIds).toEqual(personaSubtabIds);
@@ -48,15 +48,19 @@ describe('기존 화면 → 소속 사용자 그룹 서브탭 (홈 배너)', () 
   const 메뉴_id = (ws: string, sub?: string) =>
     레거시_AS_IS_메뉴_데이터.find((m) => m.workspace === ws && (m.subtab ?? undefined) === sub)?.id ?? '';
 
-  it('운영평가 대시보드·시행계획 AI 평가는 ③ 3-1, 5종 진단보고서·병원진단은 ② 2-3에 속한다', () => {
-    expect(메뉴_소속_서브탭(메뉴_id('medical_institution', 'operation_eval'))?.서브탭.id).toBe('3-1');
-    expect(메뉴_소속_서브탭(메뉴_id('policy_planning', 'evaluation'))?.서브탭.id).toBe('3-1');
+  it('운영평가 대시보드·시행계획 AI 평가는 ③ 3-3, 5종 진단보고서·병원진단은 ② 2-3에 속한다', () => {
+    expect(메뉴_소속_서브탭(메뉴_id('medical_institution', 'operation_eval'))?.서브탭.id).toBe('3-3');
+    expect(메뉴_소속_서브탭(메뉴_id('policy_planning', 'evaluation'))?.서브탭.id).toBe('3-3');
     expect(메뉴_소속_서브탭(메뉴_id('hospital_ai_diagnosis', 'profile_report'))?.서브탭.id).toBe('2-3');
     expect(메뉴_소속_서브탭(메뉴_id('hospital_ai_diagnosis', 'diagnosis'))?.서브탭.id).toBe('2-3');
   });
 
-  it('여러 서브탭에 걸친 메뉴는 우선 그룹에서 먼저 찾는다 (알리미 공시: 대국민 1-3, NMC 3-1)', () => {
+  it('환자 의료이용 유출입 OD 분석은 ② 2-1로 연결된다', () => {
+    expect(메뉴_소속_서브탭('mn_01_04')?.서브탭.id).toBe('2-1');
+  });
+
+  it('여러 서브탭에 걸친 메뉴는 우선 그룹에서 먼저 찾는다 (알리미 공시: 대국민 1-3, NMC 3-3)', () => {
     expect(메뉴_소속_서브탭('mn_04_08')?.서브탭.id).toBe('1-3');
-    expect(메뉴_소속_서브탭('mn_04_08', 'nmc')?.서브탭.id).toBe('3-1');
+    expect(메뉴_소속_서브탭('mn_04_08', 'nmc')?.서브탭.id).toBe('3-3');
   });
 });

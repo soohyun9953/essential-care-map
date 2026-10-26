@@ -1,15 +1,13 @@
 'use client';
 
 // Essential Care Map - 전체 여정(Journey) 상단 고정 Progress Navigation
-// 지역진단 ✓ → 지역비교 ✓ → 미래수요 ✓ → AI 정책분석 ● → 정책대안 ○ → 사업계획 ○ → 시행계획 평가 ○
-// 사용자 요구사항 1번: 모든 주요 화면 상단에 고정 표시
+// 1.지역진단 ✓ → 2.지역비교 ✓ → 3.미래수요 ✓ → 4.AI 정책분석·대안 ● → 5.사업계획 ○ → 6.시행계획 심사·평가 ○
 
 import React from 'react';
 import {
   MapPin,
   GitCompare,
   TrendingUp,
-  Cpu,
   Sparkles,
   FileText,
   ShieldCheck,
@@ -23,10 +21,10 @@ export type 여정_단계_키 =
   | 'diagnosis'    // 1. 지역진단
   | 'compare'      // 2. 지역비교
   | 'forecast'     // 3. 미래수요
-  | 'ai_analysis'  // 4. AI 정책분석
-  | 'alternatives' // 5. 정책대안
-  | 'report'       // 6. 사업계획
-  | 'evaluation';  // 7. 시행계획 평가
+  | 'ai_analysis'  // 4. AI 정책분석 & 대안 도출
+  | 'alternatives' // (하위 호환 유지)
+  | 'report'       // 5. 사업계획
+  | 'evaluation';  // 6. 시행계획 심사·평가
 
 export interface 여정_단계_정의 {
   key: 여정_단계_키;
@@ -43,7 +41,7 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
     key: 'diagnosis',
     order: 1,
     label: '지역진단',
-    subLabel: '3대 필수의료 취약도 진단',
+    subLabel: '3대 필수의료 취약도 & 환자 유출입(OD) 진단',
     icon: MapPin,
     workspace: 'regional_diagnosis',
   },
@@ -68,24 +66,15 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
   {
     key: 'ai_analysis',
     order: 4,
-    label: 'AI 정책분석',
-    subLabel: '정책분석 5단계 (데이터·지침 근거)',
-    icon: Cpu,
-    workspace: 'policy_planning',
-    policyTab: 'policy_ai',
-  },
-  {
-    key: 'alternatives',
-    order: 5,
-    label: '정책대안',
-    subLabel: '3대 시나리오 옵션 검토',
+    label: 'AI 정책분석·대안',
+    subLabel: '취약원인 정밀진단 & Option A/B/C 정책 패키지',
     icon: Sparkles,
     workspace: 'policy_planning',
     policyTab: 'policy_ai',
   },
   {
     key: 'report',
-    order: 6,
+    order: 5,
     label: '사업계획',
     subLabel: '12대 항목 법정 공문서 완성',
     icon: FileText,
@@ -94,7 +83,7 @@ export const 전체_여정_단계_목록: 여정_단계_정의[] = [
   },
   {
     key: 'evaluation',
-    order: 7,
+    order: 6,
     label: '시행계획 심사·평가',
     subLabel: 'NMC 중앙 100점 평가표 & 6단계 AI 심사 (NMC 업무 연계)',
     icon: ShieldCheck,

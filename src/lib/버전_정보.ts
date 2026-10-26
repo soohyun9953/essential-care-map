@@ -3,12 +3,12 @@
 
 export const PLATFORM_VERSION = {
   date: '2026-10-26',
-  time: '14:31',
-  deployedAt: '2026.10.26 14:31',
-  semver: '1.45.3',
-  fullLabel: '2026.10.26 14:31 · v1.45.3',
-  packageVersion: '20261026-1431',
-  updatedAt: '2026-10-26 14:31',
+  time: '14:38',
+  deployedAt: '2026.10.26 14:38',
+  semver: '1.45.4',
+  fullLabel: '2026.10.26 14:38 · v1.45.4',
+  packageVersion: '20261026-1438',
+  updatedAt: '2026-10-26 14:38',
   changelog:
-    '2-4 퇴원환자 연계 상단 모바일 전자동의 뱃지 삭제 및 안내 문구 정리 (2026.10.26 14:31)',
+    '2-4 퇴원환자 연계 상단 EMR 연계 안내 문장 삭제 및 상단 배너 심플화 (2026.10.26 14:38)',
 };

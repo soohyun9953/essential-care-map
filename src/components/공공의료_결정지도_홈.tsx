@@ -195,7 +195,13 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       {/* 🏆 신규 반영: 2025년 지역거점 공공병원 운영평가 결과보고서 배너      */}
       {/* ================================================================== */}
       <div
-        onClick={() => 열기('medical_institution', 'operation_eval')}
+        onClick={() => {
+          if (on_open_persona_subtab) {
+            on_open_persona_subtab('3-3');
+          } else {
+            열기('medical_institution', 'operation_eval');
+          }
+        }}
         className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all cursor-pointer border border-blue-500/30 flex flex-col md:flex-row md:items-center justify-between gap-4 group"
       >
         <div className="space-y-2">
@@ -313,7 +319,7 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
       </div>
 
       {/* ================================================================== */}
-      {/* ⭐ 신규 핵심 배너 2종: 1) 시행계획·추진실적 AI 평가 / 2) 공공병원 AI 진단 */}
+      {/* ⭐ 신규 핵심 배너 2종: 1) 3-3 통합 평가·심사 / 2) 2-2 경영 벤치마킹 & 사전검증 */}
       {/* ================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* 배너 1: 공공보건의료 시행계획·추진실적 AI 평가 (100점 평가표) */}
@@ -325,58 +331,61 @@ export const 공공의료_결정지도_홈: React.FC<공공의료_결정지도_�
             </div>
             <div>{소속_칩('policy_planning', 'evaluation')}</div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              공공보건의료 시행계획 · 추진실적 AI 평가
+              공공보건의료 통합 평가 · 공시심사 (100점 심사)
             </h2>
             <p className="text-xs sm:text-sm text-indigo-100/90 leading-relaxed font-medium">
-              공공기관(시·도 17개소 / 중앙부처 8개소 / 공공단체) 평가자료 입력 시 <strong>지침 공식 평가표(추진실적 70점 + 사업계획 30점 = 100점 만점)</strong> 산출 및 <strong>6단계 AI 평가 서비스(사전검증·지표교정·정량채점·이견조정·결과보고서)</strong>를 제공합니다.
+              공공기관(시·도 17개소 / 중앙부처 8개소 / 공공단체) 평가자료 입력 시 <strong>지침 공식 평가표(추진실적 70점 + 사업계획 30점 = 100점 만점)</strong> 산출 및 <strong>알리미 공시 교차검증·심사보고서 초안 자동화</strong>를 제공합니다.
             </p>
           </div>
 
           <button
             type="button"
-            onClick={() => 열기('policy_planning', 'evaluation')}
+            onClick={() => {
+              if (on_open_persona_subtab) {
+                on_open_persona_subtab('3-3');
+              } else {
+                열기('policy_planning', 'evaluation');
+              }
+            }}
             className="w-full sm:w-auto self-start px-6 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
           >
             <ShieldCheck className="w-4 h-4 text-slate-950" />
-            <span>시행계획·추진실적 AI 평가 바로가기 (100점 평가표)</span>
+            <span>통합 평가·공시심사 바로가기 (100점 심사)</span>
             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
 
-        {/* 배너 2: AI 공공병원 종합진단 & 5종 진단보고서 작성 */}
+        {/* 배너 2: 2-2 경영 벤치마킹 & 공시·시설장비 사전검증 */}
         <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 text-white shadow-xl border border-blue-500/30 relative overflow-hidden flex flex-col justify-between gap-5">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/30 border border-blue-400/40 text-blue-200 text-xs font-black">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>NEW · 국립중앙의료원 의료기관 프로파일 5종 진단보고서 탑재</span>
+              <span>NEW · 동일 규모 지방의료원 12곳 익명 비교군 실데이터 탑재</span>
             </div>
             <div>{소속_칩('hospital_ai_diagnosis', 'profile_report')}</div>
             <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              AI 공공병원 종합진단 &amp; 5종 진단보고서 작성
+              경영 벤치마킹 &amp; 공시·시설장비 사전검증
             </h2>
             <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed font-medium">
-              <strong>41개 거점공공병원 전수 데이터</strong>를 기반으로 <strong>①지역 의료자원 · ②진료기능 · ③진료실적 · ④기관비교 · ⑤지역비교 5종 진단보고서</strong>를 자동 작성하고, AI 개선 시뮬레이션 및 실행계획을 수립합니다.
+              <strong>허가병상 150~250병상 지방의료원 12곳</strong> 경영지표 벤치마킹(알리미 실데이터), 공시·ERP 대조 <strong>출연금·보조금 혼입 사전검증</strong>, 원내 <strong>시설·장비 노후도 진단</strong>을 제공합니다.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="button"
-              onClick={() => 열기('hospital_ai_diagnosis', 'profile_report')}
+              onClick={() => {
+                if (on_open_persona_subtab) {
+                  on_open_persona_subtab('2-2');
+                } else {
+                  열기('hospital_ai_diagnosis', 'profile_report');
+                }
+              }}
               className="px-5 py-3.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition active:scale-95 flex items-center justify-center gap-2 cursor-pointer group"
             >
-              <FileText className="w-4 h-4 text-slate-950" />
-              <span>📄 5종 진단보고서 작성 바로가기</span>
+              <Building2 className="w-4 h-4 text-slate-950" />
+              <span>📊 경영 벤치마킹 &amp; 사전검증 바로가기</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => 열기('hospital_ai_diagnosis', 'diagnosis')}
-              className="px-4 py-3.5 rounded-2xl bg-blue-500/80 hover:bg-blue-500 text-white font-extrabold text-xs sm:text-sm shadow-md border border-blue-400/40 transition active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Building2 className="w-4 h-4 text-white" />
-              <span>AI 병원진단·시뮬레이션</span>
             </button>
           </div>
         </div>
